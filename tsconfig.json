@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /* Path mapping */
+    "baseUrl": "src",
+    "paths": {
+      "hooks/*": ["hooks/*"],
+      "components/*": ["components/*"],
+      "sections/*": ["sections/*"],
+      "reduxStore/*": ["redux/*"],
+      "assets/*": ["assets/*"],
+      "utils/*": ["utils/*"],
+      "pages/*": ["pages/*"],
+      "layout/*": ["layout/*"],
+      "types/*": ["types/*"],
+      "common/*": ["common/*"],
+      "constants/*": ["constants/*"],
+      "routes/*": ["routes/*"],
+      "theme/*": ["theme/*"],
+      "axiosClient/*": ["axiosClient/*"]
+    }
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
+
+
