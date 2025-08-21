@@ -19,7 +19,9 @@ import {
   loginThunk,
   logoutThunk,
   registerThunk,
-  googleLoginThunk,
+  confirmEmailThunk,
+  resetPasswordThunk,
+  forgotPasswordThunk,
 } from "./authThunks";
 
 export interface AuthState {
@@ -97,7 +99,7 @@ const authSlice = createSlice({
       state.isLogout = action.payload;
     },
     updateLocalAccessToken: (
-      state,
+      _state,
       action: PayloadAction<{ accessToken: string; refreshToken: string }>
     ) => {
       setAccessToken(action.payload.accessToken);
@@ -158,17 +160,17 @@ const authSlice = createSlice({
       })
 
       // Add Google login cases
-      .addCase(loginbygoogle.pending, (state) => {
+      .addCase(googleLoginThunk.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(loginbygoogle.fulfilled, (state, action) => {
+      .addCase(googleLoginThunk.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isError = false;
         state.isSuccess = true;
         state.isAuthenticated = true;
         state.userAuth = action.payload;
       })
-      .addCase(loginbygoogle.rejected, (state, action) => {
+      .addCase(googleLoginThunk.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.isSuccess = false;
@@ -193,6 +195,54 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.isError = true;
         state.isSuccess = false;
+      })
+
+      // Email confirmation cases
+      .addCase(confirmEmailThunk.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(confirmEmailThunk.fulfilled, (state) => {
+        state.isLoading = false;
+        state.isError = false;
+        state.isSuccess = true;
+      })
+      .addCase(confirmEmailThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.isSuccess = false;
+        state.errorMessage = action.payload as string;
+      })
+
+      // Reset password cases
+      .addCase(resetPasswordThunk.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(resetPasswordThunk.fulfilled, (state) => {
+        state.isLoading = false;
+        state.isError = false;
+        state.isSuccess = true;
+      })
+      .addCase(resetPasswordThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.isSuccess = false;
+        state.errorMessage = action.payload as string;
+      })
+
+      // Forgot password cases
+      .addCase(forgotPasswordThunk.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(forgotPasswordThunk.fulfilled, (state) => {
+        state.isLoading = false;
+        state.isError = false;
+        state.isSuccess = true;
+      })
+      .addCase(forgotPasswordThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.isSuccess = false;
+        state.errorMessage = action.payload as string;
       });
   },
 });
@@ -216,25 +266,58 @@ export {
   loginThunk as login,
   logoutThunk as logout,
   registerThunk as register,
+  confirmEmailThunk as confirmEmail,
+  resetPasswordThunk as resetPassword,
+  forgotPasswordThunk as forgotPassword,
 };
 
-// Định nghĩa lại Google login thunk để khớp với kiểu dữ liệu
-export const loginbygoogle = createAsyncThunk<
+// Google login thunk
+export const googleLoginThunk = createAsyncThunk<
   UserAuth,
   string,
   { rejectValue: string }
->("auth/loginbygoogle", async (credential, thunkAPI) => {
+>("auth/googleLogin", async (credential, thunkAPI) => {
   try {
-    // Sử dụng type assertion chi tiết hơn thay vì any
-    return await googleLoginThunk(credential, {
-      dispatch: thunkAPI.dispatch,
-      rejectWithValue: thunkAPI.rejectWithValue,
-    } as unknown as Parameters<typeof googleLoginThunk>[1]);
-  } catch (error) {
-    if (error instanceof Error) {
-      return thunkAPI.rejectWithValue(error.message);
+    const { axiosClient } = await import("axiosClient/axiosClient");
+    const { ROUTES_API_AUTH } = await import("constants/routesApiKeys");
+
+    // API call với đúng format backend mong đợi
+    const apiResponse = await axiosClient.post(ROUTES_API_AUTH.LOGIN_GOOGLE, {
+      GoogleIdToken: credential,
+    });
+
+    const response = apiResponse.data;
+    if (
+      !response ||
+      !response.data ||
+      !response.data.user ||
+      !response.data.tokens
+    ) {
+      return thunkAPI.rejectWithValue("Invalid response from Google login");
     }
-    return thunkAPI.rejectWithValue("Đăng nhập Google thất bại");
+
+    // Tạo user object với structure mới
+    const user: UserAuth = {
+      userId: response.data.user.userId,
+      email: response.data.user.email,
+      username: response.data.user.fullName || response.data.user.email,
+      roles: response.data.user.roles || ["OttoBitUser"],
+      authProvider: "google",
+    };
+
+    // Store tokens với structure mới
+    const { setAccessToken, setRefreshToken, setUserAuth, setAuthenticated } =
+      await import("utils");
+    setAccessToken(response.data.tokens.accessToken);
+    setRefreshToken(response.data.tokens.refreshToken);
+    setUserAuth(user);
+    setAuthenticated();
+
+    return user;
+  } catch (error: any) {
+    const errorMessage =
+      error?.response?.data?.message || "Google login failed";
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 

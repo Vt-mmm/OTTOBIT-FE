@@ -14,17 +14,29 @@ import {
   Menu,
   MenuItem,
   Divider,
+  Chip,
 } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import LogoutIcon from "@mui/icons-material/Logout";
-import CloseIcon from "@mui/icons-material/Close";
-import HomeIcon from "@mui/icons-material/Home";
+import {
+  Menu as MenuIcon,
+  Logout as LogoutIcon,
+  Close as CloseIcon,
+  Home as HomeIcon,
+  Person as PersonIcon,
+  Dashboard as DashboardIcon,
+  School as SchoolIcon,
+  AdminPanelSettings as AdminIcon,
+} from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../../../redux/config";
+import { useAppDispatch, useAppSelector } from "store/config";
 import { logout } from "../../../redux/auth/authSlice";
-import { PATH_PUBLIC, PATH_USER, PATH_AUTH } from "../../../routes/paths";
-// Logo placeholder - sẽ thay thế bằng logo thật sau
+import {
+  PATH_PUBLIC,
+  PATH_USER,
+  PATH_AUTH,
+  PATH_ADMIN,
+} from "../../../routes/paths";
+import { alpha } from "@mui/material/styles";
 
 // Component ẩn header khi scroll xuống
 function HideOnScroll(props: {
@@ -61,7 +73,7 @@ const Header: React.FC = () => {
   // Danh sách menu với icon và scroll target
   const [menuItems, setMenuItems] = useState([
     {
-      name: "Home",
+      name: "Trang chủ",
       icon: <HomeIcon sx={{ mr: 1, fontSize: "1.1rem" }} />,
       href: PATH_PUBLIC.homepage,
       id: "home",
@@ -71,15 +83,34 @@ const Header: React.FC = () => {
 
   // Update menu items when authentication state changes
   useEffect(() => {
-    setMenuItems([
-      {
-        name: "Trang chủ",
-        icon: <HomeIcon sx={{ mr: 1, fontSize: "1rem" }} />,
-        href: isAuthenticated ? PATH_USER.homepage : PATH_PUBLIC.homepage,
-        id: "home",
-        isPage: true,
-      },
-    ]);
+    if (isAuthenticated) {
+      setMenuItems([
+        {
+          name: "Trang chủ",
+          icon: <HomeIcon sx={{ mr: 1, fontSize: "1rem" }} />,
+          href: PATH_USER.homepage,
+          id: "home",
+          isPage: true,
+        },
+        {
+          name: "Studio",
+          icon: <SchoolIcon sx={{ mr: 1, fontSize: "1rem" }} />,
+          href: PATH_USER.studio,
+          id: "studio",
+          isPage: true,
+        },
+      ]);
+    } else {
+      setMenuItems([
+        {
+          name: "Trang chủ",
+          icon: <HomeIcon sx={{ mr: 1, fontSize: "1rem" }} />,
+          href: PATH_PUBLIC.homepage,
+          id: "home",
+          isPage: true,
+        },
+      ]);
+    }
   }, [isAuthenticated]);
 
   // Theo dõi URL và scroll để highlight menu item tương ứng với section hiện tại
@@ -148,7 +179,7 @@ const Header: React.FC = () => {
 
   const handleProfileClick = () => {
     handleProfileMenuClose();
-    navigate("/user/profile");
+    navigate(PATH_USER.profile);
   };
 
   const handleLogout = async () => {
@@ -218,9 +249,11 @@ const Header: React.FC = () => {
         sx={{
           bgcolor: "rgba(255, 255, 255, 0.92)",
           backdropFilter: "blur(12px)",
-          borderBottom: "1px solid rgba(112, 200, 210, 0.2)",
+          borderBottom: "1px solid rgba(139, 195, 74, 0.2)",
           transition: "all 0.3s ease-in-out",
-          boxShadow: mobileMenuOpen ? "none" : "0 2px 15px rgba(0, 0, 0, 0.08)",
+          boxShadow: mobileMenuOpen
+            ? "none"
+            : "0 2px 15px rgba(139, 195, 74, 0.15)",
         }}
       >
         <Toolbar
@@ -245,10 +278,10 @@ const Header: React.FC = () => {
                   width: { xs: "55px", sm: "60px", md: "80px" },
                   mr: { xs: 1, sm: 1.5, md: 2 },
                   borderRadius: "14px",
-                  boxShadow: "0 4px 20px rgba(112, 200, 210, 0.3)",
-                  border: "1.5px solid #70c8d2",
+                  boxShadow: "0 4px 20px rgba(139, 195, 74, 0.3)",
+                  border: "1.5px solid #8BC34A",
                   background:
-                    "linear-gradient(135deg, #e5f9f4 0%, #e5f0f1 100%)",
+                    "linear-gradient(135deg, #f1f8e9 0%, #e8f5e8 100%)",
                   cursor: "pointer",
                   transition: "all 0.3s ease",
                   display: "flex",
@@ -256,9 +289,9 @@ const Header: React.FC = () => {
                   justifyContent: "center",
                   fontSize: { xs: "1.5rem", sm: "1.8rem", md: "2rem" },
                   fontWeight: 700,
-                  color: "#70c8d2",
+                  color: "#2E7D32",
                   "&:hover": {
-                    boxShadow: "0 6px 25px rgba(110, 204, 217, 0.5)",
+                    boxShadow: "0 6px 25px rgba(139, 195, 74, 0.5)",
                     transform: "translateY(-2px)",
                   },
                 }}
@@ -310,7 +343,7 @@ const Header: React.FC = () => {
                   onClick={() => scrollToSection(item.id)}
                   underline="none"
                   sx={{
-                    color: activeSection === item.id ? "#000000" : "#555",
+                    color: activeSection === item.id ? "#2E7D32" : "#555",
                     fontWeight: activeSection === item.id ? 600 : 500,
                     fontSize: { md: "0.95rem", lg: "1.05rem" },
                     position: "relative",
@@ -321,12 +354,12 @@ const Header: React.FC = () => {
                     borderRadius: "8px",
                     background:
                       activeSection === item.id
-                        ? "rgba(112, 200, 210, 0.1)"
+                        ? "rgba(139, 195, 74, 0.1)"
                         : "transparent",
                     transition: "all 0.3s ease",
                     "&:hover": {
-                      color: "#000000",
-                      background: "rgba(112, 200, 210, 0.1)",
+                      color: "#2E7D32",
+                      background: "rgba(139, 195, 74, 0.1)",
                     },
                     "&::after": {
                       content: '""',
@@ -335,7 +368,7 @@ const Header: React.FC = () => {
                       height: "2px",
                       bottom: "0",
                       left: "35%",
-                      background: "#70c8d2",
+                      background: "#8BC34A",
                       transition: "width 0.3s ease",
                     },
                     "&:hover::after": {
@@ -352,36 +385,69 @@ const Header: React.FC = () => {
 
           {/* Sign In Button or User Profile */}
           {isAuthenticated ? (
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-            >
-              <IconButton
-                onClick={handleProfileMenuOpen}
-                sx={{
-                  p: 0,
-                  borderRadius: "50%",
-                  border: "2px solid #6eccd9",
-                  transition: "all 0.3s ease",
-                  "&:hover": {
-                    border: "2px solid #5ab9c3",
-                  },
-                }}
-              >
-                <Avatar
-                  alt={userInfo?.fullName || userAuth?.email || ""}
+            <Box sx={{ display: "flex", alignItems: "center", ml: "auto" }}>
+              {/* Role Badge */}
+              {userAuth?.roles?.includes("OTTOBIT_ADMIN") && (
+                <Chip
+                  icon={<AdminIcon />}
+                  label="Admin"
+                  size="small"
                   sx={{
-                    width: { xs: 36, sm: 40, md: 44 },
-                    height: { xs: 36, sm: 40, md: 44 },
-                    bgcolor: "#6eccd9",
+                    mr: 2,
+                    fontWeight: 600,
+                    bgcolor: alpha("#FF9800", 0.15),
+                    color: "#E65100",
+                    border: `1px solid ${alpha("#FF9800", 0.4)}`,
+                    "& .MuiChip-icon": {
+                      color: "#E65100",
+                    },
+                  }}
+                />
+              )}
+
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+              >
+                <IconButton
+                  onClick={handleProfileMenuOpen}
+                  sx={{
+                    p: 0,
+                    borderRadius: "50%",
+                    border: "2px solid #8BC34A",
+                    transition: "all 0.3s ease",
+                    "&:hover": {
+                      border: "2px solid #689F38",
+                      transform: "scale(1.05)",
+                    },
                   }}
                 >
-                  {userInfo?.fullName?.charAt(0) ||
-                    userAuth?.email?.charAt(0) ||
-                    "U"}
-                </Avatar>
-              </IconButton>
+                  <Avatar
+                    alt={
+                      userInfo?.fullName ||
+                      userAuth?.username ||
+                      userAuth?.email ||
+                      ""
+                    }
+                    sx={{
+                      width: { xs: 36, sm: 40, md: 44 },
+                      height: { xs: 36, sm: 40, md: 44 },
+                      bgcolor: "#8BC34A",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {(
+                      userInfo?.fullName ||
+                      userAuth?.username ||
+                      userAuth?.email
+                    )
+                      ?.charAt(0)
+                      ?.toUpperCase() || "U"}
+                  </Avatar>
+                </IconButton>
+              </motion.div>
+
               <Menu
                 anchorEl={anchorEl}
                 id="account-menu"
@@ -392,8 +458,9 @@ const Header: React.FC = () => {
                 sx={{
                   "& .MuiPaper-root": {
                     borderRadius: "12px",
-                    minWidth: "200px",
-                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+                    minWidth: "220px",
+                    boxShadow: "0 8px 32px rgba(139, 195, 74, 0.25)",
+                    border: `1px solid ${alpha("#8BC34A", 0.2)}`,
                     mt: 1.5,
                     "& .MuiMenu-list": {
                       padding: "8px",
@@ -404,47 +471,112 @@ const Header: React.FC = () => {
                 <Box
                   sx={{
                     px: 2,
-                    py: 1,
+                    py: 1.5,
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
+                    borderBottom: `1px solid ${alpha("#8BC34A", 0.2)}`,
+                    mb: 1,
                   }}
                 >
-                  <Typography variant="subtitle1" fontWeight={600}>
-                    {userInfo?.fullName || "Người dùng"}
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={600}
+                    sx={{ color: "#2E7D32" }}
+                  >
+                    {userInfo?.fullName || userAuth?.username || "Người dùng"}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     {userAuth?.email || ""}
                   </Typography>
+                  {userAuth?.roles?.includes("OTTOBIT_ADMIN") && (
+                    <Chip
+                      icon={<AdminIcon />}
+                      label="Quản trị viên"
+                      size="small"
+                      sx={{
+                        mt: 1,
+                        fontWeight: 600,
+                        bgcolor: alpha("#FF9800", 0.15),
+                        color: "#E65100",
+                        border: `1px solid ${alpha("#FF9800", 0.4)}`,
+                        "& .MuiChip-icon": {
+                          color: "#E65100",
+                        },
+                      }}
+                    />
+                  )}
                 </Box>
-                <Divider sx={{ my: 1 }} />
-                <MenuItem onClick={handleProfileClick}>Hồ sơ của tôi</MenuItem>
 
-                <MenuItem onClick={() => navigate(PATH_USER.homepage)}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    fill="#6eccd9"
-                    viewBox="0 0 16 16"
-                    style={{ marginRight: "12px" }}
-                  >
-                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-                    <path d="M9.05 6.5a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0V7.5h-.5a.5.5 0 0 1 0-1h1zm.5-2a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-7 1a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5z" />
-                  </svg>
-                  Hồ sơ tư vấn
+                <MenuItem
+                  onClick={handleProfileClick}
+                  sx={{
+                    borderRadius: 2,
+                    mx: 1,
+                    "&:hover": {
+                      bgcolor: alpha("#8BC34A", 0.1),
+                    },
+                  }}
+                >
+                  <PersonIcon
+                    sx={{ mr: 1.5, color: "#2E7D32", fontSize: 20 }}
+                  />
+                  Hồ sơ cá nhân
                 </MenuItem>
 
-                <Divider sx={{ my: 1 }} />
-                <MenuItem onClick={handleLogout}>
+                <MenuItem
+                  onClick={() => navigate(PATH_USER.homepage)}
+                  sx={{
+                    borderRadius: 2,
+                    mx: 1,
+                    "&:hover": {
+                      bgcolor: alpha("#8BC34A", 0.1),
+                    },
+                  }}
+                >
+                  <DashboardIcon
+                    sx={{ mr: 1.5, color: "#2E7D32", fontSize: 20 }}
+                  />
+                  Bảng điều khiển
+                </MenuItem>
+
+                {userAuth?.roles?.includes("OTTOBIT_ADMIN") && (
+                  <MenuItem
+                    onClick={() => navigate(PATH_ADMIN.dashboard)}
+                    sx={{
+                      borderRadius: 2,
+                      mx: 1,
+                      "&:hover": {
+                        bgcolor: alpha("#FF9800", 0.1),
+                      },
+                    }}
+                  >
+                    <AdminIcon
+                      sx={{ mr: 1.5, color: "#E65100", fontSize: 20 }}
+                    />
+                    Quản trị hệ thống
+                  </MenuItem>
+                )}
+
+                <Divider sx={{ my: 1, bgcolor: alpha("#8BC34A", 0.2) }} />
+
+                <MenuItem
+                  onClick={handleLogout}
+                  sx={{
+                    borderRadius: 2,
+                    mx: 1,
+                    "&:hover": {
+                      bgcolor: alpha("#f44336", 0.1),
+                    },
+                  }}
+                >
                   <LogoutIcon
-                    fontSize="small"
-                    sx={{ mr: 1.5, color: "#f44336" }}
+                    sx={{ mr: 1.5, color: "#f44336", fontSize: 20 }}
                   />
                   Đăng xuất
                 </MenuItem>
               </Menu>
-            </motion.div>
+            </Box>
           ) : (
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
@@ -457,21 +589,21 @@ const Header: React.FC = () => {
                 variant="contained"
                 onClick={handleLogin}
                 sx={{
-                  background: "#6eccd9",
+                  background: "linear-gradient(45deg, #8BC34A, #689F38)",
                   color: "#ffffff",
                   borderRadius: { xs: "8px", sm: "10px", md: "12px" },
-                  boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
+                  boxShadow: "0 4px 15px rgba(139, 195, 74, 0.3)",
                   textTransform: "none",
                   fontWeight: 600,
                   padding: { xs: "8px 18px", sm: "8px 22px", md: "10px 26px" },
                   fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1.05rem" },
                   "&:hover": {
-                    background: "#5ab9c3",
-                    boxShadow: "0 6px 20px rgba(0, 0, 0, 0.15)",
+                    background: "linear-gradient(45deg, #689F38, #558B2F)",
+                    boxShadow: "0 6px 20px rgba(139, 195, 74, 0.4)",
                   },
                 }}
               >
-                Sign In
+                Đăng nhập
               </Button>
             </motion.div>
           )}
@@ -514,8 +646,8 @@ const Header: React.FC = () => {
                   sx={{
                     backdropFilter: "blur(12px)",
                     bgcolor: "rgba(255, 255, 255, 0.98)",
-                    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.1)",
-                    borderBottom: "1px solid rgba(112, 200, 210, 0.3)",
+                    boxShadow: "0 10px 30px rgba(139, 195, 74, 0.2)",
+                    borderBottom: "1px solid rgba(139, 195, 74, 0.3)",
                     display: { xs: "block", md: "none" },
                   }}
                 >
@@ -536,20 +668,20 @@ const Header: React.FC = () => {
                           width: "100%",
                           py: 2,
                           px: 3,
-                          color: activeSection === item.id ? "#000000" : "#555",
+                          color: activeSection === item.id ? "#2E7D32" : "#555",
                           fontWeight: activeSection === item.id ? 600 : 500,
                           fontSize: "1rem",
                           borderBottom:
                             index < menuItems.length - 1
-                              ? "1px solid rgba(112, 200, 210, 0.2)"
+                              ? "1px solid rgba(139, 195, 74, 0.2)"
                               : "none",
                           background:
                             activeSection === item.id
-                              ? "rgba(112, 200, 210, 0.1)"
+                              ? "rgba(139, 195, 74, 0.1)"
                               : "transparent",
                           "&:hover": {
-                            background: "rgba(112, 200, 210, 0.1)",
-                            color: "#000000",
+                            background: "rgba(139, 195, 74, 0.1)",
+                            color: "#2E7D32",
                           },
                         }}
                       >

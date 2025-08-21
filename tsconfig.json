@@ -26,7 +26,8 @@
       "hooks/*": ["hooks/*"],
       "components/*": ["components/*"],
       "sections/*": ["sections/*"],
-      "reduxStore/*": ["redux/*"],
+      "store/*": ["redux/*"],
+      "redux/*": ["redux/*"],
       "assets/*": ["assets/*"],
       "utils/*": ["utils/*"],
       "pages/*": ["pages/*"],
@@ -42,5 +43,3 @@
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
-
-

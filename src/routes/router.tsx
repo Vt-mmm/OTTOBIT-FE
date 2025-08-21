@@ -7,7 +7,7 @@ import UserRouter from "routes/userRouter";
 import AdminRouter from "routes/adminRouter";
 
 // Routes config
-import { useAppSelector } from "reduxStore/config";
+import { useAppSelector } from "store/config";
 import {
   PATH_AUTH,
   PATH_ERROR,
@@ -29,8 +29,13 @@ const ResetPassword = lazy(() => import("pages/auth/ResetPasswordPage"));
 const EmailVerification = lazy(
   () => import("pages/auth/EmailVerificationPage")
 );
+const EmailConfirmation = lazy(
+  () => import("pages/auth/EmailConfirmationPage")
+);
 // Define lazy-loaded components for user routes
 const SharedHomePage = lazy(() => import("pages/user/Homepage"));
+const RobotStudioPage = lazy(() => import("pages/studio/RobotStudioPage"));
+const UserProfilePage = lazy(() => import("pages/user/UserProfilePage"));
 // Error pages
 const Page404 = lazy(() => import("pages/error/Page404"));
 const Page500 = lazy(() => import("pages/error/Page500"));
@@ -130,7 +135,6 @@ function AppRouter() {
                 index={route.index}
               />
             ))}
-
         </ReactRoute>
 
         {/* Admin Routes - Protected */}
@@ -158,10 +162,14 @@ function AppRouter() {
           }
         />
 
+        {/* Studio Route - Public Access (Bypass Authentication) */}
+        <ReactRoute path={PATH_USER.studio} element={<RobotStudioPage />} />
+
         {/* User Routes - Protected */}
         <ReactRoute element={<UserRouter />}>
           {/* Các trang dành riêng cho user */}
           <ReactRoute path={PATH_USER.homepage} element={<SharedHomePage />} />
+          <ReactRoute path={PATH_USER.profile} element={<UserProfilePage />} />
         </ReactRoute>
 
         {/* Auth Routes */}
@@ -170,11 +178,7 @@ function AppRouter() {
           element={
             isAuthenticated && accessToken ? (
               <Navigate
-                to={
-                  isAdmin
-                    ? PATH_ADMIN.dashboard
-                    : PATH_USER.homepage
-                }
+                to={isAdmin ? PATH_ADMIN.dashboard : PATH_USER.homepage}
                 replace
               />
             ) : (
@@ -187,11 +191,7 @@ function AppRouter() {
           element={
             isAuthenticated && accessToken ? (
               <Navigate
-                to={
-                  isAdmin
-                    ? PATH_ADMIN.dashboard
-                    : PATH_USER.homepage
-                }
+                to={isAdmin ? PATH_ADMIN.dashboard : PATH_USER.homepage}
                 replace
               />
             ) : (
@@ -204,11 +204,7 @@ function AppRouter() {
           element={
             isAuthenticated && accessToken ? (
               <Navigate
-                to={
-                  isAdmin
-                    ? PATH_ADMIN.dashboard
-                    : PATH_USER.homepage
-                }
+                to={isAdmin ? PATH_ADMIN.dashboard : PATH_USER.homepage}
                 replace
               />
             ) : (
@@ -221,11 +217,7 @@ function AppRouter() {
           element={
             isAuthenticated && accessToken ? (
               <Navigate
-                to={
-                  isAdmin
-                    ? PATH_ADMIN.dashboard
-                    : PATH_USER.homepage
-                }
+                to={isAdmin ? PATH_ADMIN.dashboard : PATH_USER.homepage}
                 replace
               />
             ) : (
@@ -236,6 +228,10 @@ function AppRouter() {
         <ReactRoute
           path={PATH_AUTH.verifyEmail}
           element={<EmailVerification />}
+        />
+        <ReactRoute
+          path={PATH_AUTH.confirmEmail}
+          element={<EmailConfirmation />}
         />
 
         {/* Error Routes - Removed 403 route since we're handling it with redirects now */}

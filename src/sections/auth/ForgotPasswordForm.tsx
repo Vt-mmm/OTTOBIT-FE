@@ -2,13 +2,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import {
-  TextField,
-  Button,
-  Box,
-  CircularProgress,
-  Alert,
-} from "@mui/material";
+import { TextField, Button, Box, CircularProgress, Alert } from "@mui/material";
 import { motion } from "framer-motion";
 import { axiosClient } from "axiosClient/axiosClient";
 import { ROUTES_API_AUTH } from "constants/routesApiKeys";
@@ -51,18 +45,19 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
     setError("");
 
     try {
-      // Use axiosClient directly instead of authApi
-      await axiosClient.post(ROUTES_API_AUTH.FORGOT_PASSWORD, { 
-        email: data.email 
+      // Use axiosClient - match backend ForgotPasswordRequest format (PascalCase)
+      await axiosClient.post(ROUTES_API_AUTH.FORGOT_PASSWORD, {
+        Email: data.email,
       });
       onSuccessSubmit();
     } catch (error: unknown) {
       setError(
-        error instanceof Error 
-          ? error.message 
-          : typeof error === 'object' && error && 'response' in error
-            ? ((error as {response?: {data?: {message?: string}}}).response?.data?.message) || "Đã xảy ra lỗi. Vui lòng thử lại sau."
-            : "Đã xảy ra lỗi. Vui lòng thử lại sau."
+        error instanceof Error
+          ? error.message
+          : typeof error === "object" && error && "response" in error
+          ? (error as { response?: { data?: { message?: string } } }).response
+              ?.data?.message || "Đã xảy ra lỗi. Vui lòng thử lại sau."
+          : "Đã xảy ra lỗi. Vui lòng thử lại sau."
       );
     } finally {
       setIsSubmitting(false);
@@ -125,4 +120,4 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
   );
 };
 
-export default ForgotPasswordForm; 
+export default ForgotPasswordForm;

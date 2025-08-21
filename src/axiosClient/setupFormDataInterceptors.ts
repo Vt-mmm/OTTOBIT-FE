@@ -4,7 +4,7 @@ import {
   removeToken,
   setIsLogout,
   updateLocalAccessToken,
-} from "reduxStore/auth/authSlice";
+} from "store/auth/authSlice";
 //
 import { TokenResponse } from "common/models";
 import { ROUTES_API_AUTH } from "constants/routesApiKeys";

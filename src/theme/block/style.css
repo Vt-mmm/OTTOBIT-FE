@@ -1,0 +1,212 @@
+/* src/blocks/styles.css */
+.blocklySvg {
+  --otb-primary: #16ab65;
+  --otb-muted: #a8c4ba;
+}
+
+/* Blocks style to hơn và đẹp hơn */
+.blocklyBlockBackground {
+  rx: 16px; /* Bo góc như hình tham khảo */
+  ry: 16px;
+}
+.blocklyPath {
+  stroke: rgba(255, 255, 255, 0.6); /* Viền sáng hơn */
+  stroke-width: 3px; /* Viền dày hơn */
+  filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.2))
+    drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25)); /* Shadow đậm hơn */
+}
+.blocklySelected > .blocklyPath {
+  stroke: #ffd84d; /* Vàng khi select */
+  stroke-width: 4px;
+}
+
+/* Text trong blocks to hơn và đậm hơn */
+.blocklyText {
+  font-size: 18px !important; /* To hơn nhiều */
+  font-weight: 700 !important; /* Đậm hơn */
+  font-family: "Inter", "Arial", sans-serif !important;
+  fill: #ffffff !important; /* Text trắng */
+}
+
+/* Toolbox styling - wider for multiple categories */
+.blocklyToolboxDiv {
+  background: linear-gradient(180deg, #e8eef7 0%, #dde4f0 100%);
+  border-right: 2px solid rgba(52, 152, 219, 0.3);
+  min-width: 120px; /* Wider for category names */
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.blocklyToolboxCategoryGroup {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+}
+.blocklyToolboxDiv .blocklyTreeRowContentContainer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Left align for text */
+  padding: 0 8px;
+}
+.blocklyFlyoutBackground {
+  fill: #fff;
+  fill-opacity: 1;
+}
+.blocklyFlyout .blocklyBlockBackground {
+  rx: 16px; /* Bo góc to hơn như hình tham khảo */
+  ry: 16px;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.2));
+}
+
+/* Flyout blocks to hơn và đẹp hơn */
+.blocklyFlyout .blocklyText {
+  font-size: 18px !important; /* To hơn */
+  font-weight: 700 !important; /* Đậm hơn */
+  fill: #ffffff !important; /* Text trắng */
+}
+
+/* Category styling - show text with icons */
+.blocklyTreeRow {
+  border-radius: 12px;
+  padding: 8px 12px;
+  margin: 6px 8px;
+  min-height: 40px;
+  min-width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: transparent;
+  position: relative;
+}
+
+.blocklyTreeRow:hover {
+  border-color: rgba(92, 157, 255, 0.5);
+  transform: translateX(2px) scale(1.02);
+  background: rgba(92, 157, 255, 0.1);
+}
+
+/* Selected state */
+.blocklyTreeRow.blocklyTreeRowSelected,
+.blocklyTreeRow[aria-selected="true"] {
+  background: #5c9dff !important;
+  border-color: #5c9dff !important;
+  color: white !important;
+}
+
+.blocklyTreeRow:active {
+  transform: translateX(1px) scale(0.98);
+}
+
+/* Category label styling - show text with emoji */
+.blocklyTreeLabel {
+  position: relative;
+  width: auto;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #2c3e50;
+  overflow: visible;
+  text-indent: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  padding-left: 0; /* Không cần padding vì đã có emoji */
+}
+
+/* Selected state - white text cho emoji categories */
+.blocklyTreeRowSelected .blocklyTreeLabel,
+.blocklyTreeRow[aria-selected="true"] .blocklyTreeLabel {
+  color: white !important;
+}
+
+/* Field = pill to hơn và đẹp hơn */
+.blocklyEditableText > rect {
+  rx: 12px; /* Bo góc to hơn */
+  ry: 12px;
+  fill: #fff;
+  stroke: rgba(0, 0, 0, 0.2); /* Viền rõ hơn */
+  stroke-width: 2px;
+}
+.blocklyEditableText text {
+  font-weight: 700 !important; /* Đậm hơn */
+  font-size: 16px !important; /* Nhỏ hơn để fit */
+  fill: #333 !important; /* Text đen trong field */
+  text-anchor: middle !important; /* Center text */
+  dominant-baseline: central !important; /* Vertical center */
+}
+.blocklyHtmlInput {
+  border: 2px solid #3498db !important;
+  border-radius: 12px !important; /* Bo góc to hơn */
+  padding: 8px 12px !important; /* Padding vừa phải */
+  font-weight: 700 !important;
+  font-size: 16px !important; /* Nhỏ hơn để fit */
+  min-height: 20px !important;
+  text-align: center !important;
+}
+
+/* Dropdown caret rõ ràng */
+.blocklyFieldDropdown .blocklyDropdownText::after {
+  content: "▾";
+  margin-left: 8px;
+  font-weight: 900;
+}
+
+/* Ẩn scrollbar của flyout để loại bỏ khoảng trắng */
+.blocklyFlyoutScrollbar,
+.blocklyScrollbarVertical.blocklyFlyoutScrollbar {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Scrollbar & trash nhẹ */
+.blocklyScrollbarHandle {
+  fill: #cde5da;
+}
+.blocklyScrollbarBackground:hover + .blocklyScrollbarHandle,
+.blocklyScrollbarHandle:hover {
+  fill: #a9d6c5;
+}
+
+/* Icon nhỏ trong block (FieldImage) to hơn và rõ ràng hơn */
+.blocklyFlyout .blocklyIconGroup,
+.blocklyWorkspace .blocklyIconGroup {
+  transform: translateY(0);
+}
+
+/* Images trong blocks to hơn */
+.blocklyText image,
+.blocklyFieldImage {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+/* Đảm bảo icons trong blocks hiển thị đúng */
+.blocklyFieldImage img {
+  width: 24px !important;
+  height: 24px !important;
+  display: block !important;
+  opacity: 1 !important;
+}
+
+/* Connection points to hơn */
+.blocklyConnectionLine {
+  stroke-width: 3px !important;
+}
+
+/* Workspace grid tinh tế hơn */
+.blocklyMainWorkspaceScrollbar {
+  opacity: 0.8;
+}
+
+/* Trashcan styling */
+.blocklyTrash {
+  opacity: 0.8;
+}
+.blocklyTrash:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}

@@ -1,12 +1,8 @@
 import { Role } from "common/enums";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useAppSelector } from "reduxStore/config";
+import { useAppSelector } from "store/config";
 import { getAccessToken } from "utils";
-import {
-  PATH_ADMIN,
-  PATH_USER,
-  PATH_PUBLIC,
-} from "routes/paths";
+import { PATH_ADMIN, PATH_USER, PATH_PUBLIC } from "routes/paths";
 
 export default function PublicRouter() {
   const accessToken = getAccessToken();

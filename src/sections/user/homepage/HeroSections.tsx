@@ -1,8 +1,7 @@
-import React from "react";
 import { Box, Container, Typography, Button, Stack } from "@mui/material";
 import { motion } from "framer-motion";
-// Hero image sẽ thay thế sau
-import { useAppSelector } from "reduxStore/config";
+import { DroneModel3D } from "components/3d";
+import { useAppSelector } from "store/config";
 
 const HeroSection = () => {
   // Lấy trạng thái đăng nhập từ Redux store
@@ -134,8 +133,9 @@ const HeroSection = () => {
                   mb: 4,
                 }}
               >
-                Ottobit là công ty hướng đến Sức khỏe tinh thần, kết hợp sức
-                mạnh của khoa học thần kinh, âm học tâm lý và công nghệ.
+                Khám phá thế giới công nghệ với Ottobit - nền tảng kết hợp
+                robotics, AI và lập trình trực quan. Trải nghiệm mô hình 3D
+                drone tương tác bên cạnh.
               </Typography>
             </motion.div>
 
@@ -209,22 +209,16 @@ const HeroSection = () => {
                 sx={{
                   width: "100%",
                   maxWidth: "650px",
-                  height: "400px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
                   marginLeft: "auto",
                   marginRight: "auto",
-                  background:
-                    "linear-gradient(135deg, #e5f9f4 0%, #e5f0f1 100%)",
-                  borderRadius: "20px",
-                  border: "2px solid #70c8d2",
-                  fontSize: "8rem",
-                  color: "#70c8d2",
-                  boxShadow: "0 10px 30px rgba(112, 200, 210, 0.2)",
                 }}
               >
-                💚
+                <DroneModel3D
+                  width="100%"
+                  height="400px"
+                  autoRotate={true}
+                  cameraControls={true}
+                />
               </Box>
             </motion.div>
           </Box>

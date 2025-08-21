@@ -33,21 +33,25 @@ const setStatus = () => ({
   type: "auth/setStatus",
 });
 
-// Define a type for the API response based on what we expect to receive
-interface ApiUserResponse {
-  userId?: string;
-  id?: string;
-  email: string;
-  fullName?: string;
-  username?: string;
-  roles?: string[];
-  role?: string;
-  tokens?: {
-    accessToken: string;
-    refreshToken: string;
+// Define a type for the API response based on backend response models
+interface LoginApiResponse {
+  message: string;
+  data: {
+    user: {
+      userId: string;
+      email: string;
+      fullName: string;
+      roles: string[];
+    };
+    tokens: {
+      accessToken: string;
+      refreshToken: string;
+      expiresAtUtc: string;
+    };
   };
-  accessToken?: string;
-  refreshToken?: string;
+  errors: null;
+  errorCode: null;
+  timestamp: string;
 }
 
 // Define RegisterForm interface
@@ -89,103 +93,46 @@ export const loginThunk = createAsyncThunk<
   const navigate = params?.navigate;
 
   try {
-    const apiResponse = await axiosClient.post<ApiUserResponse>(
+    const apiResponse = await axiosClient.post<LoginApiResponse>(
       ROUTES_API_AUTH.LOGIN,
       data
     );
 
-    // The response is directly in apiResponse.data
     const response = apiResponse.data;
 
-    // If we're still getting undefined, try accessing apiResponse directly
-    if (!response) {
-      // Try to extract data directly from the response if necessary
-      // This is a fallback for unusual API response structures
-      const directResponse = apiResponse as unknown as ApiUserResponse;
-
-      if (directResponse.userId || directResponse.id) {
-        // Đảm bảo vai trò User
-        const userRoles = ensureUserRoles(
-          directResponse.roles ||
-            (directResponse.role ? [directResponse.role] : null)
-        );
-
-        // The data is directly in apiResponse
-        const userStorage: UserAuth = {
-          userId: directResponse.userId || directResponse.id || "",
-          username:
-            directResponse.fullName ||
-            directResponse.username ||
-            directResponse.email,
-          email: directResponse.email,
-          roles: userRoles,
-          authProvider: "password",
-        };
-
-        if (directResponse.tokens) {
-          setAccessToken(directResponse.tokens.accessToken);
-          setRefreshToken(directResponse.tokens.refreshToken);
-        } else if (directResponse.accessToken) {
-          setAccessToken(directResponse.accessToken);
-          setRefreshToken(directResponse.refreshToken || "");
-        }
-
-        setUserAuth(userStorage);
-        setAuthenticated();
-        const message = handleResponseMessage("Login successful.");
-        thunkAPI.dispatch(setMessageSuccess(message));
-
-        // Navigate based on user role if a navigator is provided
-        if (navigate) {
-          if (userRoles.includes(Role.OTTOBIT_ADMIN)) {
-            // Using window.location.href for a "hard" navigation to avoid React Router confusion
-            window.location.href = PATH_ADMIN.dashboard;
-          } else {
-            navigate(PATH_USER.homepage);
-          }
-        }
-
-        return userStorage;
-      }
-      throw new Error("Cannot find user data in response");
-    }
-
-    // Validate required fields in the response
-    const userId = response.userId || response.id;
-    // Đảm bảo vai trò User
-    const userRoles = ensureUserRoles(
-      response.roles || (response.role ? [response.role] : null)
-    );
-    const email = response.email;
-    const username = response.fullName || response.username || response.email;
-    const tokens = response.tokens || {
-      accessToken: response.accessToken || "",
-      refreshToken: response.refreshToken || "",
-    };
-
-    if (!userId || !email || !tokens.accessToken) {
+    if (
+      !response ||
+      !response.data ||
+      !response.data.user ||
+      !response.data.tokens
+    ) {
       throw new Error("Invalid response format from API");
     }
 
+    // Đảm bảo vai trò User
+    const userRoles = ensureUserRoles(response.data.user.roles);
+
+    // Tạo userStorage với structure mới
     const userStorage: UserAuth = {
-      userId,
-      username,
-      email,
+      userId: response.data.user.userId,
+      username: response.data.user.fullName || response.data.user.email,
+      email: response.data.user.email,
       roles: userRoles,
       authProvider: "password",
     };
 
-    setAccessToken(tokens.accessToken);
-    setRefreshToken(tokens.refreshToken);
+    // Store tokens với structure mới
+    setAccessToken(response.data.tokens.accessToken);
+    setRefreshToken(response.data.tokens.refreshToken);
     setUserAuth(userStorage);
     setAuthenticated();
+
     const message = handleResponseMessage("Login successful.");
     thunkAPI.dispatch(setMessageSuccess(message));
 
     // Navigate based on user role if a navigator is provided
     if (navigate) {
       if (userRoles.includes(Role.OTTOBIT_ADMIN)) {
-        // Using window.location.href for a "hard" navigation to avoid React Router confusion
         window.location.href = PATH_ADMIN.dashboard;
       } else {
         navigate(PATH_USER.homepage);
@@ -223,19 +170,17 @@ export const registerThunk = createAsyncThunk<
   const navigate = params?.navigate;
 
   try {
-    // Remove confirmPassword from the payload before sending to API
+    // Backend mong đợi tất cả các fields bao gồm cả confirmPassword
     if (data && typeof data === "object") {
-      // Use object destructuring to separate confirmPassword from the data
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { confirmPassword, ...registerData } = data as RegisterForm;
+      // Gửi tất cả dữ liệu cho backend, bao gồm confirmPassword để backend validate
+      const registerData = data as RegisterForm;
 
-      // Thêm vai trò User mặc định
-      const registerWithRole = {
-        ...registerData,
-        roleId: [Role.OTTOBIT_USER], // Thêm vai trò User mặc định
-      };
-
-      await axiosClient.post(ROUTES_API_AUTH.REGISTER, registerWithRole);
+      await axiosClient.post(ROUTES_API_AUTH.REGISTER, {
+        email: registerData.email,
+        password: registerData.password,
+        confirmPassword: registerData.confirmPassword,
+        fullName: registerData.fullName,
+      });
 
       const message = handleResponseMessage(
         "Registration successful. Please login to continue."
@@ -379,64 +324,42 @@ export const googleLoginThunk = async (
   thunkAPI: GoogleLoginThunkAPI
 ): Promise<UserAuth> => {
   try {
-    // Đúng format mà API backend mong đợi { "token": "string" }
-    const apiResponse = await axiosClient.post(
-      `${ROUTES_API_AUTH.LOGIN_GOOGLE}`,
-      { token: googleToken }
+    // Đúng format mà API backend mong đợi { "GoogleIdToken": "string" }
+    const apiResponse = await axiosClient.post<LoginApiResponse>(
+      ROUTES_API_AUTH.LOGIN_GOOGLE,
+      { GoogleIdToken: googleToken }
     );
 
-    // Xử lý dữ liệu phụ thuộc vào cấu trúc thực tế của apiResponse
-    interface GoogleLoginResponse {
-      userId: string;
-      email: string;
-      fullName?: string;
-      roles: string[];
-      tokens: {
-        accessToken: string;
-        refreshToken: string;
-      };
-    }
+    const response = apiResponse.data;
 
-    // Nếu apiResponse.data tồn tại và có userId, dùng nó
-    // Nếu không, kiểm tra xem apiResponse có trực tiếp userId không
-    const responseData: GoogleLoginResponse =
-      apiResponse.data &&
-      typeof apiResponse.data === "object" &&
-      "userId" in apiResponse.data
-        ? (apiResponse.data as GoogleLoginResponse)
-        : (apiResponse as unknown as GoogleLoginResponse);
-
-    if (!responseData || !responseData.userId) {
+    if (
+      !response ||
+      !response.data ||
+      !response.data.user ||
+      !response.data.tokens
+    ) {
       const message = handleResponseMessage(
         "Error: Backend did not return valid user information."
       );
       thunkAPI.dispatch(setMessageError(message));
-      // Sử dụng non-null assertion thay vì as any
       return thunkAPI.rejectWithValue(message) as unknown as UserAuth;
     }
 
-    // Ánh xạ dữ liệu từ backend sang model frontend
+    // Đảm bảo vai trò User
+    const userRoles = ensureUserRoles(response.data.user.roles);
+
+    // Ánh xạ dữ liệu từ backend sang model frontend với structure mới
     const user: UserAuth = {
-      userId: responseData.userId,
-      email: responseData.email,
-      username: responseData.fullName || responseData.email,
-      roles: Array.isArray(responseData.roles) ? responseData.roles : [],
+      userId: response.data.user.userId,
+      email: response.data.user.email,
+      username: response.data.user.fullName || response.data.user.email,
+      roles: userRoles,
       authProvider: "google",
     };
 
-    // Store tokens and user data
-    if (
-      responseData.tokens &&
-      responseData.tokens.accessToken &&
-      responseData.tokens.refreshToken
-    ) {
-      setAccessToken(responseData.tokens.accessToken);
-      setRefreshToken(responseData.tokens.refreshToken);
-    } else {
-      const errorMsg = "Token không được cung cấp từ API";
-      thunkAPI.dispatch(setMessageError(errorMsg));
-      return thunkAPI.rejectWithValue(errorMsg) as unknown as UserAuth;
-    }
+    // Store tokens với structure mới
+    setAccessToken(response.data.tokens.accessToken);
+    setRefreshToken(response.data.tokens.refreshToken);
 
     setUserAuth(user);
     setAuthenticated();
@@ -497,3 +420,129 @@ export const googleLoginThunk = async (
     ) as unknown as UserAuth;
   }
 };
+
+// Email Confirmation thunk
+export const confirmEmailThunk = createAsyncThunk<
+  { message: string },
+  { userId: string; token: string },
+  { rejectValue: string }
+>("auth/confirmEmail", async ({ userId, token }, thunkAPI) => {
+  try {
+    const response = await axiosClient.get(
+      `${ROUTES_API_AUTH.CONFIRM_EMAIL}?userId=${encodeURIComponent(
+        userId
+      )}&token=${encodeURIComponent(token)}`
+    );
+
+    const message = handleResponseMessage(
+      response.data.message || "Email confirmed successfully"
+    );
+    thunkAPI.dispatch(setMessageSuccess(message));
+
+    return { message: response.data.message };
+  } catch (error: unknown) {
+    const err = error as {
+      response?: {
+        data?: {
+          message?: string;
+          errors?: string[];
+        };
+      };
+      message?: string;
+    };
+
+    const errorMessage =
+      err.response?.data?.message ||
+      err.message ||
+      handleResponseMessage("Email confirmation failed");
+    thunkAPI.dispatch(setMessageError(errorMessage));
+    return thunkAPI.rejectWithValue(errorMessage);
+  }
+});
+
+// Reset Password thunk
+export const resetPasswordThunk = createAsyncThunk<
+  { message: string },
+  {
+    email: string;
+    resetToken: string;
+    newPassword: string;
+    confirmNewPassword: string;
+  },
+  { rejectValue: string }
+>("auth/resetPassword", async (params, thunkAPI) => {
+  try {
+    // Clean reset token
+    const cleanResetToken = decodeURIComponent(params.resetToken).replace(
+      / /g,
+      "+"
+    );
+
+    const response = await axiosClient.post(ROUTES_API_AUTH.RESET_PASSWORD, {
+      Email: params.email,
+      ResetToken: cleanResetToken,
+      NewPassword: params.newPassword,
+      ConfirmNewPassword: params.confirmNewPassword,
+    });
+
+    const message = handleResponseMessage(
+      "Password reset successfully. You can now login with your new password."
+    );
+    thunkAPI.dispatch(setMessageSuccess(message));
+
+    return { message: response.data.message || "Password reset successfully" };
+  } catch (error: unknown) {
+    const err = error as {
+      response?: {
+        data?: {
+          message?: string;
+          errors?: string[];
+        };
+      };
+      message?: string;
+    };
+
+    const errorMessage =
+      err.response?.data?.message ||
+      err.message ||
+      handleResponseMessage("Password reset failed. Please try again.");
+    thunkAPI.dispatch(setMessageError(errorMessage));
+    return thunkAPI.rejectWithValue(errorMessage);
+  }
+});
+
+// Forgot Password thunk
+export const forgotPasswordThunk = createAsyncThunk<
+  { message: string },
+  { email: string },
+  { rejectValue: string }
+>("auth/forgotPassword", async ({ email }, thunkAPI) => {
+  try {
+    const response = await axiosClient.post(ROUTES_API_AUTH.FORGOT_PASSWORD, {
+      Email: email,
+    });
+
+    const message = handleResponseMessage(
+      "If the email exists, password reset instructions have been sent."
+    );
+    thunkAPI.dispatch(setMessageSuccess(message));
+
+    return { message: response.data.message || "Reset instructions sent" };
+  } catch (error: unknown) {
+    const err = error as {
+      response?: {
+        data?: {
+          message?: string;
+        };
+      };
+      message?: string;
+    };
+
+    const errorMessage =
+      err.response?.data?.message ||
+      err.message ||
+      handleResponseMessage("Failed to send reset instructions");
+    thunkAPI.dispatch(setMessageError(errorMessage));
+    return thunkAPI.rejectWithValue(errorMessage);
+  }
+});

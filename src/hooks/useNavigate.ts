@@ -1,6 +1,6 @@
 import { Role } from "common/enums";
 import { useNavigate as useNavigateRouter } from "react-router-dom";
-import { useAppSelector } from "reduxStore/config";
+import { useAppSelector } from "store/config";
 import { PATH_AUTH, PATH_USER } from "routes/paths";
 
 function useNavigate() {

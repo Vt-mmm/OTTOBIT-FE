@@ -4,8 +4,8 @@ import {
   removeToken,
   setIsLogout,
   updateLocalAccessToken,
-} from "reduxStore/auth/authSlice";
-import { RootState } from "reduxStore/config";
+} from "store/auth/authSlice";
+import { RootState } from "store/config";
 //
 import { ROUTES_API_AUTH } from "constants/routesApiKeys";
 import { getAccessToken, getRefreshToken } from "utils";
@@ -31,7 +31,7 @@ const processQueue = (error: unknown, token: string | null = null) => {
       resolve(token);
     }
   });
-  
+
   pendingRequests = [];
 };
 
@@ -48,7 +48,7 @@ const setupAxiosClient = (store: Store<RootState>) => {
   if (interceptorsAdded) {
     return;
   }
-  
+
   interceptorsAdded = true;
 
   // Intercept requests to add the authorization header
@@ -76,12 +76,12 @@ const setupAxiosClient = (store: Store<RootState>) => {
       if (response && response.data !== undefined) {
         return response.data;
       }
-      
+
       // If response exists but data is undefined, return the response itself
       if (response) {
         return response;
       }
-      
+
       // Last resort fallback to prevent undefined errors
       return {};
     },
@@ -90,7 +90,7 @@ const setupAxiosClient = (store: Store<RootState>) => {
 
       // Skip if it's a login request or related auth endpoints or request without config or already retried
       if (
-        !originalConfig || 
+        !originalConfig ||
         originalConfig.url === ROUTES_API_AUTH.LOGIN ||
         originalConfig.url === ROUTES_API_AUTH.FORGOT_PASSWORD ||
         originalConfig.url === ROUTES_API_AUTH.RESET_PASSWORD ||
@@ -126,7 +126,12 @@ const setupAxiosClient = (store: Store<RootState>) => {
             );
 
             // Validate response
-            if (!response || !response.data || !response.data.accessToken || !response.data.refreshToken) {
+            if (
+              !response ||
+              !response.data ||
+              !response.data.accessToken ||
+              !response.data.refreshToken
+            ) {
               throw new Error("Invalid token refresh response");
             }
 
@@ -146,7 +151,7 @@ const setupAxiosClient = (store: Store<RootState>) => {
 
             // Update authorization header
             axiosClient.defaults.headers.common.Authorization = `Bearer ${tokenResponse.accessToken}`;
-            
+
             // Process all queued requests with new token
             processQueue(null, tokenResponse.accessToken);
 
@@ -167,7 +172,9 @@ const setupAxiosClient = (store: Store<RootState>) => {
           })
             .then((token) => {
               // After token refresh is done, retry original request with new token
-              originalConfig.headers.Authorization = `Bearer ${token as string}`;
+              originalConfig.headers.Authorization = `Bearer ${
+                token as string
+              }`;
               return axiosClient(originalConfig);
             })
             .catch((error) => {

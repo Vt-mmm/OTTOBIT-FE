@@ -7,8 +7,8 @@ import {
   FeaturesSection,
   BrandsSection,
   BannerSection,
-} from "sections/user/homepage"; 
-import { useAppSelector } from "reduxStore/config";
+} from "sections/user/homepage";
+import { useAppSelector } from "store/config";
 
 const HomePage: React.FC = () => {
   // Check if user is authenticated to show chat button
@@ -71,7 +71,6 @@ const HomePage: React.FC = () => {
       </Box>
 
       <Footer />
-
     </Box>
   );
 };

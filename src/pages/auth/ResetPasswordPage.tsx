@@ -25,7 +25,7 @@ const ResetPassword: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [resetCode, setResetCode] = useState<string | null>(null);
+  const [resetToken, setResetToken] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [isValidatingToken, setIsValidatingToken] = useState(false);
   const [isValidToken, setIsValidToken] = useState(true);
@@ -38,7 +38,7 @@ const ResetPassword: React.FC = () => {
 
     if (emailParam && tokenParam) {
       setEmail(emailParam);
-      setResetCode(tokenParam);
+      setResetToken(tokenParam);
       setIsValidToken(true);
     } else {
       setErrorMessage(
@@ -206,10 +206,10 @@ const ResetPassword: React.FC = () => {
             isValidToken &&
             !isSubmitted &&
             email &&
-            resetCode && (
+            resetToken && (
               <ResetPasswordForm
                 email={email}
-                resetCode={resetCode}
+                resetToken={resetToken}
                 onSuccess={handleResetSuccess}
                 onError={handleResetError}
               />

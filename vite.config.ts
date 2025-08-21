@@ -11,7 +11,7 @@ export default defineConfig({
       components: path.resolve(__dirname, "./src/components"),
       hooks: path.resolve(__dirname, "./src/hooks"),
       sections: path.resolve(__dirname, "./src/sections"),
-      reduxStore: path.resolve(__dirname, "./src/redux"),
+      store: path.resolve(__dirname, "./src/redux"),
       assets: path.resolve(__dirname, "./src/assets"),
       utils: path.resolve(__dirname, "./src/utils"),
       pages: path.resolve(__dirname, "./src/pages"),
@@ -81,5 +81,3 @@ export default defineConfig({
   publicDir: "public",
   base: "/", // Sử dụng "/" thay vì "./"
 });
-
-

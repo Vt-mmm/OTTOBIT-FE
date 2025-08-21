@@ -17,8 +17,8 @@ import HomeIcon from "@mui/icons-material/Home";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "reduxStore/config";
-import { login, setIsLogout, loginbygoogle } from "reduxStore/auth/authSlice";
+import { useAppDispatch, useAppSelector } from "store/config";
+import { login, setIsLogout, googleLoginThunk } from "store/auth/authSlice";
 import { useForm, FormProvider, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -108,7 +108,7 @@ const LoginForm: React.FC = () => {
     }
 
     try {
-      dispatch(loginbygoogle(response.credential))
+      dispatch(googleLoginThunk(response.credential))
         .unwrap()
         .then((user) => {
           if (!user || !user.roles) {

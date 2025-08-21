@@ -107,3 +107,76 @@ firebase-debug.log
 
 # Vercel
 .vercel
+
+# AI and Instruction files
+*.instruction
+*.instructions
+instruction/
+instructions/
+.ai/
+ai-instructions/
+prompts/
+*.prompt
+
+# GitHub Copilot instruction files
+.github/copilot/
+.github/copilot/*
+*.md
+!README.md
+!CHANGELOG.md
+
+# Cursor AI files and directories
+.cursor/
+.cursor-settings/
+cursor.db*
+.cursorrules
+.cursor-tutor/
+
+# Development files
+*.dev
+*.development
+*.test
+*.temp
+*_old.*
+*_backup.*
+*_new.*
+*_temp.*
+*_bak.*
+
+# Documentation drafts
+README_draft.*
+CHANGELOG_draft.*
+TODO.md
+NOTES.md
+
+# IDE and editor temporary files
+*.sublime-*
+*.kate-swp
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+.vscode/extensions.json
+
+# Package manager lock files (optional - uncomment if you want to ignore)
+# package-lock.json
+# yarn.lock
+
+# Cache directories
+.cache/
+.tmp/
+.temp/
+
+# Generated files
+generated/
+auto-generated/
+
+# Backup files
+backup/
+backups/
+
+# Source map files in production
+*.map
+
+# Local configuration files
+local.config.*
+*.local.config.*

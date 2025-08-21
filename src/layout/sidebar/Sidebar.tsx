@@ -12,7 +12,7 @@ import {
 import useResponsive from "hooks/useResponsive";
 import NavSection from "components/nav-section/NavSection";
 import { Role } from "common/enums";
-import { useAppSelector } from "reduxStore/config";
+import { useAppSelector } from "store/config";
 import { useConfigSidebar } from "./useConfigSidebar";
 import { Close } from "@mui/icons-material";
 // Logo placeholder sẽ thay thế sau

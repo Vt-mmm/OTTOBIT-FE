@@ -9,8 +9,8 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 // redux
-import { useAppDispatch } from "reduxStore/config";
-import { setStatus } from "reduxStore/auth/authSlice";
+import { useAppDispatch } from "store/config";
+import { setStatus } from "store/auth/authSlice";
 //
 import { NavItem as NavItemInterface } from "common/@types";
 import { StorageKeys } from "constants/storageKeys";
@@ -35,21 +35,19 @@ function NavItem({ item }: NavItemProps) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-
   return (
-<ListItemButton
-  disableGutters
-
-  onClick={() => {
-    navigate(path);
-    dispatch(setStatus());
-    removeLocalStorage(StorageKeys.PAGE);
-    removeLocalStorage(StorageKeys.ROW_PER_PAGE);
-  }}
->
-  <StyledNavItemIcon>{icon && icon}</StyledNavItemIcon>
-  <ListItemText disableTypography primary={title} />
-</ListItemButton>
+    <ListItemButton
+      disableGutters
+      onClick={() => {
+        navigate(path);
+        dispatch(setStatus());
+        removeLocalStorage(StorageKeys.PAGE);
+        removeLocalStorage(StorageKeys.ROW_PER_PAGE);
+      }}
+    >
+      <StyledNavItemIcon>{icon && icon}</StyledNavItemIcon>
+      <ListItemText disableTypography primary={title} />
+    </ListItemButton>
   );
 }
 

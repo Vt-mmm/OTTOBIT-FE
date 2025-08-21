@@ -17,6 +17,7 @@ export const PATH_AUTH = {
   forgotPassword: path(ROOTS_AUTH, "/forgot-password"),
   resetPassword: path(ROOTS_AUTH, "/reset-password"),
   verifyEmail: path(ROOTS_AUTH, "/verify-email"),
+  confirmEmail: path(ROOTS_AUTH, "/confirm-email"),
 };
 export const PATH_PUBLIC = {
   homepage: "/", // Đường dẫn gốc cho người dùng không cần đăng nhập
@@ -24,6 +25,8 @@ export const PATH_PUBLIC = {
 
 export const PATH_USER = {
   homepage: path(ROOTS_USER, "/homepage"),
+  studio: "/studio",
+  profile: path(ROOTS_USER, "/profile"),
 };
 
 export const PATH_ADMIN = {

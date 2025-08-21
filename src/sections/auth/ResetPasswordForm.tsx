@@ -36,14 +36,14 @@ interface ResetPasswordFormType {
 
 interface ResetPasswordFormProps {
   email: string;
-  resetCode: string;
+  resetToken: string;
   onSuccess?: () => void;
   onError?: (message: string) => void;
 }
 
 const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
   email,
-  resetCode,
+  resetToken,
   onSuccess,
   onError,
 }) => {
@@ -70,41 +70,46 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
     try {
       setIsLoading(true);
       setErrorMessage(null);
-      
-      // Làm sạch resetCode: thay thế dấu cách bằng dấu '+'
-      const cleanResetCode = decodeURIComponent(resetCode).replace(/ /g, '+');
-      
-      // Make API call to reset password
+
+      // Clean reset token: replace spaces with '+'
+      const cleanResetToken = decodeURIComponent(resetToken).replace(/ /g, "+");
+
+      // Make API call to reset password - match backend ResetPasswordRequest format (PascalCase)
       await axiosClient.post(ROUTES_API_AUTH.RESET_PASSWORD, {
-        email,
-        resetCode: cleanResetCode,
-        newPassword: data.password,
+        Email: email,
+        ResetToken: cleanResetToken,
+        NewPassword: data.password,
+        ConfirmNewPassword: data.confirmPassword,
       });
-      
+
       setIsLoading(false);
-      setSuccessMessage("Mật khẩu đã được đặt lại thành công. Bạn có thể đăng nhập bằng mật khẩu mới.");
-      
+      // Use message from backend response or default message
+      const successMsg =
+        "Mật khẩu đã được đặt lại thành công. Bạn có thể đăng nhập bằng mật khẩu mới.";
+      setSuccessMessage(successMsg);
+
       if (onSuccess) {
         onSuccess();
       }
     } catch (error: unknown) {
       setIsLoading(false);
       console.error("Password reset error:", error);
-      
+
       // Type guard for axios error response
-      const axiosError = error as { 
-        response?: { 
-          data?: { 
-            message?: string 
-          } 
-        } 
+      const axiosError = error as {
+        response?: {
+          data?: {
+            message?: string;
+          };
+        };
       };
-      
-      const message = axiosError.response?.data?.message || 
+
+      const message =
+        axiosError.response?.data?.message ||
         "Đã xảy ra lỗi khi đặt lại mật khẩu. Vui lòng thử lại sau hoặc yêu cầu liên kết mới.";
-      
+
       setErrorMessage(message);
-      
+
       if (onError) {
         onError(message);
       }
@@ -183,10 +188,16 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
                         edge="end"
                       >
-                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                        {showConfirmPassword ? (
+                          <VisibilityOff />
+                        ) : (
+                          <Visibility />
+                        )}
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -210,10 +221,10 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
             textTransform: "none",
             boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
             background: "linear-gradient(90deg, #70c8d2 0%, #5ab9c3 100%)",
-            '&:hover': {
+            "&:hover": {
               background: "linear-gradient(90deg, #5ab9c3 0%, #4aa9b3 100%)",
               boxShadow: "0 6px 15px rgba(0, 0, 0, 0.15)",
-            }
+            },
           }}
         >
           {isLoading ? (
@@ -227,4 +238,4 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
   );
 };
 
-export default ResetPasswordForm; 
+export default ResetPasswordForm;
