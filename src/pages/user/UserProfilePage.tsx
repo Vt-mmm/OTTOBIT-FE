@@ -1,223 +1,319 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Container,
   Box,
-  Typography,
-  Grid,
   Card,
   CardContent,
-  Avatar,
-  Button,
-  Chip,
-  Stack,
+  Typography,
+  TextField,
+  Alert,
+  Grid,
   Divider,
-} from '@mui/material';
+  IconButton,
+} from "@mui/material";
 import {
-  Email as EmailIcon,
-  Phone as PhoneIcon,
-  Person as PersonIcon,
-  Edit as EditIcon,
-} from '@mui/icons-material';
-import { motion } from 'framer-motion';
-import Header from 'layout/components/header/Header';
-import { SecuritySettings } from 'sections/user/profile';
-import { useAppSelector } from 'store/config';
-import { alpha } from '@mui/material/styles';
+  Lock as LockIcon,
+  Visibility,
+  VisibilityOff,
+} from "@mui/icons-material";
+import { LoadingButton } from "@mui/lab";
+import { motion } from "framer-motion";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { Header } from "layout/components/header";
+import { useAppDispatch, useAppSelector } from "store/config";
+import { changePasswordThunk } from "store/account/accountSlice";
+import { AccountChangePasswordForm } from "common/@types";
+import { alpha } from "@mui/material/styles";
+
+// Validation schema
+const changePasswordSchema = yup.object({
+  currentPassword: yup.string().required("Vui lòng nhập mật khẩu hiện tại"),
+  newPassword: yup
+    .string()
+    .min(6, "Mật khẩu mới phải có ít nhất 6 ký tự")
+    .required("Vui lòng nhập mật khẩu mới"),
+  confirmNewPassword: yup
+    .string()
+    .oneOf([yup.ref("newPassword")], "Xác nhận mật khẩu không khớp")
+    .required("Vui lòng xác nhận mật khẩu mới"),
+});
 
 const UserProfilePage: React.FC = () => {
-  const { userAuth, userInfo } = useAppSelector((state) => state.auth);
-  const [isEditing, setIsEditing] = useState(false);
+  const dispatch = useAppDispatch();
+  const { isLoading, isSuccess, isError, message } = useAppSelector(
+    (state) => state.account
+  );
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Display data from auth
-  const displayData = {
-    fullName: userInfo?.fullName || "Chưa có tên",
-    email: userAuth?.email || "Chưa có email",
-    phoneNumber: "",
-    avatarUrl: "",
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<AccountChangePasswordForm>({
+    resolver: yupResolver(changePasswordSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmNewPassword: "",
+    },
+  });
+
+  const onSubmit = async (data: AccountChangePasswordForm) => {
+    try {
+      await dispatch(changePasswordThunk({ data })).unwrap();
+      reset(); // Reset form on success
+    } catch (error) {
+      console.error("Change password failed:", error);
+    }
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
-      {/* Header */}
+    <>
       <Header />
-      
-      {/* Main Content */}
-      <Container maxWidth="lg" sx={{ pt: 4, pb: 6 }}>
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Typography
-            variant="h4"
-            sx={{
-              textAlign: 'center',
-              fontWeight: 700,
-              color: '#2E7D32',
-              mb: 4,
-              background: 'linear-gradient(45deg, #2E7D32, #8BC34A)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
+      <Box
+        sx={{
+          minHeight: "100vh",
+          background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+          pt: { xs: 10, md: 12 },
+          pb: 6,
+        }}
+      >
+        <Container maxWidth="md">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
           >
-            Hồ sơ cá nhân
-          </Typography>
-
-          <Grid container spacing={4}>
-            {/* Profile Overview Card */}
-            <Grid item xs={12} md={8}>
-              <Card
+            {/* Page Header */}
+            <Box sx={{ mb: 4, textAlign: "center" }}>
+              <Typography
+                variant="h3"
                 sx={{
-                  borderRadius: 3,
-                  boxShadow: '0 8px 32px rgba(139, 195, 74, 0.15)',
-                  border: `1px solid ${alpha('#8BC34A', 0.2)}`,
+                  fontWeight: "bold",
+                  background: "linear-gradient(45deg, #2E7D32, #8BC34A)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  mb: 2,
                 }}
               >
-                {/* Header Background */}
-                <Box
-                  sx={{
-                    height: 120,
-                    background: 'linear-gradient(135deg, #8BC34A 0%, #689F38 100%)',
-                    position: 'relative',
-                  }}
-                />
+                Quản lý tài khoản
+              </Typography>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: "text.secondary",
+                  maxWidth: 600,
+                  mx: "auto",
+                }}
+              >
+                Cập nhật thông tin bảo mật cho tài khoản của bạn
+              </Typography>
+            </Box>
 
-                <CardContent sx={{ pt: 0, pb: 3 }}>
-                  {/* Avatar and Edit Button */}
-                  <Box sx={{ display: 'flex', alignItems: 'flex-end', mb: 3 }}>
-                    <Avatar
-                      src={displayData.avatarUrl}
-                      sx={{
-                        width: 100,
-                        height: 100,
-                        border: '4px solid white',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                        mt: -6,
-                        mr: 2,
-                        background: 'linear-gradient(45deg, #8BC34A, #4CAF50)',
-                        fontSize: '2rem',
-                        fontWeight: 600,
-                      }}
-                    >
-                      {displayData.fullName?.charAt(0)?.toUpperCase() || 'U'}
-                    </Avatar>
+            {/* Success/Error Messages */}
+            {isSuccess && message && (
+              <Alert severity="success" sx={{ mb: 3 }}>
+                {message}
+              </Alert>
+            )}
+            {isError && message && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {message}
+              </Alert>
+            )}
 
-                    <Box sx={{ flexGrow: 1 }} />
+            {/* Change Password Card */}
+            <Card
+              sx={{
+                borderRadius: 3,
+                boxShadow: "0 8px 32px rgba(139, 195, 74, 0.15)",
+                border: `1px solid ${alpha("#8BC34A", 0.2)}`,
+                overflow: "hidden",
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+                  <LockIcon sx={{ color: "#2E7D32", mr: 2, fontSize: 28 }} />
+                  <Typography
+                    variant="h5"
+                    sx={{ fontWeight: "bold", color: "#2E7D32" }}
+                  >
+                    Đổi mật khẩu
+                  </Typography>
+                </Box>
 
-                    <Button
-                      variant="contained"
-                      startIcon={<EditIcon />}
-                      onClick={() => setIsEditing(true)}
-                      sx={{
-                        bgcolor: '#8BC34A',
-                        '&:hover': { bgcolor: '#689F38' },
-                      }}
-                    >
-                      Chỉnh sửa
-                    </Button>
-                  </Box>
+                <Divider sx={{ mb: 4 }} />
 
-                  {/* User Info */}
-                  <Box sx={{ mb: 3 }}>
-                    <Typography
-                      variant="h4"
-                      sx={{
-                        fontWeight: 700,
-                        color: '#2E7D32',
-                        mb: 1,
-                      }}
-                    >
-                      {displayData.fullName}
-                    </Typography>
-
-                    <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-                      {userAuth?.roles?.map((role) => (
-                        <Chip
-                          key={role}
-                          label={role === 'OTTOBIT_USER' ? 'Học viên' : role}
-                          size="small"
-                          sx={{
-                            bgcolor: alpha('#8BC34A', 0.15),
-                            color: '#2E7D32',
-                            fontWeight: 600,
-                          }}
-                          icon={<PersonIcon />}
-                        />
-                      ))}
-                    </Stack>
-                  </Box>
-
-                  <Divider sx={{ mb: 3 }} />
-
-                  {/* User Details */}
+                <form onSubmit={handleSubmit(onSubmit)}>
                   <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <Box
-                          sx={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: 2,
-                            bgcolor: alpha('#8BC34A', 0.1),
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            mr: 2,
-                          }}
-                        >
-                          <EmailIcon sx={{ color: '#2E7D32', fontSize: 20 }} />
-                        </Box>
-                        <Box>
-                          <Typography variant="body2" color="text.secondary">
-                            Email
-                          </Typography>
-                          <Typography variant="body1" fontWeight={600}>
-                            {displayData.email}
-                          </Typography>
-                        </Box>
-                      </Box>
+                    {/* Current Password */}
+                    <Grid item xs={12}>
+                      <Controller
+                        name="currentPassword"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            fullWidth
+                            label="Mật khẩu hiện tại"
+                            type={showCurrentPassword ? "text" : "password"}
+                            error={!!errors.currentPassword}
+                            helperText={errors.currentPassword?.message}
+                            InputProps={{
+                              endAdornment: (
+                                <IconButton
+                                  onClick={() =>
+                                    setShowCurrentPassword(!showCurrentPassword)
+                                  }
+                                  edge="end"
+                                >
+                                  {showCurrentPassword ? (
+                                    <VisibilityOff />
+                                  ) : (
+                                    <Visibility />
+                                  )}
+                                </IconButton>
+                              ),
+                            }}
+                            sx={{
+                              "& .MuiOutlinedInput-root": {
+                                "&:hover fieldset": {
+                                  borderColor: "#8BC34A",
+                                },
+                                "&.Mui-focused fieldset": {
+                                  borderColor: "#2E7D32",
+                                },
+                              },
+                            }}
+                          />
+                        )}
+                      />
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <Box
-                          sx={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: 2,
-                            bgcolor: alpha('#8BC34A', 0.1),
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            mr: 2,
-                          }}
-                        >
-                          <PhoneIcon sx={{ color: '#2E7D32', fontSize: 20 }} />
-                        </Box>
-                        <Box>
-                          <Typography variant="body2" color="text.secondary">
-                            Số điện thoại
-                          </Typography>
-                          <Typography variant="body1" fontWeight={600}>
-                            {displayData.phoneNumber || 'Chưa cập nhật'}
-                          </Typography>
-                        </Box>
-                      </Box>
+                    {/* New Password */}
+                    <Grid item xs={12}>
+                      <Controller
+                        name="newPassword"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            fullWidth
+                            label="Mật khẩu mới"
+                            type={showNewPassword ? "text" : "password"}
+                            error={!!errors.newPassword}
+                            helperText={errors.newPassword?.message}
+                            InputProps={{
+                              endAdornment: (
+                                <IconButton
+                                  onClick={() =>
+                                    setShowNewPassword(!showNewPassword)
+                                  }
+                                  edge="end"
+                                >
+                                  {showNewPassword ? (
+                                    <VisibilityOff />
+                                  ) : (
+                                    <Visibility />
+                                  )}
+                                </IconButton>
+                              ),
+                            }}
+                            sx={{
+                              "& .MuiOutlinedInput-root": {
+                                "&:hover fieldset": {
+                                  borderColor: "#8BC34A",
+                                },
+                                "&.Mui-focused fieldset": {
+                                  borderColor: "#2E7D32",
+                                },
+                              },
+                            }}
+                          />
+                        )}
+                      />
+                    </Grid>
+
+                    {/* Confirm New Password */}
+                    <Grid item xs={12}>
+                      <Controller
+                        name="confirmNewPassword"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            fullWidth
+                            label="Xác nhận mật khẩu mới"
+                            type={showConfirmPassword ? "text" : "password"}
+                            error={!!errors.confirmNewPassword}
+                            helperText={errors.confirmNewPassword?.message}
+                            InputProps={{
+                              endAdornment: (
+                                <IconButton
+                                  onClick={() =>
+                                    setShowConfirmPassword(!showConfirmPassword)
+                                  }
+                                  edge="end"
+                                >
+                                  {showConfirmPassword ? (
+                                    <VisibilityOff />
+                                  ) : (
+                                    <Visibility />
+                                  )}
+                                </IconButton>
+                              ),
+                            }}
+                            sx={{
+                              "& .MuiOutlinedInput-root": {
+                                "&:hover fieldset": {
+                                  borderColor: "#8BC34A",
+                                },
+                                "&.Mui-focused fieldset": {
+                                  borderColor: "#2E7D32",
+                                },
+                              },
+                            }}
+                          />
+                        )}
+                      />
+                    </Grid>
+
+                    {/* Submit Button */}
+                    <Grid item xs={12}>
+                      <LoadingButton
+                        type="submit"
+                        variant="contained"
+                        loading={isLoading}
+                        sx={{
+                          background:
+                            "linear-gradient(45deg, #2E7D32, #8BC34A)",
+                          "&:hover": {
+                            background:
+                              "linear-gradient(45deg, #1B5E20, #689F38)",
+                          },
+                          py: 1.5,
+                          px: 4,
+                          fontWeight: "bold",
+                          textTransform: "none",
+                          fontSize: "1.1rem",
+                        }}
+                      >
+                        Cập nhật mật khẩu
+                      </LoadingButton>
                     </Grid>
                   </Grid>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            {/* Security Settings */}
-            <Grid item xs={12} md={4}>
-              <SecuritySettings />
-            </Grid>
-          </Grid>
-        </motion.div>
-      </Container>
-    </Box>
+                </form>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </Container>
+      </Box>
+    </>
   );
 };
 

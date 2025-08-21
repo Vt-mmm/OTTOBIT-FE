@@ -7,7 +7,8 @@ axios.defaults.headers.delete["Access-Control-Allow-Origin"] = "*";
 
 // Create client with initial configuration
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_APP_BASE_URL || "http://localhost:8080",
+  baseURL:
+    import.meta.env.VITE_APP_BASE_URL || "https://ottobit-be.felixtien.dev",
   withCredentials: false,
   headers: {
     "Content-Type": "application/json",
@@ -44,7 +45,7 @@ const axiosServiceAddress = axios.create({
 });
 
 const axiosFormData = axios.create({
-  baseURL: import.meta.env.VITE_APP_BASE_URL || "http://localhost:8080/",
+  baseURL: import.meta.env.VITE_APP_BASE_URL || "https://ottobit-be.felixtien.dev",
   headers: {
     "Content-Type": "multipart/form-data",
   },

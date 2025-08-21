@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState, useEffect } from "react";
+import { Suspense, lazy, useState, useEffect } from "react";
 import { Navigate, Route as ReactRoute, Routes } from "react-router-dom";
 
 // Routers
@@ -8,13 +8,7 @@ import AdminRouter from "routes/adminRouter";
 
 // Routes config
 import { useAppSelector } from "store/config";
-import {
-  PATH_AUTH,
-  PATH_ERROR,
-  PATH_USER,
-  PATH_ADMIN,
-  PATH_PUBLIC,
-} from "routes/paths";
+import { PATH_AUTH, PATH_ERROR, PATH_USER, PATH_ADMIN } from "routes/paths";
 import { publicRoutes } from "routes/config/publicRoutes.tsx";
 import { adminRoutes } from "routes/config/adminRoutes.tsx";
 import type { Route } from "common/@types";

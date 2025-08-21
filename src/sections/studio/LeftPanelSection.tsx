@@ -1,10 +1,4 @@
-import { Box, Tooltip, IconButton } from "@mui/material";
-import {
-  Delete as TrashIcon,
-  ContentCopy as CopyIcon,
-  Download as DownloadIcon,
-  Refresh as RefreshIcon,
-} from "@mui/icons-material";
+import { Box } from "@mui/material";
 import {
   generatePythonCode,
   generateJavaScriptCode,

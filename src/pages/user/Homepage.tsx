@@ -8,12 +8,8 @@ import {
   BrandsSection,
   BannerSection,
 } from "sections/user/homepage";
-import { useAppSelector } from "store/config";
 
 const HomePage: React.FC = () => {
-  // Check if user is authenticated to show chat button
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
-
   return (
     <Box
       sx={{
