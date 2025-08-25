@@ -2,10 +2,10 @@ import React, { useRef, useState, useEffect } from "react";
 import { Box, Container, Typography, Card, CardContent } from "@mui/material";
 import { motion, useInView } from "framer-motion";
 import {
-  VideoCall as VideoCallIcon,
-  Psychology as PsychologyIcon,
-  SupportAgent as SupportIcon,
-  Verified as VerifiedIcon,
+  Build as BuildIcon,
+  Code as CodeIcon,
+  Psychology as AIIcon,
+  Groups as CollaborationIcon,
 } from "@mui/icons-material";
 
 // Typing animation hook
@@ -66,34 +66,35 @@ const useCounter = (end: number, duration: number = 1500) => {
   return { count, setIsVisible };
 };
 
-// Features data
+// STEM Features data
 const featuresData = [
   {
-    icon: <VideoCallIcon sx={{ fontSize: 32 }} />,
-    title: "Tư vấn Video Call",
+    icon: <BuildIcon sx={{ fontSize: 32 }} />,
+    title: "Robotics & Engineering",
     description:
-      "Kết nối trực tiếp với chuyên gia tâm lý qua video call chất lượng cao",
-    color: "#4dd0e1",
+      "Học lập trình và điều khiển robot thông qua các dự án thực tế và thú vị",
+    color: "#22c55e",
   },
   {
-    icon: <PsychologyIcon sx={{ fontSize: 32 }} />,
-    title: "Bài kiểm tra chuyên nghiệp",
+    icon: <CodeIcon sx={{ fontSize: 32 }} />,
+    title: "Visual Programming",
     description:
-      "Hệ thống bài test tâm lý được thiết kế bởi các chuyên gia hàng đầu",
-    color: "#26c6da",
+      "Lập trình trực quan với drag-and-drop, dễ hiểu cho mọi lứa tuổi",
+    color: "#16a34a",
   },
   {
-    icon: <SupportIcon sx={{ fontSize: 32 }} />,
-    title: "Hỗ trợ 24/7",
-    description: "Đội ngũ chuyên gia luôn sẵn sàng hỗ trợ bạn mọi lúc, mọi nơi",
-    color: "#00acc1",
+    icon: <AIIcon sx={{ fontSize: 32 }} />,
+    title: "AI & Machine Learning",
+    description:
+      "Khám phá trí tuệ nhân tạo qua các bài học tương tác sinh động",
+    color: "#15803d",
   },
   {
-    icon: <VerifiedIcon sx={{ fontSize: 32 }} />,
-    title: "Chuyên gia chứng nhận",
+    icon: <CollaborationIcon sx={{ fontSize: 32 }} />,
+    title: "Collaborative Learning",
     description:
-      "100+ chuyên gia tâm lý có bằng cấp và kinh nghiệm được kiểm định",
-    color: "#0097a7",
+      "Học tập theo nhóm, chia sẻ dự án và cùng nhau phát triển ý tưởng",
+    color: "#166534",
   },
 ];
 
@@ -185,17 +186,17 @@ const FeaturesSection: React.FC = () => {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   // Typing effects
-  const heading1 = useTypewriter("Tell Me - Giải pháp ", 40);
-  const heading2 = useTypewriter("toàn diện", 40);
-  const heading3 = useTypewriter("cho sức khỏe tâm thần", 40);
+  const heading1 = useTypewriter("OttoBit - Nền tảng ", 40);
+  const heading2 = useTypewriter("STEM giáo dục", 40);
+  const heading3 = useTypewriter("tương lai", 40);
   const description = useTypewriter(
-    "Kết hợp công nghệ hiện đại với chuyên môn y tế, mang đến trải nghiệm chăm sóc sức khỏe tâm thần tốt nhất cho bạn. Đội ngũ chuyên gia của chúng tôi luôn sẵn sàng đồng hành cùng bạn trong mọi hoàn cảnh.",
+    "Kết hợp công nghệ tiên tiến với phương pháp giáo dục hiện đại, OttoBit mang đến trải nghiệm học tập STEM tốt nhất. Chúng tôi giúp học sinh phát triển tư duy logic, khả năng sáng tạo và kỹ năng giải quyết vấn đề thông qua các dự án thực tế.",
     15
   );
 
   // Counter effects
-  const customerCounter = useCounter(1000, 2000);
-  const satisfactionCounter = useCounter(98, 2000);
+  const studentCounter = useCounter(5000, 2000);
+  const satisfactionCounter = useCounter(95, 2000);
 
   // Trigger animations when in view
   useEffect(() => {
@@ -207,7 +208,7 @@ const FeaturesSection: React.FC = () => {
       setTimeout(() => description.startTyping(), 1800);
 
       // Start counters
-      setTimeout(() => customerCounter.setIsVisible(true), 2800);
+      setTimeout(() => studentCounter.setIsVisible(true), 2800);
       setTimeout(() => satisfactionCounter.setIsVisible(true), 2900);
     }
   }, [isInView]);
@@ -223,7 +224,7 @@ const FeaturesSection: React.FC = () => {
         py: { xs: 8, md: 12 },
         position: "relative",
         background:
-          "linear-gradient(180deg, #f8fbff 0%, rgba(245, 249, 250, 0.8) 100%)",
+          "linear-gradient(180deg, #f0fdf4 0%, rgba(240, 253, 244, 0.8) 100%)",
         "&::before": {
           content: '""',
           position: "absolute",
@@ -232,7 +233,7 @@ const FeaturesSection: React.FC = () => {
           right: 0,
           bottom: 0,
           background:
-            "radial-gradient(circle at 30% 20%, rgba(77, 208, 225, 0.05) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(38, 198, 218, 0.05) 0%, transparent 50%)",
+            "radial-gradient(circle at 30% 20%, rgba(34, 197, 94, 0.08) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(22, 163, 74, 0.08) 0%, transparent 50%)",
           zIndex: 0,
         },
       }}
@@ -260,7 +261,7 @@ const FeaturesSection: React.FC = () => {
               <Typography
                 variant="h6"
                 sx={{
-                  color: "#4dd0e1",
+                  color: "#22c55e",
                   fontWeight: 600,
                   mb: 2,
                   textTransform: "uppercase",
@@ -268,7 +269,7 @@ const FeaturesSection: React.FC = () => {
                   fontSize: { xs: "0.9rem", md: "1rem" },
                 }}
               >
-                Vì sao chọn chúng tôi
+                Nền tảng STEM hàng đầu
               </Typography>
 
               <Typography
@@ -286,7 +287,7 @@ const FeaturesSection: React.FC = () => {
                 <Box
                   component="span"
                   sx={{
-                    background: "linear-gradient(135deg, #4dd0e1, #00acc1)",
+                    background: "linear-gradient(135deg, #22c55e, #16a34a)",
                     backgroundClip: "text",
                     WebkitBackgroundClip: "text",
                     color: "transparent",
@@ -305,7 +306,7 @@ const FeaturesSection: React.FC = () => {
                       display: "inline-block",
                       width: "3px",
                       height: "1em",
-                      bgcolor: "#4dd0e1",
+                      bgcolor: "#22c55e",
                       ml: 0.5,
                       animation: "blink 1s infinite",
                       "@keyframes blink": {
@@ -355,7 +356,7 @@ const FeaturesSection: React.FC = () => {
                 <motion.div
                   initial={{ scale: 0.5, opacity: 0 }}
                   animate={
-                    customerCounter.count > 0 ? { scale: 1, opacity: 1 } : {}
+                    studentCounter.count > 0 ? { scale: 1, opacity: 1 } : {}
                   }
                   transition={{ duration: 0.5 }}
                 >
@@ -364,18 +365,18 @@ const FeaturesSection: React.FC = () => {
                       variant="h4"
                       sx={{
                         fontWeight: 700,
-                        color: "#4dd0e1",
+                        color: "#22c55e",
                         fontSize: { xs: "1.8rem", md: "2.2rem" },
                         mb: 0.5,
                       }}
                     >
-                      {customerCounter.count}+
+                      {studentCounter.count}+
                     </Typography>
                     <Typography
                       variant="body2"
                       sx={{ color: "#666", fontWeight: 500 }}
                     >
-                      Khách hàng tin tưởng
+                      Học sinh đã tham gia
                     </Typography>
                   </Box>
                 </motion.div>
@@ -393,7 +394,7 @@ const FeaturesSection: React.FC = () => {
                       variant="h4"
                       sx={{
                         fontWeight: 700,
-                        color: "#26c6da",
+                        color: "#16a34a",
                         fontSize: { xs: "1.8rem", md: "2.2rem" },
                         mb: 0.5,
                       }}
@@ -404,7 +405,7 @@ const FeaturesSection: React.FC = () => {
                       variant="body2"
                       sx={{ color: "#666", fontWeight: 500 }}
                     >
-                      Tỷ lệ hài lòng
+                      Tỷ lệ hoàn thành khóa học
                     </Typography>
                   </Box>
                 </motion.div>

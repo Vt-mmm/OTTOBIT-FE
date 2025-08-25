@@ -12,8 +12,6 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import HomeIcon from "@mui/icons-material/Home";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
@@ -23,7 +21,7 @@ import { useForm, FormProvider, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { PATH_AUTH, PATH_USER } from "../../routes/paths";
-import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import { CredentialResponse } from "@react-oauth/google";
 
 // Schema validation
 const schema = yup.object().shape({
@@ -138,10 +136,40 @@ const LoginForm: React.FC = () => {
     <FormProvider {...methods}>
       <Box
         component={motion.div}
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.6 }}
+        sx={{
+          width: "100%",
+          maxWidth: 420,
+          p: 0, // Remove padding since we're inside the white container
+        }}
       >
+        {/* Header với logo */}
+        {/* Header */}
+        <Box sx={{ textAlign: "center", mb: 4 }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{
+              fontWeight: 700,
+              color: "#1a1a1a",
+              mb: 1,
+              fontSize: "32px",
+            }}
+          >
+            Login
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: "#6b7280",
+              fontSize: "16px",
+            }}
+          >
+            Welcome back! Please login to your account
+          </Typography>
+        </Box>{" "}
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2.5}>
             {(localErrorMessage || errorMessage) && (
@@ -151,9 +179,6 @@ const LoginForm: React.FC = () => {
             )}
 
             <Box>
-              <Typography variant="body2" mb={1}>
-                Email
-              </Typography>
               <Controller
                 name="email"
                 control={control}
@@ -162,15 +187,28 @@ const LoginForm: React.FC = () => {
                     {...field}
                     variant="outlined"
                     fullWidth
-                    required
-                    placeholder="Email"
-                    size="small"
+                    placeholder="Email address"
+                    size="medium"
                     error={!!errors.email}
                     helperText={errors.email?.message}
-                    InputProps={{
-                      sx: {
-                        borderRadius: 4,
-                        backgroundColor: "#FFFFFF",
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                        backgroundColor: "#ffffff",
+                        fontSize: "16px",
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#e2e8f0",
+                        },
+                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#22c55e",
+                        },
+                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#22c55e",
+                          borderWidth: "2px",
+                        },
+                      },
+                      "& .MuiInputBase-input": {
+                        padding: "14px 16px",
                       },
                     }}
                   />
@@ -179,9 +217,6 @@ const LoginForm: React.FC = () => {
             </Box>
 
             <Box>
-              <Typography variant="body2" mb={1}>
-                Mật Khẩu
-              </Typography>
               <Controller
                 name="password"
                 control={control}
@@ -191,21 +226,42 @@ const LoginForm: React.FC = () => {
                     type={showPassword ? "text" : "password"}
                     variant="outlined"
                     fullWidth
-                    required
                     placeholder="Password"
-                    size="small"
+                    size="medium"
                     error={!!errors.password}
                     helperText={errors.password?.message}
-                    InputProps={{
-                      sx: {
-                        borderRadius: 4,
-                        backgroundColor: "#FFFFFF",
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                        backgroundColor: "#ffffff",
+                        fontSize: "16px",
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#e2e8f0",
+                        },
+                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#22c55e",
+                        },
+                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#22c55e",
+                          borderWidth: "2px",
+                        },
                       },
+                      "& .MuiInputBase-input": {
+                        padding: "14px 16px",
+                      },
+                    }}
+                    InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
                           <IconButton
                             onClick={() => setShowPassword(!showPassword)}
                             edge="end"
+                            sx={{
+                              color: "#6b7280",
+                              "&:hover": {
+                                color: "#22c55e",
+                              },
+                            }}
                           >
                             {showPassword ? <VisibilityOff /> : <Visibility />}
                           </IconButton>
@@ -217,101 +273,147 @@ const LoginForm: React.FC = () => {
               />
             </Box>
 
+            <Box sx={{ textAlign: "right" }}>
+              <Link
+                component={RouterLink}
+                to={PATH_AUTH.forgotPassword}
+                underline="none"
+                sx={{
+                  fontSize: "14px",
+                  color: "#6b7280",
+                  "&:hover": {
+                    color: "#22c55e",
+                  },
+                }}
+              >
+                Forgot password?
+              </Link>
+            </Box>
+
             <Button
               type="submit"
               variant="contained"
-              endIcon={
-                isLoading ? (
-                  <CircularProgress size={20} color="inherit" />
-                ) : (
-                  <ArrowForwardIcon />
-                )
-              }
-              sx={{
-                bgcolor: "black",
-                borderRadius: 6,
-                fontWeight: 500,
-                py: 1.2,
-                textTransform: "none",
-                "&:hover": {
-                  bgcolor: "rgba(0, 0, 0, 0.8)",
-                },
-              }}
               fullWidth
               disabled={isLoading}
+              sx={{
+                py: 2,
+                borderRadius: 2,
+                fontSize: "16px",
+                fontWeight: 600,
+                textTransform: "none",
+                background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+                "&:hover": {
+                  background:
+                    "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+                },
+                "&:disabled": {
+                  background: "#94a3b8",
+                },
+              }}
             >
-              {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
+              {isLoading ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                "Login"
+              )}
             </Button>
 
-            <Divider sx={{ my: 1 }}>
-              <Typography variant="body2" color="text.secondary">
-                Hoặc đăng nhập với
+            <Divider sx={{ my: 2 }}>
+              <Typography
+                variant="body2"
+                sx={{ color: "#6b7280", fontSize: "14px" }}
+              >
+                Or Login with
               </Typography>
             </Divider>
 
-            <Box sx={{ mt: 1, mb: 1 }}>
-              <GoogleLogin
-                onSuccess={handleGoogleLogin}
-                onError={() => setLocalErrorMessage("Google sign-in failed.")}
-                useOneTap
-                type="standard"
-                theme="filled_blue"
-                size="large"
-                shape="rectangular"
-                width="100%"
-                text="signin_with"
-                logo_alignment="left"
-              />
-            </Box>
+            <Stack direction="row" spacing={2}>
+              <Button
+                variant="outlined"
+                fullWidth
+                sx={{
+                  py: 1.5,
+                  borderRadius: 2,
+                  borderColor: "#e2e8f0",
+                  color: "#374151",
+                  textTransform: "none",
+                  "&:hover": {
+                    borderColor: "#22c55e",
+                    backgroundColor: "rgba(34, 197, 94, 0.04)",
+                  },
+                }}
+                startIcon={
+                  <img
+                    src="https://developers.google.com/identity/images/g-logo.png"
+                    alt="Google"
+                    style={{ width: "18px", height: "18px" }}
+                  />
+                }
+                onClick={() => {
+                  // Handle Google login integration here
+                }}
+              >
+                Google
+              </Button>
 
-            <Link
-              component={RouterLink}
-              to={PATH_AUTH.forgotPassword}
-              underline="hover"
-              sx={{
-                textAlign: "center",
-                fontSize: 14,
-                color: "text.secondary",
-                mt: 0.5,
-              }}
-            >
-              Quên mật khẩu?
-            </Link>
+              <Button
+                variant="outlined"
+                fullWidth
+                sx={{
+                  py: 1.5,
+                  borderRadius: 2,
+                  borderColor: "#e2e8f0",
+                  color: "#374151",
+                  textTransform: "none",
+                  "&:hover": {
+                    borderColor: "#22c55e",
+                    backgroundColor: "rgba(34, 197, 94, 0.04)",
+                  },
+                }}
+                startIcon={
+                  <Box
+                    sx={{
+                      width: "18px",
+                      height: "18px",
+                      backgroundColor: "#1877f2",
+                      borderRadius: "4px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "white",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    f
+                  </Box>
+                }
+              >
+                Facebook
+              </Button>
+            </Stack>
+
+            <Box sx={{ textAlign: "center", mt: 2 }}>
+              <Typography sx={{ fontSize: "14px", color: "#6b7280" }}>
+                Don't have an account?{" "}
+                <Link
+                  component={RouterLink}
+                  to="/auth/register"
+                  underline="none"
+                  sx={{
+                    color: "#22c55e",
+                    fontWeight: 600,
+                    "&:hover": {
+                      color: "#16a34a",
+                    },
+                  }}
+                >
+                  Signup
+                </Link>
+              </Typography>
+            </Box>
           </Stack>
         </form>
-
-        <Box sx={{ mt: 3, textAlign: "center" }}>
-          <Typography fontSize={14} mb={1.5}>
-            Đăng ký tài khoản mới?{" "}
-            <Link
-              component={RouterLink}
-              to="/auth/register"
-              underline="hover"
-              fontWeight={600}
-              color="primary"
-            >
-              Đăng Ký
-            </Link>
-          </Typography>
-
-          <Button
-            component={RouterLink}
-            to="/"
-            startIcon={<HomeIcon />}
-            variant="text"
-            size="small"
-            sx={{
-              fontSize: 13,
-              textTransform: "none",
-              color: "text.secondary",
-              "&:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.04)",
-              },
-            }}
-          >
-            Chở về trang chủ
-          </Button>
-        </Box>
       </Box>
     </FormProvider>
   );

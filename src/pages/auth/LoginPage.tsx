@@ -1,10 +1,8 @@
 import React from "react";
-import { Box, Paper, Typography, Link } from "@mui/material";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import LoginForm from "sections/auth/LoginForm";
-import LoginBackground3D from "components/3d/LoginBackground3D";
+import { Box, Typography, Button } from "@mui/material";
+import { Home } from "@mui/icons-material";
 import { Link as RouterLink } from "react-router-dom";
+import LoginForm from "sections/auth/LoginForm";
 
 // Logo và hình ảnh sẽ thay thế sau
 
@@ -13,127 +11,144 @@ const LoginPage: React.FC = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        background: "linear-gradient(180deg, #EEFFFB 0%, #E5F9F4 100%)",
+        background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)", // Đổi thành màu xanh nhạt giống illustration
         display: "flex",
         alignItems: "center",
-        justifyContent: "center", // Đặt justify content thành center để căn giữa
+        justifyContent: "center",
+        p: { xs: 2, md: 4 },
         position: "relative",
-        p: 0,
-        overflow: "hidden",
-        maxWidth: "100%",
-        margin: "0 auto",
       }}
     >
-      {/* Hiệu ứng nền */}
-      <LoginBackground3D />
-
-      {/* Thanh điều hướng về trang chủ */}
-      <Box
+      {/* Button về trang chủ - Đặt ra ngoài background */}
+      <Button
+        component={RouterLink}
+        to="/"
+        startIcon={<Home />}
         sx={{
           position: "absolute",
-          top: 30,
-          left: 30,
-          zIndex: 10,
+          top: 32,
+          left: 32,
+          zIndex: 20, // Cao hơn để hiện ra ngoài
+          color: "#22c55e",
+          backgroundColor: "rgba(255, 255, 255, 0.9)",
+          textTransform: "none",
+          fontWeight: 600,
+          px: 3,
+          py: 1,
+          borderRadius: 2,
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+          "&:hover": {
+            backgroundColor: "white",
+            boxShadow: "0 6px 16px rgba(0, 0, 0, 0.15)",
+          },
         }}
       >
-        <Link
-          component={RouterLink}
-          to="/"
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            color: "text.primary",
-            textDecoration: "none",
-            fontWeight: 500,
-            "&:hover": {
-              textDecoration: "underline",
-            },
-          }}
-        >
-          <ArrowBackIcon sx={{ mr: 1, fontSize: "0.9rem" }} />
-          Chở về trang chủ
-        </Link>
-      </Box>
+        Về trang chủ
+      </Button>
 
-      {/* Placeholder cho background illustration */}
+      {/* Container trắng bọc toàn bộ */}
       <Box
         sx={{
-          position: "absolute",
-          right: { xs: 0, sm: 0, md: "5%", lg: "10%" },
-          top: "50%",
-          transform: "translateY(-50%)",
-          height: "400px",
-          width: { xs: 0, sm: 0, md: "300px", lg: "350px" },
-          display: { xs: "none", sm: "none", md: "flex" },
-          alignItems: "center",
-          justifyContent: "center",
-          background: "linear-gradient(135deg, #e5f9f4 0%, #e5f0f1 100%)",
-          borderRadius: "20px",
-          border: "2px solid #70c8d2",
-          zIndex: 1,
-          opacity: 0.7,
-          fontSize: "4rem",
-          fontWeight: 700,
-          color: "#70c8d2",
-        }}
-      >
-        🧠
-      </Box>
-
-      {/* Form Login */}
-      <Paper
-        elevation={1}
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "stretch",
-          borderRadius: "20px",
+          background: "white",
+          borderRadius: 4,
+          boxShadow: "0 20px 60px rgba(0, 0, 0, 0.1)",
           overflow: "hidden",
-          maxWidth: { xs: 360, sm: 400, md: 420 },
           width: "100%",
-          mx: { xs: 2, sm: 4, md: 0 }, // Thay đổi margin-left thành margin-x
-          my: 4,
-          boxShadow: "0px 10px 30px 0px rgba(47, 49, 40, 0.05)",
-          border: "1px solid rgba(0, 0, 0, 0.1)",
-          backdropFilter: "blur(4px)",
-          backgroundColor: "rgba(255, 255, 255, 0.85)",
-          zIndex: 2,
+          maxWidth: "1000px",
+          minHeight: { xs: "600px", md: "700px" },
+          display: "flex",
           position: "relative",
         }}
       >
+        {/* Logo ở góc trên */}
         <Box
           sx={{
-            width: "100%",
-            p: { xs: 3, sm: 3.5, md: 4 },
-            background:
-              "linear-gradient(180deg, rgba(238, 255, 251, 0.7) 0%, rgba(244, 254, 252, 0.7) 100%)",
+            position: "absolute",
+            top: 32,
+            left: 32,
+            zIndex: 10,
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
           }}
         >
-          <Box sx={{ mb: 3 }}>
-            <Typography
-              variant="h6"
-              fontWeight={500}
-              fontSize={20}
-              lineHeight="1.5em"
-              sx={{
-                letterSpacing: "0.01em",
-                mb: 2,
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              LOGIN{" "}
-              <LockOutlinedIcon
-                fontSize="small"
-                sx={{ ml: 0.5, fontSize: "0.9rem" }}
-              />
-            </Typography>
-          </Box>
+          <img
+            src="/asset/LogoOttobit.png"
+            alt="OttoBit Logo"
+            style={{
+              height: "45px",
+              width: "auto",
+            }}
+          />
+        </Box>
 
-          {/* Render the LoginForm component */}
+        {/* Left Side - Login Form - Giảm kích thước */}
+        <Box
+          sx={{
+            flex: 0.8, // Giảm từ 1 xuống 0.8 để form nhỏ hơn
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            p: { xs: 3, md: 4 }, // Giảm padding
+          }}
+        >
           <LoginForm />
         </Box>
-      </Paper>
+
+        {/* Right Side - Illustration - Tăng kích thước */}
+        <Box
+          sx={{
+            flex: 1.2, // Tăng từ 1 lên 1.2 để hình to hơn
+            display: { xs: "none", md: "flex" },
+            alignItems: "flex-end", // Căn dưới cùng
+            justifyContent: "center",
+            p: 0, // Bỏ hoàn toàn padding
+            background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)",
+            position: "relative",
+            overflow: "hidden", // Đảm bảo không bị tràn
+          }}
+        >
+          {/* Decorative elements */}
+          <Box
+            sx={{
+              position: "absolute",
+              top: "15%",
+              right: "15%",
+              width: "60px",
+              height: "60px",
+              borderRadius: "12px",
+              background: "#22c55e",
+              opacity: 0.1,
+            }}
+          />
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: "20%",
+              left: "10%",
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              background: "#22c55e",
+              opacity: 0.2,
+            }}
+          />
+
+          {/* Microbit Image - Chạm thật sát dưới cùng */}
+          <img
+            src="/asset/Microbitv2-removebg-preview.png"
+            alt="Microbit v2"
+            style={{
+              maxWidth: "100%",
+              height: "auto",
+              objectFit: "contain",
+              objectPosition: "bottom center", // Căn dưới giữa
+              display: "block",
+              margin: "0 auto",
+            }}
+          />
+        </Box>
+      </Box>
     </Box>
   );
 };

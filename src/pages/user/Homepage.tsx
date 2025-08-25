@@ -1,11 +1,11 @@
 import React from "react";
-import { Box, Divider, Container } from "@mui/material";
+import { Box } from "@mui/material";
 import Header from "layout/components/header/Header";
 import Footer from "layout/components/footer/Footer";
 import {
   HeroSection,
+  InteractiveShowcaseSection,
   FeaturesSection,
-  BrandsSection,
   BannerSection,
 } from "sections/user/homepage";
 
@@ -18,52 +18,30 @@ const HomePage: React.FC = () => {
         minHeight: "100vh",
         bgcolor: "#fff",
         width: "100%",
-        overflow: "hidden", // Ngăn chặn scroll ngang không mong muốn
+        overflow: "hidden",
       }}
     >
       <Header />
 
-      {/* Main content container - controls max width throughout */}
+      {/* Main Exhibition Layout */}
       <Box
         sx={{
           width: "100%",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
         }}
       >
+        {/* Hero Section với Drone 3D */}
         <HeroSection />
 
+        {/* Features Overview */}
         <FeaturesSection />
 
-        <Container
-          maxWidth={false}
-          sx={{
-            width: "100%",
-            maxWidth: "1440px",
-            px: { xs: 2, sm: 3, md: 4, lg: 5 },
-            mx: "auto",
-          }}
-        >
-          <BrandsSection />
+        {/* Interactive Technology Showcase */}
+        <InteractiveShowcaseSection />
 
-          <Divider
-            sx={{
-              my: { xs: 3, sm: 4, md: 5 },
-              opacity: 0.6,
-              width: "100%",
-            }}
-          />
-
-          <BannerSection />
-          <Divider
-            sx={{
-              my: { xs: 3, sm: 4, md: 5 },
-              opacity: 0.6,
-              width: "100%",
-            }}
-          />
-        </Container>
+        {/* Call to Action Banner */}
+        <BannerSection />
       </Box>
 
       <Footer />

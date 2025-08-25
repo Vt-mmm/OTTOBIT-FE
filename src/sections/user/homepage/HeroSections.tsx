@@ -2,6 +2,7 @@ import { Box, Container, Typography, Button, Stack } from "@mui/material";
 import { motion } from "framer-motion";
 import { DroneModel3D } from "components/3d";
 import { useAppSelector } from "store/config";
+import { Science, School, Engineering, AutoAwesome } from "@mui/icons-material";
 
 const HeroSection = () => {
   // Lấy trạng thái đăng nhập từ Redux store
@@ -20,7 +21,7 @@ const HeroSection = () => {
         pt: { xs: 12, md: 14 },
         pb: { xs: 5, md: 8 },
         background:
-          "linear-gradient(180deg, #ffffff 0%, rgba(112, 200, 210, 0.15) 100%)",
+          "linear-gradient(135deg, #f0fdf4 0%, rgba(34, 197, 94, 0.15) 30%, #ecfdf5 70%, rgba(22, 163, 74, 0.1) 100%)",
         position: "relative",
         minHeight: { xs: "550px", md: "650px" },
         display: "flex",
@@ -29,11 +30,11 @@ const HeroSection = () => {
         overflow: "hidden",
       }}
     >
-      {/* Decorative Elements */}
+      {/* Decorative Elements - STEM themed */}
       <Box
         component={motion.div}
         initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 0.3 }}
+        animate={{ scale: 1, opacity: 0.4 }}
         transition={{ duration: 1.5, delay: 0.2 }}
         sx={{
           position: "absolute",
@@ -41,7 +42,7 @@ const HeroSection = () => {
           height: "350px",
           borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(112, 200, 210, 0.3) 0%, rgba(112, 200, 210, 0.1) 50%, rgba(112, 200, 210, 0) 70%)",
+            "radial-gradient(circle, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.1) 50%, rgba(34, 197, 94, 0) 70%)",
           top: "-150px",
           right: "-80px",
           zIndex: 0,
@@ -51,7 +52,7 @@ const HeroSection = () => {
       <Box
         component={motion.div}
         initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 0.2 }}
+        animate={{ scale: 1, opacity: 0.3 }}
         transition={{ duration: 1.5, delay: 0.4 }}
         sx={{
           position: "absolute",
@@ -59,13 +60,70 @@ const HeroSection = () => {
           height: "250px",
           borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(160, 216, 179, 0.3) 0%, rgba(160, 216, 179, 0.1) 50%, rgba(160, 216, 179, 0) 70%)",
+            "radial-gradient(circle, rgba(22, 163, 74, 0.2) 0%, rgba(22, 163, 74, 0.1) 50%, rgba(22, 163, 74, 0) 70%)",
           bottom: "30px",
           left: "-80px",
           zIndex: 0,
           filter: "blur(40px)",
         }}
       />
+
+      {/* Floating STEM Icons */}
+      <Box
+        component={motion.div}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: [0, -10, 0], opacity: 0.6 }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        sx={{
+          position: "absolute",
+          top: "20%",
+          left: "10%",
+          color: "#22c55e",
+          zIndex: 1,
+        }}
+      >
+        <Science sx={{ fontSize: 40 }} />
+      </Box>
+      <Box
+        component={motion.div}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: [0, -15, 0], opacity: 0.6 }}
+        transition={{
+          duration: 4,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 1,
+        }}
+        sx={{
+          position: "absolute",
+          top: "30%",
+          right: "15%",
+          color: "#16a34a",
+          zIndex: 1,
+        }}
+      >
+        <Engineering sx={{ fontSize: 35 }} />
+      </Box>
+      <Box
+        component={motion.div}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: [0, -12, 0], opacity: 0.6 }}
+        transition={{
+          duration: 3.5,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 2,
+        }}
+        sx={{
+          position: "absolute",
+          bottom: "35%",
+          left: "5%",
+          color: "#15803d",
+          zIndex: 1,
+        }}
+      >
+        <School sx={{ fontSize: 38 }} />
+      </Box>
       <Container
         maxWidth={false}
         sx={{
@@ -91,9 +149,10 @@ const HeroSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
             sx={{
-              width: { xs: "100%", md: "40%" },
+              width: { xs: "100%", md: "35%" },
               order: { xs: 2, md: 1 },
               zIndex: 2,
+              pr: { md: 2 },
             }}
           >
             <motion.div
@@ -112,9 +171,11 @@ const HeroSection = () => {
                   mb: 3,
                 }}
               >
-                "Ottobit"
+                <Box component="span" sx={{ color: "#22c55e" }}>
+                  OttoBit
+                </Box>
                 <br />
-                Here for you
+                STEM Education Platform
               </Typography>
             </motion.div>
 
@@ -133,9 +194,9 @@ const HeroSection = () => {
                   mb: 4,
                 }}
               >
-                Khám phá thế giới công nghệ với Ottobit - nền tảng kết hợp
-                robotics, AI và lập trình trực quan. Trải nghiệm mô hình 3D
-                drone tương tác bên cạnh.
+                Khám phá thế giới STEM với OttoBit - nền tảng giáo dục tương tác
+                kết hợp Robotics, AI và lập trình trực quan. Trải nghiệm học tập
+                thông qua mô hình 3D và các dự án thực tế hấp dẫn.
               </Typography>
             </motion.div>
 
@@ -155,49 +216,49 @@ const HeroSection = () => {
                     variant="contained"
                     href="/auth/login"
                     sx={{
-                      bgcolor: "#6eccd9",
+                      bgcolor: "#22c55e",
                       color: "#fff",
                       px: 4,
                       py: 1.3,
                       borderRadius: 1,
                       fontWeight: 600,
                       "&:hover": {
-                        bgcolor: "#5ab9c3",
+                        bgcolor: "#16a34a",
                       },
                     }}
                   >
-                    Đăng nhập
+                    Bắt đầu học
                   </Button>
                   <Button
                     variant="outlined"
-                    href="#"
+                    href="#features"
                     sx={{
-                      color: "#000",
-                      borderColor: "#000",
+                      color: "#22c55e",
+                      borderColor: "#22c55e",
                       px: 3,
                       py: 1.2,
                       borderRadius: 1,
                       "&:hover": {
-                        borderColor: "#000",
-                        bgcolor: "rgba(0,0,0,0.04)",
+                        borderColor: "#16a34a",
+                        bgcolor: "rgba(34, 197, 94, 0.04)",
                       },
                     }}
                   >
-                    Liên hệ
+                    Khám phá tính năng
                   </Button>
                 </Stack>
               </motion.div>
             )}
           </Box>{" "}
-          {/* Right Column - Illustration */}
+          {/* Right Column - 3D Drone with Special Background */}
           <Box
             sx={{
-              width: { xs: "100%", md: "60%" },
+              width: { xs: "100%", md: "65%" },
               order: { xs: 1, md: 2 },
               position: "relative",
               textAlign: "center",
               alignSelf: "flex-end",
-              mb: { xs: 0, md: "-8px" }, // Negative margin to create touch-bottom effect
+              mb: { xs: 0, md: "-8px" },
             }}
           >
             <motion.div
@@ -208,14 +269,40 @@ const HeroSection = () => {
               <Box
                 sx={{
                   width: "100%",
-                  maxWidth: "650px",
+                  maxWidth: "800px",
                   marginLeft: "auto",
                   marginRight: "auto",
+                  border: "none",
+                  outline: "none",
+                  background: "transparent",
+                  "& canvas": {
+                    border: "none !important",
+                    outline: "none !important",
+                    boxShadow: "none !important",
+                    background: "transparent !important",
+                  },
+                  "& > div": {
+                    border: "none !important",
+                    outline: "none !important",
+                    background: "transparent !important",
+                  },
+                  "& model-viewer": {
+                    border: "none !important",
+                    outline: "none !important",
+                    boxShadow: "none !important",
+                    background: "transparent !important",
+                    "--poster-color": "transparent !important",
+                  },
+                  "& *": {
+                    border: "none !important",
+                    outline: "none !important",
+                    boxShadow: "none !important",
+                  },
                 }}
               >
                 <DroneModel3D
                   width="100%"
-                  height="400px"
+                  height="500px"
                   autoRotate={true}
                   cameraControls={true}
                 />

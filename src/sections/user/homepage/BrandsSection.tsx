@@ -4,39 +4,39 @@ import { motion, useInView } from "framer-motion";
 
 // Brand assets sẽ thay thế sau
 
-// Brand data với placeholders
+// STEM Education Partners data
 const brandsData = [
   {
-    name: "Healthcare Partners",
-    category: "Healthcare",
-    icon: "🏥",
+    name: "STEM Academy",
+    category: "Education",
+    icon: "�",
   },
   {
-    name: "Insurance Leaders",
-    category: "Insurance",
-    icon: "🛡️",
+    name: "Robotics Lab",
+    category: "Technology",
+    icon: "🤖",
   },
   {
-    name: "Pharma Innovation",
-    category: "Pharmaceutical",
-    icon: "💊",
+    name: "Coding Institute",
+    category: "Programming",
+    icon: "�",
   },
   {
-    name: "Medical Media",
-    category: "Media",
-    icon: "📰",
+    name: "Innovation Hub",
+    category: "Research",
+    icon: "�",
   },
 ];
 
 // Duplicate brands for seamless loop
 const brands = [...brandsData, ...brandsData];
 
-// Statistics data
+// Statistics data for STEM education
 const statsData = [
-  { number: 1000, suffix: "+", label: "Khách hàng tin tưởng" },
-  { number: 98, suffix: "%", label: "Tỷ lệ hài lòng" },
-  { number: 24, suffix: "/7", label: "Hỗ trợ liên tục" },
-  { number: 100, suffix: "+", label: "Chuyên gia tâm lý" },
+  { number: 5000, suffix: "+", label: "Học sinh tham gia" },
+  { number: 95, suffix: "%", label: "Tỷ lệ hoàn thành" },
+  { number: 100, suffix: "+", label: "Dự án STEM" },
+  { number: 50, suffix: "+", label: "Giáo viên hướng dẫn" },
 ];
 
 // Counter animation hook
@@ -161,7 +161,7 @@ const BrandsSection: React.FC = () => {
         py: { xs: 6, md: 8 },
         px: { xs: 2, md: 4 },
         background:
-          "linear-gradient(135deg, #4dd0e1 0%, #26c6da 50%, #00acc1 100%)",
+          "linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%)",
         position: "relative",
         overflow: "hidden",
         mb: 4,
@@ -175,7 +175,7 @@ const BrandsSection: React.FC = () => {
           right: 0,
           bottom: 0,
           background:
-            "radial-gradient(circle at 20% 50%, rgba(77, 208, 225, 0.2) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%)",
+            "radial-gradient(circle at 20% 50%, rgba(34, 197, 94, 0.2) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%)",
           zIndex: 0,
         },
       }}
@@ -231,7 +231,7 @@ const BrandsSection: React.FC = () => {
                 fontSize: { xs: "0.9rem", md: "1rem" },
               }}
             >
-              Đối tác tin cậy
+              Đối tác giáo dục STEM
             </Typography>
             <Typography
               variant="h3"
@@ -243,7 +243,7 @@ const BrandsSection: React.FC = () => {
                 textShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
               }}
             >
-              Được tin tưởng bởi các tổ chức hàng đầu
+              Hợp tác với các tổ chức giáo dục hàng đầu
             </Typography>
             <Typography
               variant="body1"
@@ -255,8 +255,8 @@ const BrandsSection: React.FC = () => {
                 lineHeight: 1.6,
               }}
             >
-              Cùng đồng hành với những thương hiệu uy tín trong lĩnh vực chăm
-              sóc sức khỏe tâm thần
+              Cùng đồng hành với những tổ chức giáo dục uy tín trong việc phát
+              triển chương trình STEM hiện đại và hiệu quả
             </Typography>
           </Box>
         </motion.div>

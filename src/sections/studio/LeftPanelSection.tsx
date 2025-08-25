@@ -27,10 +27,13 @@ function TabPanel(props: TabPanelProps) {
         height: "100%",
         flex: 1,
         overflow: "hidden",
-        display: value === index ? "block" : "none",
+        display: value === index ? "flex" : "none",
+        flexDirection: "column",
+        padding: 0,
+        margin: 0,
       }}
     >
-      <div style={{ height: "100%" }}>{children}</div>
+      {value === index && children}
     </div>
   );
 }
@@ -38,17 +41,21 @@ function TabPanel(props: TabPanelProps) {
 interface LeftPanelSectionProps {
   activeTab: number;
   workspace?: any; // Blockly workspace
+  pythonCode?: string; // Python code from hook
+  javascriptCode?: string; // JavaScript code from hook
   onWorkspaceChange?: (workspace: any) => void;
 }
 
 export default function LeftPanelSection({
   activeTab,
   workspace,
+  pythonCode,
+  javascriptCode,
   onWorkspaceChange,
 }: LeftPanelSectionProps) {
-  // Code samples - use imported functions
-  const pythonCode = generatePythonCode(workspace);
-  const jsCode = generateJavaScriptCode(workspace);
+  // Use provided code or generate fallback
+  const finalPythonCode = pythonCode || generatePythonCode(workspace);
+  const finalJsCode = javascriptCode || generateJavaScriptCode(workspace);
 
   return (
     <Box
@@ -85,11 +92,11 @@ export default function LeftPanelSection({
       </TabPanel>
 
       <TabPanel value={activeTab} index={1}>
-        <CodeContent code={pythonCode} language="python" />
+        <CodeContent code={finalPythonCode} language="python" />
       </TabPanel>
 
       <TabPanel value={activeTab} index={2}>
-        <CodeContent code={jsCode} language="javascript" />
+        <CodeContent code={finalJsCode} language="javascript" />
       </TabPanel>
     </Box>
   );

@@ -79,6 +79,60 @@ button:focus-visible {
   }
 }
 
+/* Remove black borders from model-viewer when zooming */
+model-viewer {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  --poster-color: transparent !important;
+}
 
+model-viewer:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
 
+model-viewer canvas {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
 
+model-viewer canvas:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Additional CSS to remove any bounding boxes or containers */
+model-viewer .container,
+model-viewer .bounding-box,
+model-viewer .outline {
+  display: none !important;
+  border: none !important;
+  outline: none !important;
+}
+
+/* Hide any debug wireframes or helpers */
+model-viewer[data-js-focus-visible] {
+  border: none !important;
+  outline: none !important;
+}
+
+/* Remove borders from showcase images */
+.showcase-image img {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* Remove any default styling from images */
+img {
+  border: none;
+  outline: none;
+  box-shadow: none;
+}

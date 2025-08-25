@@ -247,13 +247,13 @@ const Header: React.FC = () => {
         position="fixed"
         elevation={0}
         sx={{
-          bgcolor: "rgba(255, 255, 255, 0.92)",
-          backdropFilter: "blur(12px)",
-          borderBottom: "1px solid rgba(139, 195, 74, 0.2)",
+          bgcolor: "rgba(34, 197, 94, 0.98)",
+          backdropFilter: "blur(15px)",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
           transition: "all 0.3s ease-in-out",
           boxShadow: mobileMenuOpen
             ? "none"
-            : "0 2px 15px rgba(139, 195, 74, 0.15)",
+            : "0 4px 20px rgba(34, 197, 94, 0.2)",
         }}
       >
         <Toolbar
@@ -274,30 +274,30 @@ const Header: React.FC = () => {
             >
               <Box
                 sx={{
-                  height: { xs: "55px", sm: "60px", md: "80px" },
-                  width: { xs: "55px", sm: "60px", md: "80px" },
+                  height: { xs: "120px", sm: "150px", md: "60px" },
+                  width: { xs: "120px", sm: "150px", md: "60px" },
                   mr: { xs: 1, sm: 1.5, md: 2 },
-                  borderRadius: "14px",
-                  boxShadow: "0 4px 20px rgba(139, 195, 74, 0.3)",
-                  border: "1.5px solid #8BC34A",
-                  background:
-                    "linear-gradient(135deg, #f1f8e9 0%, #e8f5e8 100%)",
+                  borderRadius: "12px",
                   cursor: "pointer",
                   transition: "all 0.3s ease",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: { xs: "1.5rem", sm: "1.8rem", md: "2rem" },
-                  fontWeight: 700,
-                  color: "#2E7D32",
                   "&:hover": {
-                    boxShadow: "0 6px 25px rgba(139, 195, 74, 0.5)",
                     transform: "translateY(-2px)",
                   },
                 }}
                 onClick={() => scrollToSection("home")}
               >
-                O
+                <img
+                  src="/asset/LogoOttobit.png"
+                  alt="OttoBit Logo"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                  }}
+                />
               </Box>
             </motion.div>
             <motion.div
@@ -306,18 +306,7 @@ const Header: React.FC = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               onClick={() => scrollToSection("home")}
               style={{ cursor: "pointer" }}
-            >
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 700,
-                  color: "#000000",
-                  fontSize: { xs: "1.2rem", sm: "1.5rem", md: "1.8rem" },
-                  display: { xs: "none", sm: "block" },
-                  letterSpacing: "-0.5px",
-                }}
-              ></Typography>
-            </motion.div>
+            ></motion.div>
           </Box>
 
           {/* Desktop Navigation */}
@@ -343,7 +332,7 @@ const Header: React.FC = () => {
                   onClick={() => scrollToSection(item.id)}
                   underline="none"
                   sx={{
-                    color: activeSection === item.id ? "#2E7D32" : "#555",
+                    color: activeSection === item.id ? "#ffffff" : "#dcfce7",
                     fontWeight: activeSection === item.id ? 600 : 500,
                     fontSize: { md: "0.95rem", lg: "1.05rem" },
                     position: "relative",
@@ -354,12 +343,12 @@ const Header: React.FC = () => {
                     borderRadius: "8px",
                     background:
                       activeSection === item.id
-                        ? "rgba(139, 195, 74, 0.1)"
+                        ? "rgba(255, 255, 255, 0.15)"
                         : "transparent",
                     transition: "all 0.3s ease",
                     "&:hover": {
-                      color: "#2E7D32",
-                      background: "rgba(139, 195, 74, 0.1)",
+                      color: "#ffffff",
+                      background: "rgba(255, 255, 255, 0.15)",
                     },
                     "&::after": {
                       content: '""',
@@ -368,7 +357,7 @@ const Header: React.FC = () => {
                       height: "2px",
                       bottom: "0",
                       left: "35%",
-                      background: "#8BC34A",
+                      background: "#ffffff",
                       transition: "width 0.3s ease",
                     },
                     "&:hover::after": {
@@ -589,17 +578,17 @@ const Header: React.FC = () => {
                 variant="contained"
                 onClick={handleLogin}
                 sx={{
-                  background: "linear-gradient(45deg, #8BC34A, #689F38)",
+                  background: "linear-gradient(45deg, #22c55e, #16a34a)",
                   color: "#ffffff",
                   borderRadius: { xs: "8px", sm: "10px", md: "12px" },
-                  boxShadow: "0 4px 15px rgba(139, 195, 74, 0.3)",
+                  boxShadow: "0 4px 15px rgba(34, 197, 94, 0.3)",
                   textTransform: "none",
                   fontWeight: 600,
                   padding: { xs: "8px 18px", sm: "8px 22px", md: "10px 26px" },
                   fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1.05rem" },
                   "&:hover": {
-                    background: "linear-gradient(45deg, #689F38, #558B2F)",
-                    boxShadow: "0 6px 20px rgba(139, 195, 74, 0.4)",
+                    background: "linear-gradient(45deg, #16a34a, #15803d)",
+                    boxShadow: "0 6px 20px rgba(34, 197, 94, 0.4)",
                   },
                 }}
               >

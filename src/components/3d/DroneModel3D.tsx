@@ -54,14 +54,18 @@ const DroneModel3D: React.FC<DroneModel3DProps> = ({
       sx={{
         width,
         height,
-        borderRadius: "20px",
-        overflow: "hidden",
-        background: "linear-gradient(135deg, #e5f9f4 0%, #e5f0f1 100%)",
-        border: "2px solid #70c8d2",
-        boxShadow: "0 10px 30px rgba(112, 200, 210, 0.2)",
+        overflow: "visible",
+        background: "transparent",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        border: "none",
+        outline: "none",
+        "& *": {
+          border: "none !important",
+          outline: "none !important",
+          boxShadow: "none !important",
+        },
       }}
     >
       <model-viewer
@@ -73,7 +77,11 @@ const DroneModel3D: React.FC<DroneModel3DProps> = ({
         style={{
           width: "100%",
           height: "100%",
-          borderRadius: "18px",
+          border: "none",
+          outline: "none",
+          boxShadow: "none",
+          background: "transparent",
+          backgroundColor: "transparent",
         }}
         loading="eager"
         reveal="auto"
@@ -84,6 +92,7 @@ const DroneModel3D: React.FC<DroneModel3DProps> = ({
         min-camera-orbit="auto auto auto"
         max-camera-orbit="auto auto auto"
         interpolation-decay="200"
+        disable-zoom="false"
       />
     </Box>
   );

@@ -68,48 +68,30 @@ export default function TopBarSection({
       position="static"
       elevation={0}
       sx={{
-        bgcolor: "#10b981",
-        borderBottom: "1px solid #059669",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        bgcolor: "#22c55e", // OttoBit theme color
+        borderBottom: "1px solid #16a34a",
+        boxShadow: "0 2px 8px rgba(34, 197, 94, 0.15)",
       }}
     >
       <Toolbar sx={{ minHeight: "72px !important", px: 2, gap: 2 }}>
-        {/* Logo Placeholder */}
+        {/* Logo OttoBit */}
         <Box
           sx={{
-            width: 40,
-            height: 40,
-            bgcolor: "#ffffff",
-            borderRadius: "8px",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
+            gap: 1,
             mr: 2,
           }}
         >
-          <Typography
-            sx={{
-              fontSize: "16px",
-              fontWeight: "bold",
-              color: "#10b981",
+          <img
+            src="/asset/LogoOttobit.png"
+            alt="OttoBit Logo"
+            style={{
+              height: "40px",
+              width: "auto",
             }}
-          >
-            O
-          </Typography>
+          />
         </Box>
-
-        {/* Project Title - Larger */}
-        <Typography
-          variant="h5"
-          sx={{
-            fontWeight: 700,
-            color: "#ffffff",
-            fontSize: "24px",
-            letterSpacing: "0.5px",
-          }}
-        >
-          Ottobit Studio
-        </Typography>
 
         {/* Spacer to center tabs */}
         <Box sx={{ flexGrow: 1 }} />
@@ -134,7 +116,7 @@ export default function TopBarSection({
                 minWidth: 60,
                 color: "#64748b",
                 "&.Mui-selected": {
-                  color: "#10b981",
+                  color: "#22c55e", // OttoBit theme color
                   bgcolor: "#f0fdf4",
                   borderRadius: "16px",
                 },
@@ -153,7 +135,7 @@ export default function TopBarSection({
                 <WorkspaceIcon
                   sx={{
                     fontSize: 32,
-                    color: activeTab === 0 ? "#10b981" : "#64748b",
+                    color: activeTab === 0 ? "#22c55e" : "#64748b", // OttoBit theme
                   }}
                 />
               }
@@ -164,7 +146,7 @@ export default function TopBarSection({
                 <PythonIcon
                   sx={{
                     fontSize: 32,
-                    color: activeTab === 1 ? "#306998" : "#64748b",
+                    color: activeTab === 1 ? "#22c55e" : "#64748b", // OttoBit theme
                   }}
                 />
               }
@@ -175,7 +157,7 @@ export default function TopBarSection({
                 <JavascriptIcon
                   sx={{
                     fontSize: 32,
-                    color: activeTab === 2 ? "#f7df1e" : "#64748b",
+                    color: activeTab === 2 ? "#22c55e" : "#64748b", // OttoBit theme
                   }}
                 />
               }
@@ -264,16 +246,16 @@ export default function TopBarSection({
             <IconButton
               onClick={isRunning ? handleStop : handleRun}
               sx={{
-                bgcolor: isRunning ? "#ef4444" : "#10b981",
+                bgcolor: isRunning ? "#ef4444" : "#22c55e", // OttoBit theme
                 color: "white",
                 width: 48,
                 height: 48,
                 "&:hover": {
-                  bgcolor: isRunning ? "#dc2626" : "#059669",
+                  bgcolor: isRunning ? "#dc2626" : "#16a34a", // OttoBit theme hover
                   transform: "translateY(-1px)",
                   boxShadow: isRunning
                     ? "0 4px 12px rgba(239, 68, 68, 0.4)"
-                    : "0 4px 12px rgba(16, 185, 129, 0.4)",
+                    : "0 4px 12px rgba(34, 197, 94, 0.4)", // OttoBit theme shadow
                 },
               }}
             >
@@ -289,16 +271,16 @@ export default function TopBarSection({
             <IconButton
               onClick={handleValidate}
               sx={{
-                bgcolor: "#e8f5e8",
-                color: "#2e7d32",
+                bgcolor: "#f0fdf4", // OttoBit light background
+                color: "#16a34a", // OttoBit darker green
                 width: 48,
                 height: 48,
-                border: "2px solid #4caf50",
+                border: "2px solid #22c55e", // OttoBit theme border
                 "&:hover": {
-                  bgcolor: "#4caf50",
+                  bgcolor: "#22c55e", // OttoBit theme
                   color: "white",
                   transform: "translateY(-1px)",
-                  boxShadow: "0 4px 12px rgba(76, 175, 80, 0.4)",
+                  boxShadow: "0 4px 12px rgba(34, 197, 94, 0.4)", // OttoBit theme shadow
                 },
               }}
             >
