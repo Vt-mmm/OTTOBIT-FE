@@ -209,7 +209,7 @@ const SecuritySettings: React.FC = () => {
           sx={{
             borderRadius: 3,
             boxShadow: "0 8px 32px rgba(139, 195, 74, 0.15)",
-            border: `1px solid ${alpha("#8BC34A", 0.2)}`,
+            border: `1px solid ${alpha("#22c55e", 0.2)}`,
           }}
         >
           <CardContent sx={{ p: 3 }}>
@@ -220,21 +220,21 @@ const SecuritySettings: React.FC = () => {
                   width: 48,
                   height: 48,
                   borderRadius: 2,
-                  bgcolor: alpha("#8BC34A", 0.1),
+                  bgcolor: alpha("#22c55e", 0.1),
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   mr: 2,
                 }}
               >
-                <SecurityIcon sx={{ color: "#2E7D32", fontSize: 24 }} />
+                <SecurityIcon sx={{ color: "#22c55e", fontSize: 24 }} />
               </Box>
               <Box>
                 <Typography
                   variant="h5"
                   sx={{
                     fontWeight: 700,
-                    color: "#2E7D32",
+                    color: "#22c55e",
                     mb: 0.5,
                   }}
                 >
@@ -255,7 +255,7 @@ const SecuritySettings: React.FC = () => {
                       borderRadius: 2,
                       mb: 1,
                       "&:hover": {
-                        bgcolor: alpha("#8BC34A", 0.05),
+                        bgcolor: alpha("#22c55e", 0.05),
                       },
                       transition: "all 0.2s ease",
                     }}
@@ -266,14 +266,14 @@ const SecuritySettings: React.FC = () => {
                           width: 40,
                           height: 40,
                           borderRadius: 2,
-                          bgcolor: alpha("#8BC34A", 0.1),
+                          bgcolor: alpha("#22c55e", 0.1),
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
                         }}
                       >
                         {React.cloneElement(feature.icon, {
-                          sx: { color: "#2E7D32", fontSize: 20 },
+                          sx: { color: "#22c55e", fontSize: 20 },
                         })}
                       </Box>
                     </ListItemIcon>
@@ -281,7 +281,7 @@ const SecuritySettings: React.FC = () => {
                       primary={
                         <Typography
                           variant="body1"
-                          sx={{ fontWeight: 600, color: "#2E7D32" }}
+                          sx={{ fontWeight: 600, color: "#22c55e" }}
                         >
                           {feature.title}
                         </Typography>
@@ -296,12 +296,12 @@ const SecuritySettings: React.FC = () => {
                       variant="outlined"
                       onClick={feature.onClick}
                       sx={{
-                        borderColor: "#8BC34A",
-                        color: "#2E7D32",
+                        borderColor: "#22c55e",
+                        color: "#22c55e",
                         fontWeight: 600,
                         "&:hover": {
-                          borderColor: "#689F38",
-                          bgcolor: alpha("#8BC34A", 0.1),
+                          borderColor: "#16a34a",
+                          bgcolor: alpha("#22c55e", 0.1),
                         },
                       }}
                     >
@@ -309,7 +309,7 @@ const SecuritySettings: React.FC = () => {
                     </Button>
                   </ListItem>
                   {index < securityFeatures.length - 1 && (
-                    <Divider sx={{ my: 1, bgcolor: alpha("#8BC34A", 0.1) }} />
+                    <Divider sx={{ my: 1, bgcolor: alpha("#22c55e", 0.1) }} />
                   )}
                 </React.Fragment>
               ))}
@@ -339,7 +339,7 @@ const SecuritySettings: React.FC = () => {
             pb: 1,
           }}
         >
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#2E7D32" }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "#22c55e" }}>
             Đổi mật khẩu
           </Typography>
           <IconButton onClick={handleCloseDialog} size="small">
@@ -388,11 +388,11 @@ const SecuritySettings: React.FC = () => {
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         "&.Mui-focused fieldset": {
-                          borderColor: "#8BC34A",
+                          borderColor: "#22c55e",
                         },
                       },
                       "& .MuiInputLabel-root.Mui-focused": {
-                        color: "#2E7D32",
+                        color: "#22c55e",
                       },
                     }}
                   />
@@ -429,11 +429,11 @@ const SecuritySettings: React.FC = () => {
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         "&.Mui-focused fieldset": {
-                          borderColor: "#8BC34A",
+                          borderColor: "#22c55e",
                         },
                       },
                       "& .MuiInputLabel-root.Mui-focused": {
-                        color: "#2E7D32",
+                        color: "#22c55e",
                       },
                     }}
                   />
@@ -472,11 +472,11 @@ const SecuritySettings: React.FC = () => {
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         "&.Mui-focused fieldset": {
-                          borderColor: "#8BC34A",
+                          borderColor: "#22c55e",
                         },
                       },
                       "& .MuiInputLabel-root.Mui-focused": {
-                        color: "#2E7D32",
+                        color: "#22c55e",
                       },
                     }}
                   />
@@ -500,12 +500,12 @@ const SecuritySettings: React.FC = () => {
               variant="contained"
               disabled={isLoading}
               sx={{
-                background: "linear-gradient(45deg, #8BC34A, #689F38)",
+                background: "linear-gradient(45deg, #22c55e, #16a34a)",
                 fontWeight: 600,
                 borderRadius: 2,
                 px: 3,
                 "&:hover": {
-                  background: "linear-gradient(45deg, #689F38, #558B2F)",
+                  background: "linear-gradient(45deg, #16a34a, #558B2F)",
                 },
               }}
             >
@@ -528,13 +528,13 @@ const SecuritySettings: React.FC = () => {
         PaperProps={{
           sx: {
             borderRadius: 3,
-            border: `1px solid ${alpha("#8BC34A", 0.2)}`,
+            border: `1px solid ${alpha("#22c55e", 0.2)}`,
           },
         }}
       >
         <DialogTitle>
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: "#2E7D32" }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, color: "#22c55e" }}>
               Quên mật khẩu
             </Typography>
             <Box sx={{ flexGrow: 1 }} />
@@ -570,11 +570,11 @@ const SecuritySettings: React.FC = () => {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       "&.Mui-focused fieldset": {
-                        borderColor: "#8BC34A",
+                        borderColor: "#22c55e",
                       },
                     },
                     "& .MuiInputLabel-root.Mui-focused": {
-                      color: "#2E7D32",
+                      color: "#22c55e",
                     },
                   }}
                 />
@@ -591,10 +591,10 @@ const SecuritySettings: React.FC = () => {
               variant="contained"
               disabled={isLoading}
               sx={{
-                background: "linear-gradient(45deg, #8BC34A, #689F38)",
+                background: "linear-gradient(45deg, #22c55e, #16a34a)",
                 fontWeight: 600,
                 "&:hover": {
-                  background: "linear-gradient(45deg, #689F38, #558B2F)",
+                  background: "linear-gradient(45deg, #16a34a, #558B2F)",
                 },
               }}
             >
@@ -613,13 +613,13 @@ const SecuritySettings: React.FC = () => {
         PaperProps={{
           sx: {
             borderRadius: 3,
-            border: `1px solid ${alpha("#8BC34A", 0.2)}`,
+            border: `1px solid ${alpha("#22c55e", 0.2)}`,
           },
         }}
       >
         <DialogTitle>
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: "#2E7D32" }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, color: "#22c55e" }}>
               Đặt lại mật khẩu
             </Typography>
             <Box sx={{ flexGrow: 1 }} />
@@ -652,7 +652,7 @@ const SecuritySettings: React.FC = () => {
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         "&.Mui-focused fieldset": {
-                          borderColor: "#8BC34A",
+                          borderColor: "#22c55e",
                         },
                       },
                     }}
@@ -673,7 +673,7 @@ const SecuritySettings: React.FC = () => {
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         "&.Mui-focused fieldset": {
-                          borderColor: "#8BC34A",
+                          borderColor: "#22c55e",
                         },
                       },
                     }}
@@ -695,7 +695,7 @@ const SecuritySettings: React.FC = () => {
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         "&.Mui-focused fieldset": {
-                          borderColor: "#8BC34A",
+                          borderColor: "#22c55e",
                         },
                       },
                     }}
@@ -717,7 +717,7 @@ const SecuritySettings: React.FC = () => {
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         "&.Mui-focused fieldset": {
-                          borderColor: "#8BC34A",
+                          borderColor: "#22c55e",
                         },
                       },
                     }}
@@ -736,10 +736,10 @@ const SecuritySettings: React.FC = () => {
               variant="contained"
               disabled={isLoading}
               sx={{
-                background: "linear-gradient(45deg, #8BC34A, #689F38)",
+                background: "linear-gradient(45deg, #22c55e, #16a34a)",
                 fontWeight: 600,
                 "&:hover": {
-                  background: "linear-gradient(45deg, #689F38, #558B2F)",
+                  background: "linear-gradient(45deg, #16a34a, #558B2F)",
                 },
               }}
             >

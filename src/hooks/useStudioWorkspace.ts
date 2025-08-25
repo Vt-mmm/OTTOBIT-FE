@@ -37,14 +37,17 @@ export const useStudioWorkspace = () => {
 
   // Stable updateWorkspace function
   const updateWorkspace = useCallback((newWorkspace: any) => {
-    console.log("updateWorkspace called with:", newWorkspace ? "workspace object" : "null");
-    
+    console.log(
+      "updateWorkspace called with:",
+      newWorkspace ? "workspace object" : "null"
+    );
+
     // Prevent recursive updates
     if (isUpdatingRef.current) {
       console.log("Update in progress, skipping");
       return;
     }
-    
+
     // Only update if workspace actually changed
     if (workspaceRef.current === newWorkspace) {
       console.log("Workspace unchanged, skipping update");
@@ -61,17 +64,23 @@ export const useStudioWorkspace = () => {
     if (newWorkspace) {
       const currentBlocks = newWorkspace.getAllBlocks().length;
       console.log("Setting up new workspace with blocks:", currentBlocks);
-      
-      // If we had a previous workspace and current has no blocks, 
+
+      // If we had a previous workspace and current has no blocks,
       // it might be a reset - let's skip this update
-      if (previousWorkspace && currentBlocks === 0 && previousWorkspace.getAllBlocks().length > 0) {
-        console.log("Potential workspace reset detected, restoring previous workspace");
+      if (
+        previousWorkspace &&
+        currentBlocks === 0 &&
+        previousWorkspace.getAllBlocks().length > 0
+      ) {
+        console.log(
+          "Potential workspace reset detected, restoring previous workspace"
+        );
         workspaceRef.current = previousWorkspace;
         setWorkspace(previousWorkspace);
         isUpdatingRef.current = false;
         return;
       }
-      
+
       // Function to update code with debouncing
       const updateCode = () => {
         // Clear previous timeout
@@ -85,13 +94,13 @@ export const useStudioWorkspace = () => {
             const currentWorkspace = workspaceRef.current;
             const blockCount = currentWorkspace.getAllBlocks().length;
             console.log("Generating code for", blockCount, "blocks");
-            
+
             const newPythonCode = generatePythonCode(currentWorkspace);
             const newJavaScriptCode = generateJavaScriptCode(currentWorkspace);
 
             setPythonCode(newPythonCode);
             setJavaScriptCode(newJavaScriptCode);
-            
+
             isUpdatingRef.current = false;
           } catch (error) {
             console.error("Error generating code:", error);
@@ -128,7 +137,7 @@ export const useStudioWorkspace = () => {
           updateCode();
         }
       };
-      
+
       // Mark the listener so we can identify it later
       changeListener.isStudioWorkspaceListener = true;
       newWorkspace.addChangeListener(changeListener);
@@ -139,26 +148,26 @@ export const useStudioWorkspace = () => {
 
   const handleTabChange = useCallback((tab: number) => {
     setActiveTab(tab);
-    
+
     // Force update code when switching to code tabs
     if ((tab === 1 || tab === 2) && workspaceRef.current) {
       try {
         const newPythonCode = generatePythonCode(workspaceRef.current);
         const newJavaScriptCode = generateJavaScriptCode(workspaceRef.current);
-        
+
         setPythonCode(newPythonCode);
         setJavaScriptCode(newJavaScriptCode);
       } catch (error) {
         console.error("Error generating code on tab change:", error);
       }
     }
-    
+
     // Force resize Blockly workspace when switching back to Blockly tab
     if (tab === 0 && workspaceRef.current) {
       setTimeout(() => {
         try {
           // Import Blockly dynamically to avoid SSR issues
-          import('blockly').then((Blockly) => {
+          import("blockly").then((Blockly) => {
             if (workspaceRef.current) {
               Blockly.svgResize(workspaceRef.current);
             }
@@ -176,7 +185,7 @@ export const useStudioWorkspace = () => {
       try {
         const newPythonCode = generatePythonCode(workspaceRef.current);
         const newJavaScriptCode = generateJavaScriptCode(workspaceRef.current);
-        
+
         setPythonCode(newPythonCode);
         setJavaScriptCode(newJavaScriptCode);
       } catch (error) {

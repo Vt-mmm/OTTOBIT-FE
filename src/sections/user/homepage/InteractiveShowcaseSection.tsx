@@ -5,7 +5,6 @@ import {
   PlayArrow as PlayIcon,
   Code as CodeIcon,
   Build as BuildIcon,
-  Psychology as AIIcon,
 } from "@mui/icons-material";
 
 interface TabPanelProps {

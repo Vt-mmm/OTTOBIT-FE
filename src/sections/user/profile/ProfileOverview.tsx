@@ -51,8 +51,8 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
       <Card
         sx={{
           borderRadius: 3,
-          boxShadow: "0 8px 32px rgba(139, 195, 74, 0.15)",
-          border: `1px solid ${alpha("#8BC34A", 0.2)}`,
+          boxShadow: "0 8px 32px rgba(34, 197, 94, 0.15)",
+          border: `1px solid ${alpha("#22c55e", 0.2)}`,
           overflow: "hidden",
           position: "relative",
         }}
@@ -61,7 +61,7 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
         <Box
           sx={{
             height: 120,
-            background: "linear-gradient(135deg, #8BC34A 0%, #689F38 100%)",
+            background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
             position: "relative",
           }}
         >
@@ -90,7 +90,7 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                 boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
                 mt: -6,
                 mr: 2,
-                background: "linear-gradient(45deg, #8BC34A, #4CAF50)",
+                background: "linear-gradient(45deg, #22c55e, #16a34a)",
                 fontSize: "2rem",
                 fontWeight: 600,
               }}
@@ -107,13 +107,13 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                   bgcolor: "white",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                   "&:hover": {
-                    bgcolor: alpha("#8BC34A", 0.1),
+                    bgcolor: alpha("#22c55e", 0.1),
                     transform: "scale(1.05)",
                   },
                   transition: "all 0.2s ease",
                 }}
               >
-                <EditIcon sx={{ color: "#8BC34A" }} />
+                <EditIcon sx={{ color: "#22c55e" }} />
               </IconButton>
             </Tooltip>
           </Box>

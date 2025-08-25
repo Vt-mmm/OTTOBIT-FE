@@ -21,7 +21,7 @@ import { useForm, FormProvider, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { PATH_AUTH, PATH_USER } from "../../routes/paths";
-import { CredentialResponse } from "@react-oauth/google";
+import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
 
 // Schema validation
 const schema = yup.object().shape({
@@ -99,36 +99,38 @@ const LoginForm: React.FC = () => {
   };
 
   // Handle Google login
-  const handleGoogleLogin = (response: CredentialResponse) => {
+  const handleGoogleLogin = async (response: CredentialResponse) => {
     if (!response.credential) {
       setLocalErrorMessage("Google authentication error. Please try again.");
       return;
     }
 
     try {
-      dispatch(googleLoginThunk(response.credential))
-        .unwrap()
-        .then((user) => {
-          if (!user || !user.roles) {
-            throw new Error("Unable to determine access rights.");
-          }
+      const user = await dispatch(
+        googleLoginThunk(response.credential)
+      ).unwrap();
 
-          // Navigate based on user role
-          if (user.roles.includes("Admin")) {
-            navigate("/admin/dashboard");
-          } else if (user.roles.includes("Psychologist")) {
-            navigate("/psychologist/dashboard");
-          } else {
-            navigate(PATH_USER.homepage);
-          }
-        })
-        .catch((error) => {
-          // Error handling without console logging
-          setLocalErrorMessage(error?.message || "Google login failed.");
-        });
-    } catch (/* eslint-disable @typescript-eslint/no-unused-vars */ error /* eslint-enable */) {
+      if (!user || !user.roles) {
+        throw new Error("Unable to determine access rights.");
+      }
+
+      // Clear any error messages
+      setLocalErrorMessage(null);
+      dispatch(setIsLogout(false));
+
+      // Navigate based on user role
+      if (user.roles.includes("Admin")) {
+        navigate("/admin/dashboard");
+      } else if (user.roles.includes("Psychologist")) {
+        navigate("/psychologist/dashboard");
+      } else {
+        navigate(PATH_USER.homepage);
+      }
+    } catch (error: any) {
       // Error handling without console logging
-      setLocalErrorMessage("An unexpected error occurred during Google login.");
+      setLocalErrorMessage(
+        error?.message || "Google login failed. Please try again."
+      );
     }
   };
 
@@ -328,33 +330,38 @@ const LoginForm: React.FC = () => {
             </Divider>
 
             <Stack direction="row" spacing={2}>
-              <Button
-                variant="outlined"
-                fullWidth
+              {/* Google Login Button */}
+              <Box
                 sx={{
-                  py: 1.5,
-                  borderRadius: 2,
-                  borderColor: "#e2e8f0",
-                  color: "#374151",
-                  textTransform: "none",
-                  "&:hover": {
-                    borderColor: "#22c55e",
-                    backgroundColor: "rgba(34, 197, 94, 0.04)",
+                  flex: 1,
+                  "& > div": {
+                    width: "100% !important",
+                  },
+                  "& > div > div": {
+                    width: "100% !important",
+                    borderRadius: "8px !important",
+                    border: "1px solid #e2e8f0 !important",
+                    "&:hover": {
+                      borderColor: "#22c55e !important",
+                      backgroundColor: "rgba(34, 197, 94, 0.04) !important",
+                    },
                   },
                 }}
-                startIcon={
-                  <img
-                    src="https://developers.google.com/identity/images/g-logo.png"
-                    alt="Google"
-                    style={{ width: "18px", height: "18px" }}
-                  />
-                }
-                onClick={() => {
-                  // Handle Google login integration here
-                }}
               >
-                Google
-              </Button>
+                <GoogleLogin
+                  onSuccess={handleGoogleLogin}
+                  onError={() => {
+                    setLocalErrorMessage(
+                      "Google login failed. Please try again."
+                    );
+                  }}
+                  theme="outline"
+                  size="large"
+                  width="100%"
+                  text="signin_with"
+                  shape="rectangular"
+                />
+              </Box>
 
               <Button
                 variant="outlined"

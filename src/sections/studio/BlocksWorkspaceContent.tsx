@@ -41,37 +41,41 @@ export default function BlocksWorkspaceContent({
     };
 
     // Listen for resize events
-    window.addEventListener('resize', handleResize);
-    
+    window.addEventListener("resize", handleResize);
+
     // Also create a mutation observer to watch for visibility changes
     let observer: MutationObserver | null = null;
     if (workspaceRef.current) {
       observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
-          if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+          if (
+            mutation.type === "attributes" &&
+            mutation.attributeName === "style"
+          ) {
             const target = mutation.target as HTMLElement;
-            const isVisible = target.style.visibility !== 'hidden' && 
-                            target.offsetParent !== null;
+            const isVisible =
+              target.style.visibility !== "hidden" &&
+              target.offsetParent !== null;
             if (isVisible && blocklyWorkspaceRef.current) {
               handleResize();
             }
           }
         });
       });
-      
+
       // Watch for style changes on parent containers
       let element = workspaceRef.current.parentElement;
       while (element) {
-        observer.observe(element, { 
-          attributes: true, 
-          attributeFilter: ['style', 'class'] 
+        observer.observe(element, {
+          attributes: true,
+          attributeFilter: ["style", "class"],
         });
         element = element.parentElement;
       }
     }
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
       if (observer) {
         observer.disconnect();
       }
@@ -188,9 +192,12 @@ export default function BlocksWorkspaceContent({
 
       // Store workspace reference
       blocklyWorkspaceRef.current = blocklyWorkspace;
-      
+
       // Notify parent component immediately
-      console.log("Initial workspace creation with blocks:", blocklyWorkspace.getAllBlocks().length);
+      console.log(
+        "Initial workspace creation with blocks:",
+        blocklyWorkspace.getAllBlocks().length
+      );
       if (onWorkspaceChange) {
         lastCallbackRef.current = onWorkspaceChange;
         onWorkspaceChange(blocklyWorkspace);
@@ -210,8 +217,15 @@ export default function BlocksWorkspaceContent({
   // Separate effect for workspace change callback updates
   useEffect(() => {
     // Only call if callback changed and we have a workspace, but don't call on initial render
-    if (blocklyWorkspaceRef.current && onWorkspaceChange && onWorkspaceChange !== lastCallbackRef.current) {
-      console.log("Callback changed, notifying with blocks:", blocklyWorkspaceRef.current.getAllBlocks().length);
+    if (
+      blocklyWorkspaceRef.current &&
+      onWorkspaceChange &&
+      onWorkspaceChange !== lastCallbackRef.current
+    ) {
+      console.log(
+        "Callback changed, notifying with blocks:",
+        blocklyWorkspaceRef.current.getAllBlocks().length
+      );
       lastCallbackRef.current = onWorkspaceChange;
       onWorkspaceChange(blocklyWorkspaceRef.current);
     }

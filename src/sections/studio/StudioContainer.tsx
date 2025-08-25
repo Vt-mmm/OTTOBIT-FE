@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import { useStudioWorkspace } from "../../hooks/useStudioWorkspace";
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import TopBarSection from "./TopBarSection";
 import BlocksWorkspaceContent from "./BlocksWorkspaceContent";
 import CodeContent from "./CodeContent";
@@ -15,7 +15,9 @@ export default function StudioContainer() {
   } = useStudioWorkspace();
 
   // Memoize callback to prevent re-creation
-  const memoizedUpdateWorkspace = useCallback(updateWorkspace, [updateWorkspace]);
+  const memoizedUpdateWorkspace = useCallback(updateWorkspace, [
+    updateWorkspace,
+  ]);
 
   return (
     <Box
