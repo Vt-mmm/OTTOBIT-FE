@@ -26,6 +26,9 @@ const EmailVerification = lazy(
 const EmailConfirmation = lazy(
   () => import("pages/auth/EmailConfirmationPage")
 );
+const ResendEmailConfirmationPage = lazy(
+  () => import("pages/auth/ResendEmailConfirmationPage")
+);
 // Define lazy-loaded components for user routes
 const SharedHomePage = lazy(() => import("pages/user/Homepage"));
 const RobotStudioPage = lazy(() => import("pages/studio/RobotStudioPage"));
@@ -226,6 +229,19 @@ function AppRouter() {
         <ReactRoute
           path={PATH_AUTH.confirmEmail}
           element={<EmailConfirmation />}
+        />
+        <ReactRoute
+          path={PATH_AUTH.resendEmailConfirmation}
+          element={
+            isAuthenticated && accessToken ? (
+              <Navigate
+                to={isAdmin ? PATH_ADMIN.dashboard : PATH_USER.homepage}
+                replace
+              />
+            ) : (
+              <ResendEmailConfirmationPage />
+            )
+          }
         />
 
         {/* Error Routes - Removed 403 route since we're handling it with redirects now */}

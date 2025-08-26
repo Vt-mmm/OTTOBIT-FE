@@ -1,6 +1,11 @@
 import { createAsyncThunk, Dispatch, PayloadAction } from "@reduxjs/toolkit";
 import { axiosClient } from "axiosClient/axiosClient";
-import { LoginForm, Params, ChangePasswordForm } from "common/@types";
+import {
+  LoginForm,
+  Params,
+  ChangePasswordForm,
+  ResendEmailConfirmationRequest,
+} from "common/@types";
 import { Role } from "common/enums";
 import { UserAuth } from "common/models";
 import { ROUTES_API_AUTH } from "constants/routesApiKeys";
@@ -543,6 +548,32 @@ export const forgotPasswordThunk = createAsyncThunk<
       err.message ||
       handleResponseMessage("Failed to send reset instructions");
     thunkAPI.dispatch(setMessageError(errorMessage));
+    return thunkAPI.rejectWithValue(errorMessage);
+  }
+});
+
+// Resend email confirmation thunk
+export const resendEmailConfirmationThunk = createAsyncThunk<
+  string,
+  ResendEmailConfirmationRequest,
+  { rejectValue: string }
+>("auth/resendEmailConfirmation", async (request, thunkAPI) => {
+  try {
+    const response = await axiosClient.post(
+      ROUTES_API_AUTH.RESEND_EMAIL_CONFIRMATION,
+      request
+    );
+
+    const successMessage =
+      response.data?.message || "Email xác nhận đã được gửi lại thành công!";
+    // Không dùng toast, chỉ return message để form handle
+    return successMessage;
+  } catch (err: any) {
+    const errorMessage =
+      err.response?.data?.message ||
+      err.message ||
+      "Gửi lại email xác nhận thất bại";
+    // Không dùng toast, chỉ return error để form handle
     return thunkAPI.rejectWithValue(errorMessage);
   }
 });

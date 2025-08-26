@@ -175,7 +175,31 @@ const LoginForm: React.FC = () => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2.5}>
             {(localErrorMessage || errorMessage) && (
-              <Alert severity="error" sx={{ mb: 2 }}>
+              <Alert
+                severity="error"
+                sx={{ mb: 2 }}
+                action={
+                  // Hiển thị button resend email nếu lỗi là email chưa confirm
+                  (localErrorMessage || errorMessage)?.includes(
+                    "Email is not confirmed"
+                  ) ? (
+                    <Button
+                      component={RouterLink}
+                      to={PATH_AUTH.resendEmailConfirmation}
+                      color="inherit"
+                      size="small"
+                      sx={{
+                        textDecoration: "underline",
+                        "&:hover": {
+                          textDecoration: "underline",
+                        },
+                      }}
+                    >
+                      Gửi lại email xác nhận
+                    </Button>
+                  ) : null
+                }
+              >
                 {localErrorMessage || errorMessage}
               </Alert>
             )}

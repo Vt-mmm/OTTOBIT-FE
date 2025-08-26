@@ -22,6 +22,7 @@ import {
   confirmEmailThunk,
   resetPasswordThunk,
   forgotPasswordThunk,
+  resendEmailConfirmationThunk,
 } from "./authThunks";
 
 export interface AuthState {
@@ -122,6 +123,12 @@ const authSlice = createSlice({
         email: "",
         isLogout: true,
       };
+    },
+    clearAuthErrors: (state) => {
+      state.isError = false;
+      state.isSuccess = false;
+      state.errorMessage = null;
+      state.message = "";
     },
   },
   extraReducers: (builder) => {
@@ -243,6 +250,29 @@ const authSlice = createSlice({
         state.isError = true;
         state.isSuccess = false;
         state.errorMessage = action.payload as string;
+      })
+
+      // Resend email confirmation cases
+      .addCase(resendEmailConfirmationThunk.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.isSuccess = false;
+        state.message = "";
+        state.errorMessage = null;
+      })
+      .addCase(resendEmailConfirmationThunk.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isError = false;
+        state.isSuccess = true;
+        state.message = action.payload;
+        state.errorMessage = null;
+      })
+      .addCase(resendEmailConfirmationThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.isSuccess = false;
+        state.message = "";
+        state.errorMessage = action.payload as string;
       });
   },
 });
@@ -259,6 +289,7 @@ export const {
   removeToken,
   setStatus,
   resetAuth,
+  clearAuthErrors,
 } = authSlice.actions;
 
 // Export the thunks directly from the authThunks file for use elsewhere
@@ -269,6 +300,7 @@ export {
   confirmEmailThunk as confirmEmail,
   resetPasswordThunk as resetPassword,
   forgotPasswordThunk as forgotPassword,
+  resendEmailConfirmationThunk as resendEmailConfirmation,
 };
 
 // Google login thunk

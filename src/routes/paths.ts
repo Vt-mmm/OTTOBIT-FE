@@ -18,6 +18,7 @@ export const PATH_AUTH = {
   resetPassword: path(ROOTS_AUTH, "/reset-password"),
   verifyEmail: path(ROOTS_AUTH, "/verify-email"),
   confirmEmail: path(ROOTS_AUTH, "/confirm-email"),
+  resendEmailConfirmation: path(ROOTS_AUTH, "/resend-email-confirmation"),
 };
 export const PATH_PUBLIC = {
   homepage: "/", // Đường dẫn gốc cho người dùng không cần đăng nhập

@@ -29,3 +29,7 @@ export interface ChangePasswordForm {
   newPassword: string;
   confirmNewPassword: string;
 }
+
+export interface ResendEmailFormData {
+  email: string;
+}
