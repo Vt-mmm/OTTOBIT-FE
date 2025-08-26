@@ -21,72 +21,9 @@ export default function BlocksWorkspaceContent({
   onWorkspaceChange,
 }: BlocksWorkspaceContentProps) {
   const workspaceRef = useRef<HTMLDivElement>(null);
-  const blocklyWorkspaceRef = useRef<any>(null);
-  const isInitializedRef = useRef(false);
-  const lastCallbackRef = useRef<typeof onWorkspaceChange>();
 
-  // Effect to handle workspace resizing when becoming visible
   useEffect(() => {
-    const handleResize = () => {
-      if (blocklyWorkspaceRef.current) {
-        // Use setTimeout to ensure DOM is fully updated
-        setTimeout(() => {
-          try {
-            Blockly.svgResize(blocklyWorkspaceRef.current);
-          } catch (error) {
-            console.warn("Error resizing Blockly workspace:", error);
-          }
-        }, 100);
-      }
-    };
-
-    // Listen for resize events
-    window.addEventListener("resize", handleResize);
-
-    // Also create a mutation observer to watch for visibility changes
-    let observer: MutationObserver | null = null;
     if (workspaceRef.current) {
-      observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (
-            mutation.type === "attributes" &&
-            mutation.attributeName === "style"
-          ) {
-            const target = mutation.target as HTMLElement;
-            const isVisible =
-              target.style.visibility !== "hidden" &&
-              target.offsetParent !== null;
-            if (isVisible && blocklyWorkspaceRef.current) {
-              handleResize();
-            }
-          }
-        });
-      });
-
-      // Watch for style changes on parent containers
-      let element = workspaceRef.current.parentElement;
-      while (element) {
-        observer.observe(element, {
-          attributes: true,
-          attributeFilter: ["style", "class"],
-        });
-        element = element.parentElement;
-      }
-    }
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      if (observer) {
-        observer.disconnect();
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (workspaceRef.current && !isInitializedRef.current) {
-      // Mark as initialized to prevent re-initialization
-      isInitializedRef.current = true;
-
       // Register custom Ottobit renderer
       new CustomBlocklyRenderer();
 
@@ -124,6 +61,7 @@ export default function BlocksWorkspaceContent({
               kind: "category",
               name: "🚗 Car",
               categorystyle: "car_category",
+              colour: "#5C9DFF",
               contents: [
                 { kind: "block", type: "start" },
                 { kind: "block", type: "move_forward" },
@@ -138,6 +76,7 @@ export default function BlocksWorkspaceContent({
               kind: "category",
               name: "🔄 Control",
               categorystyle: "control_category",
+              colour: "#10B981",
               contents: [
                 { kind: "block", type: "repeat" },
                 { kind: "block", type: "if_else" },
@@ -148,6 +87,7 @@ export default function BlocksWorkspaceContent({
               kind: "category",
               name: "⚡ Actions",
               categorystyle: "action_category",
+              colour: "#8E44AD",
               contents: [
                 { kind: "block", type: "collect" },
                 { kind: "block", type: "collect_green" },
@@ -157,6 +97,7 @@ export default function BlocksWorkspaceContent({
               kind: "category",
               name: "📡 Sensors",
               categorystyle: "sensor_category",
+              colour: "#F59E0B",
               contents: [{ kind: "block", type: "read_sensor" }],
             },
           ],
@@ -190,46 +131,13 @@ export default function BlocksWorkspaceContent({
         theme: ThemeOttobit,
       });
 
-      // Store workspace reference
-      blocklyWorkspaceRef.current = blocklyWorkspace;
-
-      // Notify parent component immediately
-      console.log(
-        "Initial workspace creation with blocks:",
-        blocklyWorkspace.getAllBlocks().length
-      );
-      if (onWorkspaceChange) {
-        lastCallbackRef.current = onWorkspaceChange;
-        onWorkspaceChange(blocklyWorkspace);
-      }
+      onWorkspaceChange?.(blocklyWorkspace);
 
       return () => {
-        console.log("Disposing workspace");
-        if (blocklyWorkspaceRef.current) {
-          blocklyWorkspaceRef.current.dispose();
-          blocklyWorkspaceRef.current = null;
-        }
-        isInitializedRef.current = false;
+        blocklyWorkspace.dispose();
       };
     }
-  }, []); // Empty dependency array to only run once
-
-  // Separate effect for workspace change callback updates
-  useEffect(() => {
-    // Only call if callback changed and we have a workspace, but don't call on initial render
-    if (
-      blocklyWorkspaceRef.current &&
-      onWorkspaceChange &&
-      onWorkspaceChange !== lastCallbackRef.current
-    ) {
-      console.log(
-        "Callback changed, notifying with blocks:",
-        blocklyWorkspaceRef.current.getAllBlocks().length
-      );
-      lastCallbackRef.current = onWorkspaceChange;
-      onWorkspaceChange(blocklyWorkspaceRef.current);
-    }
-  }, [onWorkspaceChange]);
+  }, []);
 
   return (
     <Box

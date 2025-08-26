@@ -1,19 +1,12 @@
+import { useState } from "react";
 import { Box } from "@mui/material";
-import { useStudioWorkspace } from "../../hooks/useStudioWorkspace";
 import TopBarSection from "sections/studio/TopBarSection";
 import LeftPanelSection from "sections/studio/LeftPanelSection";
 import SimulatorStageSection from "sections/studio/SimulatorStageSection";
 
 const RobotStudioPage = () => {
-  const {
-    workspace,
-    pythonCode,
-    javascriptCode,
-    activeTab,
-    updateWorkspace,
-    handleTabChange,
-  } = useStudioWorkspace();
-
+  const [activeTab, setActiveTab] = useState(0);
+  const [workspace, setWorkspace] = useState<any>(null);
   return (
     <Box
       sx={{
@@ -24,7 +17,7 @@ const RobotStudioPage = () => {
       }}
     >
       {/* Top Bar - Fixed height */}
-      <TopBarSection activeTab={activeTab} onTabChange={handleTabChange} />
+      <TopBarSection activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Main Content Area - Split into 2 columns */}
       <Box
@@ -44,9 +37,7 @@ const RobotStudioPage = () => {
         <LeftPanelSection
           activeTab={activeTab}
           workspace={workspace}
-          pythonCode={pythonCode}
-          javascriptCode={javascriptCode}
-          onWorkspaceChange={updateWorkspace}
+          onWorkspaceChange={setWorkspace}
         />
 
         {/* Right Panel - Robot Simulator */}

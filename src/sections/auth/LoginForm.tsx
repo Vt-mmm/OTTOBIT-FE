@@ -12,6 +12,8 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import HomeIcon from "@mui/icons-material/Home";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
@@ -21,7 +23,7 @@ import { useForm, FormProvider, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { PATH_AUTH, PATH_USER } from "../../routes/paths";
-import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 
 // Schema validation
 const schema = yup.object().shape({
@@ -99,38 +101,36 @@ const LoginForm: React.FC = () => {
   };
 
   // Handle Google login
-  const handleGoogleLogin = async (response: CredentialResponse) => {
+  const handleGoogleLogin = (response: CredentialResponse) => {
     if (!response.credential) {
       setLocalErrorMessage("Google authentication error. Please try again.");
       return;
     }
 
     try {
-      const user = await dispatch(
-        googleLoginThunk(response.credential)
-      ).unwrap();
+      dispatch(googleLoginThunk(response.credential))
+        .unwrap()
+        .then((user) => {
+          if (!user || !user.roles) {
+            throw new Error("Unable to determine access rights.");
+          }
 
-      if (!user || !user.roles) {
-        throw new Error("Unable to determine access rights.");
-      }
-
-      // Clear any error messages
-      setLocalErrorMessage(null);
-      dispatch(setIsLogout(false));
-
-      // Navigate based on user role
-      if (user.roles.includes("Admin")) {
-        navigate("/admin/dashboard");
-      } else if (user.roles.includes("Psychologist")) {
-        navigate("/psychologist/dashboard");
-      } else {
-        navigate(PATH_USER.homepage);
-      }
-    } catch (error: any) {
+          // Navigate based on user role
+          if (user.roles.includes("Admin")) {
+            navigate("/admin/dashboard");
+          } else if (user.roles.includes("Psychologist")) {
+            navigate("/psychologist/dashboard");
+          } else {
+            navigate(PATH_USER.homepage);
+          }
+        })
+        .catch((error) => {
+          // Error handling without console logging
+          setLocalErrorMessage(error?.message || "Google login failed.");
+        });
+    } catch (/* eslint-disable @typescript-eslint/no-unused-vars */ error /* eslint-enable */) {
       // Error handling without console logging
-      setLocalErrorMessage(
-        error?.message || "Google login failed. Please try again."
-      );
+      setLocalErrorMessage("An unexpected error occurred during Google login.");
     }
   };
 
@@ -138,40 +138,10 @@ const LoginForm: React.FC = () => {
     <FormProvider {...methods}>
       <Box
         component={motion.div}
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        sx={{
-          width: "100%",
-          maxWidth: 420,
-          p: 0, // Remove padding since we're inside the white container
-        }}
+        transition={{ duration: 0.5 }}
       >
-        {/* Header với logo */}
-        {/* Header */}
-        <Box sx={{ textAlign: "center", mb: 4 }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{
-              fontWeight: 700,
-              color: "#1a1a1a",
-              mb: 1,
-              fontSize: "32px",
-            }}
-          >
-            Login
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              color: "#6b7280",
-              fontSize: "16px",
-            }}
-          >
-            Welcome back! Please login to your account
-          </Typography>
-        </Box>{" "}
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2.5}>
             {(localErrorMessage || errorMessage) && (
@@ -181,6 +151,9 @@ const LoginForm: React.FC = () => {
             )}
 
             <Box>
+              <Typography variant="body2" mb={1}>
+                Email
+              </Typography>
               <Controller
                 name="email"
                 control={control}
@@ -189,28 +162,15 @@ const LoginForm: React.FC = () => {
                     {...field}
                     variant="outlined"
                     fullWidth
-                    placeholder="Email address"
-                    size="medium"
+                    required
+                    placeholder="Email"
+                    size="small"
                     error={!!errors.email}
                     helperText={errors.email?.message}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: 2,
-                        backgroundColor: "#ffffff",
-                        fontSize: "16px",
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#e2e8f0",
-                        },
-                        "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#22c55e",
-                        },
-                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#22c55e",
-                          borderWidth: "2px",
-                        },
-                      },
-                      "& .MuiInputBase-input": {
-                        padding: "14px 16px",
+                    InputProps={{
+                      sx: {
+                        borderRadius: 4,
+                        backgroundColor: "#FFFFFF",
                       },
                     }}
                   />
@@ -219,6 +179,9 @@ const LoginForm: React.FC = () => {
             </Box>
 
             <Box>
+              <Typography variant="body2" mb={1}>
+                Mật Khẩu
+              </Typography>
               <Controller
                 name="password"
                 control={control}
@@ -228,42 +191,21 @@ const LoginForm: React.FC = () => {
                     type={showPassword ? "text" : "password"}
                     variant="outlined"
                     fullWidth
+                    required
                     placeholder="Password"
-                    size="medium"
+                    size="small"
                     error={!!errors.password}
                     helperText={errors.password?.message}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: 2,
-                        backgroundColor: "#ffffff",
-                        fontSize: "16px",
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#e2e8f0",
-                        },
-                        "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#22c55e",
-                        },
-                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#22c55e",
-                          borderWidth: "2px",
-                        },
-                      },
-                      "& .MuiInputBase-input": {
-                        padding: "14px 16px",
-                      },
-                    }}
                     InputProps={{
+                      sx: {
+                        borderRadius: 4,
+                        backgroundColor: "#FFFFFF",
+                      },
                       endAdornment: (
                         <InputAdornment position="end">
                           <IconButton
                             onClick={() => setShowPassword(!showPassword)}
                             edge="end"
-                            sx={{
-                              color: "#6b7280",
-                              "&:hover": {
-                                color: "#22c55e",
-                              },
-                            }}
                           >
                             {showPassword ? <VisibilityOff /> : <Visibility />}
                           </IconButton>
@@ -275,152 +217,101 @@ const LoginForm: React.FC = () => {
               />
             </Box>
 
-            <Box sx={{ textAlign: "right" }}>
-              <Link
-                component={RouterLink}
-                to={PATH_AUTH.forgotPassword}
-                underline="none"
-                sx={{
-                  fontSize: "14px",
-                  color: "#6b7280",
-                  "&:hover": {
-                    color: "#22c55e",
-                  },
-                }}
-              >
-                Forgot password?
-              </Link>
-            </Box>
-
             <Button
               type="submit"
               variant="contained"
-              fullWidth
-              disabled={isLoading}
+              endIcon={
+                isLoading ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <ArrowForwardIcon />
+                )
+              }
               sx={{
-                py: 2,
-                borderRadius: 2,
-                fontSize: "16px",
-                fontWeight: 600,
+                bgcolor: "black",
+                borderRadius: 6,
+                fontWeight: 500,
+                py: 1.2,
                 textTransform: "none",
-                background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
                 "&:hover": {
-                  background:
-                    "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
-                },
-                "&:disabled": {
-                  background: "#94a3b8",
+                  bgcolor: "rgba(0, 0, 0, 0.8)",
                 },
               }}
+              fullWidth
+              disabled={isLoading}
             >
-              {isLoading ? (
-                <CircularProgress size={20} color="inherit" />
-              ) : (
-                "Login"
-              )}
+              {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
             </Button>
 
-            <Divider sx={{ my: 2 }}>
-              <Typography
-                variant="body2"
-                sx={{ color: "#6b7280", fontSize: "14px" }}
-              >
-                Or Login with
+            <Divider sx={{ my: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                Hoặc đăng nhập với
               </Typography>
             </Divider>
 
-            <Stack direction="row" spacing={2}>
-              {/* Google Login Button */}
-              <Box
-                sx={{
-                  flex: 1,
-                  "& > div": {
-                    width: "100% !important",
-                  },
-                  "& > div > div": {
-                    width: "100% !important",
-                    borderRadius: "8px !important",
-                    border: "1px solid #e2e8f0 !important",
-                    "&:hover": {
-                      borderColor: "#22c55e !important",
-                      backgroundColor: "rgba(34, 197, 94, 0.04) !important",
-                    },
-                  },
-                }}
-              >
-                <GoogleLogin
-                  onSuccess={handleGoogleLogin}
-                  onError={() => {
-                    setLocalErrorMessage(
-                      "Google login failed. Please try again."
-                    );
-                  }}
-                  theme="outline"
-                  size="large"
-                  width="100%"
-                  text="signin_with"
-                  shape="rectangular"
-                />
-              </Box>
-
-              <Button
-                variant="outlined"
-                fullWidth
-                sx={{
-                  py: 1.5,
-                  borderRadius: 2,
-                  borderColor: "#e2e8f0",
-                  color: "#374151",
-                  textTransform: "none",
-                  "&:hover": {
-                    borderColor: "#22c55e",
-                    backgroundColor: "rgba(34, 197, 94, 0.04)",
-                  },
-                }}
-                startIcon={
-                  <Box
-                    sx={{
-                      width: "18px",
-                      height: "18px",
-                      backgroundColor: "#1877f2",
-                      borderRadius: "4px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "white",
-                      fontSize: "12px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    f
-                  </Box>
-                }
-              >
-                Facebook
-              </Button>
-            </Stack>
-
-            <Box sx={{ textAlign: "center", mt: 2 }}>
-              <Typography sx={{ fontSize: "14px", color: "#6b7280" }}>
-                Don't have an account?{" "}
-                <Link
-                  component={RouterLink}
-                  to="/auth/register"
-                  underline="none"
-                  sx={{
-                    color: "#22c55e",
-                    fontWeight: 600,
-                    "&:hover": {
-                      color: "#16a34a",
-                    },
-                  }}
-                >
-                  Signup
-                </Link>
-              </Typography>
+            <Box sx={{ mt: 1, mb: 1 }}>
+              <GoogleLogin
+                onSuccess={handleGoogleLogin}
+                onError={() => setLocalErrorMessage("Google sign-in failed.")}
+                useOneTap
+                type="standard"
+                theme="filled_blue"
+                size="large"
+                shape="rectangular"
+                width="100%"
+                text="signin_with"
+                logo_alignment="left"
+              />
             </Box>
+
+            <Link
+              component={RouterLink}
+              to={PATH_AUTH.forgotPassword}
+              underline="hover"
+              sx={{
+                textAlign: "center",
+                fontSize: 14,
+                color: "text.secondary",
+                mt: 0.5,
+              }}
+            >
+              Quên mật khẩu?
+            </Link>
           </Stack>
         </form>
+
+        <Box sx={{ mt: 3, textAlign: "center" }}>
+          <Typography fontSize={14} mb={1.5}>
+            Đăng ký tài khoản mới?{" "}
+            <Link
+              component={RouterLink}
+              to="/auth/register"
+              underline="hover"
+              fontWeight={600}
+              color="primary"
+            >
+              Đăng Ký
+            </Link>
+          </Typography>
+
+          <Button
+            component={RouterLink}
+            to="/"
+            startIcon={<HomeIcon />}
+            variant="text"
+            size="small"
+            sx={{
+              fontSize: 13,
+              textTransform: "none",
+              color: "text.secondary",
+              "&:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
+              },
+            }}
+          >
+            Chở về trang chủ
+          </Button>
+        </Box>
       </Box>
     </FormProvider>
   );

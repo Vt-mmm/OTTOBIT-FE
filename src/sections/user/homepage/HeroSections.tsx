@@ -2,7 +2,7 @@ import { Box, Container, Typography, Button, Stack } from "@mui/material";
 import { motion } from "framer-motion";
 import { DroneModel3D } from "components/3d";
 import { useAppSelector } from "store/config";
-import { Science, School, Engineering } from "@mui/icons-material";
+import { Science, School, Engineering, AutoAwesome } from "@mui/icons-material";
 
 const HeroSection = () => {
   // Lấy trạng thái đăng nhập từ Redux store

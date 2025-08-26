@@ -46,7 +46,7 @@
     },
     {
       "source": "/auth/email-confirmation",
-      "destination": "/auth/confirm-email", 
+      "destination": "/auth/confirm-email",
       "permanent": false
     }
   ]
