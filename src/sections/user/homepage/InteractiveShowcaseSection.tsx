@@ -1,5 +1,5 @@
-import React, { useRef, useState } from "react";
-import { Box, Container, Typography, Button, Tab, Tabs } from "@mui/material";
+import React, { useRef } from "react";
+import { Box, Container, Typography, Button } from "@mui/material";
 import { motion, useInView } from "framer-motion";
 import {
   PlayArrow as PlayIcon,
@@ -7,36 +7,9 @@ import {
   Build as BuildIcon,
 } from "@mui/icons-material";
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`showcase-tabpanel-${index}`}
-      aria-labelledby={`showcase-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
-
 const InteractiveShowcaseSection: React.FC = () => {
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
-  const [value, setValue] = useState(0);
-
-  const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-  };
 
   const showcaseData = [
     {
@@ -54,17 +27,17 @@ const InteractiveShowcaseSection: React.FC = () => {
       ],
     },
     {
-      title: "Hardware Programming",
+      title: "Ottobit Robot",
       description:
-        "Lập trình vi điều khiển BBC micro:bit với các cảm biến tích hợp",
-      image: "/asset/Microbitv2.webp",
+        "Khám phá thế giới robotics với Ottobit - Robot thông minh có thể nhảy múa, tránh vật cản và tương tác",
+      image: "/OttoDIY/58077_854482.png",
       icon: <BuildIcon />,
       color: "#16a34a",
       features: [
-        "Cảm biến gia tốc tích hợp",
-        "Kết nối Bluetooth & Radio",
-        "Màn hình LED 5x5",
-        "Lập trình dễ dàng",
+        "Robot có thể di chuyển và nhảy múa",
+        "Cảm biến siêu âm tránh vật cản",
+        "Lập trình bằng Blockly",
+        "Thiết kế đáng yêu và thân thiện",
       ],
     },
   ];
@@ -168,56 +141,14 @@ const InteractiveShowcaseSection: React.FC = () => {
           </Box>
         </motion.div>
 
-        {/* Interactive Tabs */}
-        <motion.div
-          initial={{ y: 50, opacity: 0 }}
-          animate={isInView ? { y: 0, opacity: 1 } : {}}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 4 }}>
-            <Tabs
-              value={value}
-              onChange={handleChange}
-              centered
-              sx={{
-                "& .MuiTab-root": {
-                  textTransform: "none",
-                  fontSize: "1.1rem",
-                  fontWeight: 600,
-                  color: "#666",
-                  "&.Mui-selected": {
-                    color: "#22c55e",
-                  },
-                },
-                "& .MuiTabs-indicator": {
-                  backgroundColor: "#22c55e",
-                  height: 3,
-                },
-              }}
-            >
-              {showcaseData.map((item, index) => (
-                <Tab
-                  key={index}
-                  icon={item.icon}
-                  iconPosition="start"
-                  label={item.title}
-                  sx={{
-                    minWidth: { xs: "auto", md: 200 },
-                    px: { xs: 1, md: 3 },
-                  }}
-                />
-              ))}
-            </Tabs>
-          </Box>
-        </motion.div>
-
-        {/* Tab Panels */}
-        {showcaseData.map((item, index) => (
-          <TabPanel key={index} value={value} index={index}>
+        {/* Showcase Content - Vertical Layout */}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: { xs: 8, md: 12 } }}>
+          {showcaseData.map((item, index) => (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              key={index}
+              initial={{ opacity: 0, y: 50 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.3 + index * 0.2 }}
             >
               <Box
                 sx={{
@@ -226,10 +157,32 @@ const InteractiveShowcaseSection: React.FC = () => {
                   gap: { xs: 4, md: 6 },
                   alignItems: "center",
                   minHeight: "600px",
+                  py: { xs: 4, md: 6 },
+                  borderRadius: "24px",
+                  background: index % 2 === 0 ? "rgba(34, 197, 94, 0.03)" : "rgba(22, 163, 74, 0.03)",
+                  border: `1px solid ${index % 2 === 0 ? "rgba(34, 197, 94, 0.1)" : "rgba(22, 163, 74, 0.1)"}`,
+                  px: { xs: 3, md: 4 },
                 }}
               >
                 {/* Content Side */}
                 <Box sx={{ order: { xs: 2, md: index % 2 === 0 ? 1 : 2 } }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: item.color,
+                      fontWeight: 600,
+                      mb: 2,
+                      textTransform: "uppercase",
+                      letterSpacing: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                    }}
+                  >
+                    {item.icon}
+                    {item.title}
+                  </Typography>
+
                   <Typography
                     variant="h3"
                     sx={{
@@ -267,10 +220,10 @@ const InteractiveShowcaseSection: React.FC = () => {
                       <motion.div
                         key={featureIndex}
                         initial={{ x: -20, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
+                        animate={isInView ? { x: 0, opacity: 1 } : {}}
                         transition={{
                           duration: 0.5,
-                          delay: featureIndex * 0.1,
+                          delay: 0.5 + index * 0.2 + featureIndex * 0.1,
                         }}
                       >
                         <Box
@@ -413,8 +366,8 @@ const InteractiveShowcaseSection: React.FC = () => {
                 </Box>
               </Box>
             </motion.div>
-          </TabPanel>
-        ))}
+          ))}
+        </Box>
       </Container>
     </Box>
   );

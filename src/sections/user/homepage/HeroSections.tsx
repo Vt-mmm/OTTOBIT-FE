@@ -20,8 +20,7 @@ const HeroSection = () => {
         width: "100%",
         pt: { xs: 12, md: 14 },
         pb: { xs: 5, md: 8 },
-        background:
-          "linear-gradient(135deg, #f0fdf4 0%, rgba(34, 197, 94, 0.15) 30%, #ecfdf5 70%, rgba(22, 163, 74, 0.1) 100%)",
+        background: "#ffffff",
         position: "relative",
         minHeight: { xs: "550px", md: "650px" },
         display: "flex",
@@ -30,7 +29,7 @@ const HeroSection = () => {
         overflow: "hidden",
       }}
     >
-      {/* Decorative Elements - STEM themed */}
+      {/* Decorative Elements */}
       <Box
         component={motion.div}
         initial={{ scale: 0, opacity: 0 }}
@@ -68,7 +67,7 @@ const HeroSection = () => {
         }}
       />
 
-      {/* Floating STEM Icons */}
+      {/* Floating Icons */}
       <Box
         component={motion.div}
         initial={{ y: 20, opacity: 0 }}
@@ -165,17 +164,47 @@ const HeroSection = () => {
                 component="h1"
                 sx={{
                   fontWeight: 700,
-                  color: "#000000",
-                  fontSize: { xs: "2.4rem", sm: "3rem", md: "4rem" },
-                  lineHeight: 1.2,
-                  mb: 3,
+                  fontSize: { xs: "3rem", sm: "4rem", md: "5rem" },
+                  lineHeight: 1.1,
+                  mb: 2,
                 }}
               >
-                <Box component="span" sx={{ color: "#22c55e" }}>
-                  OttoBit
+                <Box 
+                  component="span" 
+                  sx={{ 
+                    color: "#1f2937",
+                    display: "block",
+                    fontSize: { xs: "2.5rem", sm: "3.5rem", md: "4.5rem" },
+                  }}
+                >
+                  Meet
                 </Box>
+                <Box 
+                  component="span" 
+                  sx={{ 
+                    color: "#22c55e",
+                    fontWeight: 800,
+                    fontSize: { xs: "3.5rem", sm: "4.5rem", md: "6rem" },
+                  }}
+                >
+                  Ottobit
+                </Box>
+              </Typography>
+              
+              <Typography
+                variant="h2"
+                sx={{
+                  color: "#374151",
+                  fontSize: { xs: "1.2rem", sm: "1.4rem", md: "1.6rem" },
+                  fontWeight: 500,
+                  lineHeight: 1.4,
+                  mb: 4,
+                  maxWidth: "500px",
+                }}
+              >
+                your unique STEAM learning companion
                 <br />
-                STEM Education Platform
+                and complete robotics solution
               </Typography>
             </motion.div>
 
@@ -184,20 +213,91 @@ const HeroSection = () => {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.7 }}
             >
-              <Typography
-                variant="body1"
-                paragraph
+              {/* Feature Icons Section */}
+              <Box
                 sx={{
-                  color: "#444",
-                  fontSize: { xs: "1rem", md: "1.1rem" },
-                  lineHeight: 1.7,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  maxWidth: "400px",
                   mb: 4,
+                  gap: 3,
                 }}
               >
-                Khám phá thế giới STEM với OttoBit - nền tảng giáo dục tương tác
-                kết hợp Robotics, AI và lập trình trực quan. Trải nghiệm học tập
-                thông qua mô hình 3D và các dự án thực tế hấp dẫn.
-              </Typography>
+                {/* Build */}
+                <Box sx={{ textAlign: "center", color: "#374151" }}>
+                  <Box
+                    sx={{
+                      width: 60,
+                      height: 60,
+                      borderRadius: "50%",
+                      backgroundColor: "rgba(34, 197, 94, 0.2)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mb: 1,
+                      mx: "auto",
+                    }}
+                  >
+                    <Engineering sx={{ fontSize: 28, color: "#22c55e" }} />
+                  </Box>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: "#22c55e" }}>
+                    Build
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#374151", opacity: 0.8 }}>
+                    Easy and simple<br />to program
+                  </Typography>
+                </Box>
+
+                {/* Learn */}
+                <Box sx={{ textAlign: "center", color: "#374151" }}>
+                  <Box
+                    sx={{
+                      width: 60,
+                      height: 60,
+                      borderRadius: "50%",
+                      backgroundColor: "rgba(34, 197, 94, 0.2)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mb: 1,
+                      mx: "auto",
+                    }}
+                  >
+                    <Science sx={{ fontSize: 28, color: "#22c55e" }} />
+                  </Box>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: "#22c55e" }}>
+                    Learn
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#374151", opacity: 0.8 }}>
+                    Creativity and<br />problem solving
+                  </Typography>
+                </Box>
+
+                {/* Expandable */}
+                <Box sx={{ textAlign: "center", color: "#374151" }}>
+                  <Box
+                    sx={{
+                      width: 60,
+                      height: 60,
+                      borderRadius: "50%",
+                      backgroundColor: "rgba(34, 197, 94, 0.2)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mb: 1,
+                      mx: "auto",
+                    }}
+                  >
+                    <School sx={{ fontSize: 28, color: "#22c55e" }} />
+                  </Box>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: "#22c55e" }}>
+                    Expandable
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#374151", opacity: 0.8 }}>
+                    Let your imagination<br />flow!
+                  </Typography>
+                </Box>
+              </Box>
             </motion.div>
 
             {/* Chỉ hiển thị các nút khi người dùng chưa đăng nhập */}
@@ -220,31 +320,33 @@ const HeroSection = () => {
                       color: "#fff",
                       px: 4,
                       py: 1.3,
-                      borderRadius: 1,
+                      borderRadius: 2,
                       fontWeight: 600,
+                      textTransform: "none",
                       "&:hover": {
                         bgcolor: "#16a34a",
                       },
                     }}
                   >
-                    Bắt đầu học
+                    🛒 Get yours here!
                   </Button>
                   <Button
-                    variant="outlined"
+                    variant="contained"
                     href="#features"
                     sx={{
-                      color: "#22c55e",
-                      borderColor: "#22c55e",
-                      px: 3,
-                      py: 1.2,
-                      borderRadius: 1,
+                      bgcolor: "#f59e0b",
+                      color: "#fff",
+                      px: 4,
+                      py: 1.3,
+                      borderRadius: 2,
+                      fontWeight: 600,
+                      textTransform: "none",
                       "&:hover": {
-                        borderColor: "#16a34a",
-                        bgcolor: "rgba(34, 197, 94, 0.04)",
+                        bgcolor: "#d97706",
                       },
                     }}
                   >
-                    Khám phá tính năng
+                    ⚙️ Specifications
                   </Button>
                 </Stack>
               </motion.div>
