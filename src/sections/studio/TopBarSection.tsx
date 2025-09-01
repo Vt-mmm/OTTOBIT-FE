@@ -74,28 +74,30 @@ export default function TopBarSection({
       }}
     >
       <Toolbar sx={{ minHeight: "72px !important", px: 2, gap: 2 }}>
-        {/* Logo Placeholder */}
+        {/* Ottobit Logo */}
         <Box
           sx={{
-            width: 40,
-            height: 40,
+            width: 50,
+            height: 50,
             bgcolor: "#ffffff",
-            borderRadius: "8px",
+            borderRadius: "12px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             mr: 2,
+            p: 0.5,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
           }}
         >
-          <Typography
-            sx={{
-              fontSize: "16px",
-              fontWeight: "bold",
-              color: "#10b981",
+          <img
+            src="/asset/LogoOttobit.png"
+            alt="Ottobit Logo"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
             }}
-          >
-            O
-          </Typography>
+          />
         </Box>
 
         {/* Project Title - Larger */}

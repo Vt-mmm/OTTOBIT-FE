@@ -25,6 +25,16 @@ export const ThemeOttobit = Blockly.Theme.defineTheme("ottobit-theme", {
       colourSecondary: "#BB8FCE",
       colourTertiary: "#7D3C98",
     },
+    ottobit_control: {
+      colourPrimary: "#8E44AD", // Tím cho control blocks
+      colourSecondary: "#BB8FCE",
+      colourTertiary: "#7D3C98",
+    },
+    ottobit_wait: {
+      colourPrimary: "#E74C3C", // Đỏ cho wait
+      colourSecondary: "#F1948A",
+      colourTertiary: "#C0392B",
+    },
     ottobit_var: {
       colourPrimary: "#E74C3C", // Đỏ cho stop/vars
       colourSecondary: "#F1948A",

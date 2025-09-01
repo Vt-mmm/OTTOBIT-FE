@@ -4,6 +4,9 @@ import { defineControlBlocks } from "./control";
 import { defineSensorBlocks } from "./sensor";
 import { defineActionBlocks } from "./action";
 
+// Export BlockToolbox
+export { default as BlockToolbox } from "./BlockToolbox";
+
 // Import generators
 export {
   generatePythonCode,
@@ -17,19 +20,16 @@ export {
   // Movement blocks
   startBlock,
   moveForwardBlock,
-  moveBackwardBlock,
-  turnLeftBlock,
-  turnRightBlock,
   rotateBlock,
-  stopBlock,
   defineMovementBlocks,
 } from "./movement";
 
 export {
   // Control blocks
   repeatBlock,
-  ifElseBlock,
-  waitBlock,
+  repeatRangeBlock,
+  comparisonBlock,
+  ifBlock,
   defineControlBlocks,
 } from "./control";
 

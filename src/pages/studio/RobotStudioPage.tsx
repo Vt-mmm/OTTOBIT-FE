@@ -13,7 +13,7 @@ const RobotStudioPage = () => {
         height: "100vh",
         display: "flex",
         flexDirection: "column",
-        bgcolor: "#f1f5f9",
+        bgcolor: "#ffffff", // Pure white background
       }}
     >
       {/* Top Bar - Fixed height */}
@@ -24,7 +24,7 @@ const RobotStudioPage = () => {
         sx={{
           flex: 1,
           display: "grid",
-          gridTemplateColumns: "1049px 1fr",
+          gridTemplateColumns: "900px 1fr", // Thu hẹp cột trái để workspace không quá rộng
           gap: 2,
           pl: 0,
           pr: 2,

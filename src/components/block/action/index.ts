@@ -36,8 +36,8 @@ export const collectBlock = () => {
           {
             type: "field_image",
             src: dataUri(BATTERY_YELLOW_SVG),
-            width: 24,
-            height: 24,
+            width: 32,
+            height: 32,
             alt: "battery",
           },
           {
@@ -45,13 +45,14 @@ export const collectBlock = () => {
             name: "AMOUNT",
             value: 1,
             min: 1,
+            max: 10,
             precision: 1,
           },
         ],
         previousStatement: null,
         nextStatement: null,
-        style: "ottobit_action",
-        tooltip: "Thu thập vật phẩm",
+        colour: "#4285F4",
+        tooltip: "Thu thập pin vàng",
       });
     },
   };
@@ -70,8 +71,8 @@ export const collectGreenBlock = () => {
           {
             type: "field_image",
             src: dataUri(BATTERY_GREEN_SVG),
-            width: 24,
-            height: 24,
+            width: 32,
+            height: 32,
             alt: "green_battery",
           },
           {
@@ -79,13 +80,14 @@ export const collectGreenBlock = () => {
             name: "AMOUNT",
             value: 1,
             min: 1,
+            max: 10,
             precision: 1,
           },
         ],
         previousStatement: null,
         nextStatement: null,
-        style: "ottobit_action",
-        tooltip: "Thu thập vật phẩm xanh",
+        colour: "#4285F4",
+        tooltip: "Thu thập pin xanh",
       });
     },
   };

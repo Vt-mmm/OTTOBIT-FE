@@ -10,43 +10,38 @@ const dataUri = (svg: string) =>
 const PLAY_SVG = `
 <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="g" x1="0" x2="1">
-      <stop offset="0" stop-color="#41D38A"/><stop offset="1" stop-color="#16AB65"/>
+    <linearGradient id="playGradient" x1="0" x2="1">
+      <stop offset="0" stop-color="#4CAF50"/><stop offset="1" stop-color="#2E7D32"/>
     </linearGradient>
   </defs>
-  <circle cx="20" cy="20" r="18" fill="url(#g)" />
-  <polygon points="16,12 30,20 16,28" fill="#fff"/>
+  <circle cx="20" cy="20" r="18" fill="url(#playGradient)" stroke="white" stroke-width="2"/>
+  <polygon points="15,10 15,30 30,20" fill="white"/>
 </svg>`;
 
-const CIRCLE_ICON = (inner: string) => `
-<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="10" cy="10" r="9" fill="#3B82F6"/>
-  ${inner}
+// Arrow up icon for move forward
+const ARROW_UP_SVG = `
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="arrowGradient" x1="0" x2="1">
+      <stop offset="0" stop-color="#2196F3"/><stop offset="1" stop-color="#1976D2"/>
+    </linearGradient>
+  </defs>
+  <circle cx="16" cy="16" r="14" fill="url(#arrowGradient)"/>
+  <polygon points="16,6 24,18 8,18" fill="white"/>
 </svg>`;
 
-// arrow up (forward)
-const ARROW_UP_SVG = CIRCLE_ICON(
-  `<path d="M10 4 L16 10 L10 16 Z" fill="white" transform="rotate(-90 10 10)"/>`
-);
-// arrow down (backward)
-const ARROW_DOWN_SVG = CIRCLE_ICON(
-  `<path d="M10 4 L16 10 L10 16 Z" fill="white" transform="rotate(90 10 10)"/>`
-);
-// turn left ↺
-const TURN_LEFT_SVG = CIRCLE_ICON(
-  `<path d="M10 5 A5 5 0 1 1 9.8 5" stroke="white" stroke-width="2" fill="none"/>
-   <polygon points="6,7 10,7 8,10" fill="white"/>`
-);
-// turn right ↻
-const TURN_RIGHT_SVG = CIRCLE_ICON(
-  `<path d="M10 5 A5 5 0 1 1 9.8 5" stroke="white" stroke-width="2" fill="none" transform="scale(-1,1) translate(-20,0)"/>
-   <polygon points="14,7 10,7 12,10" fill="white"/>`
-);
-// rotate icon
-const ROTATE_SVG = CIRCLE_ICON(
-  `<path d="M10 5 A5 5 0 1 1 9.8 5" stroke="white" stroke-width="2" fill="none"/>
-   <polygon points="13,6 17,6 15,9" fill="white"/>`
-);
+// Rotate icon  
+const ROTATE_SVG = `
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="rotateGradient" x1="0" x2="1">
+      <stop offset="0" stop-color="#2196F3"/><stop offset="1" stop-color="#1976D2"/>
+    </linearGradient>
+  </defs>
+  <circle cx="16" cy="16" r="14" fill="url(#rotateGradient)"/>
+  <path d="M16 8 A8 8 0 1 1 15.8 8" stroke="white" stroke-width="2.5" fill="none"/>
+  <polygon points="22,10 26,10 24,13" fill="white"/>
+</svg>`;
 
 /** ----------
  *  START (event) block with cap & play button
@@ -66,14 +61,13 @@ export const startBlock = () => {
           {
             type: "field_image",
             src: dataUri(PLAY_SVG),
-            width: 32, // To hơn
-            height: 32, // To hơn
-            alt: "run",
+            width: 40,
+            height: 40,
+            alt: "start",
           },
         ],
-        hat: "cap",
-        nextStatement: null,
-        style: "ottobit_event",
+        nextStatement: null, // Chỉ có next, không có previous để làm block khởi đầu
+        style: "ottobit_event", // Sử dụng style thay vì colour trực tiếp
         tooltip: "Bắt đầu chương trình",
       });
     },
@@ -109,116 +103,23 @@ export const moveForwardBlock = () => {
           {
             type: "field_image",
             src: dataUri(ARROW_UP_SVG),
-            width: 24, // To hơn
-            height: 24, // To hơn
-            alt: "up",
+            width: 32,
+            height: 32,
+            alt: "move forward",
           },
           {
             type: "field_number",
             name: "STEPS",
             value: 1,
             min: 1,
+            max: 10,
             precision: 1,
           },
         ],
         previousStatement: null,
         nextStatement: null,
-        style: "ottobit_motion",
-        tooltip: "Di chuyển về phía trước",
-      });
-    },
-  };
-};
-
-/** ----------
- *  MOVE BACKWARD
- *  ---------- */
-export const moveBackwardBlock = () => {
-  if (Blockly.Blocks["move_backward"]) return;
-
-  Blockly.Blocks["move_backward"] = {
-    init: function () {
-      this.jsonInit({
-        type: "move_backward",
-        message0: "%1 move backward %2",
-        args0: [
-          {
-            type: "field_image",
-            src: dataUri(ARROW_DOWN_SVG),
-            width: 24, // To hơn
-            height: 24, // To hơn
-            alt: "down",
-          },
-          {
-            type: "field_number",
-            name: "STEPS",
-            value: 1,
-            min: 1,
-            precision: 1,
-          },
-        ],
-        previousStatement: null,
-        nextStatement: null,
-        style: "ottobit_motion",
-        tooltip: "Di chuyển về phía sau",
-      });
-    },
-  };
-};
-
-/** ----------
- *  TURN LEFT
- *  ---------- */
-export const turnLeftBlock = () => {
-  if (Blockly.Blocks["turn_left"]) return;
-
-  Blockly.Blocks["turn_left"] = {
-    init: function () {
-      this.jsonInit({
-        type: "turn_left",
-        message0: "%1 turn left",
-        args0: [
-          {
-            type: "field_image",
-            src: dataUri(TURN_LEFT_SVG),
-            width: 24, // To hơn
-            height: 24, // To hơn
-            alt: "↺",
-          },
-        ],
-        previousStatement: null,
-        nextStatement: null,
-        style: "ottobit_motion",
-        tooltip: "Quay trái 90°",
-      });
-    },
-  };
-};
-
-/** ----------
- *  TURN RIGHT
- *  ---------- */
-export const turnRightBlock = () => {
-  if (Blockly.Blocks["turn_right"]) return;
-
-  Blockly.Blocks["turn_right"] = {
-    init: function () {
-      this.jsonInit({
-        type: "turn_right",
-        message0: "%1 turn right",
-        args0: [
-          {
-            type: "field_image",
-            src: dataUri(TURN_RIGHT_SVG),
-            width: 24, // To hơn
-            height: 24, // To hơn
-            alt: "↻",
-          },
-        ],
-        previousStatement: null,
-        nextStatement: null,
-        style: "ottobit_motion",
-        tooltip: "Quay phải 90°",
+        style: "ottobit_motion", // Sử dụng style
+        tooltip: "Di chuyển robot về phía trước",
       });
     },
   };
@@ -239,9 +140,9 @@ export const rotateBlock = () => {
           {
             type: "field_image",
             src: dataUri(ROTATE_SVG),
-            width: 24, // To hơn
-            height: 24, // To hơn
-            alt: "rot",
+            width: 32,
+            height: 32,
+            alt: "rotate",
           },
           {
             type: "field_dropdown",
@@ -254,27 +155,8 @@ export const rotateBlock = () => {
         ],
         previousStatement: null,
         nextStatement: null,
-        style: "ottobit_motion",
-        tooltip: "Xoay trái/phải",
-      });
-    },
-  };
-};
-
-/** ----------
- *  STOP
- *  ---------- */
-export const stopBlock = () => {
-  if (Blockly.Blocks["stop"]) return;
-
-  Blockly.Blocks["stop"] = {
-    init: function () {
-      this.jsonInit({
-        type: "stop",
-        message0: "⏹️ stop",
-        previousStatement: null,
-        style: "ottobit_var", // màu đỏ từ theme
-        tooltip: "Dừng robot",
+        style: "ottobit_motion", // Sử dụng style
+        tooltip: "Xoay robot trái hoặc phải",
       });
     },
   };
@@ -286,9 +168,5 @@ export const stopBlock = () => {
 export const defineMovementBlocks = () => {
   startBlock();
   moveForwardBlock();
-  moveBackwardBlock();
-  turnLeftBlock();
-  turnRightBlock();
   rotateBlock();
-  stopBlock();
 };

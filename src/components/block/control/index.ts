@@ -1,6 +1,6 @@
 import * as Blockly from "blockly";
 
-// Repeat Block
+// Simple Repeat Block (giống HP Robots)
 export const repeatBlock = () => {
   if (Blockly.Blocks["repeat"]) return;
 
@@ -8,40 +8,140 @@ export const repeatBlock = () => {
     init: function () {
       this.jsonInit({
         type: "repeat",
-        message0: "🔄 repeat %1 times",
+        message0: "repeat 🔄 %1",
         args0: [
           {
             type: "field_number",
             name: "TIMES",
-            value: 3,
+            value: 1,
             min: 1,
             precision: 1,
           },
         ],
-        message1: "do %1",
+        message1: "%1", // Statement input cho blocks bên trong
         args1: [
           {
             type: "input_statement",
             name: "DO",
+            check: null, // Accept any statement blocks
           },
         ],
-        previousStatement: null,
-        nextStatement: null,
-        style: "ottobit_action", // Use green color for control
+        previousStatement: null, // Có thể gắn với block phía trên
+        nextStatement: null,     // Có thể gắn với block phía dưới  
+        style: "ottobit_control", // Màu tím cho control
         tooltip: "Lặp lại các hành động",
       });
     },
   };
 };
 
-// If/Else Block
-export const ifElseBlock = () => {
-  if (Blockly.Blocks["if_else"]) return;
+// Repeat with Range Block (From To By - giống HP Robots)
+export const repeatRangeBlock = () => {
+  if (Blockly.Blocks["repeat_range"]) return;
 
-  Blockly.Blocks["if_else"] = {
+  Blockly.Blocks["repeat_range"] = {
     init: function () {
       this.jsonInit({
-        type: "if_else",
+        type: "repeat_range", 
+        message0: "repeat %1 From %2 To %3 By %4",
+        args0: [
+          {
+            type: "field_dropdown",
+            name: "VAR",
+            options: [
+              ["i", "i"],
+              ["j", "j"], 
+              ["k", "k"],
+            ],
+          },
+          {
+            type: "field_number",
+            name: "FROM",
+            value: 1,
+            min: 0,
+            precision: 1,
+          },
+          {
+            type: "field_number", 
+            name: "TO",
+            value: 5,
+            min: 1,
+            precision: 1,
+          },
+          {
+            type: "field_number",
+            name: "BY", 
+            value: 1,
+            min: 1,
+            precision: 1,
+          },
+        ],
+        message1: "%1", // Statement input cho blocks bên trong
+        args1: [
+          {
+            type: "input_statement",
+            name: "DO",
+            check: null, // Accept any statement blocks
+          },
+        ],
+        previousStatement: null, // Có thể gắn với block phía trên
+        nextStatement: null,     // Có thể gắn với block phía dưới
+        style: "ottobit_control",
+        tooltip: "Lặp với biến từ From đến To",
+      });
+    },
+  };
+};
+
+// Comparison Block (toán tử so sánh - giống HP Robots)
+export const comparisonBlock = () => {
+  if (Blockly.Blocks["comparison"]) return;
+
+  Blockly.Blocks["comparison"] = {
+    init: function () {
+      this.jsonInit({
+        type: "comparison",
+        message0: "%1 %2 %3",
+        args0: [
+          {
+            type: "input_value",
+            name: "A",
+            check: "Number",
+          },
+          {
+            type: "field_dropdown",
+            name: "OP",
+            options: [
+              ["=", "EQ"],
+              ["≠", "NEQ"], 
+              ["<", "LT"],
+              [">", "GT"],
+              ["≤", "LTE"],
+              ["≥", "GTE"],
+            ],
+          },
+          {
+            type: "input_value", 
+            name: "B",
+            check: "Number",
+          },
+        ],
+        output: "Boolean",
+        style: "ottobit_control",
+        tooltip: "So sánh hai giá trị",
+      });
+    },
+  };
+};
+
+// If Block (đơn giản hóa)
+export const ifBlock = () => {
+  if (Blockly.Blocks["if"]) return;
+
+  Blockly.Blocks["if"] = {
+    init: function () {
+      this.jsonInit({
+        type: "if",
         message0: "🤔 if %1",
         args0: [
           {
@@ -66,7 +166,7 @@ export const ifElseBlock = () => {
         ],
         previousStatement: null,
         nextStatement: null,
-        style: "ottobit_action",
+        style: "ottobit_control",
         tooltip: "Điều kiện if/else",
       });
     },
@@ -74,6 +174,7 @@ export const ifElseBlock = () => {
 };
 
 // Wait Block
+/*
 export const waitBlock = () => {
   if (Blockly.Blocks["wait"]) return;
 
@@ -93,16 +194,18 @@ export const waitBlock = () => {
         ],
         previousStatement: null,
         nextStatement: null,
-        style: "ottobit_var", // Use yellow/orange for wait
+        style: "ottobit_wait", // Màu đỏ cho wait
         tooltip: "Chờ trong thời gian xác định",
       });
     },
   };
 };
+*/
 
 // Define all control blocks
 export const defineControlBlocks = () => {
   repeatBlock();
-  ifElseBlock();
-  waitBlock();
+  repeatRangeBlock();
+  comparisonBlock();
+  ifBlock();
 };

@@ -5,7 +5,7 @@ import {
 } from "../../components/block/generators";
 
 // Import các components con
-import BlocksWorkspaceContent from "sections/studio/BlocksWorkspaceContent";
+import BlocksWorkspace from "sections/studio/BlocksWorkspace";
 import CodeContent from "sections/studio/CodeContent";
 
 interface TabPanelProps {
@@ -53,7 +53,7 @@ export default function LeftPanelSection({
   return (
     <Box
       sx={{
-        height: "633px",
+        height: "780px", // Tăng chiều cao để giống HP Robots
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
@@ -81,7 +81,7 @@ export default function LeftPanelSection({
 
       {/* Tab Content */}
       <TabPanel value={activeTab} index={0}>
-        <BlocksWorkspaceContent onWorkspaceChange={onWorkspaceChange} />
+        <BlocksWorkspace onWorkspaceChange={onWorkspaceChange} />
       </TabPanel>
 
       <TabPanel value={activeTab} index={1}>

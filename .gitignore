@@ -180,3 +180,54 @@ backups/
 # Local configuration files
 local.config.*
 *.local.config.*
+
+# Vite specific
+.vite/
+vite.config.*.timestamp-*
+
+# TypeScript specific
+*.tsbuildinfo
+.tscache/
+
+# ESLint cache
+.eslintcache
+
+# Prettier cache
+.prettiercache
+
+# Blockly workspace saves (if any)
+workspace.xml
+*.blockly
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Jest
+jest-results.xml
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Storybook
+storybook-static/
+
+# Security and sensitive files
+.env.*.local
+.env.backup
+secrets.json
+keys.json
+.secrets/
+
+# Performance monitoring
+.clinic/
+.autocannon/
+
+# Bundle analyzer
+bundle-analyzer-report.html
+bundle-stats.json
+
+# Hot reload files
+.hot-update.*
