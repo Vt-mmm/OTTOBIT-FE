@@ -64,7 +64,7 @@ const ResetPassword: React.FC = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        background: "linear-gradient(145deg, #f0fffd 0%, #e6f7f9 100%)",
+        background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -129,24 +129,23 @@ const ResetPassword: React.FC = () => {
                 height: 32,
                 borderRadius: 1,
                 mr: 1.5,
-                background:
-                  "linear-gradient(180deg, rgba(238, 255, 251, 0.55) 0%, #FDD9FF 54.17%, #C1E7FF 100%)",
+                background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: "1.2rem",
                 fontWeight: 700,
-                color: "#70c8d2",
+                color: "white",
               }}
             >
               O
             </Box>
             <Typography
               variant="h5"
-              fontWeight={500}
+              fontWeight={600}
               letterSpacing="-0.02em"
               fontSize={24}
-              color="#000000"
+              color="#1a1a1a"
             >
               Ottobit
             </Typography>
@@ -226,16 +225,18 @@ const ResetPassword: React.FC = () => {
                 variant="outlined"
                 onClick={() => navigate(PATH_AUTH.login)}
                 sx={{
-                  borderRadius: 8,
+                  borderRadius: 2,
                   py: 1.5,
                   px: 4,
-                  fontWeight: 500,
+                  fontWeight: 600,
                   textTransform: "none",
-                  borderColor: theme.palette.primary.main,
+                  borderColor: "#22c55e",
+                  color: "#22c55e",
                   borderWidth: 2,
                   "&:hover": {
                     borderWidth: 2,
-                    borderColor: theme.palette.primary.dark,
+                    borderColor: "#16a34a",
+                    backgroundColor: "rgba(34, 197, 94, 0.04)",
                   },
                 }}
               >
@@ -250,8 +251,12 @@ const ResetPassword: React.FC = () => {
                     display: "block",
                     mx: "auto",
                     mt: 2,
-                    color: theme.palette.primary.main,
+                    color: "#22c55e",
                     textTransform: "none",
+                    fontWeight: 500,
+                    "&:hover": {
+                      backgroundColor: "rgba(34, 197, 94, 0.04)",
+                    },
                   }}
                 >
                   Yêu cầu liên kết mới

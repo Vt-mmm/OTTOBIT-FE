@@ -8,7 +8,6 @@ import * as yup from "yup";
 import { Link as RouterLink } from "react-router-dom";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { useAppDispatch, useAppSelector } from "store/config";
 import { resendEmailConfirmation, clearAuthErrors } from "store/auth/authSlice";
 import { ResendEmailFormData } from "common/@types/form";
@@ -72,13 +71,23 @@ const ResendEmailForm: React.FC = () => {
         transition={{ duration: 0.3 }}
         sx={{ textAlign: "center" }}
       >
-        <CheckCircleOutlineIcon
+        <Box
           sx={{
-            fontSize: 64,
-            color: "#22c55e",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             mb: 2,
           }}
-        />
+        >
+          <img
+            src="/asset/IconSucces.png"
+            alt="Email sent successfully"
+            style={{
+              width: "64px",
+              height: "64px",
+            }}
+          />
+        </Box>
         <Typography
           variant="h5"
           sx={{

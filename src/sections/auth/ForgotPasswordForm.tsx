@@ -83,9 +83,27 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
         {...register("email")}
         error={!!errors.email}
         helperText={errors.email?.message}
-        InputProps={{
-          sx: {
-            borderRadius: 2,
+        sx={{
+          mb: 3,
+          "& .MuiOutlinedInput-root": {
+            borderRadius: 3,
+            fontSize: "1rem",
+            "& fieldset": {
+              borderColor: "rgba(0, 0, 0, 0.12)",
+            },
+            "&:hover fieldset": {
+              borderColor: "#22c55e",
+            },
+            "&.Mui-focused fieldset": {
+              borderColor: "#22c55e",
+              borderWidth: 2,
+            },
+          },
+          "& .MuiInputLabel-root": {
+            fontSize: "1rem",
+            "&.Mui-focused": {
+              color: "#22c55e",
+            },
           },
         }}
       />
@@ -93,7 +111,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
       <motion.div
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        style={{ marginTop: "24px" }}
+        style={{ marginTop: "16px" }}
       >
         <Button
           type="submit"
@@ -101,12 +119,22 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
           variant="contained"
           disabled={isSubmitting}
           sx={{
-            py: 1.5,
-            borderRadius: 2,
-            fontSize: "1rem",
+            py: 2,
+            borderRadius: 3,
+            fontSize: "1.1rem",
             fontWeight: 600,
             textTransform: "none",
-            boxShadow: "0 4px 14px 0 rgba(110, 204, 217, 0.4)",
+            background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+            boxShadow: "0 4px 20px rgba(34, 197, 94, 0.3)",
+            "&:hover": {
+              background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+              boxShadow: "0 6px 25px rgba(34, 197, 94, 0.4)",
+            },
+            "&:disabled": {
+              background: "#e5e7eb",
+              color: "#9ca3af",
+              boxShadow: "none",
+            },
           }}
         >
           {isSubmitting ? (

@@ -1,12 +1,9 @@
 import React, { useState } from "react";
 import {
   Box,
-  Paper,
   Typography,
   Link,
-  Alert,
-  useTheme,
-  alpha,
+  Grid,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -17,7 +14,6 @@ import { PATH_AUTH, PATH_PUBLIC } from "routes/paths";
 import { ForgotPasswordForm } from "sections/auth";
 
 const ForgotPassword: React.FC = () => {
-  const theme = useTheme();
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleSuccessSubmit = () => {
@@ -28,11 +24,13 @@ const ForgotPassword: React.FC = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        background: "linear-gradient(145deg, #f0fffd 0%, #e6f7f9 100%)",
+        width: "100vw",
+        backgroundColor: "#ffffff",
         display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        p: { xs: 2, sm: 3 },
+        flexDirection: "column",
+        p: 0,
+        m: 0,
+        position: "relative",
       }}
     >
       {/* Back to home button */}
@@ -63,144 +61,193 @@ const ForgotPassword: React.FC = () => {
         </Link>
       </Box>
 
-      <Paper
-        component={motion.div}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6 }}
-        elevation={4}
-        sx={{
-          width: "100%",
-          maxWidth: 480,
-          borderRadius: 3,
-          overflow: "hidden",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.08)",
-          border: "1px solid rgba(255, 255, 255, 0.3)",
-          backdropFilter: "blur(8px)",
-          background: "rgba(255, 255, 255, 0.85)",
-        }}
-      >
-        <Box
+      <Grid container sx={{ flex: 1, minHeight: "100vh" }}>
+        {/* Left side - Image */}
+        <Grid
+          item
+          xs={12}
+          md={6}
           sx={{
-            p: { xs: 3, sm: 4 },
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)",
+            position: "relative",
+            overflow: "hidden",
           }}
         >
-          {/* Header with Logo */}
-          <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
-            <Box
-              sx={{
-                width: 32,
-                height: 32,
-                borderRadius: 1,
-                mr: 1.5,
-                background:
-                  "linear-gradient(180deg, rgba(238, 255, 251, 0.55) 0%, #FDD9FF 54.17%, #C1E7FF 100%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "1.2rem",
-                fontWeight: 700,
-                color: "#70c8d2",
-              }}
-            >
-              O
-            </Box>
-            <Typography
-              variant="h5"
-              fontWeight={500}
-              letterSpacing="-0.02em"
-              fontSize={24}
-              color="#000000"
-            >
-              Ottobit
-            </Typography>
-          </Box>
+          <Box
+            component="img"
+            src="/asset/ForgotPassword.jpg"
+            alt="Forgot Password"
+            sx={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+        </Grid>
+
+        {/* Right side - Form */}
+        <Grid
+          item
+          xs={12}
+          md={6}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            p: { xs: 3, sm: 4, md: 6 },
+          }}
+        >
 
           <Box
-            component={motion.div}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            sx={{ mb: 4, textAlign: "center" }}
+            sx={{
+              width: "100%",
+              maxWidth: 480,
+              textAlign: "center",
+            }}
           >
-            <LockResetIcon
-              color="primary"
-              sx={{
-                fontSize: 50,
-                mb: 2,
-                p: 1,
-                borderRadius: "50%",
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
-              }}
-            />
-            <Typography variant="h5" fontWeight={600} sx={{ mb: 1 }}>
-              Quên mật khẩu?
-            </Typography>
+            {/* Header with Logo */}
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", mb: 5 }}>
+              <Box
+                component="img"
+                src="/asset/LogoOttobit.png"
+                alt="Ottobit Logo"
+                sx={{
+                  height: 60,
+                  width: "auto",
+                }}
+              />
+            </Box>
 
-            <Typography variant="body1" color="text.secondary">
-              {isSubmitted
-                ? "Kiểm tra email của bạn để tiếp tục"
-                : "Nhập email của bạn để nhận liên kết đặt lại mật khẩu"}
-            </Typography>
-          </Box>
-
-          {!isSubmitted ? (
-            <ForgotPasswordForm onSuccessSubmit={handleSuccessSubmit} />
-          ) : (
             <Box
               component={motion.div}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              sx={{ textAlign: "center", my: 3 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              sx={{ mb: 5, textAlign: "center" }}
             >
-              <Alert severity="success" sx={{ mb: 3 }}>
-                Yêu cầu đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra email
-                của bạn để tiếp tục.
-              </Alert>
-
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
+              <LockResetIcon
+                sx={{
+                  fontSize: 64,
+                  mb: 3,
+                  color: "#22c55e",
+                }}
+              />
+              <Typography 
+                variant="h4" 
+                fontWeight={700} 
+                sx={{ mb: 2, color: "#1a1a1a" }}
               >
+                Quên mật khẩu?
+              </Typography>
+
+              <Typography 
+                variant="body1" 
+                color="text.secondary"
+                fontSize={16}
+                sx={{ maxWidth: 400, mx: "auto", lineHeight: 1.6 }}
+              >
+                {isSubmitted
+                  ? "Kiểm tra email của bạn để tiếp tục"
+                  : "Nhập email của bạn để nhận liên kết đặt lại mật khẩu"}
+              </Typography>
+            </Box>
+
+            {!isSubmitted ? (
+              <ForgotPasswordForm onSuccessSubmit={handleSuccessSubmit} />
+            ) : (
+              <Box
+                component={motion.div}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                sx={{ textAlign: "center", my: 4 }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    mb: 4,
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src="/asset/IconSucces.png"
+                    alt="Success"
+                    sx={{
+                      width: 120,
+                      height: 120,
+                      mb: 3,
+                    }}
+                  />
+                  <Typography
+                    variant="h5"
+                    fontWeight={700}
+                    color="#22c55e"
+                    sx={{ mb: 2 }}
+                  >
+                    Email đã được gửi!
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    color="text.secondary"
+                    sx={{ maxWidth: 400, mx: "auto", lineHeight: 1.6 }}
+                  >
+                    Yêu cầu đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra email
+                    của bạn để tiếp tục.
+                  </Typography>
+                </Box>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <Link
+                    component={RouterLink}
+                    to={PATH_AUTH.login}
+                    sx={{
+                      display: "inline-block",
+                      color: "#22c55e",
+                      fontWeight: 600,
+                      borderBottom: "2px solid #22c55e",
+                      textDecoration: "none",
+                      "&:hover": {
+                        opacity: 0.8,
+                      },
+                    }}
+                  >
+                    Trở về trang đăng nhập
+                  </Link>
+                </motion.div>
+              </Box>
+            )}
+
+            {!isSubmitted && (
+              <Box sx={{ mt: 6, textAlign: "center" }}>
                 <Link
                   component={RouterLink}
                   to={PATH_AUTH.login}
                   sx={{
-                    display: "inline-block",
-                    color: theme.palette.primary.main,
-                    fontWeight: 500,
-                    borderBottom: `2px solid ${theme.palette.primary.main}`,
+                    color: "#22c55e",
+                    fontWeight: 600,
+                    fontSize: "1rem",
                     textDecoration: "none",
-                    "&:hover": {
-                      opacity: 0.8,
+                    "&:hover": { 
+                      textDecoration: "underline",
+                      color: "#16a34a",
                     },
                   }}
                 >
-                  Trở về trang đăng nhập
+                  Quay lại đăng nhập
                 </Link>
-              </motion.div>
-            </Box>
-          )}
-
-          {!isSubmitted && (
-            <Box sx={{ mt: 4, textAlign: "center" }}>
-              <Link
-                component={RouterLink}
-                to={PATH_AUTH.login}
-                sx={{
-                  color: theme.palette.primary.main,
-                  fontWeight: 500,
-                  fontSize: "0.9rem",
-                  "&:hover": { textDecoration: "underline" },
-                }}
-              >
-                Quay lại đăng nhập
-              </Link>
-            </Box>
-          )}
-        </Box>
-      </Paper>
+              </Box>
+            )}
+          </Box>
+        </Grid>
+      </Grid>
     </Box>
   );
 };

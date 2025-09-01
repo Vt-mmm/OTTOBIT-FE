@@ -18,10 +18,13 @@ const EmailConfirmationPage: React.FC = () => {
     <Box
       sx={{
         minHeight: "100vh",
+        width: "100vw",
+        backgroundColor: "#ffffff",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        p: { xs: 2, sm: 3 },
+        p: 0,
+        m: 0,
       }}
     >
       <EmailConfirmationSection userId={userId} token={token} />

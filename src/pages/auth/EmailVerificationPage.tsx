@@ -12,7 +12,6 @@ import {
 } from "@mui/material";
 import { motion } from "framer-motion";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import { axiosClient } from "axiosClient/axiosClient";
@@ -83,7 +82,7 @@ const EmailVerificationPage: React.FC = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        background: "linear-gradient(145deg, #f0fffd 0%, #e6f7f9 100%)",
+        background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -148,24 +147,23 @@ const EmailVerificationPage: React.FC = () => {
                 height: 32,
                 borderRadius: 1,
                 mr: 1.5,
-                background:
-                  "linear-gradient(180deg, rgba(238, 255, 251, 0.55) 0%, #FDD9FF 54.17%, #C1E7FF 100%)",
+                background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: "1.2rem",
                 fontWeight: 700,
-                color: "#70c8d2",
+                color: "white",
               }}
             >
               O
             </Box>
             <Typography
               variant="h5"
-              fontWeight={500}
+              fontWeight={600}
               letterSpacing="-0.02em"
               fontSize={24}
-              color="#000000"
+              color="#1a1a1a"
             >
               Ottobit
             </Typography>
@@ -193,16 +191,23 @@ const EmailVerificationPage: React.FC = () => {
               transition={{ duration: 0.5 }}
               sx={{ textAlign: "center" }}
             >
-              <MarkEmailReadIcon
-                color="success"
+              <Box
                 sx={{
-                  fontSize: 80,
-                  p: 1.5,
-                  borderRadius: "50%",
-                  bgcolor: alpha(theme.palette.success.main, 0.1),
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   mb: 2,
                 }}
-              />
+              >
+                <img
+                  src="/asset/IconSucces.png"
+                  alt="Email verified successfully"
+                  style={{
+                    width: "80px",
+                    height: "80px",
+                  }}
+                />
+              </Box>
               <Typography variant="h5" gutterBottom fontWeight={600}>
                 Email xác thực thành công!
               </Typography>
@@ -218,9 +223,14 @@ const EmailVerificationPage: React.FC = () => {
                   mt: 2,
                   py: 1.5,
                   px: 4,
-                  borderRadius: 8,
+                  borderRadius: 2,
                   fontSize: "1rem",
+                  fontWeight: 600,
                   textTransform: "none",
+                  background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+                  "&:hover": {
+                    background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+                  },
                 }}
               >
                 Đăng nhập ngay
@@ -276,12 +286,17 @@ const EmailVerificationPage: React.FC = () => {
                   mb: 2,
                   py: 1.5,
                   px: 4,
-                  borderRadius: 8,
+                  borderRadius: 2,
                   fontSize: "1rem",
+                  fontWeight: 600,
                   textTransform: "none",
+                  borderColor: "#22c55e",
+                  color: "#22c55e",
                   borderWidth: 2,
                   "&:hover": {
                     borderWidth: 2,
+                    borderColor: "#16a34a",
+                    backgroundColor: "rgba(34, 197, 94, 0.04)",
                   },
                 }}
               >
@@ -292,8 +307,12 @@ const EmailVerificationPage: React.FC = () => {
                 variant="text"
                 onClick={() => navigate(PATH_PUBLIC.homepage)}
                 sx={{
-                  color: theme.palette.primary.main,
+                  color: "#22c55e",
                   textTransform: "none",
+                  fontWeight: 500,
+                  "&:hover": {
+                    backgroundColor: "rgba(34, 197, 94, 0.04)",
+                  },
                 }}
               >
                 Trở về trang chủ

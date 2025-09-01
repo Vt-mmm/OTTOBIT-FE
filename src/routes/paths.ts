@@ -14,7 +14,7 @@ export const PATH_ERROR = {
 export const PATH_AUTH = {
   login: path(ROOTS_AUTH, "/login"),
   register: path(ROOTS_AUTH, "/register"),
-  forgotPassword: path(ROOTS_AUTH, "/forgot-password"),
+  forgotPassword: path(ROOTS_AUTH, "/Kh"),
   resetPassword: path(ROOTS_AUTH, "/reset-password"),
   verifyEmail: path(ROOTS_AUTH, "/verify-email"),
   confirmEmail: path(ROOTS_AUTH, "/confirm-email"),

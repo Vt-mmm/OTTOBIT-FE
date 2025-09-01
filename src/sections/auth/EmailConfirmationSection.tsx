@@ -5,12 +5,9 @@ import {
   Button,
   Alert,
   CircularProgress,
-  Card,
-  CardContent,
   Link,
 } from "@mui/material";
 import {
-  CheckCircle as SuccessIcon,
   Error as ErrorIcon,
   Email as EmailIcon,
 } from "@mui/icons-material";
@@ -104,43 +101,42 @@ const EmailConfirmationSection: React.FC<EmailConfirmationSectionProps> = ({
     <Box
       sx={{
         minHeight: "100vh",
+        width: "100vw",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        p: 2,
+        backgroundColor: "#ffffff",
+        p: 0,
+        m: 0,
       }}
     >
       <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.9 }}
+        initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.6, type: "spring" }}
+        transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
+        style={{ width: "100%", maxWidth: "500px", padding: "24px" }}
       >
-        <Card
+        <Box
           sx={{
-            maxWidth: { xs: "95vw", sm: 600 },
             width: "100%",
-            boxShadow: {
-              xs: "0 10px 40px rgba(0,0,0,0.15)",
-              sm: "0 20px 60px rgba(0,0,0,0.2)",
-            },
-            borderRadius: { xs: 3, sm: 4 },
-            overflow: "hidden",
-            position: "relative",
-            bgcolor: "rgba(255,255,255,0.95)",
-            backdropFilter: "blur(10px)",
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: { xs: 4, sm: 6 },
-              background: "linear-gradient(90deg, #667eea, #764ba2, #f093fb)",
-            },
+            textAlign: "center",
+            p: { xs: 4, sm: 6 },
           }}
         >
-          <CardContent sx={{ p: { xs: 4, sm: 6 }, textAlign: "center" }}>
+            {/* Header Logo */}
+            <Box sx={{ mb: 4 }}>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 700,
+                  color: "#1a1a1a",
+                  fontSize: "24px",
+                }}
+              >
+                Ottobit
+              </Typography>
+            </Box>
+
             {isLoading ? (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -149,31 +145,31 @@ const EmailConfirmationSection: React.FC<EmailConfirmationSectionProps> = ({
               >
                 <Box sx={{ mb: 4 }}>
                   <CircularProgress
-                    size={80}
+                    size={60}
                     thickness={4}
                     sx={{
-                      color: "#667eea",
+                      color: "#22c55e",
                       mb: 3,
-                      filter: "drop-shadow(0 4px 8px rgba(102,126,234,0.3))",
                     }}
                   />
                 </Box>
                 <Typography
                   variant="h4"
-                  gutterBottom
                   sx={{
-                    fontWeight: 600,
-                    color: "#2c3e50",
-                    fontSize: { xs: "1.5rem", sm: "2rem" },
+                    fontWeight: 700,
+                    color: "#1a1a1a",
+                    fontSize: { xs: "28px", sm: "32px" },
+                    mb: 2,
                   }}
                 >
                   Đang xác thực email...
                 </Typography>
                 <Typography
                   variant="body1"
-                  color="text.secondary"
                   sx={{
-                    fontSize: { xs: "1rem", sm: "1.1rem" },
+                    color: "#6b7280",
+                    fontSize: "16px",
+                    lineHeight: 1.6,
                   }}
                 >
                   Vui lòng đợi trong giây lát
@@ -185,38 +181,48 @@ const EmailConfirmationSection: React.FC<EmailConfirmationSectionProps> = ({
                   <motion.div
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.3, type: "spring", stiffness: 150 }}
+                    transition={{ delay: 0.2, type: "spring", stiffness: 150 }}
                   >
+                    {/* Success Icon */}
                     <Box sx={{ mb: 4 }}>
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: [0, 1.2, 1] }}
-                        transition={{ delay: 0.5, duration: 0.8 }}
+                        transition={{ delay: 0.3, duration: 0.6 }}
                       >
-                        <SuccessIcon
+                        <Box
                           sx={{
-                            fontSize: { xs: 80, sm: 120 },
-                            color: isAlreadyConfirmed ? "#f39c12" : "#27ae60",
+                            width: 120,
+                            height: 120,
+                            borderRadius: "50%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            mx: "auto",
                             mb: 3,
-                            filter: `drop-shadow(0 8px 16px ${
-                              isAlreadyConfirmed
-                                ? "rgba(243,156,18,0.3)"
-                                : "rgba(39,174,96,0.3)"
-                            })`,
                           }}
-                        />
+                        >
+                          <img
+                            src="/asset/IconSucces.png"
+                            alt="Success"
+                            style={{
+                              width: "120px",
+                              height: "120px",
+                            }}
+                          />
+                        </Box>
                       </motion.div>
                     </Box>
 
+                    {/* Success Title */}
                     <Typography
                       variant="h3"
-                      gutterBottom
                       sx={{
                         fontWeight: 700,
-                        color: isAlreadyConfirmed ? "#f39c12" : "#27ae60",
+                        color: "#1a1a1a",
+                        fontSize: { xs: "32px", sm: "40px" },
                         mb: 2,
-                        letterSpacing: "-0.5px",
-                        fontSize: { xs: "1.8rem", sm: "3rem" },
+                        lineHeight: 1.2,
                       }}
                     >
                       {isAlreadyConfirmed
@@ -224,45 +230,48 @@ const EmailConfirmationSection: React.FC<EmailConfirmationSectionProps> = ({
                         : "Xác thực thành công!"}
                     </Typography>
 
+                    {/* Success Description */}
                     <Typography
-                      variant="h6"
+                      variant="body1"
                       sx={{
-                        mb: 4,
-                        color: "#5a6c7d",
-                        fontWeight: 400,
+                        color: "#6b7280",
+                        fontSize: "16px",
                         lineHeight: 1.6,
+                        mb: 4,
+                        maxWidth: 400,
+                        mx: "auto",
                       }}
                     >
                       {isAlreadyConfirmed
                         ? "Email của bạn đã được xác thực trước đó. Bạn có thể đăng nhập ngay bây giờ."
-                        : result.message}
+                        : "Tài khoản của bạn đã được kích hoạt thành công. Bạn có thể bắt đầu sử dụng Ottobit ngay bây giờ!"}
                     </Typography>
 
+                    {/* Action Button */}
                     <motion.div
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.8 }}
+                      transition={{ delay: 0.5 }}
                     >
                       <Button
                         variant="contained"
                         size="large"
                         onClick={handleGoToLogin}
                         sx={{
-                          borderRadius: 3,
-                          px: 4,
                           py: 1.5,
-                          fontSize: "1.1rem",
+                          px: 4,
+                          borderRadius: 2,
+                          fontSize: "16px",
                           fontWeight: 600,
-                          background:
-                            "linear-gradient(45deg, #667eea, #764ba2)",
-                          boxShadow: "0 8px 24px rgba(102,126,234,0.4)",
+                          textTransform: "none",
+                          background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+                          boxShadow: "0 4px 12px rgba(34, 197, 94, 0.3)",
                           "&:hover": {
-                            background:
-                              "linear-gradient(45deg, #5a67d8, #6b46c1)",
-                            boxShadow: "0 12px 32px rgba(102,126,234,0.5)",
-                            transform: "translateY(-2px)",
+                            background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+                            boxShadow: "0 6px 16px rgba(34, 197, 94, 0.4)",
+                            transform: "translateY(-1px)",
                           },
-                          transition: "all 0.3s ease",
+                          transition: "all 0.2s ease",
                         }}
                       >
                         Đi đến đăng nhập
@@ -273,65 +282,85 @@ const EmailConfirmationSection: React.FC<EmailConfirmationSectionProps> = ({
                   <motion.div
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.3, type: "spring", stiffness: 150 }}
+                    transition={{ delay: 0.2, type: "spring", stiffness: 150 }}
                   >
+                    {/* Error Icon */}
                     <Box sx={{ mb: 4 }}>
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: [0, 1.2, 1] }}
-                        transition={{ delay: 0.5, duration: 0.8 }}
+                        transition={{ delay: 0.3, duration: 0.6 }}
                       >
-                        <ErrorIcon
+                        <Box
                           sx={{
-                            fontSize: { xs: 80, sm: 120 },
-                            color: "#e74c3c",
+                            width: 80,
+                            height: 80,
+                            borderRadius: "50%",
+                            bgcolor: "#ef4444",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            mx: "auto",
                             mb: 3,
-                            filter:
-                              "drop-shadow(0 8px 16px rgba(231,76,60,0.3))",
                           }}
-                        />
+                        >
+                          <ErrorIcon
+                            sx={{
+                              fontSize: 40,
+                              color: "white",
+                            }}
+                          />
+                        </Box>
                       </motion.div>
                     </Box>
 
+                    {/* Error Title */}
                     <Typography
                       variant="h3"
-                      gutterBottom
                       sx={{
                         fontWeight: 700,
-                        color: "#e74c3c",
+                        color: "#1a1a1a",
+                        fontSize: { xs: "32px", sm: "40px" },
                         mb: 2,
-                        letterSpacing: "-0.5px",
-                        fontSize: { xs: "1.8rem", sm: "3rem" },
+                        lineHeight: 1.2,
                       }}
                     >
                       Xác thực thất bại
                     </Typography>
 
+                    {/* Error Message */}
                     <Alert
                       severity="error"
                       sx={{
                         mb: 4,
                         textAlign: "left",
                         borderRadius: 2,
-                        fontSize: "1rem",
+                        fontSize: "14px",
+                        backgroundColor: "#fef2f2",
+                        borderColor: "#fecaca",
                         "& .MuiAlert-message": {
                           fontWeight: 500,
+                          color: "#dc2626",
+                        },
+                        "& .MuiAlert-icon": {
+                          color: "#dc2626",
                         },
                       }}
                     >
                       {result?.message}
                     </Alert>
 
+                    {/* Action Buttons */}
                     <motion.div
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.8 }}
+                      transition={{ delay: 0.5 }}
                     >
                       <Box
                         sx={{
                           display: "flex",
                           flexDirection: "column",
-                          gap: 3,
+                          gap: 2,
                         }}
                       >
                         {result?.errorCode !== "EMAIL_ALREADY_CONFIRMED" && (
@@ -341,24 +370,23 @@ const EmailConfirmationSection: React.FC<EmailConfirmationSectionProps> = ({
                             onClick={handleResendEmail}
                             disabled={isResending}
                             sx={{
-                              borderRadius: 3,
-                              px: 4,
                               py: 1.5,
-                              fontSize: "1rem",
+                              px: 4,
+                              borderRadius: 2,
+                              fontSize: "16px",
                               fontWeight: 600,
-                              borderColor: "#667eea",
-                              color: "#667eea",
+                              textTransform: "none",
+                              borderColor: "#22c55e",
+                              color: "#22c55e",
+                              borderWidth: 2,
                               "&:hover": {
-                                borderColor: "#5a67d8",
-                                background: "rgba(102,126,234,0.1)",
-                                transform: "translateY(-1px)",
+                                borderWidth: 2,
+                                borderColor: "#16a34a",
+                                backgroundColor: "rgba(34, 197, 94, 0.04)",
                               },
-                              transition: "all 0.3s ease",
                             }}
                           >
-                            {isResending
-                              ? "Đang gửi..."
-                              : "Gửi lại email xác thực"}
+                            {isResending ? "Đang gửi..." : "Gửi lại email xác thực"}
                           </Button>
                         )}
 
@@ -366,21 +394,20 @@ const EmailConfirmationSection: React.FC<EmailConfirmationSectionProps> = ({
                           variant="contained"
                           onClick={handleGoToLogin}
                           sx={{
-                            borderRadius: 3,
-                            px: 4,
                             py: 1.5,
-                            fontSize: "1.1rem",
+                            px: 4,
+                            borderRadius: 2,
+                            fontSize: "16px",
                             fontWeight: 600,
-                            background:
-                              "linear-gradient(45deg, #667eea, #764ba2)",
-                            boxShadow: "0 8px 24px rgba(102,126,234,0.4)",
+                            textTransform: "none",
+                            background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+                            boxShadow: "0 4px 12px rgba(34, 197, 94, 0.3)",
                             "&:hover": {
-                              background:
-                                "linear-gradient(45deg, #5a67d8, #6b46c1)",
-                              boxShadow: "0 12px 32px rgba(102,126,234,0.5)",
-                              transform: "translateY(-2px)",
+                              background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+                              boxShadow: "0 6px 16px rgba(34, 197, 94, 0.4)",
+                              transform: "translateY(-1px)",
                             },
-                            transition: "all 0.3s ease",
+                            transition: "all 0.2s ease",
                           }}
                         >
                           Quay lại đăng nhập
@@ -392,25 +419,18 @@ const EmailConfirmationSection: React.FC<EmailConfirmationSectionProps> = ({
               </>
             )}
 
-            <Box
-              sx={{
-                mt: 6,
-                pt: 4,
-                borderTop: "1px solid",
-                borderColor: "rgba(0,0,0,0.1)",
-              }}
-            >
+            {/* Footer */}
+            <Box sx={{ mt: 6, pt: 4 }}>
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 1.2 }}
+                transition={{ delay: 0.8 }}
               >
                 <Typography
-                  variant="body1"
+                  variant="body2"
                   sx={{
-                    color: "#7c8ba1",
-                    fontWeight: 500,
-                    fontSize: "1rem",
+                    color: "#9ca3af",
+                    fontSize: "14px",
                   }}
                 >
                   Cần hỗ trợ?{" "}
@@ -418,12 +438,12 @@ const EmailConfirmationSection: React.FC<EmailConfirmationSectionProps> = ({
                     component={RouterLink}
                     to="/contact"
                     sx={{
-                      color: "#667eea",
+                      color: "#22c55e",
                       textDecoration: "none",
                       fontWeight: 600,
                       "&:hover": {
                         textDecoration: "underline",
-                        color: "#5a67d8",
+                        color: "#16a34a",
                       },
                     }}
                   >
@@ -432,8 +452,7 @@ const EmailConfirmationSection: React.FC<EmailConfirmationSectionProps> = ({
                 </Typography>
               </motion.div>
             </Box>
-          </CardContent>
-        </Card>
+        </Box>
       </motion.div>
     </Box>
   );

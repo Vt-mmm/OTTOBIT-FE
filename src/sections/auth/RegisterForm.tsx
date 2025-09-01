@@ -11,8 +11,8 @@ import {
   IconButton,
   Alert,
   CircularProgress,
+  Grid,
 } from "@mui/material";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import HomeIcon from "@mui/icons-material/Home";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { motion } from "framer-motion";
@@ -99,242 +99,414 @@ const RegisterForm: React.FC = () => {
   };
 
   return (
-    <FormProvider {...methods}>
-      <Box
-        component={motion.div}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Stack spacing={2.5}>
-            {(localErrorMessage || errorMessage) && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {localErrorMessage || errorMessage}
-              </Alert>
-            )}
-
-            <Box>
-              <Typography variant="body2" mb={1}>
-                Họ và tên
-              </Typography>
-              <Controller
-                name="fullName"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    variant="outlined"
-                    fullWidth
-                    required
-                    placeholder="Họ và tên"
-                    size="small"
-                    error={!!errors.fullName}
-                    helperText={errors.fullName?.message}
-                    InputProps={{
-                      sx: {
-                        borderRadius: 4,
-                        backgroundColor: "#FFFFFF",
-                      },
-                    }}
-                  />
-                )}
-              />
-            </Box>
-
-            <Box>
-              <Typography variant="body2" mb={1}>
-                Email
-              </Typography>
-              <Controller
-                name="email"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    variant="outlined"
-                    fullWidth
-                    required
-                    placeholder="Email"
-                    size="small"
-                    error={!!errors.email}
-                    helperText={errors.email?.message}
-                    InputProps={{
-                      sx: {
-                        borderRadius: 4,
-                        backgroundColor: "#FFFFFF",
-                      },
-                    }}
-                  />
-                )}
-              />
-            </Box>
-
-            <Box>
-              <Typography variant="body2" mb={1}>
-                Mật khẩu
-              </Typography>
-              <Controller
-                name="password"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    type={showPassword ? "text" : "password"}
-                    variant="outlined"
-                    fullWidth
-                    required
-                    placeholder="Mật khẩu"
-                    size="small"
-                    error={!!errors.password}
-                    helperText={errors.password?.message}
-                    InputProps={{
-                      sx: {
-                        borderRadius: 4,
-                        backgroundColor: "#FFFFFF",
-                      },
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => setShowPassword(!showPassword)}
-                            edge="end"
-                          >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                )}
-              />
-            </Box>
-
-            <Box>
-              <Typography variant="body2" mb={1}>
-                Xác nhận mật khẩu
-              </Typography>
-              <Controller
-                name="confirmPassword"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    type={showConfirmPassword ? "text" : "password"}
-                    variant="outlined"
-                    fullWidth
-                    required
-                    placeholder="Xác nhận mật khẩu"
-                    size="small"
-                    error={!!errors.confirmPassword}
-                    helperText={errors.confirmPassword?.message}
-                    InputProps={{
-                      sx: {
-                        borderRadius: 4,
-                        backgroundColor: "#FFFFFF",
-                      },
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() =>
-                              setShowConfirmPassword(!showConfirmPassword)
-                            }
-                            edge="end"
-                          >
-                            {showConfirmPassword ? (
-                              <VisibilityOff />
-                            ) : (
-                              <Visibility />
-                            )}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                )}
-              />
-            </Box>
-
-            <Button
-              type="submit"
-              variant="contained"
-              endIcon={
-                isLoading ? (
-                  <CircularProgress size={20} color="inherit" />
-                ) : (
-                  <ArrowForwardIcon />
-                )
-              }
-              sx={{
-                bgcolor: "black",
-                borderRadius: 6,
-                fontWeight: 500,
-                py: 1.2,
-                textTransform: "none",
-                "&:hover": {
-                  bgcolor: "rgba(0, 0, 0, 0.8)",
-                },
-              }}
-              fullWidth
-              disabled={isLoading}
-            >
-              {isLoading ? "Đang xử lý..." : "Đăng ký"}
-            </Button>
-
-            <Box sx={{ position: "relative", py: 1.5 }}>
-              <Divider />
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  backgroundColor: "rgba(229, 249, 244, 0.7)",
-                  borderRadius: "50%",
-                  width: 40,
-                  height: 40,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              ></Box>
-            </Box>
-          </Stack>
-        </form>
-
-        <Box sx={{ mt: 3, textAlign: "center" }}>
-          <Typography fontSize={14} mb={1.5}>
-            Đã có tài khoản?{" "}
-            <Link
-              component={RouterLink}
-              to={PATH_AUTH.login}
-              underline="hover"
-              fontWeight={600}
-              color="primary"
-            >
-              ĐĂNG NHẬP
-            </Link>
-          </Typography>
-
-          <Button
-            component={RouterLink}
-            to="/"
-            startIcon={<HomeIcon />}
-            variant="text"
-            size="small"
+    <Box
+      sx={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        minHeight: "100vh",
+        width: "100vw",
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        display: "flex",
+        alignItems: "stretch",
+        justifyContent: "stretch",
+        p: 0,
+        m: 0,
+        overflow: "hidden",
+      }}
+    >
+      <Grid container sx={{ height: "100vh", flex: 1 }}>
+        {/* Left side - Image */}
+        <Grid
+          item
+          xs={12}
+          md={6}
+          sx={{
+            position: "relative",
+            height: "100vh",
+            overflow: "hidden",
+          }}
+        >
+          {/* Background Image - Full coverage without overlay text */}
+          <Box
             sx={{
-              fontSize: 13,
-              textTransform: "none",
-              color: "text.secondary",
-              "&:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.04)",
-              },
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundImage: "url(/OttoDIY/RegisterPicture.jpg)",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+              filter: "brightness(1.1)",
+            }}
+          />
+          
+          {/* Optional subtle overlay for better contrast if needed */}
+          <Box
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(22,163,74,0.1) 100%)",
+            }}
+          />
+
+          {/* Logo or branding in corner if needed */}
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: 20,
+              left: 20,
+              color: "white",
+              zIndex: 2,
             }}
           >
-            Trở về Trang chủ
-          </Button>
-        </Box>
-      </Box>
-    </FormProvider>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 600,
+                textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+              }}
+            >
+              Ottobit
+            </Typography>
+          </Box>
+        </Grid>
+
+        {/* Right side - Form */}
+        <Grid 
+          item 
+          xs={12} 
+          md={6}
+          sx={{
+            backgroundColor: "white",
+            display: "flex",
+            flexDirection: "column",
+            height: "100vh",
+            overflow: "auto",
+          }}
+        >
+          <Box 
+            sx={{ 
+              p: { xs: 3, md: 6 },
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              maxWidth: 480,
+              mx: "auto",
+              width: "100%",
+            }}
+          >
+              <FormProvider {...methods}>
+                <Box
+                  component={motion.div}
+                  initial={{ opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                >
+                  {/* Header */}
+                  <Box sx={{ textAlign: "center", mb: 4 }}>
+                    <Typography
+                      variant="h4"
+                      component="h1"
+                      sx={{
+                        fontWeight: 700,
+                        color: "#1a1a1a",
+                        mb: 1,
+                        fontSize: "32px",
+                      }}
+                    >
+                      Sign Up
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: "#6b7280",
+                        fontSize: "16px",
+                      }}
+                    >
+                      Create your account to get started
+                    </Typography>
+                  </Box>
+
+                  <form onSubmit={handleSubmit(onSubmit)}>
+                    <Stack spacing={2.5}>
+                      {(localErrorMessage || errorMessage) && (
+                        <Alert severity="error" sx={{ mb: 2 }}>
+                          {localErrorMessage || errorMessage}
+                        </Alert>
+                      )}
+
+                      <Box>
+                        <Controller
+                          name="fullName"
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              variant="outlined"
+                              fullWidth
+                              placeholder="Full Name"
+                              size="medium"
+                              error={!!errors.fullName}
+                              helperText={errors.fullName?.message}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: 2,
+                                  backgroundColor: "#ffffff",
+                                  fontSize: "16px",
+                                  "& .MuiOutlinedInput-notchedOutline": {
+                                    borderColor: "#e2e8f0",
+                                  },
+                                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                                    borderColor: "#22c55e",
+                                  },
+                                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                    borderColor: "#22c55e",
+                                    borderWidth: "2px",
+                                  },
+                                },
+                                "& .MuiInputBase-input": {
+                                  padding: "14px 16px",
+                                },
+                              }}
+                            />
+                          )}
+                        />
+                      </Box>
+
+                      <Box>
+                        <Controller
+                          name="email"
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              variant="outlined"
+                              fullWidth
+                              placeholder="Email address"
+                              size="medium"
+                              error={!!errors.email}
+                              helperText={errors.email?.message}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: 2,
+                                  backgroundColor: "#ffffff",
+                                  fontSize: "16px",
+                                  "& .MuiOutlinedInput-notchedOutline": {
+                                    borderColor: "#e2e8f0",
+                                  },
+                                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                                    borderColor: "#22c55e",
+                                  },
+                                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                    borderColor: "#22c55e",
+                                    borderWidth: "2px",
+                                  },
+                                },
+                                "& .MuiInputBase-input": {
+                                  padding: "14px 16px",
+                                },
+                              }}
+                            />
+                          )}
+                        />
+                      </Box>
+
+                      <Box>
+                        <Controller
+                          name="password"
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              type={showPassword ? "text" : "password"}
+                              variant="outlined"
+                              fullWidth
+                              placeholder="Password"
+                              size="medium"
+                              error={!!errors.password}
+                              helperText={errors.password?.message}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: 2,
+                                  backgroundColor: "#ffffff",
+                                  fontSize: "16px",
+                                  "& .MuiOutlinedInput-notchedOutline": {
+                                    borderColor: "#e2e8f0",
+                                  },
+                                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                                    borderColor: "#22c55e",
+                                  },
+                                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                    borderColor: "#22c55e",
+                                    borderWidth: "2px",
+                                  },
+                                },
+                                "& .MuiInputBase-input": {
+                                  padding: "14px 16px",
+                                },
+                              }}
+                              InputProps={{
+                                endAdornment: (
+                                  <InputAdornment position="end">
+                                    <IconButton
+                                      onClick={() => setShowPassword(!showPassword)}
+                                      edge="end"
+                                      sx={{ color: "#6b7280" }}
+                                    >
+                                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                  </InputAdornment>
+                                ),
+                              }}
+                            />
+                          )}
+                        />
+                      </Box>
+
+                      <Box>
+                        <Controller
+                          name="confirmPassword"
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              type={showConfirmPassword ? "text" : "password"}
+                              variant="outlined"
+                              fullWidth
+                              placeholder="Confirm Password"
+                              size="medium"
+                              error={!!errors.confirmPassword}
+                              helperText={errors.confirmPassword?.message}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: 2,
+                                  backgroundColor: "#ffffff",
+                                  fontSize: "16px",
+                                  "& .MuiOutlinedInput-notchedOutline": {
+                                    borderColor: "#e2e8f0",
+                                  },
+                                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                                    borderColor: "#22c55e",
+                                  },
+                                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                    borderColor: "#22c55e",
+                                    borderWidth: "2px",
+                                  },
+                                },
+                                "& .MuiInputBase-input": {
+                                  padding: "14px 16px",
+                                },
+                              }}
+                              InputProps={{
+                                endAdornment: (
+                                  <InputAdornment position="end">
+                                    <IconButton
+                                      onClick={() =>
+                                        setShowConfirmPassword(!showConfirmPassword)
+                                      }
+                                      edge="end"
+                                      sx={{ color: "#6b7280" }}
+                                    >
+                                      {showConfirmPassword ? (
+                                        <VisibilityOff />
+                                      ) : (
+                                        <Visibility />
+                                      )}
+                                    </IconButton>
+                                  </InputAdornment>
+                                ),
+                              }}
+                            />
+                          )}
+                        />
+                      </Box>
+
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        fullWidth
+                        disabled={isLoading}
+                        sx={{
+                          py: 2,
+                          borderRadius: 2,
+                          fontSize: "16px",
+                          fontWeight: 600,
+                          textTransform: "none",
+                          background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+                          "&:hover": {
+                            background:
+                              "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+                          },
+                          "&:disabled": {
+                            background: "#94a3b8",
+                          },
+                        }}
+                      >
+                        {isLoading ? (
+                          <CircularProgress size={20} color="inherit" />
+                        ) : (
+                          "Create Account"
+                        )}
+                      </Button>
+
+                      <Box sx={{ textAlign: "center", mt: 2 }}>
+                        <Typography sx={{ fontSize: "14px", color: "#6b7280" }}>
+                          Already have an account?{" "}
+                          <Link
+                            component={RouterLink}
+                            to={PATH_AUTH.login}
+                            underline="none"
+                            sx={{
+                              color: "#22c55e",
+                              fontWeight: 600,
+                              "&:hover": {
+                                color: "#16a34a",
+                              },
+                            }}
+                          >
+                            Sign In
+                          </Link>
+                        </Typography>
+                      </Box>
+
+                      <Divider sx={{ my: 2 }} />
+
+                      <Button
+                        component={RouterLink}
+                        to="/"
+                        startIcon={<HomeIcon />}
+                        variant="text"
+                        fullWidth
+                        sx={{
+                          py: 1.5,
+                          fontSize: "14px",
+                          textTransform: "none",
+                          color: "#6b7280",
+                          "&:hover": {
+                            backgroundColor: "rgba(34, 197, 94, 0.04)",
+                            color: "#22c55e",
+                          },
+                        }}
+                      >
+                        Back to Homepage
+                      </Button>
+                    </Stack>
+                  </form>
+                </Box>
+              </FormProvider>
+            </Box>
+          </Grid>
+        </Grid>
+    </Box>
   );
 };
 
