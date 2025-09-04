@@ -18,7 +18,6 @@ import {
   Javascript as JavascriptIcon,
   Bluetooth as BluetoothIcon,
   Download as DownloadIcon,
-  Link as PairIcon,
 } from "@mui/icons-material";
 import DownloadMenu from "../../features/microbit/components/DownloadMenu";
 import { MicrobitProvider, useMicrobitContext } from "../../features/microbit/context/MicrobitContext";
@@ -68,11 +67,6 @@ function TopBarContent({ activeTab = 0, onTabChange }: TopBarSectionProps) {
 
   const handleBluetooth = async () => {
     setShowConnectionDialog(true);
-  };
-
-  const handlePair = () => {
-    // TODO: Implement pair device logic
-    console.log("Pairing device...");
   };
 
   return (
@@ -235,7 +229,7 @@ function TopBarContent({ activeTab = 0, onTabChange }: TopBarSectionProps) {
 
           <DownloadMenu
             trigger={
-              <Tooltip title="Download Code">
+              <Tooltip title="Upload to micro:bit">
                 <IconButton
                   sx={{
                     bgcolor: "#f3e5f5",
@@ -254,25 +248,6 @@ function TopBarContent({ activeTab = 0, onTabChange }: TopBarSectionProps) {
               </Tooltip>
             }
           />
-
-          <Tooltip title="Pair Device">
-            <IconButton
-              onClick={handlePair}
-              sx={{
-                bgcolor: "#fff3e0",
-                color: "#f57c00",
-                width: 48,
-                height: 48,
-                "&:hover": {
-                  bgcolor: "#ffe0b2",
-                  transform: "translateY(-1px)",
-                  boxShadow: "0 4px 12px rgba(245, 124, 0, 0.3)",
-                },
-              }}
-            >
-              <PairIcon sx={{ fontSize: 24 }} />
-            </IconButton>
-          </Tooltip>
 
           {/* Divider */}
           <Box sx={{ width: 1, height: 32, bgcolor: "#e2e8f0", mx: 0.8 }} />

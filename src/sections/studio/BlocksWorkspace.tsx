@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Box } from "@mui/material";
 import * as Blockly from "blockly/core";
-import {
-  registerOttobotBlocks,
-} from "../../components/block";
+import { registerottobitBlocks } from "../../components/block";
 import { CustomBlocklyRenderer } from "./customBlocklyRenderer";
 import { ThemeOttobit } from "../../theme/block/theme-ottobit";
-import { injectOttobitkFieldStyles, refreshBlockColors } from "../../theme/block/renderer-ottobit";
+import {
+  injectOttobitkFieldStyles,
+  refreshBlockColors,
+} from "../../theme/block/renderer-ottobit";
 import BlockToolbox from "../../components/block/BlockToolbox";
 
 interface BlocksWorkspaceProps {
@@ -18,31 +19,32 @@ export default function BlocksWorkspace({
 }: BlocksWorkspaceProps) {
   const workspaceRef = useRef<HTMLDivElement>(null);
   const [blocklyWorkspace, setBlocklyWorkspace] = useState<any>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
   // Category blocks mapping - sử dụng block types từ cấu trúc mới
   const categoryBlocks = {
     basics: [
-      { kind: "block", type: "ottobot_start" },
-      { kind: "block", type: "ottobot_move_forward" },
-      { kind: "block", type: "ottobot_rotate" }
+      { kind: "block", type: "ottobit_start" },
+      { kind: "block", type: "ottobit_move_forward" },
+      { kind: "block", type: "ottobit_rotate" },
     ],
     loops: [
-      { kind: "block", type: "ottobot_repeat" },
-      { kind: "block", type: "ottobot_repeat_range" }
+      { kind: "block", type: "ottobit_repeat" },
+      { kind: "block", type: "ottobit_repeat_range" },
     ],
     conditions: [
-      { kind: "block", type: "ottobot_while" },
-      { kind: "block", type: "ottobot_if" }
+      { kind: "block", type: "ottobit_while" },
+      { kind: "block", type: "ottobit_if" },
+      { kind: "block", type: "ottobit_variable_i" },
     ],
     sensors: [
-      { kind: "block", type: "ottobot_read_sensor" },
-      { kind: "block", type: "ottobot_comparison" }
+      { kind: "block", type: "ottobit_read_sensor" },
+      { kind: "block", type: "ottobit_comparison" },
     ],
     actions: [
-      { kind: "block", type: "ottobot_collect" },
-      { kind: "block", type: "ottobot_collect_green" }
-    ]
+      { kind: "block", type: "ottobit_collect" },
+      { kind: "block", type: "ottobit_collect_green" },
+    ],
   };
 
   // Initialize workspace
@@ -50,12 +52,12 @@ export default function BlocksWorkspace({
     if (workspaceRef.current && !blocklyWorkspace) {
       // Inject field styles TRƯỚC KHI tạo workspace
       injectOttobitkFieldStyles();
-      
+
       // Register custom Ottobit renderer
       new CustomBlocklyRenderer();
 
       // Register custom blocks using new pattern
-      registerOttobotBlocks();
+      registerottobitBlocks();
 
       // Initialize Blockly workspace with flyout toolbox (empty initially)
       const workspace = Blockly.inject(workspaceRef.current, {
@@ -93,7 +95,7 @@ export default function BlocksWorkspace({
         // Thêm cấu hình để tránh blocks bị stuck
         oneBasedIndex: false,
         horizontalLayout: false,
-        toolboxPosition: 'start',
+        toolboxPosition: "start",
         css: true,
         rtl: false,
       });
@@ -126,7 +128,7 @@ export default function BlocksWorkspace({
 
       // Thêm event listener đơn giản
       if (workspaceRef.current) {
-        workspaceRef.current.addEventListener('mouseup', handleMouseUp);
+        workspaceRef.current.addEventListener("mouseup", handleMouseUp);
       }
 
       setBlocklyWorkspace(workspace);
@@ -135,35 +137,41 @@ export default function BlocksWorkspace({
       // Force refresh block colors để đảm bảo hiển thị đúng
       refreshBlockColors();
 
-      // Thêm block "ottobot_start" vào workspace ngay khi khởi tạo
+      // Thêm block "ottobit_start" vào workspace ngay khi khởi tạo
       setTimeout(() => {
-        const startBlock = workspace.newBlock("ottobot_start");
+        const startBlock = workspace.newBlock("ottobit_start");
         startBlock.initSvg();
         startBlock.render();
         startBlock.moveBy(50, 50); // Đặt vị trí cách top-left 50px
-        
+
         // Refresh colors sau khi thêm block
         refreshBlockColors();
       }, 50);
 
       // Style workspace with pure white background
       setTimeout(() => {
-        const workspaceEl = document.querySelector('.blocklyWorkspace') as HTMLElement;
+        const workspaceEl = document.querySelector(
+          ".blocklyWorkspace"
+        ) as HTMLElement;
         if (workspaceEl) {
-          workspaceEl.style.backgroundColor = '#ffffff';
-          workspaceEl.style.backgroundImage = 'none';
+          workspaceEl.style.backgroundColor = "#ffffff";
+          workspaceEl.style.backgroundImage = "none";
         }
-        
-        const mainBackground = document.querySelector('.blocklyMainBackground') as HTMLElement;
+
+        const mainBackground = document.querySelector(
+          ".blocklyMainBackground"
+        ) as HTMLElement;
         if (mainBackground) {
-          mainBackground.style.stroke = 'none';
-          mainBackground.style.fill = '#ffffff';
+          mainBackground.style.stroke = "none";
+          mainBackground.style.fill = "#ffffff";
         }
-        
-        const flyoutBg = document.querySelector('.blocklyFlyoutBackground') as HTMLElement;
+
+        const flyoutBg = document.querySelector(
+          ".blocklyFlyoutBackground"
+        ) as HTMLElement;
         if (flyoutBg) {
-          flyoutBg.style.fill = '#ffffff';
-          flyoutBg.style.fillOpacity = '1';
+          flyoutBg.style.fill = "#ffffff";
+          flyoutBg.style.fillOpacity = "1";
         }
       }, 500);
     }
@@ -174,7 +182,7 @@ export default function BlocksWorkspace({
       }
       // Cleanup event listeners
       if (workspaceRef.current) {
-        workspaceRef.current.removeEventListener('mouseup', () => {});
+        workspaceRef.current.removeEventListener("mouseup", () => {});
       }
     };
   }, []);
@@ -182,15 +190,17 @@ export default function BlocksWorkspace({
   // Update toolbox when category changes
   useEffect(() => {
     if (blocklyWorkspace) {
-      if (selectedCategory && selectedCategory !== '') {
+      if (selectedCategory && selectedCategory !== "") {
         // Mở toolbox với category được chọn
         const newToolbox = {
           kind: "flyoutToolbox",
-          contents: categoryBlocks[selectedCategory as keyof typeof categoryBlocks] || [],
+          contents:
+            categoryBlocks[selectedCategory as keyof typeof categoryBlocks] ||
+            [],
         };
-        
+
         blocklyWorkspace.updateToolbox(newToolbox);
-        
+
         // Force workspace to refresh
         setTimeout(() => {
           const flyout = blocklyWorkspace.getFlyout();
@@ -206,9 +216,9 @@ export default function BlocksWorkspace({
           kind: "flyoutToolbox",
           contents: [],
         };
-        
+
         blocklyWorkspace.updateToolbox(emptyToolbox);
-        
+
         // Ẩn flyout
         setTimeout(() => {
           const flyout = blocklyWorkspace.getFlyout();
@@ -221,7 +231,7 @@ export default function BlocksWorkspace({
   }, [selectedCategory, blocklyWorkspace]);
 
   const handleCategorySelect = (categoryId: string) => {
-    console.log('Category selected:', categoryId); // Debug log
+    console.log("Category selected:", categoryId); // Debug log
     setSelectedCategory(categoryId);
   };
 
@@ -237,7 +247,7 @@ export default function BlocksWorkspace({
     >
       {/* Custom Toolbox với UI đẹp */}
       <BlockToolbox onCategorySelect={handleCategorySelect} />
-      
+
       {/* Blockly Workspace */}
       <Box
         ref={workspaceRef}

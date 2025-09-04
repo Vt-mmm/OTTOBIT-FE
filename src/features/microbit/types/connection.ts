@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2024 Ottobot
+ * Copyright 2024 ottobit
  * SPDX-License-Identifier: Apache-2.0
  */
 

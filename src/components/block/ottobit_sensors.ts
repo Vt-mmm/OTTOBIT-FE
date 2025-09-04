@@ -1,72 +1,71 @@
 // For JSON block definitions
 const createBlockDefinitionsFromJsonArray = (definitions: any[]) => {
-  const blocks: {[key: string]: any} = {};
-  definitions.forEach(def => {
+  const blocks: { [key: string]: any } = {};
+  definitions.forEach((def) => {
     blocks[def.type] = def;
   });
   return blocks;
 };
 
 /**
- * Sensor blocks for Ottobot
+ * Sensor blocks for ottobit
  */
 export const sensorBlocks = createBlockDefinitionsFromJsonArray([
   {
-    type: 'ottobot_read_sensor',
-    message0: 'read %1 sensor',
+    type: "ottobit_read_sensor",
+    message0: "read %1 sensor",
     args0: [
       {
-        type: 'field_dropdown',
-        name: 'SENSOR_TYPE',
+        type: "field_dropdown",
+        name: "SENSOR_TYPE",
         options: [
-          ['distance', 'DISTANCE'],
-          ['light', 'LIGHT'],
-          ['temperature', 'TEMPERATURE'],
+          ["distance", "DISTANCE"],
+          ["light", "LIGHT"],
+          ["temperature", "TEMPERATURE"],
         ],
       },
     ],
-    output: 'Number',
+    output: "Number",
     deletable: true,
     movable: true,
     editable: true,
-    style: 'ottobit_sensor',
-    tooltip: 'Đọc giá trị từ cảm biến',
-    helpUrl: '',
+    style: "ottobit_sensor",
+    tooltip: "Đọc giá trị từ cảm biến",
+    helpUrl: "",
   },
   {
-    type: 'ottobot_comparison',
-    message0: '%1 %2 %3',
+    type: "ottobit_comparison",
+    message0: "%1 %2 %3",
     args0: [
       {
-        type: 'input_value',
-        name: 'A',
-        check: 'Number',
+        type: "input_value",
+        name: "A",
       },
       {
-        type: 'field_dropdown',
-        name: 'OP',
+        type: "field_dropdown",
+        name: "OP",
         options: [
-          ['=', 'EQ'],
-          ['≠', 'NEQ'],
-          ['<', 'LT'],
-          ['≤', 'LTE'],
-          ['>', 'GT'],
-          ['≥', 'GTE'],
+          ["=", "EQ"],
+          ["≠", "NEQ"],
+          ["<", "LT"],
+          ["≤", "LTE"],
+          [">", "GT"],
+          ["≥", "GTE"],
         ],
       },
       {
-        type: 'field_number',
-        name: 'B',
+        type: "field_number",
+        name: "B",
         value: 0,
       },
     ],
-    output: 'Boolean',
+    output: "Boolean",
     deletable: true,
     movable: true,
     editable: true,
-    style: 'ottobit_sensor',
-    tooltip: 'So sánh hai giá trị',
-    helpUrl: '',
+    style: "ottobit_sensor",
+    tooltip: "So sánh hai giá trị",
+    helpUrl: "",
   },
 ]);
 

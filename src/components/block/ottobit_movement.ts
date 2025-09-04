@@ -27,31 +27,31 @@ const ROTATE_SVG = `
 
 // For JSON block definitions
 const createBlockDefinitionsFromJsonArray = (definitions: any[]) => {
-  const blocks: {[key: string]: any} = {};
-  definitions.forEach(def => {
+  const blocks: { [key: string]: any } = {};
+  definitions.forEach((def) => {
     blocks[def.type] = def;
   });
   return blocks;
 };
 
 /**
- * Movement blocks for Ottobot
+ * Movement blocks for ottobit
  */
 export const movementBlocks = createBlockDefinitionsFromJsonArray([
   {
-    type: 'ottobot_move_forward',
-    message0: '%1 move forward %2',
+    type: "ottobit_move_forward",
+    message0: "%1 move forward %2",
     args0: [
       {
-        type: 'field_image',
+        type: "field_image",
         src: dataUri(ARROW_UP_SVG),
         width: 32,
         height: 32,
-        alt: 'move forward',
+        alt: "move forward",
       },
       {
-        type: 'field_number',
-        name: 'STEPS',
+        type: "field_number",
+        name: "STEPS",
         value: 1,
         min: 1,
         max: 100,
@@ -62,27 +62,27 @@ export const movementBlocks = createBlockDefinitionsFromJsonArray([
     deletable: true,
     movable: true,
     editable: true,
-    style: 'ottobit_movement',
-    tooltip: 'Di chuyển robot về phía trước với số bước nhất định',
-    helpUrl: '',
+    style: "ottobit_movement",
+    tooltip: "Di chuyển robot về phía trước với số bước nhất định",
+    helpUrl: "",
   },
   {
-    type: 'ottobot_rotate',
-    message0: '%1 rotate %2',
+    type: "ottobit_rotate",
+    message0: "%1 rotate %2",
     args0: [
       {
-        type: 'field_image',
+        type: "field_image",
         src: dataUri(ROTATE_SVG),
         width: 32,
         height: 32,
-        alt: 'rotate',
+        alt: "rotate",
       },
       {
-        type: 'field_dropdown',
-        name: 'DIRECTION',
+        type: "field_dropdown",
+        name: "DIRECTION",
         options: [
-          ['right', 'RIGHT'],
-          ['left', 'LEFT'],
+          ["right", "RIGHT"],
+          ["left", "LEFT"],
         ],
       },
     ],
@@ -91,9 +91,9 @@ export const movementBlocks = createBlockDefinitionsFromJsonArray([
     deletable: true,
     movable: true,
     editable: true,
-    style: 'ottobit_movement',
-    tooltip: 'Xoay robot sang trái hoặc phải',
-    helpUrl: '',
+    style: "ottobit_movement",
+    tooltip: "Xoay robot sang trái hoặc phải",
+    helpUrl: "",
   },
 ]);
 

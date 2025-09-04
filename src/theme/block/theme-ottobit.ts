@@ -4,41 +4,46 @@ import * as Blockly from "blockly/core";
 export const ThemeOttobit = Blockly.Theme.defineTheme("ottobit-theme", {
   name: "ottobit-theme",
   base: (Blockly.Themes as any).Zelos,
-  
+
   // Font styling theo chuẩn HP robots - cân bằng giữa đẹp và layout
   fontStyle: {
     family: "Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
     weight: "700", // Đậm vừa phải
     size: 16, // Kích thước cân bằng cho layout tốt
   },
-  
-  // Block styles với màu sắc theo HP robots - chính xác và đậm
+
+  // Block styles với màu sắc hài hòa theo ảnh
   blockStyles: {
     ottobit_event: {
-      colourPrimary: "#F4C430", // Vàng đậm hơn cho start blocks
+      colourPrimary: "#F4C430", // Vàng cho start và while
       colourSecondary: "#F7D358",
       colourTertiary: "#E6B800",
       hat: "cap", // Start blocks có hat
     },
     ottobit_motion: {
-      colourPrimary: "#2C3E50", // Xanh đậm thay vì đen để dễ nhìn
-      colourSecondary: "#5D6D7E", 
-      colourTertiary: "#1B2631",
+      colourPrimary: "#4A90E2", // Xanh dương tươi cho movement
+      colourSecondary: "#6BA3E8",
+      colourTertiary: "#357ABD",
     },
     ottobit_movement: {
-      colourPrimary: "#2C3E50", // Xanh đậm thay vì đen để dễ nhìn
-      colourSecondary: "#5D6D7E", 
-      colourTertiary: "#1B2631",
+      colourPrimary: "#4A90E2", // Xanh dương tươi cho movement
+      colourSecondary: "#6BA3E8",
+      colourTertiary: "#357ABD",
     },
     ottobit_action: {
-      colourPrimary: "#2E86AB", // Xanh đậm hơn cho action
-      colourSecondary: "#3D9BC2",
-      colourTertiary: "#1F5F7A",
+      colourPrimary: "#4A90E2", // Xanh dương tươi cho action
+      colourSecondary: "#6BA3E8",
+      colourTertiary: "#357ABD",
     },
     ottobit_control: {
-      colourPrimary: "#FF8C00", // Cam HP chính xác
-      colourSecondary: "#FFB347",
-      colourTertiary: "#E07B00",
+      colourPrimary: "#FF6B35", // Cam đỏ cho variable i
+      colourSecondary: "#FF8C60",
+      colourTertiary: "#E55A2B",
+    },
+    ottobit_control_blue: {
+      colourPrimary: "#8E44AD", // Tím cho if/else để phân biệt với movement
+      colourSecondary: "#A569BD",
+      colourTertiary: "#6C3483",
     },
     ottobit_wait: {
       colourPrimary: "#DC143C", // Đỏ đậm cho wait
@@ -59,7 +64,7 @@ export const ThemeOttobit = Blockly.Theme.defineTheme("ottobit-theme", {
     // Styles cho math/logic blocks
     ottobit_math: {
       colourPrimary: "#2C3E50", // Xanh đậm cho math
-      colourSecondary: "#5D6D7E", 
+      colourSecondary: "#5D6D7E",
       colourTertiary: "#1B2631",
     },
     // Default cho blocks không có style riêng
@@ -69,7 +74,7 @@ export const ThemeOttobit = Blockly.Theme.defineTheme("ottobit-theme", {
       colourTertiary: "#7F8C8D",
     },
   },
-  
+
   // Category colors cho toolbox
   categoryStyles: {
     car_category: { colour: "#5C9DFF" },
@@ -78,25 +83,25 @@ export const ThemeOttobit = Blockly.Theme.defineTheme("ottobit-theme", {
     sensor_category: { colour: "#F59E0B" },
     variable_category: { colour: "#9B59B6" },
   },
-  
+
   // Component styling - Đúng theo Blockly API
   componentStyles: {
     // Workspace styling - TRẮNG TINH để làm việc
     workspaceBackgroundColour: "#FFFFFF",
-    
+
     // Toolbox styling - XANH NHẠT để phân biệt
-    toolboxBackgroundColour: "#E8F4FD", 
+    toolboxBackgroundColour: "#E8F4FD",
     toolboxForegroundColour: "#2C3E50",
-    
+
     // Flyout styling - XÁM NHẠT để phân biệt với workspace
-    flyoutBackgroundColour: "#F5F6FA", 
+    flyoutBackgroundColour: "#F5F6FA",
     flyoutForegroundColour: "#2C3E50",
     flyoutOpacity: 1.0,
-    
+
     // Scrollbar styling
     scrollbarColour: "#BDC3C7",
     scrollbarOpacity: 0.8,
-    
+
     // Selection và cursor
     insertionMarkerColour: "#3498DB",
     insertionMarkerOpacity: 0.5,
@@ -104,7 +109,7 @@ export const ThemeOttobit = Blockly.Theme.defineTheme("ottobit-theme", {
     selectedGlowOpacity: 0.8,
     cursorColour: "#3498DB",
   },
-  
+
   // Start hats styling
   startHats: true,
 });

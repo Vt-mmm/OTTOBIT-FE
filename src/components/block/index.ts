@@ -5,49 +5,49 @@
  */
 
 // Import all block modules
-import * as ottobotEvents from "./ottobit_events";
-import * as ottobotMovement from "./ottobit_movement";
-import * as ottobotControl from "./ottobit_control";
-import * as ottobotSensors from "./ottobit_sensors";
-import * as ottobotActions from "./ottobit_actions";
+import * as ottobitEvents from "./ottobit_events";
+import * as ottobitMovement from "./ottobit_movement";
+import * as ottobitControl from "./ottobit_control";
+import * as ottobitSensors from "./ottobit_sensors";
+import * as ottobitActions from "./ottobit_actions";
 
 // Export individual block modules
 export {
-  ottobotEvents,
-  ottobotMovement,
-  ottobotControl,
-  ottobotSensors,
-  ottobotActions,
+  ottobitEvents,
+  ottobitMovement,
+  ottobitControl,
+  ottobitSensors,
+  ottobitActions,
 };
 
 // Export BlockToolbox component
 export { default as BlockToolbox } from "./BlockToolbox";
 
 // Export registration function
-export { registerOttobotBlocks, BLOCK_TYPES, type BlockType } from "./register";
+export { registerottobitBlocks, BLOCK_TYPES, type BlockType } from "./register";
 
 // Export toolbox configuration
-export { OTTOBOT_TOOLBOX } from "./toolbox";
+export { ottobit_TOOLBOX } from "./toolbox";
 
 // Export generators
 export * from "./generators";
 
 /**
- * A dictionary of all block definitions provided by Ottobot
+ * A dictionary of all block definitions provided by ottobit
  */
 export const blocks: { [key: string]: any } = Object.assign(
   {},
-  ottobotEvents.eventBlocks,
-  ottobotMovement.movementBlocks,
-  ottobotControl.controlBlocks,
-  ottobotSensors.sensorBlocks,
-  ottobotActions.actionBlocks
+  ottobitEvents.eventBlocks,
+  ottobitMovement.movementBlocks,
+  ottobitControl.controlBlocks,
+  ottobitSensors.sensorBlocks,
+  ottobitActions.actionBlocks
 );
 
 /**
  * Legacy function names for backward compatibility
  */
-import { registerOttobotBlocks as registerBlocks } from "./register";
+import { registerottobitBlocks as registerBlocks } from "./register";
 export const defineBlocks = registerBlocks;
 
 // Export legacy generator function names

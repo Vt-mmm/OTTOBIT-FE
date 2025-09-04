@@ -1,7 +1,7 @@
 // For JSON block definitions
 const createBlockDefinitionsFromJsonArray = (definitions: any[]) => {
-  const blocks: {[key: string]: any} = {};
-  definitions.forEach(def => {
+  const blocks: { [key: string]: any } = {};
+  definitions.forEach((def) => {
     blocks[def.type] = def;
   });
   return blocks;
@@ -23,28 +23,28 @@ const PLAY_SVG = `
 </svg>`;
 
 /**
- * Event blocks for Ottobot
+ * Event blocks for ottobit
  */
 export const eventBlocks = createBlockDefinitionsFromJsonArray([
   {
-    type: 'ottobot_start',
-    message0: '%1 start',
+    type: "ottobit_start",
+    message0: "%1 start",
     args0: [
       {
-        type: 'field_image',
+        type: "field_image",
         src: dataUri(PLAY_SVG),
         width: 40,
         height: 40,
-        alt: 'start',
+        alt: "start",
       },
     ],
     nextStatement: null,
     deletable: true,
     movable: true,
     editable: true,
-    style: 'ottobit_event',
-    tooltip: 'Bắt đầu chương trình robot',
-    helpUrl: '',
+    style: "ottobit_event",
+    tooltip: "Bắt đầu chương trình robot",
+    helpUrl: "",
   },
 ]);
 

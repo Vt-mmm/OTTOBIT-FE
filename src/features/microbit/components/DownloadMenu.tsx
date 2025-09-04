@@ -4,11 +4,23 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
-  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  Box,
+  Alert,
 } from "@mui/material";
-import { Memory as HexIcon, Usb as UsbIcon } from "@mui/icons-material";
-import { useMicrobitContext } from "../context/MicrobitContext.js";
+import {
+  Memory as HexIcon,
+  BluetoothRounded as BluetoothIcon,
+  Warning as WarningIcon,
+} from "@mui/icons-material";
 import { useNotification } from "../../../hooks/useNotification";
+import { useMicrobitContext } from "../context/MicrobitContext";
+import { MicrobitConnectionDialog } from "./MicrobitConnectionDialog";
 
 interface DownloadMenuProps {
   trigger: React.ReactElement;
@@ -16,12 +28,19 @@ interface DownloadMenuProps {
 
 export default function DownloadMenu({ trigger }: DownloadMenuProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [showConnectionCheckDialog, setShowConnectionCheckDialog] = useState(false);
+  const [showConnectionDialog, setShowConnectionDialog] = useState(false);
   const open = Boolean(anchorEl);
   const { showNotification, NotificationComponent } = useNotification();
   const { isConnected } = useMicrobitContext();
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+    // Kiểm tra connection status trước
+    if (!isConnected) {
+      setShowConnectionCheckDialog(true);
+    } else {
+      setAnchorEl(event.currentTarget);
+    }
   };
 
   const handleClose = () => {
@@ -204,30 +223,71 @@ export default function DownloadMenu({ trigger }: DownloadMenuProps) {
           horizontal: "left",
         }}
       >
-        {/* Upload HEX File */}
+        {/* Upload HEX File to micro:bit */}
         <MenuItem onClick={handleUploadHexFile}>
           <ListItemIcon>
             <HexIcon sx={{ color: "#ff6b35" }} />
           </ListItemIcon>
           <ListItemText
-            primary="📁 Upload HEX File"
-            secondary="Direct upload to micro:bit"
-          />
-        </MenuItem>
-
-        <Divider />
-
-        {/* Connection Status */}
-        <MenuItem onClick={handleClose} disabled>
-          <ListItemIcon>
-            <UsbIcon sx={{ color: isConnected ? "#2196f3" : "#9e9e9e" }} />
-          </ListItemIcon>
-          <ListItemText
-            primary={isConnected ? "🟢 Connected" : "🔴 Disconnected"}
-            secondary="micro:bit connection status"
+            primary="Upload HEX to micro:bit"
+            secondary="Select and upload .hex file directly"
           />
         </MenuItem>
       </Menu>
+
+      {/* Connection Check Dialog */}
+      <Dialog 
+        open={showConnectionCheckDialog}
+        onClose={() => setShowConnectionCheckDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box display="flex" alignItems="center">
+            <WarningIcon sx={{ color: "#ff9800", mr: 1 }} />
+            <Typography variant="h6">micro:bit Not Connected</Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            You need to connect your micro:bit before uploading code.
+          </Alert>
+          <Typography variant="body1" gutterBottom>
+            To upload your code to the micro:bit, you must first establish a connection.
+          </Typography>
+          <Typography variant="body2" color="textSecondary">
+            Click "Connect to micro:bit" to open the connection dialog.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => setShowConnectionCheckDialog(false)}
+            color="inherit"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              setShowConnectionCheckDialog(false);
+              setShowConnectionDialog(true);
+            }}
+            variant="contained"
+            startIcon={<BluetoothIcon />}
+            sx={{
+              bgcolor: "#1976d2",
+              "&:hover": { bgcolor: "#1565c0" }
+            }}
+          >
+            Connect to micro:bit
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Microbit Connection Dialog */}
+      <MicrobitConnectionDialog
+        open={showConnectionDialog}
+        onClose={() => setShowConnectionDialog(false)}
+      />
 
       {/* Notification component */}
       <NotificationComponent />

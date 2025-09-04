@@ -1,4 +1,4 @@
-export const OTTOBOT_TOOLBOX = {
+export const ottobit_TOOLBOX = {
   kind: "categoryToolbox",
   contents: [
     {
@@ -8,39 +8,67 @@ export const OTTOBOT_TOOLBOX = {
       contents: [
         {
           kind: "block",
-          type: "ottobot_start"
-        }
-      ]
+          type: "ottobit_start",
+        },
+      ],
     },
     {
-      kind: "category", 
+      kind: "category",
       name: "Movement",
       colour: "#4a90e2",
       contents: [
         {
           kind: "block",
-          type: "ottobot_move_forward"
+          type: "ottobit_move_forward",
         },
         {
           kind: "block",
-          type: "ottobot_rotate"
-        }
-      ]
+          type: "ottobit_rotate",
+        },
+      ],
     },
     {
       kind: "category",
-      name: "Control", 
-      colour: "#7b68ee",
+      name: "Control",
+      colour: "#FF8C00",
       contents: [
         {
           kind: "block",
-          type: "ottobot_repeat"
+          type: "ottobit_repeat",
         },
         {
           kind: "block",
-          type: "ottobot_if"
-        }
-      ]
+          type: "ottobit_repeat_range",
+        },
+        {
+          kind: "block",
+          type: "ottobit_while",
+        },
+        {
+          kind: "block",
+          type: "ottobit_while_compare",
+        },
+        {
+          kind: "block",
+          type: "ottobit_if",
+        },
+        {
+          kind: "block",
+          type: "ottobit_if_else_logic",
+        },
+        {
+          kind: "block",
+          type: "ottobit_variable_i",
+        },
+        {
+          kind: "block",
+          type: "ottobit_logic_compare",
+        },
+        {
+          kind: "block",
+          type: "ottobit_number",
+        },
+      ],
     },
     {
       kind: "category",
@@ -49,9 +77,9 @@ export const OTTOBOT_TOOLBOX = {
       contents: [
         {
           kind: "block",
-          type: "ottobot_read_sensor"
-        }
-      ]
+          type: "ottobit_read_sensor",
+        },
+      ],
     },
     {
       kind: "category",
@@ -60,13 +88,13 @@ export const OTTOBOT_TOOLBOX = {
       contents: [
         {
           kind: "block",
-          type: "ottobot_collect"
+          type: "ottobit_collect",
         },
         {
           kind: "block",
-          type: "ottobot_collect_green"
-        }
-      ]
-    }
-  ]
+          type: "ottobit_collect_green",
+        },
+      ],
+    },
+  ],
 };
