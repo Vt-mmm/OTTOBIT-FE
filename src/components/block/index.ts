@@ -1,55 +1,54 @@
-// Import all block types
-import { defineMovementBlocks } from "./movement";
-import { defineControlBlocks } from "./control";
-import { defineSensorBlocks } from "./sensor";
-import { defineActionBlocks } from "./action";
+/**
+ * @license
+ * Copyright 2024 Ottobit
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-// Export BlockToolbox
+// Import all block modules
+import * as ottobotEvents from "./ottobit_events";
+import * as ottobotMovement from "./ottobit_movement";
+import * as ottobotControl from "./ottobit_control";
+import * as ottobotSensors from "./ottobit_sensors";
+import * as ottobotActions from "./ottobit_actions";
+
+// Export individual block modules
+export {
+  ottobotEvents,
+  ottobotMovement,
+  ottobotControl,
+  ottobotSensors,
+  ottobotActions,
+};
+
+// Export BlockToolbox component
 export { default as BlockToolbox } from "./BlockToolbox";
 
-// Import generators
-export {
-  generatePythonCode,
-  generateJavaScriptCode,
-  definePythonGenerators,
-  defineJavaScriptGenerators,
-} from "./generators";
+// Export registration function
+export { registerOttobotBlocks, BLOCK_TYPES, type BlockType } from "./register";
 
-// Export individual block definition functions for flexibility
-export {
-  // Movement blocks
-  startBlock,
-  moveForwardBlock,
-  rotateBlock,
-  defineMovementBlocks,
-} from "./movement";
+// Export toolbox configuration
+export { OTTOBOT_TOOLBOX } from "./toolbox";
 
-export {
-  // Control blocks
-  repeatBlock,
-  repeatRangeBlock,
-  comparisonBlock,
-  ifBlock,
-  defineControlBlocks,
-} from "./control";
+// Export generators
+export * from "./generators";
 
-export {
-  // Sensor blocks
-  readSensorBlock,
-  defineSensorBlocks,
-} from "./sensor";
+/**
+ * A dictionary of all block definitions provided by Ottobot
+ */
+export const blocks: { [key: string]: any } = Object.assign(
+  {},
+  ottobotEvents.eventBlocks,
+  ottobotMovement.movementBlocks,
+  ottobotControl.controlBlocks,
+  ottobotSensors.sensorBlocks,
+  ottobotActions.actionBlocks
+);
 
-export {
-  // Action blocks
-  collectBlock,
-  collectGreenBlock,
-  defineActionBlocks,
-} from "./action";
+/**
+ * Legacy function names for backward compatibility
+ */
+import { registerOttobotBlocks as registerBlocks } from "./register";
+export const defineBlocks = registerBlocks;
 
-// Main function to define all blocks at once
-export const defineBlocks = () => {
-  defineMovementBlocks();
-  defineControlBlocks();
-  defineSensorBlocks();
-  defineActionBlocks();
-};
+// Export legacy generator function names
+export { generatePythonCode, generateJavaScriptCode } from "./generators";

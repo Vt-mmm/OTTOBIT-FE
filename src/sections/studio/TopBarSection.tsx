@@ -20,18 +20,36 @@ import {
   Download as DownloadIcon,
   Link as PairIcon,
 } from "@mui/icons-material";
+import DownloadMenu from "../../features/microbit/components/DownloadMenu";
+import { MicrobitProvider, useMicrobitContext } from "../../features/microbit/context/MicrobitContext";
+import { MicrobitConnectionDialog } from "../../features/microbit/components/MicrobitConnectionDialog";
 
 interface TopBarSectionProps {
   activeTab?: number;
   onTabChange?: (tab: number) => void;
+  workspace?: any; // Blockly workspace for code generation
 }
 
 export default function TopBarSection({
   activeTab = 0,
   onTabChange,
+  workspace,
 }: TopBarSectionProps) {
+  return (
+    <MicrobitProvider>
+      <TopBarContent
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        workspace={workspace}
+      />
+    </MicrobitProvider>
+  );
+}
+
+function TopBarContent({ activeTab = 0, onTabChange }: TopBarSectionProps) {
   const [isRunning, setIsRunning] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
+  const [showConnectionDialog, setShowConnectionDialog] = useState(false);
+  const { isConnected } = useMicrobitContext();
 
   const handleRun = () => {
     setIsRunning(true);
@@ -48,14 +66,8 @@ export default function TopBarSection({
     console.log("Validating code...");
   };
 
-  const handleBluetooth = () => {
-    setIsConnected(!isConnected);
-    // TODO: Implement bluetooth logic
-  };
-
-  const handleDownload = () => {
-    // TODO: Implement download logic
-    console.log("Downloading code...");
+  const handleBluetooth = async () => {
+    setShowConnectionDialog(true);
   };
 
   const handlePair = () => {
@@ -221,24 +233,27 @@ export default function TopBarSection({
             </IconButton>
           </Tooltip>
 
-          <Tooltip title="Download Code">
-            <IconButton
-              onClick={handleDownload}
-              sx={{
-                bgcolor: "#f3e5f5",
-                color: "#7b1fa2",
-                width: 48,
-                height: 48,
-                "&:hover": {
-                  bgcolor: "#e1bee7",
-                  transform: "translateY(-1px)",
-                  boxShadow: "0 4px 12px rgba(123, 31, 162, 0.3)",
-                },
-              }}
-            >
-              <DownloadIcon sx={{ fontSize: 24 }} />
-            </IconButton>
-          </Tooltip>
+          <DownloadMenu
+            trigger={
+              <Tooltip title="Download Code">
+                <IconButton
+                  sx={{
+                    bgcolor: "#f3e5f5",
+                    color: "#7b1fa2",
+                    width: 48,
+                    height: 48,
+                    "&:hover": {
+                      bgcolor: "#e1bee7",
+                      transform: "translateY(-1px)",
+                      boxShadow: "0 4px 12px rgba(123, 31, 162, 0.3)",
+                    },
+                  }}
+                >
+                  <DownloadIcon sx={{ fontSize: 24 }} />
+                </IconButton>
+              </Tooltip>
+            }
+          />
 
           <Tooltip title="Pair Device">
             <IconButton
@@ -309,6 +324,12 @@ export default function TopBarSection({
           </Tooltip>
         </Box>
       </Toolbar>
+
+      {/* Microbit Connection Dialog */}
+      <MicrobitConnectionDialog
+        open={showConnectionDialog}
+        onClose={() => setShowConnectionDialog(false)}
+      />
     </AppBar>
   );
 }

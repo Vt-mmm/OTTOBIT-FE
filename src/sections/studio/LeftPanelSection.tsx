@@ -2,7 +2,7 @@ import { Box } from "@mui/material";
 import {
   generatePythonCode,
   generateJavaScriptCode,
-} from "../../components/block/generators";
+} from "../../components/block";
 
 // Import các components con
 import BlocksWorkspace from "sections/studio/BlocksWorkspace";

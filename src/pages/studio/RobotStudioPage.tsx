@@ -17,7 +17,11 @@ const RobotStudioPage = () => {
       }}
     >
       {/* Top Bar - Fixed height */}
-      <TopBarSection activeTab={activeTab} onTabChange={setActiveTab} />
+      <TopBarSection 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab}
+        workspace={workspace}
+      />
 
       {/* Main Content Area - Split into 2 columns */}
       <Box

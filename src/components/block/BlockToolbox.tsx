@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { Box } from '@mui/material';
 import {
-  DirectionsCar,
-  SettingsInputComponent,
-  Build,
+  PlayArrow,
+  Loop,
   Memory,
-  Sync,
-  Functions
+  Sensors,
+  Build
 } from '@mui/icons-material';
 
 interface ToolboxCategory {
@@ -15,7 +14,6 @@ interface ToolboxCategory {
   icon: React.ComponentType<any>;
   color: string;
   selectedColor: string;
-  blocks: string[];
 }
 
 interface BlockToolboxProps {
@@ -27,52 +25,39 @@ const BlockToolbox: React.FC<BlockToolboxProps> = ({ onCategorySelect }) => {
 
   const categories: ToolboxCategory[] = [
     {
-      id: 'car',
-      name: 'CAR',
-      icon: DirectionsCar,
-      color: '#4285f4',
-      selectedColor: '#1976d2',
-      blocks: ['start', 'move_forward', 'move_backward', 'turn_left', 'turn_right', 'rotate', 'stop']
+      id: 'basics',
+      name: 'BASICS',
+      icon: PlayArrow,
+      color: '#4a90e2',
+      selectedColor: '#1976d2'
     },
     {
-      id: 'control',
-      name: 'CONTROL',
-      icon: SettingsInputComponent,
-      color: '#f57f17',
-      selectedColor: '#e65100',
-      blocks: ['repeat', 'if_else', 'wait']
+      id: 'loops',
+      name: 'LOOPS',
+      icon: Loop,
+      color: '#ff9800',
+      selectedColor: '#f57c00'
+    },
+    {
+      id: 'conditions',
+      name: 'CONDITIONS',
+      icon: Memory,
+      color: '#7b68ee',
+      selectedColor: '#5e55e8'
+    },
+    {
+      id: 'sensors',
+      name: 'SENSORS',
+      icon: Sensors,
+      color: '#ff6b6b',
+      selectedColor: '#f44336'
     },
     {
       id: 'actions',
       name: 'ACTIONS',
       icon: Build,
-      color: '#9c27b0',
-      selectedColor: '#7b1fa2',
-      blocks: ['led_on', 'led_off', 'buzzer', 'servo']
-    },
-    {
-      id: 'sensors',
-      name: 'SENSORS',
-      icon: Memory,
-      color: '#ff9800',
-      selectedColor: '#f57c00',
-      blocks: ['ultrasonic', 'light_sensor', 'button', 'temperature']
-    },
-    {
-      id: 'loops',
-      name: 'LOOPS',
-      icon: Sync,
-      color: '#4caf50',
-      selectedColor: '#388e3c',
-      blocks: ['repeat_forever', 'repeat_times']
-    },
-    {
-      id: 'functions',
-      name: 'FUNCTIONS',
-      icon: Functions,
-      color: '#607d8b',
-      selectedColor: '#455a64',
-      blocks: ['function_def', 'function_call']
+      color: '#51cf66',
+      selectedColor: '#4caf50'
     }
   ];
 

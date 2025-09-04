@@ -1,18 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Box } from "@mui/material";
-import * as Blockly from "blockly";
+import * as Blockly from "blockly/core";
 import {
-  defineBlocks,
-  definePythonGenerators,
-  defineJavaScriptGenerators,
+  registerOttobotBlocks,
 } from "../../components/block";
 import { CustomBlocklyRenderer } from "./customBlocklyRenderer";
 import { ThemeOttobit } from "../../theme/block/theme-ottobit";
+import { injectOttobitkFieldStyles, refreshBlockColors } from "../../theme/block/renderer-ottobit";
 import BlockToolbox from "../../components/block/BlockToolbox";
-// Import to register the renderer
-import "./customBlocklyRenderer";
-// Import CSS styles
-import "../../theme/block/style.css";
 
 interface BlocksWorkspaceProps {
   onWorkspaceChange?: (workspace: any) => void;
@@ -23,52 +18,46 @@ export default function BlocksWorkspace({
 }: BlocksWorkspaceProps) {
   const workspaceRef = useRef<HTMLDivElement>(null);
   const [blocklyWorkspace, setBlocklyWorkspace] = useState<any>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>(''); // Bắt đầu với toolbox đóng
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
 
-  // Category blocks mapping
+  // Category blocks mapping - sử dụng block types từ cấu trúc mới
   const categoryBlocks = {
-    car: [
-      { kind: "block", type: "start" },
-      { kind: "block", type: "move_forward" },
-      { kind: "block", type: "rotate" },
-      { kind: "block", type: "collect" },
-      { kind: "block", type: "collect_green" },
-    ],
-    control: [
-      { kind: "block", type: "repeat" },
-      { kind: "block", type: "repeat_range" },
-      { kind: "block", type: "if" },
-      { kind: "block", type: "comparison" },
-    ],
-    actions: [
-      { kind: "block", type: "collect" },
-      { kind: "block", type: "collect_green" },
-    ],
-    sensors: [
-      { kind: "block", type: "read_sensor" }
+    basics: [
+      { kind: "block", type: "ottobot_start" },
+      { kind: "block", type: "ottobot_move_forward" },
+      { kind: "block", type: "ottobot_rotate" }
     ],
     loops: [
-      { kind: "block", type: "repeat_forever" },
-      { kind: "block", type: "repeat_times" },
+      { kind: "block", type: "ottobot_repeat" },
+      { kind: "block", type: "ottobot_repeat_range" }
     ],
-    functions: [
-      { kind: "block", type: "function_def" },
-      { kind: "block", type: "function_call" },
+    conditions: [
+      { kind: "block", type: "ottobot_while" },
+      { kind: "block", type: "ottobot_if" }
+    ],
+    sensors: [
+      { kind: "block", type: "ottobot_read_sensor" },
+      { kind: "block", type: "ottobot_comparison" }
+    ],
+    actions: [
+      { kind: "block", type: "ottobot_collect" },
+      { kind: "block", type: "ottobot_collect_green" }
     ]
   };
 
   // Initialize workspace
   useEffect(() => {
     if (workspaceRef.current && !blocklyWorkspace) {
+      // Inject field styles TRƯỚC KHI tạo workspace
+      injectOttobitkFieldStyles();
+      
       // Register custom Ottobit renderer
       new CustomBlocklyRenderer();
 
-      // Define custom blocks
-      defineBlocks();
-      definePythonGenerators();
-      defineJavaScriptGenerators();
+      // Register custom blocks using new pattern
+      registerOttobotBlocks();
 
-      // Initialize Blockly workspace with flyout only
+      // Initialize Blockly workspace with flyout toolbox (empty initially)
       const workspace = Blockly.inject(workspaceRef.current, {
         toolbox: {
           kind: "flyoutToolbox",
@@ -101,18 +90,61 @@ export default function BlocksWorkspace({
         media: "https://unpkg.com/blockly/media/",
         renderer: "ottobit",
         theme: ThemeOttobit,
+        // Thêm cấu hình để tránh blocks bị stuck
+        oneBasedIndex: false,
+        horizontalLayout: false,
+        toolboxPosition: 'start',
+        css: true,
+        rtl: false,
       });
+
+      // Thêm event listeners để xử lý drag behavior
+      workspace.addChangeListener((event: any) => {
+        if (event.type === Blockly.Events.BLOCK_DRAG) {
+          if (event.isStart === false) {
+            // Khi kết thúc drag, reset trạng thái
+            setTimeout(() => {
+              workspace.getToolbox()?.clearSelection();
+            }, 50);
+          }
+        }
+      });
+
+      // Đơn giản hóa xử lý click events
+      const handleMouseUp = () => {
+        // Chỉ reset khi cần thiết
+        setTimeout(() => {
+          const blocks = workspace.getAllBlocks();
+          blocks.forEach((block: any) => {
+            if (block.isDragInProgress && block.isDragInProgress()) {
+              // Chỉ reset nếu thực sự bị stuck
+              block.setDragStrategy && block.setDragStrategy(null);
+            }
+          });
+        }, 100);
+      };
+
+      // Thêm event listener đơn giản
+      if (workspaceRef.current) {
+        workspaceRef.current.addEventListener('mouseup', handleMouseUp);
+      }
 
       setBlocklyWorkspace(workspace);
       onWorkspaceChange?.(workspace);
 
-      // Thêm block "start" vào workspace ngay khi khởi tạo
+      // Force refresh block colors để đảm bảo hiển thị đúng
+      refreshBlockColors();
+
+      // Thêm block "ottobot_start" vào workspace ngay khi khởi tạo
       setTimeout(() => {
-        const startBlock = workspace.newBlock('start');
+        const startBlock = workspace.newBlock("ottobot_start");
         startBlock.initSvg();
         startBlock.render();
         startBlock.moveBy(50, 50); // Đặt vị trí cách top-left 50px
-      }, 100);
+        
+        // Refresh colors sau khi thêm block
+        refreshBlockColors();
+      }, 50);
 
       // Style workspace with pure white background
       setTimeout(() => {
@@ -140,6 +172,10 @@ export default function BlocksWorkspace({
       if (blocklyWorkspace) {
         blocklyWorkspace.dispose();
       }
+      // Cleanup event listeners
+      if (workspaceRef.current) {
+        workspaceRef.current.removeEventListener('mouseup', () => {});
+      }
     };
   }, []);
 
@@ -161,6 +197,8 @@ export default function BlocksWorkspace({
           if (flyout) {
             flyout.setVisible(true);
           }
+          // Refresh colors cho blocks trong flyout
+          refreshBlockColors();
         }, 100);
       } else {
         // Đóng toolbox
@@ -197,7 +235,7 @@ export default function BlocksWorkspace({
         backgroundColor: "#ffffff",
       }}
     >
-      {/* Custom TypeScript Toolbox */}
+      {/* Custom Toolbox với UI đẹp */}
       <BlockToolbox onCategorySelect={handleCategorySelect} />
       
       {/* Blockly Workspace */}
@@ -211,4 +249,4 @@ export default function BlocksWorkspace({
       />
     </Box>
   );
-};
+}

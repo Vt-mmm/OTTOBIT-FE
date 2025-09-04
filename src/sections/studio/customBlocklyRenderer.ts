@@ -15,7 +15,7 @@ export class CustomBlocklyRenderer extends Blockly.zelos.Renderer {
     c.FIELD_BORDER_RECT_RADIUS = 12; // Field bo góc to hơn
     c.STATEMENT_INPUT_PADDING_LEFT = 32; // Padding lớn hơn
     c.MIN_BLOCK_WIDTH = 120; // Chiều rộng tối thiểu
-    
+
     // @ts-ignore
     c.ADD_START_HATS = true; // **mũ cho block start**
     return c;
