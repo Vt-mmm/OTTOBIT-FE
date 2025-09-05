@@ -20,8 +20,12 @@ import {
   Download as DownloadIcon,
 } from "@mui/icons-material";
 import DownloadMenu from "../../features/microbit/components/DownloadMenu";
-import { MicrobitProvider, useMicrobitContext } from "../../features/microbit/context/MicrobitContext";
+import {
+  MicrobitProvider,
+  useMicrobitContext,
+} from "../../features/microbit/context/MicrobitContext";
 import { MicrobitConnectionDialog } from "../../features/microbit/components/MicrobitConnectionDialog";
+import { usePhaserContext } from "../../features/phaser/context/PhaserContext";
 
 interface TopBarSectionProps {
   activeTab?: number;
@@ -45,19 +49,85 @@ export default function TopBarSection({
   );
 }
 
-function TopBarContent({ activeTab = 0, onTabChange }: TopBarSectionProps) {
+function TopBarContent({
+  activeTab = 0,
+  onTabChange,
+  workspace,
+}: TopBarSectionProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [showConnectionDialog, setShowConnectionDialog] = useState(false);
   const { isConnected } = useMicrobitContext();
 
-  const handleRun = () => {
+  // Phaser context for running programs
+  const {
+    isConnected: phaserConnected,
+    isReady: phaserReady,
+    runProgramFromWorkspace,
+    stopProgram,
+    gameState,
+  } = usePhaserContext();
+
+  const handleRun = async () => {
+    if (!workspace) {
+      console.warn("No workspace provided to run program");
+      return;
+    }
+
     setIsRunning(true);
-    // TODO: Implement run logic
+
+    try {
+      // Đảm bảo Phaser thực sự sẵn sàng
+      console.log("🚀 Running program in Phaser...");
+      console.log("🔍 Phaser status:", { phaserConnected, phaserReady });
+
+      if (!phaserConnected || !phaserReady) {
+        console.warn("⚠️ Phaser not ready, waiting...");
+        // Đợi một chút để Phaser sẵn sàng
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        if (!phaserConnected || !phaserReady) {
+          console.error("❌ Phaser still not ready after waiting");
+          setIsRunning(false);
+          return;
+        }
+      }
+
+      // Thêm delay nhỏ trước khi gửi message để đảm bảo Phaser thực sự sẵn sàng
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      console.log("📤 Sending program to Phaser...");
+      await runProgramFromWorkspace(workspace);
+      console.log("✅ Program sent to Phaser successfully");
+    } catch (error) {
+      console.error("❌ Failed to run program:", error);
+      setIsRunning(false);
+      return;
+    }
+
+    // Theo dõi trạng thái chương trình và cập nhật UI
+    const checkProgramStatus = () => {
+      if (gameState?.programStatus === "running") {
+        // Nếu chương trình vẫn đang chạy, tiếp tục kiểm tra
+        setTimeout(checkProgramStatus, 1000);
+      } else {
+        // Chương trình đã dừng hoặc hoàn thành
+        setIsRunning(false);
+      }
+    };
+
+    // Bắt đầu kiểm tra sau 2 giây để Phaser có thời gian xử lý
+    setTimeout(checkProgramStatus, 2000);
   };
 
-  const handleStop = () => {
+  const handleStop = async () => {
+    try {
+      console.log("🛑 Stopping program...");
+      await stopProgram();
+      console.log("✅ Program stopped successfully");
+    } catch (error) {
+      console.error("❌ Failed to stop program:", error);
+    }
     setIsRunning(false);
-    // TODO: Implement stop logic
   };
 
   const handleValidate = () => {
@@ -252,29 +322,40 @@ function TopBarContent({ activeTab = 0, onTabChange }: TopBarSectionProps) {
           {/* Divider */}
           <Box sx={{ width: 1, height: 32, bgcolor: "#e2e8f0", mx: 0.8 }} />
 
-          <Tooltip title={isRunning ? "Stop" : "Run"}>
-            <IconButton
-              onClick={isRunning ? handleStop : handleRun}
-              sx={{
-                bgcolor: isRunning ? "#ef4444" : "#10b981",
-                color: "white",
-                width: 48,
-                height: 48,
-                "&:hover": {
-                  bgcolor: isRunning ? "#dc2626" : "#059669",
-                  transform: "translateY(-1px)",
-                  boxShadow: isRunning
-                    ? "0 4px 12px rgba(239, 68, 68, 0.4)"
-                    : "0 4px 12px rgba(16, 185, 129, 0.4)",
-                },
-              }}
-            >
-              {isRunning ? (
-                <StopIcon sx={{ fontSize: 24 }} />
-              ) : (
-                <RunIcon sx={{ fontSize: 24 }} />
-              )}
-            </IconButton>
+          <Tooltip title={isRunning ? "Stop Program" : "Run Program"}>
+            <span>
+              <IconButton
+                onClick={isRunning ? handleStop : handleRun}
+                disabled={!workspace}
+                sx={{
+                  bgcolor: isRunning ? "#ef4444" : "#10b981",
+                  color: "white",
+                  width: 48,
+                  height: 48,
+                  "&:hover": {
+                    bgcolor: isRunning ? "#dc2626" : "#059669",
+                    transform: "translateY(-1px)",
+                    boxShadow: isRunning
+                      ? "0 4px 12px rgba(239, 68, 68, 0.4)"
+                      : "0 4px 12px rgba(16, 185, 129, 0.4)",
+                  },
+                  "&:disabled": {
+                    bgcolor: "#9ca3af",
+                    color: "#6b7280",
+                    "&:hover": {
+                      transform: "none",
+                      boxShadow: "none",
+                    },
+                  },
+                }}
+              >
+                {isRunning ? (
+                  <StopIcon sx={{ fontSize: 24 }} />
+                ) : (
+                  <RunIcon sx={{ fontSize: 24 }} />
+                )}
+              </IconButton>
+            </span>
           </Tooltip>
 
           <Tooltip title="Validate Code">

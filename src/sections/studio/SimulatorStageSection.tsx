@@ -1,6 +1,13 @@
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
+import { PhaserSimulator, PhaserControlPanel } from "../../features/phaser";
 
-export default function SimulatorStageSection() {
+interface SimulatorStageSectionProps {
+  workspace?: any;
+}
+
+export default function SimulatorStageSection({
+  workspace,
+}: SimulatorStageSectionProps) {
   return (
     <Box
       sx={{
@@ -8,33 +15,24 @@ export default function SimulatorStageSection() {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
-        background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+        gap: 1,
+        p: 1,
       }}
     >
-      <Typography
-        variant="h6"
+      {/* Phaser Simulator */}
+      <Box
         sx={{
-          color: "#94a3b8",
-          fontSize: "18px",
-          fontWeight: 500,
-          mb: 1,
+          flex: 1,
+          minHeight: 0, // Important for flex child to shrink
         }}
       >
-        2.5D Phaser Canvas
-      </Typography>
-      <Typography
-        variant="body2"
-        sx={{
-          color: "#cbd5e1",
-          fontSize: "14px",
-          textAlign: "center",
-        }}
-      >
-        Map rendering will be implemented with Phaser.js
-      </Typography>
+        <PhaserSimulator />
+      </Box>
+
+      {/* Control Panel */}
+      <Box sx={{ height: "auto", maxHeight: 120 }}>
+        <PhaserControlPanel workspace={workspace} />
+      </Box>
     </Box>
   );
 }
