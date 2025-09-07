@@ -28,19 +28,6 @@ export function PhaserControlPanel({ className }: PhaserControlPanelProps) {
           Robot Simulator
         </Typography>
 
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 1, mb: 2 }}>
-          <Chip
-            label={isConnected ? "Connected" : "Disconnected"}
-            color={isConnected ? "success" : "default"}
-            size="small"
-          />
-          <Chip
-            label={isReady ? "Ready" : "Not Ready"}
-            color={isReady ? "success" : "warning"}
-            size="small"
-          />
-        </Box>
-
         {gameState && (
           <Box>
             <Typography variant="body2" color="text.secondary">

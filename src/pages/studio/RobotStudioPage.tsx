@@ -1,98 +1,355 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
 import TopBarSection from "sections/studio/TopBarSection";
 import LeftPanelSection from "sections/studio/LeftPanelSection";
 import SimulatorStageSection from "sections/studio/SimulatorStageSection";
-import { PhaserProvider } from "../../features/phaser";
-import LevelSelector from "../../features/phaser/components/LevelSelector";
 import {
-  levelConfigService,
-  Level,
-} from "../../features/phaser/services/levelConfigService";
+  PhaserProvider,
+  usePhaserContext,
+  useMapData,
+} from "../../features/phaser";
+import LevelMapSelector from "../../features/phaser/components/LevelMapSelector";
+import {
+  LevelData,
+  mapKeyToLevelData,
+  levelDataToUrl,
+  saveCurrentLevel,
+  loadCurrentLevel,
+  clearSavedLevel,
+} from "../../features/phaser/utils/mapUtils";
 
-const RobotStudioPage = () => {
-  const [activeTab, setActiveTab] = useState(0);
-  const [workspace, setWorkspace] = useState<any>(null);
-  const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
-  const [showLevelSelector, setShowLevelSelector] = useState(true);
+// Level Selector with Initialization - has access to map data
+const LevelSelectorWithInitialization = ({
+  onLevelSelect,
+  currentLevel,
+  initializeLevel,
+  isInitialized,
+}: {
+  onLevelSelect: (level: LevelData) => void;
+  currentLevel?: LevelData;
+  initializeLevel: (
+    mapDataFinder: (key: string) => any,
+    urlMapKey?: string
+  ) => void;
+  isInitialized: boolean;
+}) => {
+  const { findMapByKey, lessonMaps, fetchLessonMapsData } = useMapData();
+  const { mapKey } = useParams<{ mapKey?: string }>();
 
-  const levels = levelConfigService.getAllLevels();
+  // Force fetch lesson maps on mount if not available
+  useEffect(() => {
+    if (!lessonMaps?.mapsByType) {
+      fetchLessonMapsData();
+    }
+  }, [lessonMaps?.mapsByType, fetchLessonMapsData]);
 
-  const handleLevelSelect = (level: Level) => {
-    setSelectedLevel(level);
-    setShowLevelSelector(false);
-  };
+  // Initialize level when map data becomes available
+  useEffect(() => {
+    const hasMapData = lessonMaps?.mapsByType;
 
-  const handleBackToLevels = () => {
-    setSelectedLevel(null);
-    setShowLevelSelector(true);
-  };
-
-  // Show level selector if no level is selected
-  if (showLevelSelector) {
-    return (
-      <PhaserProvider>
-        <Box
-          sx={{
-            height: "100vh",
-            display: "flex",
-            flexDirection: "column",
-            bgcolor: "#ffffff",
-          }}
-        >
-          <TopBarSection
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            workspace={workspace}
-          />
-          <LevelSelector levels={levels} onLevelSelect={handleLevelSelect} />
-        </Box>
-      </PhaserProvider>
-    );
-  }
+    if (!isInitialized && findMapByKey && hasMapData) {
+      initializeLevel(findMapByKey, mapKey);
+    }
+  }, [isInitialized, findMapByKey, lessonMaps, initializeLevel, mapKey]);
 
   return (
-    <PhaserProvider>
+    <Box
+      sx={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: "#ffffff",
+      }}
+    >
+      <LevelMapSelector
+        onLevelSelect={onLevelSelect}
+        currentLevel={currentLevel}
+      />
+    </Box>
+  );
+};
+
+// Studio Content Component - để có thể sử dụng PhaserContext
+const StudioContent = ({ selectedLevel }: { selectedLevel: LevelData }) => {
+  const [activeTab, setActiveTab] = useState(0);
+  const [workspace, setWorkspace] = useState<any>(null);
+  const [loadingMapKey, setLoadingMapKey] = useState<string | null>(null);
+  const [loadedMapKey, setLoadedMapKey] = useState<string | null>(null);
+  const [showMapLoading, setShowMapLoading] = useState(true);
+  const { loadMap, onMessage, offMessage } = usePhaserContext();
+
+  // Reset states when level changes
+  useEffect(() => {
+    if (selectedLevel?.mapKey && loadedMapKey !== selectedLevel.mapKey) {
+      setLoadedMapKey(null);
+      setShowMapLoading(true);
+    }
+  }, [selectedLevel?.mapKey, loadedMapKey]);
+
+  // Reset loading state when component mounts
+  useEffect(() => {
+    if (selectedLevel?.mapKey) {
+      setShowMapLoading(true);
+    }
+  }, []); // Only run on mount
+
+  // Load map when Phaser is ready and selectedLevel is available
+  useEffect(() => {
+    if (!selectedLevel?.mapKey) {
+      return;
+    }
+
+    // Prevent duplicate loading of same map
+    if (loadingMapKey === selectedLevel.mapKey) {
+      return;
+    }
+
+    // Skip if map already loaded
+    if (loadedMapKey === selectedLevel.mapKey) {
+      return;
+    }
+
+    const doLoadMap = () => {
+      setLoadingMapKey(selectedLevel.mapKey);
+      loadMap(selectedLevel.mapKey)
+        .then((result) => {
+          if (result) {
+            setLoadedMapKey(selectedLevel.mapKey);
+            setTimeout(() => {
+              setShowMapLoading(false);
+            }, 200);
+          }
+        })
+        .catch((error) => {
+          console.error("Failed to load map:", selectedLevel.mapKey, error);
+          setShowMapLoading(false);
+        })
+        .finally(() => {
+          setLoadingMapKey(null);
+        });
+    };
+
+    // Wait for READY message to ensure Phaser is fully initialized
+    const handleReady = () => {
+      setTimeout(() => {
+        doLoadMap();
+      }, 100);
+      offMessage("READY", handleReady);
+    };
+
+    onMessage("READY", handleReady);
+
+    return () => {
+      offMessage("READY", handleReady);
+    };
+  }, [selectedLevel, loadMap, onMessage, offMessage]);
+
+  return (
+    <Box
+      sx={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: "#ffffff", // Pure white background
+      }}
+    >
+      {/* Top Bar - Fixed height */}
+      <TopBarSection
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        workspace={workspace}
+      />
+
+      {/* Main Content Area - Split into 2 columns */}
       <Box
         sx={{
-          height: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          bgcolor: "#ffffff", // Pure white background
+          flex: 1,
+          display: "grid",
+          gridTemplateColumns: "900px 1fr", // Thu hẹp cột trái để workspace không quá rộng
+          gap: 2,
+          pl: 0,
+          pr: 2,
+          pt: 0,
+          pb: 2,
+          overflow: "hidden",
         }}
       >
-        {/* Top Bar - Fixed height */}
-        <TopBarSection
+        {/* Left Panel - Content based on active tab */}
+        <LeftPanelSection
           activeTab={activeTab}
-          onTabChange={setActiveTab}
           workspace={workspace}
+          onWorkspaceChange={setWorkspace}
         />
 
-        {/* Main Content Area - Split into 2 columns */}
-        <Box
-          sx={{
-            flex: 1,
-            display: "grid",
-            gridTemplateColumns: "900px 1fr", // Thu hẹp cột trái để workspace không quá rộng
-            gap: 2,
-            pl: 0,
-            pr: 2,
-            pt: 0,
-            pb: 2,
-            overflow: "hidden",
-          }}
-        >
-          {/* Left Panel - Content based on active tab */}
-          <LeftPanelSection
-            activeTab={activeTab}
-            workspace={workspace}
-            onWorkspaceChange={setWorkspace}
-          />
-
-          {/* Right Panel - Robot Simulator */}
+        {/* Right Panel - Robot Simulator */}
+        <Box sx={{ position: "relative" }}>
           <SimulatorStageSection workspace={workspace} />
+
+          {/* Loading Overlay - Hide menu flash during map load */}
+          {showMapLoading && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "rgba(255, 255, 255, 0.95)",
+                zIndex: 1000,
+                borderRadius: 1,
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 2,
+                }}
+              >
+                {/* Loading Animation */}
+                <Box
+                  sx={{
+                    width: 60,
+                    height: 60,
+                    border: "4px solid #e3f2fd",
+                    borderTop: "4px solid #1976d2",
+                    borderRadius: "50%",
+                    animation: "spin 1s linear infinite",
+                    "@keyframes spin": {
+                      "0%": { transform: "rotate(0deg)" },
+                      "100%": { transform: "rotate(360deg)" },
+                    },
+                  }}
+                />
+
+                {/* Loading Text */}
+                <Box sx={{ textAlign: "center" }}>
+                  <Box
+                    sx={{
+                      fontSize: "1.2rem",
+                      fontWeight: 600,
+                      color: "#1976d2",
+                      mb: 0.5,
+                    }}
+                  >
+                    Đang tải {selectedLevel.name}
+                  </Box>
+                  <Box
+                    sx={{
+                      fontSize: "0.9rem",
+                      color: "#666",
+                      opacity: 0.8,
+                    }}
+                  >
+                    Vui lòng đợi trong giây lát...
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+          )}
         </Box>
       </Box>
+    </Box>
+  );
+};
+
+const RobotStudioPage = () => {
+  const { mapKey } = useParams<{ mapKey?: string }>();
+  const navigate = useNavigate();
+  const [selectedLevel, setSelectedLevel] = useState<LevelData | null>(null);
+  const [showLevelSelector, setShowLevelSelector] = useState(!mapKey);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const shouldAutoRestore = !!mapKey;
+
+  // Sync React state with URL changes (for browser back/forward buttons)
+  useEffect(() => {
+    // If URL has no mapKey, should show level selector
+    if (!mapKey && !showLevelSelector) {
+      setShowLevelSelector(true);
+      setSelectedLevel(null);
+      setIsInitialized(false);
+    }
+    // If URL has mapKey but we're showing selector, hide it and initialize
+    else if (mapKey && showLevelSelector) {
+      setShowLevelSelector(false);
+      setIsInitialized(false);
+    }
+    // If URL has different mapKey than current selected level
+    else if (mapKey && selectedLevel && mapKey !== selectedLevel.mapKey) {
+      setSelectedLevel(null);
+      setIsInitialized(false);
+    }
+  }, [mapKey, showLevelSelector, selectedLevel]);
+
+  // Initialize level from URL or localStorage
+  const initializeLevel = (
+    mapDataFinder: (key: string) => any,
+    urlMapKey?: string
+  ) => {
+    if (isInitialized) {
+      return;
+    }
+
+    let levelToSet: LevelData | null = null;
+    const targetMapKey = urlMapKey || mapKey;
+
+    if (targetMapKey) {
+      const mapResult = mapDataFinder(targetMapKey);
+      if (mapResult) {
+        levelToSet = mapKeyToLevelData(targetMapKey, mapResult);
+      }
+    } else if (shouldAutoRestore) {
+      const savedLevel = loadCurrentLevel();
+      if (savedLevel?.mapKey) {
+        const mapResult = mapDataFinder(savedLevel.mapKey);
+        if (mapResult) {
+          levelToSet = mapKeyToLevelData(savedLevel.mapKey, mapResult);
+          if (levelToSet) {
+            navigate(levelDataToUrl(levelToSet), { replace: true });
+          }
+        } else {
+          clearSavedLevel();
+        }
+      }
+    }
+
+    if (levelToSet) {
+      setSelectedLevel(levelToSet);
+      setShowLevelSelector(false);
+      saveCurrentLevel(levelToSet);
+    } else {
+      setShowLevelSelector(true);
+    }
+
+    setIsInitialized(true);
+  };
+
+  const handleLevelSelect = (level: LevelData) => {
+    setSelectedLevel(level);
+    setShowLevelSelector(false);
+    saveCurrentLevel(level);
+    navigate(levelDataToUrl(level));
+  };
+
+  // Single PhaserProvider to prevent iframe reload issues
+  return (
+    <PhaserProvider>
+      {showLevelSelector || !isInitialized || !selectedLevel ? (
+        <LevelSelectorWithInitialization
+          onLevelSelect={handleLevelSelect}
+          currentLevel={selectedLevel || undefined}
+          initializeLevel={initializeLevel}
+          isInitialized={isInitialized}
+        />
+      ) : (
+        <StudioContent selectedLevel={selectedLevel} />
+      )}
     </PhaserProvider>
   );
 };

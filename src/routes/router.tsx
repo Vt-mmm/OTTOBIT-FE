@@ -161,6 +161,7 @@ function AppRouter() {
 
         {/* Studio Route - Public Access (Bypass Authentication) */}
         <ReactRoute path={PATH_USER.studio} element={<RobotStudioPage />} />
+        <ReactRoute path={`${PATH_USER.studio}/:mapKey`} element={<RobotStudioPage />} />
 
         {/* User Routes - Protected */}
         <ReactRoute element={<UserRouter />}>

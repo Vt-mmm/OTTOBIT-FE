@@ -1,28 +1,33 @@
 // Components
-export { default as PhaserSimulator } from "./components/PhaserSimulator.js";
-export { PhaserControlPanel } from "./components/PhaserControlPanel.js";
-export { PhaserStatusDisplay } from "./components/PhaserStatusDisplay.js";
-export { default as LevelSelector } from "./components/LevelSelector.js";
+export { default as PhaserSimulator } from "./components/PhaserSimulator";
+export { PhaserControlPanel } from "./components/PhaserControlPanel";
+export { PhaserStatusDisplay } from "./components/PhaserStatusDisplay";
+export { default as LevelSelector } from "./components/LevelSelector";
+export { default as LevelMapSelector } from "./components/LevelMapSelector";
+export { MapSelector } from "./components/MapSelector";
 
 // Services
-export { PhaserCommunicationService } from "./services/phaserCommunicationService.js";
-export { BlocklyToPhaserConverter } from "./services/blocklyToPhaserConverter.js";
-export { GameStateManager } from "./services/gameStateManager.js";
+export { PhaserCommunicationService } from "./services/phaserCommunicationService";
+export { BlocklyToPhaserConverter } from "./services/blocklyToPhaserConverter";
+export { GameStateManager } from "./services/gameStateManager";
 export {
   levelConfigService,
   type Level,
   type LevelProgress,
-} from "./services/levelConfigService.js";
+} from "./services/levelConfigService";
 
 // Hooks
-export { usePhaserCommunication } from "./hooks/usePhaserCommunication.js";
-export { useGameState } from "./hooks/useGameState.js";
-export { usePhaserSimulator } from "./hooks/usePhaserSimulator.js";
+export { usePhaserCommunication } from "./hooks/usePhaserCommunication";
+export { useGameState } from "./hooks/useGameState";
+export { usePhaserSimulator } from "./hooks/usePhaserSimulator";
+export { useMapData } from "./hooks/useMapData";
+export { useMapLoader } from "./hooks/useMapLoader";
 
 // Context
-export { PhaserProvider, usePhaserContext } from "./context/PhaserContext.js";
+export { PhaserProvider, usePhaserContext } from "./context/PhaserContext";
 
 // Types
-export * from "./types/phaser.js";
-export * from "./types/game.js";
-export * from "./types/communication.js";
+export * from "./types/phaser";
+export * from "./types/game";
+export * from "./types/communication";
+export * from "./types/map";

@@ -1,10 +1,13 @@
 import { createContext, useContext, ReactNode } from "react";
-import { usePhaserSimulator } from "../hooks/usePhaserSimulator.js";
-import { GameState, PhaserConfig, ProgramData } from "../types/phaser.js";
-import { PhaserCommunicationService } from "../services/phaserCommunicationService.js";
+import { usePhaserSimulator } from "../hooks/usePhaserSimulator";
+import { useMapData } from "../hooks/useMapData";
+import { useMapLoader } from "../hooks/useMapLoader";
+import { GameState, PhaserConfig, ProgramData } from "../types/phaser";
+import { MapType, MapResult, MapsQuery } from "../types/map";
+import { PhaserCommunicationService } from "../services/phaserCommunicationService";
 
 interface PhaserContextType {
-  // State
+  // Phaser State
   isConnected: boolean;
   isReady: boolean;
   gameState: GameState | null;
@@ -12,20 +15,51 @@ interface PhaserContextType {
   error: string | null;
   isLoading: boolean;
 
+  // Map State
+  currentMap: { mapKey: string | null; mapData: MapResult | null };
+  allMaps: any;
+  lessonMaps: any;
+  isLoadingMaps: boolean;
+  mapError: string | null;
+
   // Configuration
   config: PhaserConfig;
 
-  // Actions
+  // Phaser Actions
   connect: () => Promise<void>;
   disconnect: () => void;
   refreshConnection: () => void;
-  loadMap: (mapKey: string) => Promise<void>;
   runProgram: (program: ProgramData) => Promise<void>;
   runProgramFromWorkspace: (workspace: any) => Promise<void>;
   pauseProgram: () => Promise<void>;
   stopProgram: () => Promise<void>;
   getStatus: () => Promise<GameState | null>;
   clearError: () => void;
+
+  // Map Actions
+  loadMap: (mapKey: string) => Promise<MapResult | null>;
+  loadLessonMap: (
+    mapType: MapType,
+    index?: number
+  ) => Promise<MapResult | null>;
+  loadNextMap: () => Promise<MapResult | null>;
+  loadPreviousMap: () => Promise<MapResult | null>;
+  fetchLessonMaps: () => Promise<void>;
+  fetchAllMaps: (query?: MapsQuery) => Promise<void>;
+  refreshLessonMaps: () => Promise<void>;
+  clearMapError: () => void;
+
+  // Map Helpers
+  findMapByKey: (mapKey: string) => MapResult | null;
+  getMapsByType: (mapType: MapType) => MapResult[];
+  getLessonMapsByType: (mapType: MapType) => MapResult[];
+  getMapNavigationInfo: () => {
+    hasNext: boolean;
+    hasPrevious: boolean;
+    currentIndex: number;
+    totalMaps: number;
+    mapType: MapType | null;
+  };
 
   // Communication
   sendMessage: (message: any) => Promise<void>;
@@ -48,9 +82,78 @@ interface PhaserProviderProps {
 
 export function PhaserProvider({ children, config }: PhaserProviderProps) {
   const phaserState = usePhaserSimulator(config);
+  const mapData = useMapData();
+  const mapLoader = useMapLoader(phaserState.sendMessage);
+
+  // Combine all the state and actions
+  const contextValue: PhaserContextType = {
+    // Phaser State
+    isConnected: phaserState.isConnected,
+    isReady: phaserState.isReady,
+    gameState: phaserState.gameState,
+    currentProgram: phaserState.currentProgram,
+    error: phaserState.error,
+    isLoading: phaserState.isLoading,
+
+    // Map State
+    currentMap: mapData.currentMap,
+    allMaps: mapData.allMaps,
+    lessonMaps: mapData.lessonMaps,
+    isLoadingMaps: mapData.isLoading,
+    mapError: mapData.hasError
+      ? mapData.allMapsError || mapData.lessonMapsError
+      : mapLoader.mapLoadError,
+
+    // Configuration
+    config: phaserState.config,
+
+    // Phaser Actions
+    connect: phaserState.connect,
+    disconnect: phaserState.disconnect,
+    refreshConnection: phaserState.refreshConnection,
+    runProgram: phaserState.runProgram,
+    runProgramFromWorkspace: phaserState.runProgramFromWorkspace,
+    pauseProgram: phaserState.pauseProgram,
+    stopProgram: phaserState.stopProgram,
+    getStatus: phaserState.getStatus,
+    clearError: phaserState.clearError,
+
+    // Map Actions
+    loadMap: mapLoader.loadMap,
+    loadLessonMap: mapLoader.loadLessonMap,
+    loadNextMap: mapLoader.loadNextMap,
+    loadPreviousMap: mapLoader.loadPreviousMap,
+    fetchLessonMaps: async () => {
+      await mapData.fetchLessonMapsData();
+    },
+    fetchAllMaps: async (query) => {
+      await mapData.fetchAllMapsData(query || {});
+    },
+    refreshLessonMaps: async () => {
+      await mapData.refreshLessonMapsData();
+    },
+    clearMapError: () => {
+      mapData.clearErrors();
+      mapLoader.clearMapLoadError();
+    },
+
+    // Map Helpers
+    findMapByKey: mapData.findMapByKey,
+    getMapsByType: mapData.getMapsByType,
+    getLessonMapsByType: mapData.getLessonMapsByType,
+    getMapNavigationInfo: mapLoader.getMapNavigationInfo,
+
+    // Communication
+    sendMessage: phaserState.sendMessage,
+    onMessage: phaserState.onMessage,
+    offMessage: phaserState.offMessage,
+
+    // Manager instance
+    communicationService: phaserState.communicationService,
+  };
 
   return (
-    <PhaserContext.Provider value={phaserState}>
+    <PhaserContext.Provider value={contextValue}>
       {children}
     </PhaserContext.Provider>
   );

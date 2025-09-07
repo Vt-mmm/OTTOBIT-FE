@@ -15,7 +15,6 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     isLoading,
     config,
     connect,
-    loadMap,
     clearError,
   } = usePhaserContext();
 
@@ -36,15 +35,15 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     }
   }, [isConnected, isLoading, connect]);
 
-  // Auto-load default map when ready
-  useEffect(() => {
-    if (isReady && !gameState?.mapKey) {
-      // Load basic1 map for testing
-      loadMap("basic1").catch((err) => {
-        console.error("Failed to load basic1 map:", err);
-      });
-    }
-  }, [isReady, gameState?.mapKey, loadMap]);
+  // DISABLED: Auto-load removed - manual control via StudioContent
+  // useEffect(() => {
+  //   if (isReady && !gameState?.mapKey) {
+  //     // Load basic1 map for testing
+  //     loadMap("basic1").catch((err) => {
+  //       console.error("Failed to load basic1 map:", err);
+  //     });
+  //   }
+  // }, [isReady, gameState?.mapKey, loadMap]);
 
   if (error) {
     return (

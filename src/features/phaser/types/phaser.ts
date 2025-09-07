@@ -5,6 +5,7 @@
 export interface PhaserMessage {
   source: "parent-website";
   type:
+    | "START_MAP"
     | "LOAD_MAP"
     | "LOAD_LEVEL"
     | "RUN_PROGRAM"

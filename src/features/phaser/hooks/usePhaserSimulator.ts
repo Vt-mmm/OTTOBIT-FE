@@ -47,9 +47,8 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
   };
 
   // Message handlers
-  const handleReady = useCallback((data: any) => {
+  const handleReady = useCallback(() => {
     setIsReady(true);
-    console.log("✅ Phaser is ready:", data);
   }, []);
 
   const handleVictory = useCallback((data: VictoryData) => {
@@ -60,7 +59,6 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
   }, []);
 
   const handleProgress = useCallback((data: ProgressData) => {
-    console.log("📊 Progress update:", data);
     setGameState((prev) => (prev ? { ...prev, ...data } : null));
   }, []);
 
@@ -74,22 +72,19 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
     setGameState(data);
   }, []);
 
-  const handleProgramStarted = useCallback((data: any) => {
-    console.log("▶️ Program started:", data);
+  const handleProgramStarted = useCallback(() => {
     setGameState((prev) =>
       prev ? { ...prev, programStatus: "running" } : null
     );
   }, []);
 
-  const handleProgramPaused = useCallback((data: any) => {
-    console.log("⏸️ Program paused:", data);
+  const handleProgramPaused = useCallback(() => {
     setGameState((prev) =>
       prev ? { ...prev, programStatus: "paused" } : null
     );
   }, []);
 
-  const handleProgramStopped = useCallback((data: any) => {
-    console.log("⏹️ Program stopped:", data);
+  const handleProgramStopped = useCallback(() => {
     setGameState((prev) => (prev ? { ...prev, programStatus: "idle" } : null));
     setCurrentProgram(null);
   }, []);
@@ -127,7 +122,6 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
   const connect = useCallback(async () => {
     // Wait for communication service to be ready
     if (!communicationServiceRef.current) {
-      console.log("⏳ Waiting for communication service to initialize...");
       // Retry after a short delay
       setTimeout(() => {
         connect();
@@ -140,11 +134,8 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
       setError(null);
 
       // Initialize iframe connection
-      console.log(`🔍 Initializing with iframeId: "${iframeIdRef.current}"`);
       communicationServiceRef.current.initialize(iframeIdRef.current);
       setIsConnected(true);
-
-      console.log("🔄 Connected to Phaser iframe");
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to connect to Phaser";
@@ -184,7 +175,6 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
       setIsLoading(true);
       setError(null);
       await communicationServiceRef.current.loadMap(mapKey);
-      console.log(`🗺️ Loaded map: ${mapKey}`);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to load map";
@@ -213,7 +203,6 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
       }
 
       await communicationServiceRef.current.runProgram(program);
-      console.log("🚀 Program started");
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to run program";
@@ -250,7 +239,6 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
 
     try {
       await communicationServiceRef.current.pauseProgram();
-      console.log("⏸️ Program paused");
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to pause program";
@@ -268,7 +256,6 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
     try {
       await communicationServiceRef.current.stopProgram();
       setCurrentProgram(null);
-      console.log("⏹️ Program stopped");
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to stop program";

@@ -36,11 +36,6 @@ export class PhaserCommunicationService {
   initialize(iframeId: string, retryCount: number = 0): void {
     const maxRetries = 10; // Limit retries to prevent infinite loop
 
-    console.log(
-      `🔍 Looking for iframe with id: "${iframeId}" (attempt ${
-        retryCount + 1
-      }/${maxRetries + 1})`
-    );
     const iframe = document.getElementById(iframeId) as HTMLIFrameElement;
 
     if (!iframe) {
@@ -65,15 +60,8 @@ export class PhaserCommunicationService {
       }
     }
 
-    console.log("✅ Iframe found:", {
-      id: iframe.id,
-      src: iframe.src,
-      contentWindow: !!iframe.contentWindow,
-    });
-
     this.iframe = iframe;
     this.isConnected = true;
-    console.log("🔄 Phaser Communication Service initialized");
   }
 
   /**
@@ -110,26 +98,12 @@ export class PhaserCommunicationService {
    * Handle incoming message from Phaser
    */
   private handleMessage(message: PhaserResponse): void {
-    console.log(
-      `📥 Received message from Phaser: ${message.type}`,
-      message.data
-    );
-
     // Update ready state
     if (message.type === "READY") {
       this.isReady = true;
-      console.log("✅ Phaser is now ready for communication");
     }
 
-    // Log important program messages
-    if (message.type === "PROGRAM_STARTED") {
-      console.log("🎯 Program execution started in Phaser");
-    }
-
-    if (message.type === "PROGRAM_STOPPED") {
-      console.log("🏁 Program execution stopped in Phaser");
-    }
-
+    // Keep victory logging for user feedback
     if (message.type === "VICTORY") {
       console.log("🎉 Victory achieved in Phaser!");
     }
@@ -151,12 +125,6 @@ export class PhaserCommunicationService {
    * Send message to Phaser
    */
   async sendMessage(message: PhaserMessage): Promise<void> {
-    console.log("🔍 Debug iframe:", {
-      iframe: !!this.iframe,
-      contentWindow: !!this.iframe?.contentWindow,
-      isConnected: this.isConnected,
-    });
-
     // Check connection first
     if (!this.isConnected) {
       throw new Error("Not connected to Phaser");
@@ -180,7 +148,6 @@ export class PhaserCommunicationService {
 
       if (iframeElement && iframeElement.contentWindow) {
         this.iframe = iframeElement;
-        console.log("✅ Found iframe with contentWindow");
         break;
       }
 
@@ -195,10 +162,7 @@ export class PhaserCommunicationService {
     }
 
     try {
-      console.log("🔍 About to send message:", message);
-      console.log("🔍 Iframe contentWindow:", this.iframe?.contentWindow);
       this.iframe!.contentWindow!.postMessage(message, "*");
-      console.log(`📤 Sent message to Phaser: ${message.type}`, message.data);
     } catch (error) {
       console.error("❌ Error sending message to Phaser:", error);
       throw error;
@@ -338,7 +302,6 @@ export class PhaserCommunicationService {
    */
   refreshConnection(): void {
     if (this.iframe?.id) {
-      console.log("🔄 Refreshing iframe connection...");
       try {
         this.initialize(this.iframe.id, 0); // Start with fresh retry count
       } catch (error) {
@@ -352,6 +315,5 @@ export class PhaserCommunicationService {
     this.isReady = false;
     this.iframe = null;
     this.messageHandlers.clear();
-    console.log("🔌 Phaser Communication Service disconnected");
   }
 }
