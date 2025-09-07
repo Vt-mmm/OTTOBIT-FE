@@ -1,4 +1,4 @@
-import { Box, Typography, Chip } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { usePhaserContext } from "../context/PhaserContext.js";
 
 interface PhaserControlPanelProps {
@@ -8,7 +8,7 @@ interface PhaserControlPanelProps {
 }
 
 export function PhaserControlPanel({ className }: PhaserControlPanelProps) {
-  const { isConnected, isReady, gameState } = usePhaserContext();
+  const { gameState } = usePhaserContext();
 
   return (
     <Box
