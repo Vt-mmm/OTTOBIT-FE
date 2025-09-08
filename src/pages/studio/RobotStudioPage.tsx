@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
+import Header from "../../layout/components/header/Header";
 import TopBarSection from "sections/studio/TopBarSection";
 import LeftPanelSection from "sections/studio/LeftPanelSection";
 import SimulatorStageSection from "sections/studio/SimulatorStageSection";
@@ -54,19 +55,23 @@ const LevelSelectorWithInitialization = ({
   }, [isInitialized, findMapByKey, lessonMaps, initializeLevel, mapKey]);
 
   return (
-    <Box
-      sx={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        bgcolor: "#ffffff",
-      }}
-    >
-      <LevelMapSelector
-        onLevelSelect={onLevelSelect}
-        currentLevel={currentLevel}
-      />
-    </Box>
+    <>
+      <Header />
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          bgcolor: "#f5f5f5",
+          pt: { xs: "70px", md: "80px" }, // Account for fixed header height
+        }}
+      >
+        <LevelMapSelector
+          onLevelSelect={onLevelSelect}
+          currentLevel={currentLevel}
+        />
+      </Box>
+    </>
   );
 };
 
