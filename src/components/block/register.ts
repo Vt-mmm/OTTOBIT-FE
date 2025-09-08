@@ -15,6 +15,13 @@ import "./generators/python";
  * Register all ottobit block definitions following Google Blockly standards
  */
 export function registerottobitBlocks(): void {
+  // Clear existing blocks first to ensure fresh registration
+  Object.keys(Blockly.Blocks).forEach((blockType) => {
+    if (blockType.startsWith("ottobit_")) {
+      delete Blockly.Blocks[blockType];
+    }
+  });
+
   // Register blocks manually using jsonInit
   const blockModules = [
     eventBlocks,
@@ -34,6 +41,8 @@ export function registerottobitBlocks(): void {
       };
     });
   });
+
+  console.log("🔧 Ottobit blocks registered successfully");
 }
 
 /**
@@ -78,6 +87,9 @@ export const BLOCK_TYPES = {
   ottobit_speak: "ottobit_speak",
   ottobit_display_text: "ottobit_display_text",
   ottobit_send_message: "ottobit_send_message",
+  ottobit_collect_green: "ottobit_collect_green",
+  ottobit_collect_red: "ottobit_collect_red",
+  ottobit_collect_yellow: "ottobit_collect_yellow",
 } as const;
 
 export type BlockType = keyof typeof BLOCK_TYPES;

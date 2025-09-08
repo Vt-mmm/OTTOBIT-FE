@@ -83,6 +83,7 @@ export const movementBlocks = createBlockDefinitionsFromJsonArray([
         options: [
           ["right", "RIGHT"],
           ["left", "LEFT"],
+          ["back", "BACK"],
         ],
       },
     ],
@@ -92,7 +93,7 @@ export const movementBlocks = createBlockDefinitionsFromJsonArray([
     movable: true,
     editable: true,
     style: "ottobit_movement",
-    tooltip: "Xoay robot sang trái hoặc phải",
+    tooltip: "Xoay robot sang trái, phải, hoặc quay lại (180°)",
     helpUrl: "",
   },
 ]);

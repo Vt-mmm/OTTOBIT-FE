@@ -39,6 +39,12 @@ export interface ProgramData {
   version: string;
   programName: string;
   actions: ProgramAction[];
+  functions?: ProgramFunction[];
+}
+
+export interface ProgramFunction {
+  name: string;
+  body: ProgramAction[];
 }
 
 export interface ProgramAction {
@@ -48,10 +54,25 @@ export interface ProgramAction {
     | "turnLeft"
     | "turnBack"
     | "collect"
-    | "collectOnce";
+    | "collectOnce"
+    | "repeat"
+    | "repeatRange"
+    | "if"
+    | "while"
+    | "callFunction";
   count?: number;
   color?: string;
   colors?: string[];
+  // Control structure properties
+  body?: ProgramAction[];
+  variable?: string;
+  from?: number;
+  to?: number;
+  step?: number;
+  cond?: any;
+  condition?: any;
+  then?: ProgramAction[];
+  functionName?: string;
 }
 
 export interface GameState {

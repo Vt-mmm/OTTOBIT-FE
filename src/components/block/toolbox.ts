@@ -88,11 +88,15 @@ export const ottobit_TOOLBOX = {
       contents: [
         {
           kind: "block",
-          type: "ottobit_collect",
+          type: "ottobit_collect_green",
         },
         {
           kind: "block",
-          type: "ottobit_collect_green",
+          type: "ottobit_collect_red",
+        },
+        {
+          kind: "block",
+          type: "ottobit_collect_yellow",
         },
       ],
     },

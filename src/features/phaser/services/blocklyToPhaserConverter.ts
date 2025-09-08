@@ -3,7 +3,11 @@
  * Converts Blockly workspace to Phaser-compatible program format
  */
 
-import { ProgramData, ProgramAction } from "../types/phaser.js";
+import {
+  ProgramData,
+  ProgramAction,
+  ProgramFunction,
+} from "../types/phaser.js";
 
 export class BlocklyToPhaserConverter {
   /**
@@ -18,11 +22,25 @@ export class BlocklyToPhaserConverter {
       version: "1.0.0",
       programName: "user_program",
       actions: [],
+      functions: [], // Thêm functions array để hỗ trợ function definitions
     };
 
     try {
       // Get all blocks from workspace
       const blocks = workspace.getAllBlocks();
+
+      // Find function definition blocks first
+      const functionBlocks = blocks.filter(
+        (block: any) =>
+          block.type === "procedures_defnoreturn" ||
+          block.type === "ottobit_function_def"
+      );
+
+      if (functionBlocks.length > 0) {
+        program.functions = this.parseFunctionDefinitions(functionBlocks);
+      }
+
+      // Find start block
       const startBlock = blocks.find(
         (block: any) => block.type === "ottobit_start"
       );
@@ -32,7 +50,9 @@ export class BlocklyToPhaserConverter {
       }
 
       console.log(
-        `📋 Converted workspace to program: ${program.actions.length} actions`
+        `📋 Converted workspace to program: ${
+          program.actions.length
+        } actions, ${program.functions?.length || 0} functions`
       );
       console.log(
         "📋 Generated program JSON:",
@@ -43,6 +63,31 @@ export class BlocklyToPhaserConverter {
       console.error("❌ Error converting workspace:", error);
       throw new Error(`Failed to convert workspace: ${error}`);
     }
+  }
+
+  /**
+   * Parse function definition blocks
+   */
+  private static parseFunctionDefinitions(functionBlocks: any[]): any[] {
+    const functions: any[] = [];
+
+    for (const block of functionBlocks) {
+      const functionName =
+        block.getFieldValue("NAME") || `function_${functions.length}`;
+      const bodyBlock = block.getInputTargetBlock("STACK");
+
+      const functionDef = {
+        name: functionName,
+        body: bodyBlock ? this.parseBlocksToActionsFromBlock(bodyBlock) : [],
+      };
+
+      functions.push(functionDef);
+      console.log(
+        `🔧 Parsed function definition: ${functionName} with ${functionDef.body.length} actions`
+      );
+    }
+
+    return functions;
   }
 
   /**
@@ -60,9 +105,9 @@ export class BlocklyToPhaserConverter {
 
     // Traverse through connected blocks
     while (currentBlock) {
-      const action = this.convertBlockToAction(currentBlock);
-      if (action) {
-        actions.push(action);
+      const convertedActions = this.convertBlockToActions(currentBlock);
+      if (convertedActions && convertedActions.length > 0) {
+        actions.push(...convertedActions);
       }
 
       // Move to next connected block
@@ -73,58 +118,79 @@ export class BlocklyToPhaserConverter {
   }
 
   /**
-   * Convert individual block to action
+   * Parse blocks starting from a specific block (for function bodies, control structures)
    */
-  private static convertBlockToAction(block: any): ProgramAction | null {
+  private static parseBlocksToActionsFromBlock(
+    startBlock: any
+  ): ProgramAction[] {
+    const actions: ProgramAction[] = [];
+    let currentBlock = startBlock;
+
+    // Traverse through connected blocks
+    while (currentBlock) {
+      const convertedActions = this.convertBlockToActions(currentBlock);
+      if (convertedActions && convertedActions.length > 0) {
+        actions.push(...convertedActions);
+      }
+
+      // Move to next connected block
+      currentBlock = currentBlock.getNextBlock();
+    }
+
+    return actions;
+  }
+
+  /**
+   * Convert individual block to action(s) - can return multiple actions
+   */
+  private static convertBlockToActions(block: any): ProgramAction[] | null {
     const blockType = block.type;
 
     try {
       switch (blockType) {
         case "ottobit_move_forward":
-          return this.convertMoveForward(block);
+          return [this.convertMoveForward(block)];
 
         case "ottobit_rotate":
-          return this.convertRotate(block);
+          return [this.convertRotate(block)];
 
-        case "ottobit_turn_back":
-          return this.convertTurnBack(block);
-
-        case "ottobit_collect":
+        // Collect blocks
         case "ottobit_collect_green":
-          return this.convertCollect(block);
+        case "ottobit_collect_red":
+        case "ottobit_collect_yellow":
+          return [this.convertCollect(block)];
 
-        case "ottobit_collect_once":
-          return this.convertCollectOnce(block);
-
+        // Control structures
         case "ottobit_repeat":
-          return this.convertRepeat(block);
+          return [this.convertRepeat(block)];
 
         case "ottobit_repeat_range":
-          return this.convertRepeatRange(block);
+          return [this.convertRepeatRange(block)];
 
         case "ottobit_while":
-          return this.convertWhile(block);
+        case "ottobit_while_compare":
+          return [this.convertWhile(block)];
 
         case "ottobit_if":
-          return this.convertIf(block);
+        case "ottobit_if_condition":
+          return [this.convertIf(block)];
 
-        // Sensor blocks - not supported by Phaser
+        // Function calls
+        case "procedures_callnoreturn":
+        case "ottobit_function_call":
+          return [this.convertFunctionCall(block)];
+
+        // Skip start block
+        case "ottobit_start":
+          return null;
+
+        // Unsupported blocks
         case "ottobit_read_sensor":
         case "ottobit_comparison":
+        case "ottobit_touch_sensor":
+        case "ottobit_light_sensor":
+        case "ottobit_sound_sensor":
           console.warn(`⚠️ Sensor block not supported by Phaser: ${blockType}`);
-          return null;
-
-        // Logic blocks - not supported by Phaser
-        case "ottobit_while_compare":
-        case "ottobit_if_else_logic":
-        case "ottobit_variable_i":
-        case "ottobit_logic_compare":
-        case "ottobit_number":
-          console.warn(`⚠️ Logic block not supported by Phaser: ${blockType}`);
-          return null;
-
-        // Start block - just entry point, no conversion needed
-        case "ottobit_start":
           return null;
 
         default:
@@ -153,91 +219,235 @@ export class BlocklyToPhaserConverter {
    */
   private static convertRotate(block: any): ProgramAction {
     const direction = block.getFieldValue("DIRECTION") || "RIGHT";
+    let actionType: "turnRight" | "turnLeft" | "turnBack";
+
+    switch (direction) {
+      case "RIGHT":
+        actionType = "turnRight";
+        break;
+      case "LEFT":
+        actionType = "turnLeft";
+        break;
+      case "BACK":
+        actionType = "turnBack";
+        break;
+      default:
+        actionType = "turnRight";
+    }
+
     return {
-      type: direction === "RIGHT" ? "turnRight" : "turnLeft",
+      type: actionType,
     };
   }
 
   /**
-   * Convert turn back block
-   */
-  private static convertTurnBack(_block: any): ProgramAction {
-    return {
-      type: "turnBack",
-    };
-  }
-
-  /**
-   * Convert collect block
+   * Convert collect blocks - specific color variants only
    */
   private static convertCollect(block: any): ProgramAction {
-    const count = block.getFieldValue("COUNT") || "1";
-    const color = block.getFieldValue("COLOR") || "green";
+    const blockType = block.type;
+    let count = "1";
+    let color = "green"; // default
+
+    // Get count field
+    if (block.getFieldValue("COUNT")) {
+      count = block.getFieldValue("COUNT");
+    }
+
+    // Determine color based on block type
+    switch (blockType) {
+      case "ottobit_collect_green":
+        color = "green";
+        break;
+      case "ottobit_collect_red":
+        color = "red";
+        break;
+      case "ottobit_collect_yellow":
+        color = "yellow";
+        break;
+      default:
+        color = "green";
+    }
 
     return {
       type: "collect",
       count: parseInt(count),
-      colors: [color], // Phaser expects colors array, not color string
+      color: color,
     };
   }
 
   /**
-   * Convert collect once block (single collection)
+   * Convert repeat block
    */
-  private static convertCollectOnce(block: any): ProgramAction {
-    const count = block.getFieldValue("COUNT") || "1";
-    const color = block.getFieldValue("COLOR") || "green";
+  private static convertRepeat(block: any): ProgramAction {
+    const times = block.getFieldValue("TIMES") || "3";
+    const doBlock = block.getInputTargetBlock("DO");
+
+    const bodyActions = doBlock
+      ? this.parseBlocksToActionsFromBlock(doBlock)
+      : [];
 
     return {
-      type: "collectOnce", // Phaser supports collectOnce action
-      count: parseInt(count),
-      color: color, // collectOnce uses color, not colors
+      type: "repeat",
+      count: parseInt(times),
+      body: bodyActions,
     };
   }
 
   /**
-   * Convert repeat block (simplified - just repeat the inner blocks)
+   * Convert repeat range block (for loops)
    */
-  private static convertRepeat(block: any): ProgramAction | null {
-    const times = block.getFieldValue("TIMES") || "3";
-    const doStatements = block.getInputTargetBlock("DO");
-
-    if (!doStatements) {
-      return null;
-    }
-
-    // For now, just return the inner blocks
-    // In a more complex implementation, you might want to expand the loop
-    console.log(`🔄 Repeat block: ${times} times`);
-    return null; // Skip for now, could be expanded later
-  }
-
-  /**
-   * Convert repeat range block
-   */
-  private static convertRepeatRange(block: any): ProgramAction | null {
+  private static convertRepeatRange(block: any): ProgramAction {
+    const varName = block.getFieldValue("VAR") || "i";
     const from = block.getFieldValue("FROM") || "1";
     const to = block.getFieldValue("TO") || "5";
     const by = block.getFieldValue("BY") || "1";
+    const doBlock = block.getInputTargetBlock("DO");
 
-    console.log(`🔄 Repeat range: ${from} to ${to} by ${by}`);
-    return null; // Skip for now, could be expanded later
+    const bodyActions = doBlock
+      ? this.parseBlocksToActionsFromBlock(doBlock)
+      : [];
+
+    return {
+      type: "repeatRange",
+      variable: varName,
+      from: parseInt(from),
+      to: parseInt(to),
+      step: parseInt(by),
+      body: bodyActions,
+    };
   }
 
   /**
    * Convert while block
    */
-  private static convertWhile(_block: any): ProgramAction | null {
-    console.log("🔄 While block detected");
-    return null; // Skip for now, could be expanded later
+  private static convertWhile(block: any): ProgramAction {
+    const conditionInput = block.getInputTargetBlock("CONDITION");
+    const doBlock = block.getInputTargetBlock("DO");
+
+    const condition = conditionInput
+      ? this.parseCondition(conditionInput)
+      : null;
+    const bodyActions = doBlock
+      ? this.parseBlocksToActionsFromBlock(doBlock)
+      : [];
+
+    return {
+      type: "while",
+      condition: condition,
+      body: bodyActions,
+    };
   }
 
   /**
    * Convert if block
    */
-  private static convertIf(_block: any): ProgramAction | null {
-    console.log("🔄 If block detected");
-    return null; // Skip for now, could be expanded later
+  private static convertIf(block: any): ProgramAction {
+    const conditionInput =
+      block.getInputTargetBlock("CONDITION") ||
+      block.getInputTargetBlock("CONDITION1"); // Support different if block formats
+    const doBlock = block.getInputTargetBlock("DO");
+
+    const condition = conditionInput
+      ? this.parseCondition(conditionInput)
+      : null;
+    const thenActions = doBlock
+      ? this.parseBlocksToActionsFromBlock(doBlock)
+      : [];
+
+    return {
+      type: "if",
+      cond: condition,
+      then: thenActions,
+    };
+  }
+
+  /**
+   * Convert function call block
+   */
+  private static convertFunctionCall(block: any): ProgramAction {
+    const functionName =
+      block.getFieldValue("NAME") ||
+      block.getFieldValue("FUNCTION_NAME") ||
+      "unknown_function";
+
+    return {
+      type: "callFunction",
+      functionName: functionName,
+    };
+  }
+
+  /**
+   * Parse condition from condition blocks
+   */
+  private static parseCondition(conditionBlock: any): any {
+    if (!conditionBlock) return null;
+
+    const blockType = conditionBlock.type;
+
+    switch (blockType) {
+      case "ottobit_logic_compare":
+      case "logic_compare": {
+        const leftValue =
+          conditionBlock.getInputTargetBlock("A") ||
+          conditionBlock.getInputTargetBlock("LEFT");
+        const operator =
+          conditionBlock.getFieldValue("OP") ||
+          conditionBlock.getFieldValue("OPERATOR") ||
+          "EQ";
+        const rightValue =
+          conditionBlock.getInputTargetBlock("B") ||
+          conditionBlock.getInputTargetBlock("RIGHT");
+
+        // Convert operator
+        const operatorMap: { [key: string]: string } = {
+          EQ: "==",
+          NEQ: "!=",
+          LT: "<",
+          LTE: "<=",
+          GT: ">",
+          GTE: ">=",
+        };
+
+        return {
+          type: "variableComparison",
+          variable: this.extractVariableOrValue(leftValue),
+          operator: operatorMap[operator] || "==",
+          value: this.extractVariableOrValue(rightValue),
+        };
+      }
+
+      // Sensor conditions (màu pin)
+      case "ottobit_is_green":
+        return { type: "condition", function: "isGreen", check: true };
+      case "ottobit_is_red":
+        return { type: "condition", function: "isRed", check: true };
+      case "ottobit_is_yellow":
+        return { type: "condition", function: "isYellow", check: true };
+
+      default:
+        console.warn(`⚠️ Unknown condition block type: ${blockType}`);
+        return null;
+    }
+  }
+
+  /**
+   * Extract variable name or value from blocks
+   */
+  private static extractVariableOrValue(block: any): any {
+    if (!block) return 0;
+
+    switch (block.type) {
+      case "ottobit_variable_i":
+      case "variables_get":
+        return block.getFieldValue("VAR") || "i";
+      case "ottobit_number":
+      case "math_number":
+        return parseInt(block.getFieldValue("NUM")) || 0;
+      case "text":
+        return block.getFieldValue("TEXT") || "";
+      default:
+        return 0;
+    }
   }
 
   /**
@@ -275,11 +485,28 @@ export class BlocklyToPhaserConverter {
         errors.push(`Action ${index}: collect action requires count >= 1`);
       }
 
+      // Validate control structures
+      if (action.type === "repeat" && (!action.count || action.count < 1)) {
+        errors.push(`Action ${index}: repeat action requires count >= 1`);
+      }
+
+      if (action.type === "repeatRange") {
+        if (!action.variable) {
+          errors.push(`Action ${index}: repeatRange requires variable name`);
+        }
+        if (action.from === undefined || action.to === undefined) {
+          errors.push(
+            `Action ${index}: repeatRange requires from and to values`
+          );
+        }
+      }
+
       if (
-        action.type === "collectOnce" &&
-        (!action.count || action.count < 1)
+        (action.type === "if" || action.type === "while") &&
+        !action.cond &&
+        !action.condition
       ) {
-        errors.push(`Action ${index}: collectOnce action requires count >= 1`);
+        errors.push(`Action ${index}: ${action.type} requires condition`);
       }
     });
 

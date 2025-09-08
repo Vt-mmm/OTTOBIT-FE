@@ -55,12 +55,18 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
   const { lessonMaps, isLoadingMaps, mapError, fetchLessonMaps } = usePhaserContext();
   const [currentTab, setCurrentTab] = useState(0);
   const [levels, setLevels] = useState<LevelData[]>([]);
+  const [completedLevels, setCompletedLevels] = useState<string[]>([]);
 
 
-  // Load lesson maps on mount
+  // Load lesson maps on mount and get completed levels from localStorage
   useEffect(() => {
     if (!lessonMaps && !isLoadingMaps) {
       fetchLessonMaps();
+    }
+    // Load completed levels from localStorage
+    const saved = localStorage.getItem('completedLevels');
+    if (saved) {
+      setCompletedLevels(JSON.parse(saved));
     }
   }, [lessonMaps, isLoadingMaps, fetchLessonMaps]);
 
@@ -94,8 +100,43 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
         const recommendedBlocks = ["forward", "turn"];
         const difficulty: LevelData["difficulty"] = order <= 2 ? "beginner" : order <= 4 ? "intermediate" : "advanced";
         
-        const isFirstLevel = category === "basic" && order === 1;
-        const isUnlocked = isFirstLevel;
+        // Smart unlock logic:
+        // 1. First level is always unlocked
+        // 2. Next level unlocks when previous is completed
+        // 3. For testing, you can unlock all by setting UNLOCK_ALL = true
+        const UNLOCK_ALL = true; // Set to false for production
+        
+        let isUnlocked = false;
+        if (UNLOCK_ALL) {
+          isUnlocked = true;
+        } else {
+          // Progressive unlock logic
+          if (category === "basic" && order === 1) {
+            isUnlocked = true; // First level always unlocked
+          } else if (category === "basic") {
+            // Unlock if previous basic level is completed
+            const previousLevelId = `${category}-${order - 1}`;
+            isUnlocked = completedLevels.includes(previousLevelId);
+          } else if (category === "boolean" && order === 1) {
+            // Unlock first boolean if at least 3 basic levels completed
+            const basicCompleted = completedLevels.filter(id => id.startsWith('basic-')).length;
+            isUnlocked = basicCompleted >= 3;
+          } else if (category === "boolean") {
+            // Unlock next boolean if previous is completed
+            const previousLevelId = `${category}-${order - 1}`;
+            isUnlocked = completedLevels.includes(previousLevelId);
+          } else if (category === "forloop" && order === 1) {
+            // Unlock first forloop if at least 2 boolean levels completed
+            const booleanCompleted = completedLevels.filter(id => id.startsWith('boolean-')).length;
+            isUnlocked = booleanCompleted >= 2;
+          } else if (category === "forloop") {
+            // Unlock next forloop if previous is completed
+            const previousLevelId = `${category}-${order - 1}`;
+            isUnlocked = completedLevels.includes(previousLevelId);
+          }
+        }
+        
+        const isCompleted = completedLevels.includes(`${category}-${order}`);
 
         levelData.push({
           id: `${category}-${order}`,
@@ -109,8 +150,8 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
           category,
           order,
           isUnlocked,
-          isCompleted: false,
-          stars: 0,
+          isCompleted,
+          stars: isCompleted ? Math.floor(Math.random() * 3) + 1 : 0,
         });
       });
     });
@@ -122,7 +163,7 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
       }
       return a.order - b.order;
     });
-  }, [lessonMaps]);
+  }, [lessonMaps, completedLevels]);
 
   useEffect(() => {
     setLevels(processedLevels);

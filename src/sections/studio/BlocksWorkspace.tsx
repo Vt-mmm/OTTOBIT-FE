@@ -42,8 +42,9 @@ export default function BlocksWorkspace({
       { kind: "block", type: "ottobit_comparison" },
     ],
     actions: [
-      { kind: "block", type: "ottobit_collect" },
       { kind: "block", type: "ottobit_collect_green" },
+      { kind: "block", type: "ottobit_collect_red" },
+      { kind: "block", type: "ottobit_collect_yellow" },
     ],
   };
 

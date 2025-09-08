@@ -19,8 +19,21 @@ javascriptGenerator.forBlock["ottobit_move_forward"] = function (
 
 javascriptGenerator.forBlock["ottobit_rotate"] = function (block: any): string {
   const direction = block.getFieldValue("DIRECTION") || "RIGHT";
-  const angle = direction === "RIGHT" ? "90" : "-90";
-  return `turn(${angle});\n`;
+  let action = "";
+  switch (direction) {
+    case "RIGHT":
+      action = "turnRight()";
+      break;
+    case "LEFT":
+      action = "turnLeft()";
+      break;
+    case "BACK":
+      action = "turnBack()";
+      break;
+    default:
+      action = "turnRight()";
+  }
+  return `${action};\n`;
 };
 
 javascriptGenerator.forBlock["ottobit_move_backward"] = function (
@@ -185,6 +198,28 @@ javascriptGenerator.forBlock["ottobit_send_message"] = function (
   return `robot.sendMessage('${message}');\n`;
 };
 
+// Collect blocks
+javascriptGenerator.forBlock["ottobit_collect_green"] = function (
+  block: any
+): string {
+  const count = block.getFieldValue("COUNT") || "1";
+  return `robot.collect(${count}, 'green');\n`;
+};
+
+javascriptGenerator.forBlock["ottobit_collect_red"] = function (
+  block: any
+): string {
+  const count = block.getFieldValue("COUNT") || "1";
+  return `robot.collect(${count}, 'red');\n`;
+};
+
+javascriptGenerator.forBlock["ottobit_collect_yellow"] = function (
+  block: any
+): string {
+  const count = block.getFieldValue("COUNT") || "1";
+  return `robot.collect(${count}, 'yellow');\n`;
+};
+
 // New control blocks generators
 javascriptGenerator.forBlock["ottobit_while_compare"] = function (
   block: any
@@ -209,9 +244,7 @@ javascriptGenerator.forBlock["ottobit_while_compare"] = function (
   return `while (${condition}) {\n${statements}}\n`;
 };
 
-javascriptGenerator.forBlock["ottobit_if"] = function (
-  block: any
-): string {
+javascriptGenerator.forBlock["ottobit_if"] = function (block: any): string {
   const condition1 =
     javascriptGenerator.valueToCode(block, "CONDITION1", Order.LOGICAL_AND) ||
     "false";

@@ -25,8 +25,21 @@ pythonGenerator.forBlock["ottobit_move_forward"] = function (
 
 pythonGenerator.forBlock["ottobit_rotate"] = function (block: any): string {
   const direction = block.getFieldValue("DIRECTION") || "RIGHT";
-  const dir = direction === "RIGHT" ? "1" : "-1";
-  return `motor.Rotate(${dir})\n`;
+  let action = "";
+  switch (direction) {
+    case "RIGHT":
+      action = "robot.turn_right()";
+      break;
+    case "LEFT":
+      action = "robot.turn_left()";
+      break;
+    case "BACK":
+      action = "robot.turn_back()";
+      break;
+    default:
+      action = "robot.turn_right()";
+  }
+  return `${action}\n`;
 };
 pythonGenerator.forBlock["ottobit_move_backward"] = function (
   _block: any
@@ -292,6 +305,28 @@ pythonGenerator.forBlock["ottobit_number"] = function (
 ): [string, number] {
   const value = block.getFieldValue("NUM") || "0";
   return [value, Order.ATOMIC];
+};
+
+// Collect blocks
+pythonGenerator.forBlock["ottobit_collect_green"] = function (
+  block: any
+): string {
+  const count = block.getFieldValue("COUNT") || "1";
+  return `robot.collect(${count}, 'green')\n`;
+};
+
+pythonGenerator.forBlock["ottobit_collect_red"] = function (
+  block: any
+): string {
+  const count = block.getFieldValue("COUNT") || "1";
+  return `robot.collect(${count}, 'red')\n`;
+};
+
+pythonGenerator.forBlock["ottobit_collect_yellow"] = function (
+  block: any
+): string {
+  const count = block.getFieldValue("COUNT") || "1";
+  return `robot.collect(${count}, 'yellow')\n`;
 };
 
 /**
