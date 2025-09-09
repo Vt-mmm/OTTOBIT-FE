@@ -1,8 +1,3 @@
-/**
- * Phaser Communication Service
- * Handles all communication between Frontend and Phaser iframe
- */
-
 import { PhaserMessage, PhaserResponse } from "../types/phaser.js";
 import { CommunicationConfig, MessageHandler } from "../types/communication.js";
 
@@ -17,7 +12,7 @@ export class PhaserCommunicationService {
     this.config = {
       allowedOrigins: [
         "http://localhost:5173",
-        "http://localhost:5174", // Phaser dev server
+        "https://phaser-map-three.vercel.app", // Phaser dev server
         "https://phaser-map-three.vercel.app",
         "https://your-domain.com",
       ],

@@ -39,7 +39,8 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
 
   // Default configuration
   const defaultConfig: PhaserConfig = {
-    url: import.meta.env.VITE_PHASER_URL || "http://localhost:5174",
+    url:
+      import.meta.env.VITE_PHASER_URL || "https://phaser-map-three.vercel.app",
     width: 800,
     height: 600,
     allowFullscreen: true,

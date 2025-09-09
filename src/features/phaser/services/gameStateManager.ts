@@ -1,8 +1,3 @@
-/**
- * Game State Manager Service
- * Manages game state persistence and synchronization
- */
-
 import { GameSession } from "../types/game.js";
 import { GameState } from "../types/phaser.js";
 

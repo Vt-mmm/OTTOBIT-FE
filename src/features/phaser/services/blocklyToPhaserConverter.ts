@@ -1,13 +1,4 @@
-/**
- * Blockly to Phaser Converter Service
- * Converts Blockly workspace to Phaser-compatible program format
- */
-
-import {
-  ProgramData,
-  ProgramAction,
-  ProgramFunction,
-} from "../types/phaser.js";
+import { ProgramData, ProgramAction } from "../types/phaser.js";
 
 export class BlocklyToPhaserConverter {
   /**
