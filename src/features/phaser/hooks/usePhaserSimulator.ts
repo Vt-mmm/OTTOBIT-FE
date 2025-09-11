@@ -1,6 +1,6 @@
 /**
- * Main hook for Phaser Simulator functionality
- * Combines communication, state management, and game logic
+ * Phaser Simulator Hook
+ * Main hook for managing Phaser game state and communication
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -21,7 +21,7 @@ interface UsePhaserSimulatorConfig {
 }
 
 export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
-  // State
+  // Basic States
   const [isConnected, setIsConnected] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -30,6 +30,17 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
   );
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Victory State
+  const [victoryData, setVictoryData] = useState<VictoryData | null>(null);
+  const [isVictoryModalOpen, setIsVictoryModalOpen] = useState(false);
+
+  // Defeat State
+  const [defeatData, setDefeatData] = useState<ErrorData | null>(null);
+  const [isDefeatModalOpen, setIsDefeatModalOpen] = useState(false);
+
+  // Current Map State
+  const [currentMapKey, setCurrentMapKey] = useState<string | null>(null);
 
   // Refs
   const communicationServiceRef = useRef<PhaserCommunicationService | null>(
@@ -47,27 +58,88 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
     ...config.config,
   };
 
+  // Victory Actions
+  const showVictoryModal = useCallback((data: VictoryData) => {
+    setVictoryData(data);
+    setIsVictoryModalOpen(true);
+  }, []);
+
+  const hideVictoryModal = useCallback(() => {
+    setIsVictoryModalOpen(false);
+  }, []);
+
+  // Defeat Actions
+  const showDefeatModal = useCallback(
+    (data: ErrorData) => {
+      setDefeatData(data);
+      setIsDefeatModalOpen(true);
+    },
+    [isDefeatModalOpen, defeatData, isVictoryModalOpen]
+  );
+
+  const hideDefeatModal = useCallback(() => {
+    setIsDefeatModalOpen(false);
+  }, []);
+
   // Message handlers
   const handleReady = useCallback(() => {
     setIsReady(true);
   }, []);
 
-  const handleVictory = useCallback((data: VictoryData) => {
-    console.log("🏆 Victory achieved:", data);
-    setGameState((prev) =>
-      prev ? { ...prev, programStatus: "completed" } : null
-    );
-  }, []);
+  const handleVictory = useCallback(
+    (data: VictoryData) => {
+      setGameState((prev) =>
+        prev ? { ...prev, programStatus: "completed" } : null
+      );
+      showVictoryModal(data);
+    },
+    [showVictoryModal]
+  );
 
   const handleProgress = useCallback((data: ProgressData) => {
     setGameState((prev) => (prev ? { ...prev, ...data } : null));
   }, []);
 
-  const handleError = useCallback((data: ErrorData) => {
-    console.error("❌ Phaser error:", data);
-    setError(data.message);
+  const handleError = useCallback(
+    (data: ErrorData) => {
+      console.error("❌ Phaser error:", data);
+      setError(data.message);
+      setGameState((prev) =>
+        prev ? { ...prev, programStatus: "error" } : null
+      );
+
+      // Show defeat modal for errors
+      if (
+        data.type === "PROGRAM_ERROR" ||
+        data.type === "MAP_ERROR" ||
+        data.type === "VALIDATION_ERROR"
+      ) {
+        showDefeatModal(data);
+      }
+    },
+    [showDefeatModal]
+  );
+
+  const handleLose = useCallback(() => {
+    // Prevent duplicate opens
+    if (isDefeatModalOpen) {
+      return;
+    }
+
+    // Simple generic error data for DefeatModal
+    const errorData: ErrorData = {
+      type: "PROGRAM_ERROR",
+      message: "Chương trình không hoàn thành được nhiệm vụ!",
+      details: "Hãy kiểm tra lại logic chương trình của bạn",
+      step: undefined,
+    };
+
+    // Don't set error state to avoid conflict with DefeatModal
+    // setError("Thất bại!"); // Commented out to prevent error alert
     setGameState((prev) => (prev ? { ...prev, programStatus: "error" } : null));
-  }, []);
+
+    showDefeatModal(errorData);
+  }, [showDefeatModal, isDefeatModalOpen]);
 
   const handleStatus = useCallback((data: GameState) => {
     setGameState(data);
@@ -90,7 +162,7 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
     setCurrentProgram(null);
   }, []);
 
-  // Initialize communication service
+  // Initialize communication service - ONLY ONCE
   useEffect(() => {
     const service = new PhaserCommunicationService();
     communicationServiceRef.current = service;
@@ -100,6 +172,7 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
     service.onMessage("VICTORY", handleVictory);
     service.onMessage("PROGRESS", handleProgress);
     service.onMessage("ERROR", handleError);
+    service.onMessage("LOSE", handleLose);
     service.onMessage("STATUS", handleStatus);
     service.onMessage("PROGRAM_STARTED", handleProgramStarted);
     service.onMessage("PROGRAM_PAUSED", handleProgramPaused);
@@ -108,22 +181,11 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
     return () => {
       service.disconnect();
     };
-  }, [
-    handleReady,
-    handleVictory,
-    handleProgress,
-    handleError,
-    handleStatus,
-    handleProgramStarted,
-    handleProgramPaused,
-    handleProgramStopped,
-  ]);
+  }, []); // Empty dependency array - setup only once
 
   // Initialize iframe connection
   const connect = useCallback(async () => {
-    // Wait for communication service to be ready
     if (!communicationServiceRef.current) {
-      // Retry after a short delay
       setTimeout(() => {
         connect();
       }, 100);
@@ -134,7 +196,6 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
       setIsLoading(true);
       setError(null);
 
-      // Initialize iframe connection
       communicationServiceRef.current.initialize(iframeIdRef.current);
       setIsConnected(true);
     } catch (err) {
@@ -175,7 +236,22 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
     try {
       setIsLoading(true);
       setError(null);
+
       await communicationServiceRef.current.loadMap(mapKey);
+      setCurrentMapKey(mapKey);
+
+      // Reset game state
+      setGameState((prev) => ({
+        ...prev,
+        mapKey: mapKey,
+        robotPosition: { x: 0, y: 0 },
+        robotDirection: 0,
+        collectedBatteries: 0,
+        collectedBatteryTypes: { red: 0, yellow: 0, green: 0 },
+        programStatus: "idle",
+        currentStep: 0,
+        totalSteps: 0,
+      }));
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to load map";
@@ -197,7 +273,6 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
       setError(null);
       setCurrentProgram(program);
 
-      // Validate program
       const validation = BlocklyToPhaserConverter.validateProgram(program);
       if (!validation.isValid) {
         throw new Error(`Invalid program: ${validation.errors.join(", ")}`);
@@ -214,7 +289,7 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
     }
   }, []);
 
-  // Run program from Blockly workspace
+  // Run program from workspace
   const runProgramFromWorkspace = useCallback(
     async (workspace: any) => {
       try {
@@ -324,6 +399,17 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
     error,
     isLoading,
 
+    // Victory State
+    victoryData,
+    isVictoryModalOpen,
+
+    // Defeat State
+    defeatData,
+    isDefeatModalOpen,
+
+    // Current Map State
+    currentMapKey,
+
     // Configuration
     config: defaultConfig,
 
@@ -338,6 +424,14 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
     stopProgram,
     getStatus,
     clearError,
+
+    // Victory Actions
+    showVictoryModal,
+    hideVictoryModal,
+
+    // Defeat Actions
+    showDefeatModal,
+    hideDefeatModal,
 
     // Communication
     sendMessage,

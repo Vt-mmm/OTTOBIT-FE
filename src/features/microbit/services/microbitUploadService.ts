@@ -10,8 +10,6 @@ export class MicrobitUploadService {
     pythonCode: string
   ): Promise<void> {
     try {
-      console.log("Starting Python REPL upload...");
-
       // Step 1: Stop any running program
       await connectionService.sendData("\x03"); // Ctrl+C
       await this.delay(200);
@@ -25,11 +23,8 @@ export class MicrobitUploadService {
         const response = await connectionService.readData(1000);
         if (!response.includes("raw REPL") && !response.includes(">>>")) {
           // If no clear response, continue anyway
-          console.log("No clear REPL response, continuing...");
         }
-      } catch (readError) {
-        console.log("REPL read timeout, continuing anyway...");
-      }
+      } catch (readError) {}
 
       // Step 4: Send the Python code
       const codeLines = pythonCode.split("\n");
@@ -43,8 +38,6 @@ export class MicrobitUploadService {
       // Step 5: Execute the code
       await connectionService.sendData("\x04"); // Ctrl+D to execute
       await this.delay(200);
-
-      console.log("Python code uploaded successfully via REPL");
     } catch (error) {
       console.error("Failed to upload via Python REPL:", error);
       throw new Error("Failed to upload code via Python REPL");
@@ -60,8 +53,6 @@ export class MicrobitUploadService {
     filename: string = "main.py"
   ): Promise<void> {
     try {
-      console.log("Starting filesystem upload...");
-
       // Step 1: Enter raw REPL mode
       await connectionService.sendData("\x03"); // Ctrl+C
       await this.delay(100);
@@ -86,8 +77,6 @@ except Exception as e:
 
       // Step 4: Reset to run the new code
       await connectionService.sendData("\x04"); // Soft reset
-
-      console.log("Code uploaded successfully via filesystem");
     } catch (error) {
       console.error("Failed to upload via filesystem:", error);
       throw new Error("Failed to upload code via filesystem");
@@ -102,8 +91,6 @@ except Exception as e:
     pythonCode: string
   ): Promise<void> {
     try {
-      console.log("Starting paste mode upload...");
-
       // Step 1: Stop any running program
       await connectionService.sendData("\x03"); // Ctrl+C
       await this.delay(200);
@@ -116,11 +103,8 @@ except Exception as e:
       try {
         const response = await connectionService.readData(1000);
         if (!response.includes("paste mode") && !response.includes("===")) {
-          console.log("No clear paste mode response, continuing...");
         }
-      } catch (readError) {
-        console.log("Paste mode read timeout, continuing anyway...");
-      }
+      } catch (readError) {}
 
       // Step 4: Send the code
       await connectionService.sendData(pythonCode);
@@ -133,8 +117,6 @@ except Exception as e:
       // Step 6: Send soft reset to restart micro:bit
       await connectionService.sendData("\x02"); // Ctrl+B for soft reset
       await this.delay(500);
-
-      console.log("Code uploaded successfully via paste mode");
     } catch (error) {
       console.error("Failed to upload via paste mode:", error);
       throw new Error("Failed to upload code via paste mode");
@@ -156,9 +138,7 @@ except Exception as e:
 
     for (const method of methods) {
       try {
-        console.log(`Trying upload method: ${method.name}`);
         await method.fn.call(this, connectionService, pythonCode);
-        console.log(`Upload successful with method: ${method.name}`);
         return;
       } catch (error) {
         console.warn(`Upload method ${method.name} failed:`, error);
@@ -186,8 +166,6 @@ except Exception as e:
         const writable = await fileHandle.createWritable();
         await writable.write(hexContent);
         await writable.close();
-
-        console.log("Hex file uploaded via File System Access API");
       } else {
         // Fallback: Download the hex file
         const blob = new Blob([hexContent], {
@@ -199,10 +177,6 @@ except Exception as e:
         a.download = "firmware.hex";
         a.click();
         URL.revokeObjectURL(url);
-
-        console.log(
-          "Hex file downloaded - please copy to MICROBIT drive manually"
-        );
       }
     } catch (error) {
       console.error("Failed to upload hex file:", error);
@@ -258,9 +232,6 @@ except Exception as e:
         }
       } catch (readError) {
         // Read timeout but device is connected - assume it can upload
-        console.log(
-          "micro:bit read timeout but device is connected, assuming uploadable"
-        );
         return { isConnected: true, canUpload: true };
       }
 

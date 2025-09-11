@@ -31,9 +31,7 @@ const DroneModel3D: React.FC<DroneModel3DProps> = ({
     const modelViewer = modelViewerRef.current;
     if (modelViewer) {
       // Có thể thêm các event listeners nếu cần
-      const handleLoad = () => {
-        console.log("3D model loaded successfully");
-      };
+      const handleLoad = () => {};
 
       const handleError = (error: any) => {
         console.error("Error loading 3D model:", error);

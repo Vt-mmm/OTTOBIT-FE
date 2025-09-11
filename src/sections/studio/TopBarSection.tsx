@@ -77,8 +77,6 @@ function TopBarContent({
 
     try {
       // Đảm bảo Phaser thực sự sẵn sàng
-      console.log("🚀 Running program in Phaser...");
-      console.log("🔍 Phaser status:", { phaserConnected, phaserReady });
 
       if (!phaserConnected || !phaserReady) {
         console.warn("⚠️ Phaser not ready, waiting...");
@@ -95,9 +93,7 @@ function TopBarContent({
       // Thêm delay nhỏ trước khi gửi message để đảm bảo Phaser thực sự sẵn sàng
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      console.log("📤 Sending program to Phaser...");
       await runProgramFromWorkspace(workspace);
-      console.log("✅ Program sent to Phaser successfully");
     } catch (error) {
       console.error("❌ Failed to run program:", error);
       setIsRunning(false);
@@ -121,9 +117,7 @@ function TopBarContent({
 
   const handleStop = async () => {
     try {
-      console.log("🛑 Stopping program...");
       await stopProgram();
-      console.log("✅ Program stopped successfully");
     } catch (error) {
       console.error("❌ Failed to stop program:", error);
     }
@@ -132,7 +126,6 @@ function TopBarContent({
 
   const handleValidate = () => {
     // TODO: Implement validation logic
-    console.log("Validating code...");
   };
 
   const handleBluetooth = async () => {

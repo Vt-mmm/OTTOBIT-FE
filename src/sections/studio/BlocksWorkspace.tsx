@@ -232,7 +232,6 @@ export default function BlocksWorkspace({
   }, [selectedCategory, blocklyWorkspace]);
 
   const handleCategorySelect = (categoryId: string) => {
-    console.log("Category selected:", categoryId); // Debug log
     setSelectedCategory(categoryId);
   };
 

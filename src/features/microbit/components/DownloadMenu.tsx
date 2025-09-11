@@ -28,7 +28,8 @@ interface DownloadMenuProps {
 
 export default function DownloadMenu({ trigger }: DownloadMenuProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [showConnectionCheckDialog, setShowConnectionCheckDialog] = useState(false);
+  const [showConnectionCheckDialog, setShowConnectionCheckDialog] =
+    useState(false);
   const [showConnectionDialog, setShowConnectionDialog] = useState(false);
   const open = Boolean(anchorEl);
   const { showNotification, NotificationComponent } = useNotification();
@@ -111,17 +112,9 @@ export default function DownloadMenu({ trigger }: DownloadMenuProps) {
         setTimeout(async () => {
           try {
             await directoryHandle.removeEntry("sync.txt");
-          } catch (e) {
-            console.log("Sync file cleanup (normal)");
-          }
+          } catch (e) {}
         }, 500);
-      } catch (e) {
-        console.log("Sync file operation (optional)");
-      }
-
-      console.log(
-        `✅ HEX file "${hexFileName}" written to MICROBIT drive successfully!`
-      );
+      } catch (e) {}
     } catch (error: any) {
       console.error("Direct upload failed:", error);
       if (error.name === "AbortError") {
@@ -236,7 +229,7 @@ export default function DownloadMenu({ trigger }: DownloadMenuProps) {
       </Menu>
 
       {/* Connection Check Dialog */}
-      <Dialog 
+      <Dialog
         open={showConnectionCheckDialog}
         onClose={() => setShowConnectionCheckDialog(false)}
         maxWidth="sm"
@@ -253,14 +246,15 @@ export default function DownloadMenu({ trigger }: DownloadMenuProps) {
             You need to connect your micro:bit before uploading code.
           </Alert>
           <Typography variant="body1" gutterBottom>
-            To upload your code to the micro:bit, you must first establish a connection.
+            To upload your code to the micro:bit, you must first establish a
+            connection.
           </Typography>
           <Typography variant="body2" color="textSecondary">
             Click "Connect to micro:bit" to open the connection dialog.
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button 
+          <Button
             onClick={() => setShowConnectionCheckDialog(false)}
             color="inherit"
           >
@@ -275,7 +269,7 @@ export default function DownloadMenu({ trigger }: DownloadMenuProps) {
             startIcon={<BluetoothIcon />}
             sx={{
               bgcolor: "#1976d2",
-              "&:hover": { bgcolor: "#1565c0" }
+              "&:hover": { bgcolor: "#1565c0" },
             }}
           >
             Connect to micro:bit

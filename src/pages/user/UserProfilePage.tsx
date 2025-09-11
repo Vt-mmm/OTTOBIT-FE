@@ -25,7 +25,6 @@ const UserProfilePage: React.FC = () => {
 
   const handleSaveProfile = (data: UpdateProfileForm) => {
     // TODO: Implement profile update logic
-    console.log("Profile data to save:", data);
     setEditDialogOpen(false);
   };
 

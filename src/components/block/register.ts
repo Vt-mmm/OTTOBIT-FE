@@ -41,8 +41,6 @@ export function registerottobitBlocks(): void {
       };
     });
   });
-
-  console.log("🔧 Ottobit blocks registered successfully");
 }
 
 /**

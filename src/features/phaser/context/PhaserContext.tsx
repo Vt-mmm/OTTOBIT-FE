@@ -2,7 +2,13 @@ import { createContext, useContext, ReactNode } from "react";
 import { usePhaserSimulator } from "../hooks/usePhaserSimulator";
 import { useMapData } from "../hooks/useMapData";
 import { useMapLoader } from "../hooks/useMapLoader";
-import { GameState, PhaserConfig, ProgramData } from "../types/phaser";
+import {
+  GameState,
+  PhaserConfig,
+  ProgramData,
+  VictoryData,
+  ErrorData,
+} from "../types/phaser";
 import { MapType, MapResult, MapsQuery } from "../types/map";
 import { PhaserCommunicationService } from "../services/phaserCommunicationService";
 
@@ -14,6 +20,21 @@ interface PhaserContextType {
   currentProgram: ProgramData | null;
   error: string | null;
   isLoading: boolean;
+
+  // Victory State
+  victoryData: VictoryData | null;
+  isVictoryModalOpen: boolean;
+  showVictoryModal: (data: VictoryData) => void;
+  hideVictoryModal: () => void;
+
+  // Defeat State
+  defeatData: ErrorData | null;
+  isDefeatModalOpen: boolean;
+  showDefeatModal: (data: ErrorData) => void;
+  hideDefeatModal: () => void;
+
+  // Current Map State
+  currentMapKey: string | null;
 
   // Map State
   currentMap: { mapKey: string | null; mapData: MapResult | null };
@@ -94,6 +115,21 @@ export function PhaserProvider({ children, config }: PhaserProviderProps) {
     currentProgram: phaserState.currentProgram,
     error: phaserState.error,
     isLoading: phaserState.isLoading,
+
+    // Victory State
+    victoryData: phaserState.victoryData,
+    isVictoryModalOpen: phaserState.isVictoryModalOpen,
+    showVictoryModal: phaserState.showVictoryModal,
+    hideVictoryModal: phaserState.hideVictoryModal,
+
+    // Defeat State
+    defeatData: phaserState.defeatData,
+    isDefeatModalOpen: phaserState.isDefeatModalOpen,
+    showDefeatModal: phaserState.showDefeatModal,
+    hideDefeatModal: phaserState.hideDefeatModal,
+
+    // Current Map State
+    currentMapKey: phaserState.currentMapKey,
 
     // Map State
     currentMap: mapData.currentMap,

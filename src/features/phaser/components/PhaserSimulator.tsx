@@ -1,6 +1,10 @@
 import { useEffect, useRef } from "react";
 import { Box, Typography, CircularProgress, Alert } from "@mui/material";
 import { usePhaserContext } from "../context/PhaserContext.js";
+import VictoryModal from "./VictoryModal.js";
+import DefeatModal from "./DefeatModal";
+import { VictoryErrorBoundary } from "./VictoryErrorBoundary.js";
+import { DefeatErrorBoundary } from "./DefeatErrorBoundary";
 
 interface PhaserSimulatorProps {
   className?: string;
@@ -16,16 +20,53 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     config,
     connect,
     clearError,
+    // Victory state
+    victoryData,
+    isVictoryModalOpen,
+    hideVictoryModal,
+    // Defeat state
+    defeatData,
+    isDefeatModalOpen,
+    hideDefeatModal,
+    // Map actions
+    loadMap,
+    // Current map
+    currentMapKey,
   } = usePhaserContext();
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Handle replay current map
+  const handleReplay = async () => {
+    try {
+      const mapKeyToReload =
+        currentMapKey || gameState?.mapKey || victoryData?.mapKey;
+
+      if (mapKeyToReload) {
+        await loadMap(mapKeyToReload);
+        hideVictoryModal();
+      } else {
+        console.warn("⚠️ No current map to reload");
+
+        // Fallback: Reload iframe if no mapKey found
+        const iframe = iframeRef.current;
+        if (iframe) {
+          iframe.src = iframe.src; // Force iframe reload
+        }
+
+        hideVictoryModal();
+      }
+    } catch (error) {
+      console.error("❌ Failed to reload map:", error);
+      hideVictoryModal();
+    }
+  };
 
   // Auto-connect when component mounts
   useEffect(() => {
     if (!isConnected && !isLoading) {
       // Small delay to ensure iframe is rendered
       const timer = setTimeout(() => {
-        console.log("🔄 Attempting to connect to Phaser...");
         connect().catch((err) => {
           console.error("Failed to connect to Phaser:", err);
         });
@@ -225,6 +266,46 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
           )}
         </Box>
       )}
+
+      {/* Victory Modal with Error Boundary */}
+      <VictoryErrorBoundary
+        onClose={hideVictoryModal}
+        onReplay={handleReplay}
+        isOpen={isVictoryModalOpen}
+      >
+        <VictoryModal
+          open={isVictoryModalOpen}
+          onClose={hideVictoryModal}
+          victoryData={victoryData}
+          onPlayNext={() => {
+            // TODO: Implement play next logic
+            hideVictoryModal();
+          }}
+          onReplay={handleReplay}
+          onGoHome={() => {
+            // TODO: Implement go home logic
+            hideVictoryModal();
+          }}
+        />
+      </VictoryErrorBoundary>
+
+      {/* Defeat Modal */}
+      <DefeatErrorBoundary
+        isOpen={isDefeatModalOpen}
+        onClose={hideDefeatModal}
+        onReplay={handleReplay}
+      >
+        <DefeatModal
+          open={isDefeatModalOpen}
+          onClose={hideDefeatModal}
+          defeatData={defeatData}
+          onReplay={handleReplay}
+          onGoHome={() => {
+            // TODO: Implement go home logic
+            hideDefeatModal();
+          }}
+        />
+      </DefeatErrorBoundary>
     </Box>
   );
 }

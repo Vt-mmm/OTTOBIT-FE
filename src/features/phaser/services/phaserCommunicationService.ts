@@ -98,9 +98,11 @@ export class PhaserCommunicationService {
       this.isReady = true;
     }
 
-    // Keep victory logging for user feedback
+    // Simple logging for key events
     if (message.type === "VICTORY") {
-      console.log("🎉 Victory achieved in Phaser!");
+    }
+
+    if (message.type === "LOSE") {
     }
 
     // Notify handlers

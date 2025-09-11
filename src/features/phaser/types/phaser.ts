@@ -27,6 +27,7 @@ export interface PhaserResponse {
     | "VICTORY"
     | "PROGRESS"
     | "ERROR"
+    | "LOSE"
     | "STATUS"
     | "PROGRAM_STARTED"
     | "PROGRAM_PAUSED"
@@ -128,6 +129,12 @@ export interface ErrorData {
     | "VALIDATION_ERROR";
   message: string;
   details?: any;
+  step?: number;
+}
+
+export interface LoseData {
+  mapKey: string;
+  reason: string;
   step?: number;
 }
 

@@ -40,15 +40,6 @@ export class BlocklyToPhaserConverter {
         program.actions = this.parseBlocksToActions(startBlock);
       }
 
-      console.log(
-        `📋 Converted workspace to program: ${
-          program.actions.length
-        } actions, ${program.functions?.length || 0} functions`
-      );
-      console.log(
-        "📋 Generated program JSON:",
-        JSON.stringify(program, null, 2)
-      );
       return program;
     } catch (error) {
       console.error("❌ Error converting workspace:", error);
@@ -73,9 +64,6 @@ export class BlocklyToPhaserConverter {
       };
 
       functions.push(functionDef);
-      console.log(
-        `🔧 Parsed function definition: ${functionName} with ${functionDef.body.length} actions`
-      );
     }
 
     return functions;
