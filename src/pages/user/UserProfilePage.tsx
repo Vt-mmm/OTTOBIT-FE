@@ -23,7 +23,7 @@ const UserProfilePage: React.FC = () => {
     setEditDialogOpen(false);
   };
 
-  const handleSaveProfile = (data: UpdateProfileForm) => {
+  const handleSaveProfile = (_data: UpdateProfileForm) => {
     // TODO: Implement profile update logic
     setEditDialogOpen(false);
   };
