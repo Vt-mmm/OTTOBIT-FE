@@ -40,11 +40,14 @@ export default function BlocksWorkspace({
     sensors: [
       { kind: "block", type: "ottobit_read_sensor" },
       { kind: "block", type: "ottobit_comparison" },
+      { kind: "block", type: "ottobit_bale_number" },
     ],
     actions: [
       { kind: "block", type: "ottobit_collect_green" },
       { kind: "block", type: "ottobit_collect_red" },
       { kind: "block", type: "ottobit_collect_yellow" },
+      { kind: "block", type: "ottobit_take_bale" },
+      { kind: "block", type: "ottobit_put_bale" },
     ],
   };
 

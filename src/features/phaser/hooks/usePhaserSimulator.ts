@@ -20,7 +20,10 @@ interface UsePhaserSimulatorConfig {
   config?: Partial<PhaserConfig>;
 }
 
-export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
+export function usePhaserSimulator(
+  config: UsePhaserSimulatorConfig = {},
+  onVictoryProgress?: (victoryData: VictoryData) => Promise<void>
+) {
   // Basic States
   const [isConnected, setIsConnected] = useState(false);
   const [isReady, setIsReady] = useState(false);
@@ -87,13 +90,24 @@ export function usePhaserSimulator(config: UsePhaserSimulatorConfig = {}) {
   }, []);
 
   const handleVictory = useCallback(
-    (data: VictoryData) => {
+    async (data: VictoryData) => {
       setGameState((prev) =>
         prev ? { ...prev, programStatus: "completed" } : null
       );
+      
+      // Handle lesson progress if callback provided
+      if (onVictoryProgress) {
+        try {
+          await onVictoryProgress(data);
+        } catch (error) {
+          console.error("❌ Failed to handle victory progress:", error);
+          // Continue with victory modal even if progress handling fails
+        }
+      }
+      
       showVictoryModal(data);
     },
-    [showVictoryModal]
+    [showVictoryModal, onVictoryProgress]
   );
 
   const handleProgress = useCallback((data: ProgressData) => {

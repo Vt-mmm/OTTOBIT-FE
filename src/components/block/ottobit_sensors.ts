@@ -67,6 +67,26 @@ export const sensorBlocks = createBlockDefinitionsFromJsonArray([
     tooltip: "So sánh hai giá trị",
     helpUrl: "",
   },
+  {
+    type: "ottobit_bale_number",
+    message0: "%1 number",
+    args0: [
+      {
+        type: "field_image",
+        src: "/pin/bale.png", // Icon kiện hàng
+        width: 24,
+        height: 24,
+        alt: "bale number",
+      },
+    ],
+    output: "Number",
+    deletable: true,
+    movable: true,
+    editable: true,
+    colour: "#795548",
+    tooltip: "Lấy số lượng kiện hàng hiện tại",
+    helpUrl: "",
+  },
 ]);
 
 /**

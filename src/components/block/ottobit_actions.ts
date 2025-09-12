@@ -100,6 +100,48 @@ export const actionBlocks = createBlockDefinitionsFromJsonArray([
     tooltip: "Thu thập pin màu vàng",
     helpUrl: "",
   },
+  {
+    type: "ottobit_take_bale",
+    message0: "%1 take bale",
+    args0: [
+      {
+        type: "field_image",
+        src: "/pin/bale.png", // Icon kiện hàng
+        width: 32,
+        height: 32,
+        alt: "take bale",
+      },
+    ],
+    previousStatement: null,
+    nextStatement: null,
+    deletable: true,
+    movable: true,
+    editable: true,
+    colour: "#FF9800",
+    tooltip: "Lấy kiện hàng",
+    helpUrl: "",
+  },
+  {
+    type: "ottobit_put_bale",
+    message0: "%1 put bale",
+    args0: [
+      {
+        type: "field_image",
+        src: "/pin/bale.png", // Icon kiện hàng
+        width: 32,
+        height: 32,
+        alt: "put bale",
+      },
+    ],
+    previousStatement: null,
+    nextStatement: null,
+    deletable: true,
+    movable: true,
+    editable: true,
+    colour: "#FF7043",
+    tooltip: "Đặt kiện hàng",
+    helpUrl: "",
+  },
 ]);
 
 /**

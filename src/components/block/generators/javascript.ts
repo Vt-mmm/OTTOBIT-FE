@@ -93,7 +93,7 @@ javascriptGenerator.forBlock["ottobit_while"] = function (block: any): string {
   const condition =
     javascriptGenerator.valueToCode(block, "CONDITION", Order.NONE) || "false";
   const statements = javascriptGenerator.statementToCode(block, "DO");
-  return `while (${condition}) {\n${statements}}\n`;
+  return `while (${condition}) {loopstep();\n${statements}}\nloopend();\n`;
 };
 
 javascriptGenerator.forBlock["ottobit_if"] = function (block: any): string {
@@ -220,6 +220,19 @@ javascriptGenerator.forBlock["ottobit_collect_yellow"] = function (
   return `robot.collect(${count}, 'yellow');\n`;
 };
 
+// Bale handling blocks
+javascriptGenerator.forBlock["ottobit_take_bale"] = function (
+  _block: any
+): string {
+  return "takeBall();\n"; // Frontend sử dụng takeBall() -> Backend tự động map sang takeBox()
+};
+
+javascriptGenerator.forBlock["ottobit_put_bale"] = function (
+  _block: any
+): string {
+  return "putBall();\n"; // Frontend sử dụng putBall() -> Backend tự động map sang putBox()
+};
+
 // New control blocks generators
 javascriptGenerator.forBlock["ottobit_while_compare"] = function (
   block: any
@@ -303,6 +316,13 @@ javascriptGenerator.forBlock["ottobit_number"] = function (
 ): [string, number] {
   const value = block.getFieldValue("NUM") || "0";
   return [value, Order.ATOMIC];
+};
+
+// Bale number sensor
+javascriptGenerator.forBlock["ottobit_bale_number"] = function (
+  _block: any
+): [string, number] {
+  return ["(getBaleNumber())", Order.FUNCTION_CALL]; // Frontend sử dụng getBaleNumber() -> Backend tự động map sang checkWarehouse()
 };
 
 /**

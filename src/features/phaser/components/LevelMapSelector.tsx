@@ -22,6 +22,12 @@ import {
   Download,
   ChevronLeft,
   ChevronRight,
+  Storage,
+  CompareArrows,
+  Functions,
+  Repeat,
+  AutoAwesome,
+  CheckCircle,
 } from "@mui/icons-material";
 import { usePhaserContext } from "../context/PhaserContext";
 import { MapResult } from "../types/map";
@@ -37,13 +43,18 @@ interface LevelData {
   difficulty: "beginner" | "intermediate" | "advanced" | "expert";
   objectives: string[];
   recommendedBlocks: string[];
-  category: "basic" | "boolean" | "forloop";
+  category:
+    | "basic"
+    | "boolean"
+    | "variables"
+    | "forloop"
+    | "conditionals"
+    | "functions"
+    | "whileloop"
+    | "repeat";
   order: number;
   isUnlocked: boolean;
   isCompleted: boolean;
-  bestScore?: number;
-  bestTime?: number;
-  stars: number;
 }
 
 interface LevelMapSelectorProps {
@@ -54,126 +65,163 @@ interface LevelMapSelectorProps {
 const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
   onLevelSelect,
 }) => {
-  const { lessonMaps, isLoadingMaps, mapError, fetchLessonMaps } =
-    usePhaserContext();
+  const { 
+    lessonMaps, 
+    isLoadingMaps, 
+    mapError, 
+    fetchLessonMaps,
+    completedMapIds,
+    isProgressLoading,
+    fetchCompletedMaps
+  } = usePhaserContext();
   const [currentTab, setCurrentTab] = useState(0);
   const [levels, setLevels] = useState<LevelData[]>([]);
-  const [completedLevels, setCompletedLevels] = useState<string[]>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Load lesson maps on mount and get completed levels from localStorage
+  // Load lesson maps và completed maps từ backend
   useEffect(() => {
     if (!lessonMaps && !isLoadingMaps) {
       fetchLessonMaps();
     }
-    // Load completed levels from localStorage
-    const saved = localStorage.getItem("completedLevels");
-    if (saved) {
-      setCompletedLevels(JSON.parse(saved));
+    // Load completed maps từ backend
+    if (completedMapIds.length === 0 && !isProgressLoading) {
+      fetchCompletedMaps();
     }
-  }, [lessonMaps, isLoadingMaps, fetchLessonMaps]);
+  }, [lessonMaps, isLoadingMaps, fetchLessonMaps, completedMapIds.length, isProgressLoading, fetchCompletedMaps]);
 
   // Convert backend maps to level data
   const processedLevels = useMemo(() => {
     if (!lessonMaps?.mapsByType) return [];
 
     const levelData: LevelData[] = [];
-    Object.entries(lessonMaps.mapsByType).forEach(([, maps]) => {
-      const mapsArray = maps as MapResult[];
-      if (!mapsArray || mapsArray.length === 0) return;
 
-      mapsArray.forEach((mapResult) => {
-        const mapKey = mapResult.key;
-        const match = mapKey.match(/^([a-z]+)(\d+)$/);
-        if (!match) return;
+    // Map backend category names to frontend categories
+    const categoryMapping: Record<
+      string,
+      | "basic"
+      | "boolean"
+      | "variables"
+      | "forloop"
+      | "conditionals"
+      | "functions"
+      | "whileloop"
+      | "repeat"
+    > = {
+      Basics: "basic",
+      Boolean: "boolean",
+      Variables: "variables",
+      ForLoops: "forloop",
+      Conditionals: "conditionals",
+      Functions: "functions",
+      WhileLoops: "whileloop",
+      Repeat: "repeat",
+    };
 
-        const [, categoryStr, numberStr] = match;
-        const order = parseInt(numberStr);
+    Object.entries(lessonMaps.mapsByType).forEach(
+      ([backendCategoryName, maps]) => {
+        const mapsArray = maps as MapResult[];
+        if (!mapsArray || mapsArray.length === 0) return;
 
-        let category: "basic" | "boolean" | "forloop";
-        if (["basic", "boolean", "forloop"].includes(categoryStr)) {
-          category = categoryStr as "basic" | "boolean" | "forloop";
-        } else {
-          return;
-        }
+        const category = categoryMapping[backendCategoryName];
+        if (!category) return; // Skip unknown categories
 
-        const name = `${
-          categoryStr.charAt(0).toUpperCase() + categoryStr.slice(1)
-        } ${order}`;
-        const description = `Học cách điều khiển robot - Map ${order}`;
-        const objectives = ["Di chuyển robot đến vị trí đích"];
-        const recommendedBlocks = ["forward", "turn"];
-        const difficulty: LevelData["difficulty"] =
-          order <= 2 ? "beginner" : order <= 4 ? "intermediate" : "advanced";
+        mapsArray.forEach((mapResult) => {
+          const order = mapResult.index; // Use index from backend instead of parsing
 
-        // Smart unlock logic:
-        // 1. First level is always unlocked
-        // 2. Next level unlocks when previous is completed
-        // 3. For testing, you can unlock all by setting UNLOCK_ALL = true
-        const UNLOCK_ALL = true; // Set to false for production
+          // Generate user-friendly names based on category
+          const categoryNames = {
+            basic: "Cơ Bản",
+            boolean: "Logic",
+            variables: "Biến Số",
+            forloop: "Vòng Lặp For",
+            conditionals: "Điều Kiện",
+            functions: "Hàm",
+            whileloop: "Vòng Lặp While",
+            repeat: "Lặp Lại",
+          };
 
-        let isUnlocked = false;
-        if (UNLOCK_ALL) {
-          isUnlocked = true;
-        } else {
-          // Progressive unlock logic
-          if (category === "basic" && order === 1) {
-            isUnlocked = true; // First level always unlocked
-          } else if (category === "basic") {
-            // Unlock if previous basic level is completed
-            const previousLevelId = `${category}-${order - 1}`;
-            isUnlocked = completedLevels.includes(previousLevelId);
-          } else if (category === "boolean" && order === 1) {
-            // Unlock first boolean if at least 3 basic levels completed
-            const basicCompleted = completedLevels.filter((id) =>
-              id.startsWith("basic-")
-            ).length;
-            isUnlocked = basicCompleted >= 3;
-          } else if (category === "boolean") {
-            // Unlock next boolean if previous is completed
-            const previousLevelId = `${category}-${order - 1}`;
-            isUnlocked = completedLevels.includes(previousLevelId);
-          } else if (category === "forloop" && order === 1) {
-            // Unlock first forloop if at least 2 boolean levels completed
-            const booleanCompleted = completedLevels.filter((id) =>
-              id.startsWith("boolean-")
-            ).length;
-            isUnlocked = booleanCompleted >= 2;
-          } else if (category === "forloop") {
-            // Unlock next forloop if previous is completed
-            const previousLevelId = `${category}-${order - 1}`;
-            isUnlocked = completedLevels.includes(previousLevelId);
+          const name = `${categoryNames[category]} ${order}`;
+          const description = `Học cách điều khiển robot - Bài ${order}`;
+          const objectives = ["Di chuyển robot đến vị trí đích"];
+          const recommendedBlocks = ["forward", "turn"];
+          const difficulty: LevelData["difficulty"] =
+            order <= 2 ? "beginner" : order <= 4 ? "intermediate" : "advanced";
+
+          // Smart unlock logic: Sử dụng completedMapIds từ backend
+          // 1. First level is always unlocked
+          // 2. Next level unlocks when previous is completed
+          const UNLOCK_ALL = true; // Set to false for production
+
+          let isUnlocked = false;
+          if (UNLOCK_ALL) {
+            isUnlocked = true;
+          } else {
+            // Progressive unlock logic - sử dụng mapResult.id thay vì category-order
+            if (category === "basic" && order === 1) {
+              isUnlocked = true; // First level always unlocked
+            } else {
+              // Find previous level in same category
+              const sameCategoryMaps = Object.values(lessonMaps.mapsByType)
+                .flat()
+                .filter((map: any) => {
+                  const mapCategoryName = map.mapCategoryName || "";
+                  return mapCategoryName.toLowerCase().includes(category);
+                })
+                .sort((a: any, b: any) => a.index - b.index);
+              
+              const currentIndex = sameCategoryMaps.findIndex((map: any) => map.id === mapResult.id);
+              
+              if (currentIndex <= 0) {
+                isUnlocked = true; // First in category
+              } else {
+                // Check if previous map is completed
+                const previousMap = sameCategoryMaps[currentIndex - 1] as any;
+                isUnlocked = previousMap?.id ? completedMapIds.includes(previousMap.id) : true;
+              }
+            }
           }
-        }
 
-        const isCompleted = completedLevels.includes(`${category}-${order}`);
+          // Check completion sử dụng mapResult.id
+          const isCompleted = completedMapIds.includes(mapResult.id);
 
-        levelData.push({
-          id: `${category}-${order}`,
-          name,
-          description,
-          mapKey: mapResult.key,
-          mapResult,
-          difficulty,
-          objectives,
-          recommendedBlocks,
-          category,
-          order,
-          isUnlocked,
-          isCompleted,
-          stars: isCompleted ? Math.floor(Math.random() * 3) + 1 : 0,
+          levelData.push({
+            id: `${category}-${order}`,
+            name,
+            description,
+            mapKey: mapResult.key,
+            mapResult,
+            difficulty,
+            objectives,
+            recommendedBlocks,
+            category,
+            order,
+            isUnlocked,
+            isCompleted,
+          });
         });
-      });
-    });
+      }
+    );
 
-    const categoryPriority = { basic: 1, boolean: 2, forloop: 3 };
-    return levelData.sort((a, b) => {
+    const categoryPriority = {
+      basic: 1,
+      boolean: 2,
+      variables: 3,
+      forloop: 4,
+      conditionals: 5,
+      functions: 6,
+      whileloop: 7,
+      repeat: 8,
+    };
+    
+    const sortedLevels = levelData.sort((a, b) => {
       if (categoryPriority[a.category] !== categoryPriority[b.category]) {
         return categoryPriority[a.category] - categoryPriority[b.category];
       }
       return a.order - b.order;
     });
-  }, [lessonMaps, completedLevels]);
+    
+    return sortedLevels;
+  }, [lessonMaps, completedMapIds]); // Sử dụng completedMapIds thay vì completedLevels
 
   useEffect(() => {
     setLevels(processedLevels);
@@ -183,19 +231,57 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
     onLevelSelect(level);
   };
 
-  const { basicLevels, booleanLevels, forloopLevels } = useMemo(
-    () => ({
-      basicLevels: levels.filter((l) => l.category === "basic"),
-      booleanLevels: levels.filter((l) => l.category === "boolean"),
-      forloopLevels: levels.filter((l) => l.category === "forloop"),
-    }),
+  const {
+    basicLevels,
+    booleanLevels,
+    variablesLevels,
+    forloopLevels,
+    conditionalsLevels,
+    functionsLevels,
+    whileloopLevels,
+    repeatLevels,
+  } = useMemo(
+    () => {
+      const result = {
+        basicLevels: levels.filter((l) => l.category === "basic"),
+        booleanLevels: levels.filter((l) => l.category === "boolean"),
+        variablesLevels: levels.filter((l) => l.category === "variables"),
+        forloopLevels: levels.filter((l) => l.category === "forloop"),
+        conditionalsLevels: levels.filter((l) => l.category === "conditionals"),
+        functionsLevels: levels.filter((l) => l.category === "functions"),
+        whileloopLevels: levels.filter((l) => l.category === "whileloop"),
+        repeatLevels: levels.filter((l) => l.category === "repeat"),
+      };
+      
+      
+      return result;
+    },
     [levels]
   );
 
   const currentLevels = useMemo(() => {
-    const tabLevels = [basicLevels, booleanLevels, forloopLevels];
+    const tabLevels = [
+      basicLevels,
+      booleanLevels,
+      variablesLevels,
+      forloopLevels,
+      conditionalsLevels,
+      functionsLevels,
+      whileloopLevels,
+      repeatLevels,
+    ];
     return tabLevels[currentTab] || [];
-  }, [basicLevels, booleanLevels, forloopLevels, currentTab]);
+  }, [
+    basicLevels,
+    booleanLevels,
+    variablesLevels,
+    forloopLevels,
+    conditionalsLevels,
+    functionsLevels,
+    whileloopLevels,
+    repeatLevels,
+    currentTab,
+  ]);
 
   if (isLoadingMaps) {
     return (
@@ -487,7 +573,7 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
           {/* Virtual Tablet Container */}
           <Box
             sx={{
-              maxWidth: 1200,
+              maxWidth: 1400,
               margin: "0 auto",
               background: "linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%)",
               borderRadius: "28px",
@@ -684,7 +770,9 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
                 borderRadius: "18px",
                 overflow: "hidden",
                 display: "flex",
-                minHeight: "600px",
+                minHeight: { xs: "500px", sm: "600px", md: "650px", lg: "700px" },
+                height: "auto", // Let content determine height
+                maxHeight: { xs: "70vh", sm: "75vh", md: "80vh", lg: "85vh" },
                 boxShadow:
                   "inset 0 0 30px rgba(0,0,0,0.15), inset 0 4px 20px rgba(0,0,0,0.08)",
                 position: "relative",
@@ -836,7 +924,7 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
                 sx={{
                   width: {
                     xs: 0,
-                    md: sidebarCollapsed ? 80 : 280,
+                    md: sidebarCollapsed ? 80 : 320,
                   },
                   display: { xs: "none", md: "flex" },
                   background: "#fafafa",
@@ -846,7 +934,8 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
                   gap: sidebarCollapsed ? 1.5 : 2,
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   position: "relative",
-                  overflow: "hidden",
+                  height: "100%", // Ensure full height
+                  overflow: "visible", // Allow content to be visible
                 }}
               >
                 {/* Toggle Button - Positioned on border between sidebar and main content */}
@@ -936,15 +1025,38 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
                   )}
                 </Box>
 
+                {/* Scrollable Tabs Container */}
+                <Box
+                  sx={{
+                    flex: 1,
+                    overflowY: "auto",
+                    pr: sidebarCollapsed ? 0 : 1,
+                    // Scrollbar styling
+                    "&::-webkit-scrollbar": {
+                      width: "4px",
+                    },
+                    "&::-webkit-scrollbar-track": {
+                      background: "rgba(0,0,0,0.05)",
+                      borderRadius: "2px",
+                    },
+                    "&::-webkit-scrollbar-thumb": {
+                      background: "rgba(0,0,0,0.2)",
+                      borderRadius: "2px",
+                      "&:hover": {
+                        background: "rgba(0,0,0,0.3)",
+                      },
+                    },
+                  }}
+                >
                 {[
-                  {
-                    id: 0,
-                    name: "Cơ Bản",
-                    icon: <Code />,
-                    count: basicLevels.length,
-                    category: "basic",
-                    color: "#667eea",
-                  },
+                    {
+                      id: 0,
+                      name: "Cơ Bản",
+                      icon: <Code />,
+                      count: basicLevels.length,
+                      category: "basic",
+                      color: "#667eea",
+                    },
                   {
                     id: 1,
                     name: "Logic",
@@ -955,11 +1067,51 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
                   },
                   {
                     id: 2,
-                    name: "Vòng Lặp",
+                    name: "Biến Số",
+                    icon: <Storage />,
+                    count: variablesLevels.length,
+                    category: "variables",
+                    color: "#9333EA",
+                  },
+                  {
+                    id: 3,
+                    name: "Vòng Lặp For",
                     icon: <Loop />,
                     count: forloopLevels.length,
                     category: "forloop",
                     color: "#4ECDC4",
+                  },
+                  {
+                    id: 4,
+                    name: "Điều Kiện",
+                    icon: <CompareArrows />,
+                    count: conditionalsLevels.length,
+                    category: "conditionals",
+                    color: "#F59E0B",
+                  },
+                  {
+                    id: 5,
+                    name: "Hàm",
+                    icon: <Functions />,
+                    count: functionsLevels.length,
+                    category: "functions",
+                    color: "#EF4444",
+                  },
+                  {
+                    id: 6,
+                    name: "Vòng Lặp While",
+                    icon: <AutoAwesome />,
+                    count: whileloopLevels.length,
+                    category: "whileloop",
+                    color: "#10B981",
+                  },
+                  {
+                    id: 7,
+                    name: "Lặp Lại",
+                    icon: <Repeat />,
+                    count: repeatLevels.length,
+                    category: "repeat",
+                    color: "#6366F1",
                   },
                 ].map((tab) => (
                   <Box
@@ -1098,6 +1250,7 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
                     )}
                   </Box>
                 ))}
+                </Box>
 
                 {/* Divider */}
                 {!sidebarCollapsed && (
@@ -1128,19 +1281,17 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
                         alignItems: "center",
                       }}
                     >
-                      <Typography
-                        variant="h5"
-                        sx={{ fontWeight: 700, color: "#22c55e" }}
-                      >
-                        0%
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: "#9ca3af" }}>
-                        0/
-                        {basicLevels.length +
-                          booleanLevels.length +
-                          forloopLevels.length}{" "}
-                        hoàn thành
-                      </Typography>
+                    <Typography
+                      variant="h5"
+                      sx={{ fontWeight: 700, color: "#22c55e" }}
+                    >
+                      {Math.round((levels.filter(l => l.isCompleted).length / Math.max(levels.length, 1)) * 100)}%
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "#9ca3af" }}>
+                      {levels.filter(l => l.isCompleted).length}/
+                      {levels.length}{" "}
+                      hoàn thành
+                    </Typography>
                     </Box>
                     <Box
                       sx={{
@@ -1153,10 +1304,11 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
                     >
                       <Box
                         sx={{
-                          width: "0%",
+                          width: `${Math.round((levels.filter(l => l.isCompleted).length / Math.max(levels.length, 1)) * 100)}%`,
                           height: "100%",
                           background:
                             "linear-gradient(45deg, #86efac 0%, #22c55e 100%)",
+                          transition: "width 0.5s ease",
                         }}
                       />
                     </Box>
@@ -1171,18 +1323,20 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
                   p: 3,
                   pt: 5, // Account for status bar
                   overflowY: "auto",
-                  maxHeight: "600px",
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
                   // Subtle scroll track styling
                   "&::-webkit-scrollbar": {
-                    width: "6px",
+                    width: "8px",
                   },
                   "&::-webkit-scrollbar-track": {
                     background: "rgba(0,0,0,0.05)",
-                    borderRadius: "3px",
+                    borderRadius: "4px",
                   },
                   "&::-webkit-scrollbar-thumb": {
                     background: "rgba(0,0,0,0.2)",
-                    borderRadius: "3px",
+                    borderRadius: "4px",
                     "&:hover": {
                       background: "rgba(0,0,0,0.3)",
                     },
@@ -1214,9 +1368,39 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
                     },
                     {
                       id: 2,
-                      name: "Vòng Lặp",
+                      name: "Biến Số",
+                      icon: <Storage />,
+                      count: variablesLevels.length,
+                    },
+                    {
+                      id: 3,
+                      name: "Vòng Lặp For",
                       icon: <Loop />,
                       count: forloopLevels.length,
+                    },
+                    {
+                      id: 4,
+                      name: "Điều Kiện",
+                      icon: <CompareArrows />,
+                      count: conditionalsLevels.length,
+                    },
+                    {
+                      id: 5,
+                      name: "Hàm",
+                      icon: <Functions />,
+                      count: functionsLevels.length,
+                    },
+                    {
+                      id: 6,
+                      name: "Vòng Lặp While",
+                      icon: <AutoAwesome />,
+                      count: whileloopLevels.length,
+                    },
+                    {
+                      id: 7,
+                      name: "Lặp Lại",
+                      icon: <Repeat />,
+                      count: repeatLevels.length,
                     },
                   ].map((tab) => (
                     <Chip
@@ -1242,24 +1426,60 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
 
                 {/* Level Cards Grid */}
                 {currentLevels.length > 0 ? (
-                  <Grid container spacing={2}>
-                    {currentLevels.map((level) => (
-                      <Grid item xs={12} sm={6} lg={4} key={level.id}>
-                        <Box
-                          sx={{
-                            position: "relative",
-                            borderRadius: "12px",
-                            overflow: "hidden",
-                            cursor: level.isUnlocked
-                              ? "pointer"
-                              : "not-allowed",
-                            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                    <Grid 
+                      container 
+                      spacing={{ xs: 2, sm: 2.5, md: 3 }} 
+                      alignItems="stretch"
+                      sx={{ 
+                        flex: 1,
+                        height: "100%",
+                        // More compact grid layout
+                        "& .MuiGrid-item": {
+                          display: "flex",
+                          height: "auto", // Let content determine height
+                        }
+                      }}
+                    >
+                      {currentLevels.map((level) => (
+                        <Grid
+                          item
+                          xs={12}
+                          sm={6}
+                          md={4}
+                          lg={3}
+                          key={level.id}
+                          sx={{ display: "flex" }}
+                        >
+                          <Box
+                            sx={{
+                              width: "100%",
+                              height: "auto", // Let content determine height
+                              display: "flex",
+                              flexDirection: "column",
+                              position: "relative",
+                              borderRadius: "16px",
+                              overflow: "hidden",
+                              cursor: level.isUnlocked
+                                ? "pointer"
+                                : "not-allowed",
+                              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                             background:
                               level.category === "basic"
                                 ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
                                 : level.category === "boolean"
                                 ? "linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)"
-                                : "linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%)",
+                                : level.category === "variables"
+                                ? "linear-gradient(135deg, #9333EA 0%, #7C3AED 100%)"
+                                : level.category === "forloop"
+                                ? "linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%)"
+                                : level.category === "conditionals"
+                                ? "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)"
+                                : level.category === "functions"
+                                ? "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)"
+                                : level.category === "whileloop"
+                                ? "linear-gradient(135deg, #10B981 0%, #059669 100%)"
+                                : "linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)",
                             boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
                             "&:hover": level.isUnlocked
                               ? {
@@ -1272,11 +1492,12 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
                             level.isUnlocked && handleLevelSelect(level)
                           }
                         >
-                          {/* Thumbnail */}
-                          <Box
-                            sx={{
-                              position: "relative",
-                              height: 160,
+                            {/* Thumbnail */}
+                            <Box
+                              sx={{
+                                position: "relative",
+                                height: { xs: 100, sm: 120, md: 140 }, // Reduced thumbnail height
+                                flex: "0 0 auto",
                               background: `linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%), url('${getLevelThumbnail(
                                 level.id,
                                 level.category
@@ -1318,27 +1539,61 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
                               />
                             </Box>
 
-                            <Chip
-                              label={
-                                level.difficulty === "beginner"
-                                  ? "Dễ"
-                                  : level.difficulty === "intermediate"
-                                  ? "Trung bình"
-                                  : "Khó"
-                              }
-                              size="small"
-                              sx={{
-                                bgcolor: "rgba(255,255,255,0.9)",
-                                color:
-                                  level.category === "basic"
-                                    ? "#667eea"
-                                    : level.category === "boolean"
-                                    ? "#FF6B6B"
-                                    : "#4ECDC4",
-                                fontWeight: 600,
-                                fontSize: "0.75rem",
-                              }}
-                            />
+
+                            {/* Completion Badge - TOP RIGHT CORNER */}
+                            {level.isCompleted && (
+                              <Box
+                                sx={{
+                                  position: "absolute",
+                                  top: 8,
+                                  right: 8,
+                                  width: 32,
+                                  height: 32,
+                                  borderRadius: "50%",
+                                  background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  boxShadow: "0 4px 12px rgba(34, 197, 94, 0.4), inset 0 2px 4px rgba(255,255,255,0.2)",
+                                  animation: "completeBounce 2s ease-in-out infinite",
+                                  "@keyframes completeBounce": {
+                                    "0%, 100%": {
+                                      transform: "scale(1) rotate(0deg)",
+                                    },
+                                    "50%": {
+                                      transform: "scale(1.05) rotate(1deg)",
+                                    },
+                                  },
+                                  "&::before": {
+                                    content: '""',
+                                    position: "absolute",
+                                    inset: -4,
+                                    borderRadius: "50%",
+                                    background: "linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(22, 163, 74, 0.2))",
+                                    zIndex: -1,
+                                    animation: "completePulse 2s ease-in-out infinite",
+                                  },
+                                  "@keyframes completePulse": {
+                                    "0%, 100%": {
+                                      opacity: 0.3,
+                                      transform: "scale(1)",
+                                    },
+                                    "50%": {
+                                      opacity: 0.6,
+                                      transform: "scale(1.2)",
+                                    },
+                                  },
+                                }}
+                              >
+                                <CheckCircle
+                                  sx={{
+                                    color: "white",
+                                    fontSize: "1.25rem",
+                                    filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.2))",
+                                  }}
+                                />
+                              </Box>
+                            )}
 
                             {!level.isUnlocked && (
                               <Box
@@ -1362,12 +1617,17 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
                             )}
                           </Box>
 
-                          {/* Content */}
-                          <Box
-                            sx={{
-                              p: 2,
-                              background: "white",
-                            }}
+                            {/* Content */}
+                            <Box
+                              sx={{
+                                p: 1.5, // Consistent compact padding
+                                background: "white",
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 1, // Add gap between content elements
+                                flex: 1, // Take remaining space
+                                minHeight: 160, // Minimum height to ensure consistency
+                              }}
                           >
                             <Typography
                               variant="h6"
@@ -1375,7 +1635,7 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
                                 fontWeight: 600,
                                 color: "#2e3440",
                                 mb: 0.5,
-                                fontSize: "1.1rem",
+                                fontSize: "1rem",
                               }}
                             >
                               {level.name}
@@ -1384,74 +1644,62 @@ const LevelMapSelector: React.FC<LevelMapSelectorProps> = ({
                               variant="body2"
                               sx={{
                                 color: "#6b7280",
-                                mb: 1.5,
-                                minHeight: 36,
                                 fontSize: "0.85rem",
+                                lineHeight: 1.4, // Better line height
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2, // Limit to 2 lines
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
                               }}
                             >
                               {level.description}
                             </Typography>
 
-                            {/* Progress or status */}
-                            {level.isCompleted && (
-                              <Box sx={{ display: "flex", gap: 0.5, mb: 1.5 }}>
-                                {[1, 2, 3].map((star) => (
-                                  <Box
-                                    key={star}
-                                    sx={{
-                                      color:
-                                        star <= (level.stars || 0)
-                                          ? "#fbbf24"
-                                          : "#e5e7eb",
-                                    }}
-                                  >
-                                    ★
-                                  </Box>
-                                ))}
-                              </Box>
-                            )}
 
-                            <Button
-                              fullWidth
-                              variant="contained"
-                              disabled={!level.isUnlocked}
-                              sx={{
-                                py: 1.2,
-                                background: level.isUnlocked
-                                  ? "linear-gradient(45deg, #86efac 0%, #22c55e 100%)"
-                                  : "#e5e7eb",
-                                color: level.isUnlocked ? "white" : "#9ca3af",
-                                fontSize: "0.9rem",
-                                fontWeight: 600,
-                                textTransform: "none",
-                                borderRadius: "8px",
-                                boxShadow: level.isUnlocked
-                                  ? "0 2px 8px rgba(34, 197, 94, 0.25)"
-                                  : "none",
-                                "&:hover": {
+                              <Box sx={{ mt: "auto" }}> {/* Push button to bottom */}
+                                <Button
+                                  fullWidth
+                                  variant="contained"
+                                  disabled={!level.isUnlocked}
+                                  sx={{
+                                    py: 1, // Consistent button padding
                                   background: level.isUnlocked
-                                    ? "linear-gradient(45deg, #22c55e 0%, #86efac 100%)"
+                                    ? "linear-gradient(45deg, #86efac 0%, #22c55e 100%)"
                                     : "#e5e7eb",
-                                  transform: level.isUnlocked
-                                    ? "translateY(-1px)"
-                                    : "none",
+                                  color: level.isUnlocked ? "white" : "#9ca3af",
+                                  fontSize: "0.9rem",
+                                  fontWeight: 600,
+                                  textTransform: "none",
+                                  borderRadius: "8px",
                                   boxShadow: level.isUnlocked
-                                    ? "0 4px 12px rgba(34, 197, 94, 0.35)"
+                                    ? "0 2px 8px rgba(34, 197, 94, 0.25)"
                                     : "none",
-                                },
-                              }}
-                            >
-                              {!level.isUnlocked
-                                ? "Khóa"
-                                : level.isCompleted
-                                ? "Chơi lại"
-                                : "Bắt đầu"}
-                            </Button>
+                                  "&:hover": {
+                                    background: level.isUnlocked
+                                      ? "linear-gradient(45deg, #22c55e 0%, #86efac 100%)"
+                                      : "#e5e7eb",
+                                    transform: level.isUnlocked
+                                      ? "translateY(-1px)"
+                                      : "none",
+                                    boxShadow: level.isUnlocked
+                                      ? "0 4px 12px rgba(34, 197, 94, 0.35)"
+                                      : "none",
+                                  },
+                                }}
+                              >
+                                {!level.isUnlocked
+                                  ? "Khóa"
+                                  : level.isCompleted
+                                  ? "Chơi lại"
+                                  : "Bắt đầu"}
+                                </Button>
+                              </Box>
+                            </Box>
                           </Box>
-                        </Box>
-                      </Grid>
-                    ))}
-                  </Grid>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </Box>
                 ) : (
                   <Box
                     sx={{

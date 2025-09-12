@@ -34,6 +34,7 @@ export function registerottobitBlocks(): void {
   blockModules.forEach((blockModule) => {
     Object.keys(blockModule).forEach((blockType) => {
       const blockDef = blockModule[blockType];
+      console.log(`🔧 Registering block: ${blockType}`);
       Blockly.Blocks[blockType] = {
         init: function () {
           this.jsonInit(blockDef);
@@ -41,6 +42,8 @@ export function registerottobitBlocks(): void {
       };
     });
   });
+  
+  console.log(`✅ Total blocks registered: ${Object.keys(Blockly.Blocks).filter(k => k.startsWith('ottobit_')).length}`);
 }
 
 /**
@@ -88,6 +91,12 @@ export const BLOCK_TYPES = {
   ottobit_collect_green: "ottobit_collect_green",
   ottobit_collect_red: "ottobit_collect_red",
   ottobit_collect_yellow: "ottobit_collect_yellow",
+  ottobit_take_bale: "ottobit_take_bale",
+  ottobit_put_bale: "ottobit_put_bale",
+  
+  // Sensors (additional)
+  ottobit_bale_number: "ottobit_bale_number",
+  ottobit_comparison: "ottobit_comparison",
 } as const;
 
 export type BlockType = keyof typeof BLOCK_TYPES;

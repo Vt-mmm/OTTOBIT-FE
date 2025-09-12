@@ -56,6 +56,8 @@ export interface ProgramAction {
     | "turnBack"
     | "collect"
     | "collectOnce"
+    | "takeBox"
+    | "putBox"
     | "repeat"
     | "repeatRange"
     | "if"

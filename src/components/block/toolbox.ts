@@ -79,6 +79,14 @@ export const ottobit_TOOLBOX = {
           kind: "block",
           type: "ottobit_read_sensor",
         },
+        {
+          kind: "block",
+          type: "ottobit_bale_number",
+        },
+        {
+          kind: "block",
+          type: "ottobit_comparison",
+        },
       ],
     },
     {
@@ -97,6 +105,14 @@ export const ottobit_TOOLBOX = {
         {
           kind: "block",
           type: "ottobit_collect_yellow",
+        },
+        {
+          kind: "block",
+          type: "ottobit_take_bale",
+        },
+        {
+          kind: "block",
+          type: "ottobit_put_bale",
         },
       ],
     },

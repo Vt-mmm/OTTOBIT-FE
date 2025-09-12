@@ -1,7 +1,8 @@
-import { createContext, useContext, ReactNode } from "react";
+import { createContext, useContext, useEffect, ReactNode } from "react";
 import { usePhaserSimulator } from "../hooks/usePhaserSimulator";
 import { useMapData } from "../hooks/useMapData";
 import { useMapLoader } from "../hooks/useMapLoader";
+import { useLessonProgress } from "../hooks/useLessonProgress";
 import {
   GameState,
   PhaserConfig,
@@ -43,6 +44,12 @@ interface PhaserContextType {
   isLoadingMaps: boolean;
   mapError: string | null;
 
+  // Lesson Progress State
+  completedMapIds: string[];
+  isProgressLoading: boolean;
+  progressError: string | null;
+  progressStats: any;
+
   // Configuration
   config: PhaserConfig;
 
@@ -82,6 +89,16 @@ interface PhaserContextType {
     mapType: MapType | null;
   };
 
+  // Lesson Progress Actions
+  fetchCompletedMaps: () => Promise<void>;
+  markMapCompleted: (mapId: string) => Promise<void>;
+  isMapCompleted: (mapId: string) => boolean;
+  getCategoryProgress: (allMaps: MapResult[], categoryName: string) => {
+    total: number;
+    completed: number;
+    percentage: number;
+  };
+
   // Communication
   sendMessage: (message: any) => Promise<void>;
   onMessage: (type: string, handler: (data: any) => void) => void;
@@ -102,8 +119,109 @@ interface PhaserProviderProps {
 }
 
 export function PhaserProvider({ children, config }: PhaserProviderProps) {
-  const phaserState = usePhaserSimulator(config);
   const mapData = useMapData();
+  const lessonProgress = useLessonProgress();
+  
+  // Auto-fetch lesson maps on mount to ensure data is available for victory progress
+  useEffect(() => {
+    if (!mapData.lessonMaps?.mapsByType && !mapData.isLoading) {
+      mapData.fetchLessonMapsData().catch(() => {
+        // Silently handle errors - authentication issues will be handled elsewhere
+      });
+    }
+  }, []); // Only run once on mount
+  
+  // Victory progress handler
+  const handleVictoryProgress = async (victoryData: VictoryData) => {
+    let currentMapData = mapData.currentMap.mapData;
+    let mapKeyToUse = victoryData.mapKey || phaserState.currentMapKey || mapData.currentMap.mapKey;
+    
+    // Last resort: check localStorage for current level
+    if (!mapKeyToUse) {
+      try {
+        const savedLevel = localStorage.getItem('studio-current-level');
+        if (savedLevel) {
+          const levelData = JSON.parse(savedLevel);
+          if (levelData?.mapKey) {
+            mapKeyToUse = levelData.mapKey;
+          }
+        }
+      } catch (error) {
+        // Silently handle localStorage errors
+      }
+    }
+    
+    // Final fallback: check URL params
+    if (!mapKeyToUse) {
+      const urlParams = window.location.pathname.match(/\/studio\/([^/]+)/);
+      if (urlParams?.[1]) {
+        mapKeyToUse = urlParams[1];
+      }
+    }
+    
+    // Ensure lesson maps are loaded BEFORE trying to find map
+    if (!mapData.lessonMaps?.mapsByType) {
+      try {
+        await mapData.fetchLessonMapsData();
+        // Wait a bit for state to update
+        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (error) {
+        return; // Exit early if can't fetch maps
+      }
+    }
+    
+    // Check if lesson maps data is actually empty
+    const hasLessonMapsData = mapData.lessonMaps?.mapsByType && 
+      Object.keys(mapData.lessonMaps.mapsByType).length > 0;
+    
+    if (!hasLessonMapsData) {
+      return; // Exit early - don't proceed without real data
+    }
+    
+    // If no currentMapData but we have a mapKey, try to find it
+    if (!currentMapData && mapKeyToUse) {
+      currentMapData = mapData.findMapByKey(mapKeyToUse);
+      
+      // If still not found, try refreshing map data
+      if (!currentMapData) {
+        try {
+          await mapData.refreshLessonMapsData();
+          await new Promise(resolve => setTimeout(resolve, 200));
+          currentMapData = mapData.findMapByKey(mapKeyToUse);
+        } catch (error) {
+          // Silently handle refresh errors
+        }
+      }
+      
+      // DON'T create mock data - this causes backend Guid validation errors
+      if (!currentMapData && mapKeyToUse) {
+        // Try one more time with a longer wait
+        try {
+          await mapData.refreshLessonMapsData();
+          // Wait longer for Redux state to update
+          await new Promise(resolve => setTimeout(resolve, 500));
+          currentMapData = mapData.findMapByKey(mapKeyToUse);
+        } catch (error) {
+          // Silently handle final attempt errors
+        }
+        
+        // If still no real map data, exit early to prevent backend error
+        if (!currentMapData) {
+          return; // Exit early - don't call handleVictoryProgress with fake data
+        }
+      }
+    }
+    
+    // Create enhanced victoryData with mapKey if missing
+    const enhancedVictoryData = {
+      ...victoryData,
+      mapKey: mapKeyToUse || victoryData.mapKey
+    };
+    
+    await lessonProgress.handleVictoryProgress(enhancedVictoryData, currentMapData || undefined);
+  };
+  
+  const phaserState = usePhaserSimulator(config, handleVictoryProgress);
   const mapLoader = useMapLoader(phaserState.sendMessage);
 
   // Combine all the state and actions
@@ -139,6 +257,12 @@ export function PhaserProvider({ children, config }: PhaserProviderProps) {
     mapError: mapData.hasError
       ? mapData.allMapsError || mapData.lessonMapsError
       : mapLoader.mapLoadError,
+
+    // Lesson Progress State
+    completedMapIds: lessonProgress.completedMapIds,
+    isProgressLoading: lessonProgress.isLoading,
+    progressError: lessonProgress.errorMessage,
+    progressStats: lessonProgress.progressStats,
 
     // Configuration
     config: phaserState.config,
@@ -178,6 +302,16 @@ export function PhaserProvider({ children, config }: PhaserProviderProps) {
     getMapsByType: mapData.getMapsByType,
     getLessonMapsByType: mapData.getLessonMapsByType,
     getMapNavigationInfo: mapLoader.getMapNavigationInfo,
+
+    // Lesson Progress Actions
+    fetchCompletedMaps: async () => {
+      await lessonProgress.fetchCompletedMaps();
+    },
+    markMapCompleted: async (mapId: string) => {
+      await lessonProgress.markMapCompleted(mapId);
+    },
+    isMapCompleted: lessonProgress.isMapCompleted,
+    getCategoryProgress: lessonProgress.getCategoryProgress,
 
     // Communication
     sendMessage: phaserState.sendMessage,

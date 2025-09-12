@@ -126,8 +126,7 @@ const StudioContent = ({ selectedLevel }: { selectedLevel: LevelData }) => {
             }, 200);
           }
         })
-        .catch((error) => {
-          console.error("Failed to load map:", selectedLevel.mapKey, error);
+        .catch(() => {
           setShowMapLoading(false);
         })
         .finally(() => {
@@ -290,7 +289,7 @@ const RobotStudioPage = () => {
       setSelectedLevel(null);
       setIsInitialized(false);
     }
-  }, [mapKey, showLevelSelector, selectedLevel]);
+  }, [mapKey]); // Remove showLevelSelector and selectedLevel from dependencies
 
   // Initialize level from URL or localStorage
   const initializeLevel = (

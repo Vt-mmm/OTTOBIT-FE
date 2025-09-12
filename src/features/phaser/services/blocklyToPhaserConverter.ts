@@ -40,6 +40,19 @@ export class BlocklyToPhaserConverter {
         program.actions = this.parseBlocksToActions(startBlock);
       }
 
+      // Debug logging
+      console.log("🗺️ Generated Program:", JSON.stringify(program, null, 2));
+      console.log("🤖 Actions:", program.actions);
+      program.actions.forEach((action, index) => {
+        if (action.type === "while") {
+          console.log(`🔄 Action ${index} (while):`, {
+            type: action.type,
+            cond: action.cond,
+            body: action.body,
+          });
+        }
+      });
+
       return program;
     } catch (error) {
       console.error("❌ Error converting workspace:", error);
@@ -139,6 +152,13 @@ export class BlocklyToPhaserConverter {
         case "ottobit_collect_yellow":
           return [this.convertCollect(block)];
 
+        // Bale handling blocks
+        case "ottobit_take_bale":
+          return [this.convertTakeBale(block)];
+
+        case "ottobit_put_bale":
+          return [this.convertPutBale(block)];
+
         // Control structures
         case "ottobit_repeat":
           return [this.convertRepeat(block)];
@@ -161,6 +181,12 @@ export class BlocklyToPhaserConverter {
 
         // Skip start block
         case "ottobit_start":
+          return null;
+
+        // Sensor blocks (now supported)
+        case "ottobit_bale_number":
+          // This is handled in condition parsing, not as standalone action
+          console.log(`📊 Bale number sensor block found: ${blockType}`);
           return null;
 
         // Unsupported blocks
@@ -255,6 +281,26 @@ export class BlocklyToPhaserConverter {
   }
 
   /**
+   * Convert take bale block
+   */
+  private static convertTakeBale(_block: any): ProgramAction {
+    return {
+      type: "takeBox",
+      count: 1, // Take bale blocks don't have count field, default to 1
+    };
+  }
+
+  /**
+   * Convert put bale block
+   */
+  private static convertPutBale(_block: any): ProgramAction {
+    return {
+      type: "putBox",
+      count: 1, // Put bale blocks don't have count field, default to 1
+    };
+  }
+
+  /**
    * Convert repeat block
    */
   private static convertRepeat(block: any): ProgramAction {
@@ -312,7 +358,7 @@ export class BlocklyToPhaserConverter {
 
     return {
       type: "while",
-      condition: condition,
+      cond: condition, // Use 'cond' to match validation
       body: bodyActions,
     };
   }
@@ -395,6 +441,43 @@ export class BlocklyToPhaserConverter {
         };
       }
 
+      case "ottobit_comparison": {
+        // Handle ottobit_comparison block: A OP B format
+        const leftValue = conditionBlock.getInputTargetBlock("A");
+        const operator = conditionBlock.getFieldValue("OP") || "EQ";
+        const rightValue = conditionBlock.getFieldValue("B") || "0"; // B is a field, not input
+
+        // Convert operator
+        const operatorMap: { [key: string]: string } = {
+          EQ: "==",
+          NEQ: "!=",
+          LT: "<",
+          LTE: "<=",
+          GT: ">",
+          GTE: ">=",
+        };
+
+        const leftVal = this.extractVariableOrValue(leftValue);
+
+        // If left value is a function call (like warehouseCount), use condition type
+        if (typeof leftVal === "object" && leftVal.type === "function") {
+          return {
+            type: "condition",
+            functionName: leftVal.name,
+            operator: operatorMap[operator] || "==",
+            value: parseInt(rightValue) || 0,
+            check: true,
+          };
+        }
+
+        return {
+          type: "variableComparison",
+          variable: leftVal,
+          operator: operatorMap[operator] || "==",
+          value: parseInt(rightValue) || 0,
+        };
+      }
+
       // Sensor conditions (màu pin)
       case "ottobit_is_green":
         return { type: "condition", function: "isGreen", check: true };
@@ -402,6 +485,14 @@ export class BlocklyToPhaserConverter {
         return { type: "condition", function: "isRed", check: true };
       case "ottobit_is_yellow":
         return { type: "condition", function: "isYellow", check: true };
+
+      // Warehouse/Bale number condition - used in while loops
+      case "ottobit_bale_number":
+        return {
+          type: "condition",
+          functionName: "warehouseCount",
+          check: true,
+        };
 
       default:
         console.warn(`⚠️ Unknown condition block type: ${blockType}`);
@@ -422,6 +513,9 @@ export class BlocklyToPhaserConverter {
       case "ottobit_number":
       case "math_number":
         return parseInt(block.getFieldValue("NUM")) || 0;
+      case "ottobit_bale_number":
+        // When used in comparison, should return special function name
+        return { type: "function", name: "warehouseCount" };
       case "text":
         return block.getFieldValue("TEXT") || "";
       default:

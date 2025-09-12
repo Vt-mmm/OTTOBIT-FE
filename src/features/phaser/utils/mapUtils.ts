@@ -13,13 +13,18 @@ export interface LevelData {
   difficulty: "beginner" | "intermediate" | "advanced" | "expert";
   objectives: string[];
   recommendedBlocks: string[];
-  category: "basic" | "boolean" | "forloop";
+  category:
+    | "basic"
+    | "boolean"
+    | "variables"
+    | "forloop"
+    | "conditionals"
+    | "functions"
+    | "whileloop"
+    | "repeat";
   order: number;
   isUnlocked: boolean;
   isCompleted: boolean;
-  bestScore?: number;
-  bestTime?: number;
-  stars: number; // 0-3 stars
 }
 
 /**
@@ -31,24 +36,26 @@ export function mapKeyToLevelData(
   mapResult: MapResult
 ): LevelData | null {
   // Parse mapKey pattern: "basic1", "boolean3", "forloop2"
-  const match = mapKey.match(/^([a-z]+)(\d+)$/);
+  const match = mapKey.match(/^([a-z]+)(\d+)$/i); // Case-insensitive match
   if (!match) {
-    console.warn(`❌ Invalid mapKey format: ${mapKey}`);
     return null;
   }
 
   const [, categoryStr, numberStr] = match;
   const order = parseInt(numberStr);
+  
+  // Normalize category to lowercase for consistent matching
+  const normalizedCategory = categoryStr.toLowerCase();
 
   // Map category string to our types
-  let category: "basic" | "boolean" | "forloop";
+  let category: LevelData["category"];
   let name: string;
   let description: string;
   let difficulty: "beginner" | "intermediate" | "advanced" | "expert";
   let objectives: string[];
   let recommendedBlocks: string[];
 
-  switch (categoryStr) {
+  switch (normalizedCategory) {
     case "basic":
       category = "basic";
       name = `Basic ${order}`;
@@ -91,8 +98,78 @@ export function mapKeyToLevelData(
         order <= 3 ? "intermediate" : order <= 6 ? "advanced" : "expert";
       break;
 
+    case "variables":
+      category = "variables";
+      name = `Variables ${order}`;
+      description = `Học cách sử dụng biến số - Map ${order}`;
+      objectives = [
+        "Tạo và sử dụng biến",
+        "Lưu trữ và thay đổi giá trị",
+        "Kết hợp biến với logic",
+      ];
+      recommendedBlocks = ["set_variable", "get_variable", "math", "move_forward"];
+      difficulty =
+        order <= 3 ? "intermediate" : order <= 6 ? "advanced" : "expert";
+      break;
+
+    case "conditionals":
+      category = "conditionals";
+      name = `Conditionals ${order}`;
+      description = `Học cách sử dụng điều kiện - Map ${order}`;
+      objectives = [
+        "Sử dụng điều kiện phức tạp",
+        "Kết hợp nhiều điều kiện",
+        "Tối ưu hóa logic điều kiện",
+      ];
+      recommendedBlocks = ["if", "else", "and", "or", "not", "sensor_check"];
+      difficulty =
+        order <= 3 ? "intermediate" : order <= 6 ? "advanced" : "expert";
+      break;
+
+    case "functions":
+      category = "functions";
+      name = `Functions ${order}`;
+      description = `Học cách tạo và sử dụng hàm - Map ${order}`;
+      objectives = [
+        "Tạo hàm tùy chỉnh",
+        "Sử dụng tham số",
+        "Tái sử dụng code",
+      ];
+      recommendedBlocks = ["function", "call_function", "return", "parameter"];
+      difficulty =
+        order <= 3 ? "advanced" : order <= 6 ? "expert" : "expert";
+      break;
+
+    case "whileloop":
+    case "whileloops":
+      category = "whileloop";
+      name = `While Loop ${order}`;
+      description = `Học cách sử dụng vòng lặp While - Map ${order}`;
+      objectives = [
+        "Sử dụng vòng lặp điều kiện",
+        "Kết hợp while với sensor",
+        "Tránh vòng lặp vô hạn",
+      ];
+      recommendedBlocks = ["while", "sensor_check", "move_forward", "if"];
+      difficulty =
+        order <= 3 ? "advanced" : order <= 6 ? "expert" : "expert";
+      break;
+
+    case "repeat":
+      category = "repeat";
+      name = `Repeat ${order}`;
+      description = `Học cách sử dụng lặp lại - Map ${order}`;
+      objectives = [
+        "Sử dụng khối repeat",
+        "Lặp lại hành động cố định",
+        "Tối ưu hóa với repeat",
+      ];
+      recommendedBlocks = ["repeat", "move_forward", "turn_left", "turn_right"];
+      difficulty =
+        order <= 3 ? "beginner" : order <= 6 ? "intermediate" : "advanced";
+      break;
+
     default:
-      console.warn(`❌ Unknown category: ${categoryStr}`);
       return null;
   }
 
@@ -113,7 +190,6 @@ export function mapKeyToLevelData(
     order,
     isUnlocked,
     isCompleted: false, // TODO: Load from progress
-    stars: 0,
   };
 }
 

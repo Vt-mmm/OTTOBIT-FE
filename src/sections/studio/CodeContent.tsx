@@ -42,3 +42,4 @@ export default function CodeContent({ code, language }: CodeContentProps) {
   return <Box sx={getCodeStyles()}>{code}</Box>;
 }
 
+

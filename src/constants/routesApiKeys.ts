@@ -1,9 +1,10 @@
 import { path } from "utils";
 
-// Backend sử dụng số nhiều (authentications, accounts, maps)
+// Backend sử dụng số nhiều (authentications, accounts, maps, lesson-processes)
 const ROOTS_AUTH = "/api/v1/authentications";
 const ROOTS_ACCOUNT = "/api/v1/accounts";
 const ROOTS_MAP = "/api/v1/maps";
+const ROOTS_LESSON_PROCESS = "/api/v1/lesson-processes";
 
 export const ROUTES_API_AUTH = {
   // Authentication endpoints
@@ -25,4 +26,10 @@ export const ROUTES_API_MAP = {
   GET_ALL: ROOTS_MAP,
   GET_LESSON_MAPS: path(ROOTS_MAP, `/lessons`),
   CLEAR_LESSON_CACHE: path(ROOTS_MAP, `/lessons/cache`),
+};
+
+export const ROUTES_API_LESSON_PROCESS = {
+  // Lesson Process endpoints - Maps với BE APIEndPointConstant
+  GET_COMPLETED: path(ROOTS_LESSON_PROCESS, `/completed`), // GET /api/v1/lesson-processes/completed
+  MARK_COMPLETE: path(ROOTS_LESSON_PROCESS, `/complete`), // POST /api/v1/lesson-processes/complete
 };

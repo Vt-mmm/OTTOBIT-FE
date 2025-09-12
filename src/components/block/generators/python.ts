@@ -329,6 +329,26 @@ pythonGenerator.forBlock["ottobit_collect_yellow"] = function (
   return `robot.collect(${count}, 'yellow')\n`;
 };
 
+// Bale handling blocks
+pythonGenerator.forBlock["ottobit_take_bale"] = function (
+  _block: any
+): string {
+  return "robot.take_bale()\n";
+};
+
+pythonGenerator.forBlock["ottobit_put_bale"] = function (
+  _block: any
+): string {
+  return "robot.put_bale()\n";
+};
+
+// Bale number sensor
+pythonGenerator.forBlock["ottobit_bale_number"] = function (
+  _block: any
+): [string, number] {
+  return ["robot.get_bale_number()", Order.FUNCTION_CALL];
+};
+
 /**
  * Generate Python code from workspace
  */

@@ -7,22 +7,19 @@ import React from "react";
 import {
   Dialog,
   DialogContent,
-  Box,
   Typography,
   Button,
-  IconButton,
+  Box,
   Chip,
-  LinearProgress,
   Divider,
-  Fade,
   Slide,
-  Grow,
+  IconButton,
+  LinearProgress,
+  Fade,
 } from "@mui/material";
 import {
   Close,
   EmojiEvents,
-  StarBorder,
-  Star,
   Battery90,
   CheckCircle,
   PlayArrow,
@@ -100,16 +97,8 @@ export default function VictoryModal({
 }: VictoryModalProps) {
   if (!victoryData) return null;
 
-  // Calculate stars based on efficiency
-  const calculateStars = (data: VictoryData): number => {
-    const progress = data.progress || 100; // Default to 100% if not provided
-    const efficiency = progress / 100;
-    if (efficiency >= 0.95) return 3;
-    if (efficiency >= 0.8) return 2;
-    return 1;
-  };
-
-  const stars = calculateStars(victoryData);
+  // Simple win/lose check - no stars
+  const isVictory = victoryData.isVictory === true;
 
   // Safe data extraction with fallbacks
   const safeCollected = victoryData.collected || {
@@ -259,33 +248,26 @@ export default function VictoryModal({
             </Typography>
           </Box>
 
-          {/* Stars */}
+          {/* Victory Status Badge */}
           <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
-            {[1, 2, 3].map((index) => (
-              <Grow key={index} in={open} timeout={500 + index * 200}>
-                <Box>
-                  {index <= stars ? (
-                    <Star
-                      sx={{
-                        fontSize: 48,
-                        color: "#fbbf24",
-                        mx: 0.5,
-                        filter:
-                          "drop-shadow(0 4px 8px rgba(251, 191, 36, 0.3))",
-                      }}
-                    />
-                  ) : (
-                    <StarBorder
-                      sx={{
-                        fontSize: 48,
-                        color: "#cbd5e1",
-                        mx: 0.5,
-                      }}
-                    />
-                  )}
-                </Box>
-              </Grow>
-            ))}
+            <Chip
+              icon={<CheckCircle />}
+              label={isVictory ? "Thành công" : "Chưa hoàn thành"}
+              sx={{
+                fontSize: "1.1rem",
+                fontWeight: 600,
+                py: 2,
+                px: 3,
+                height: "auto",
+                backgroundColor: isVictory ? "#dcfce7" : "#fee2e2",
+                color: isVictory ? "#16a34a" : "#dc2626",
+                border: `2px solid ${isVictory ? "#16a34a" : "#dc2626"}20`,
+                "& .MuiChip-icon": {
+                  color: isVictory ? "#16a34a" : "#dc2626",
+                  fontSize: "1.5rem",
+                },
+              }}
+            />
           </Box>
 
           {/* Progress */}
