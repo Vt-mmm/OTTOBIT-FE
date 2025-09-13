@@ -155,37 +155,20 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     helpUrl: "",
   },
   {
-    type: "ottobit_if",
-    message0: "if %1 %2 %3 %4 %5 else %6",
+    type: "ottobit_if_expandable",
+    message0: "if %1",
     args0: [
       {
         type: "input_value",
-        name: "CONDITION1",
+        name: "IF0",
         check: "Boolean",
       },
-      {
-        type: "field_dropdown",
-        name: "OPERATOR",
-        options: [
-          ["and", "AND"],
-          ["or", "OR"],
-        ],
-      },
-      {
-        type: "input_value",
-        name: "CONDITION2",
-        check: "Boolean",
-      },
-      {
-        type: "input_dummy",
-      },
+    ],
+    message1: "%1",
+    args1: [
       {
         type: "input_statement",
-        name: "DO",
-      },
-      {
-        type: "input_statement",
-        name: "ELSE",
+        name: "DO0",
       },
     ],
     previousStatement: null,
@@ -194,7 +177,81 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     movable: true,
     editable: true,
     style: "ottobit_control_blue",
-    tooltip: "Thực hiện lệnh dựa trên điều kiện logic kết hợp",
+    tooltip: "Khối IF có thể mở rộng. Click vào biểu tượng bánh răng để thêm else if hoặc else",
+    helpUrl: "",
+    mutator: "ottobit_if_mutator"
+  },
+  // Boolean value block with dropdown
+  {
+    type: "ottobit_boolean",
+    message0: "%1",
+    args0: [
+      {
+        type: "field_dropdown",
+        name: "BOOL",
+        options: [
+          ["true", "TRUE"],
+          ["false", "FALSE"],
+        ],
+      },
+    ],
+    output: "Boolean",
+    deletable: true,
+    movable: true,
+    editable: true,
+    style: "ottobit_logic",
+    tooltip: "Chọn giá trị logic true hoặc false",
+    helpUrl: "",
+  },
+  // Logic operators with dropdown - layout ngang (horizontal)
+  {
+    type: "ottobit_logic_operation",
+    message0: "%1 %2 %3",
+    args0: [
+      {
+        type: "input_value",
+        name: "LEFT",
+        check: "Boolean",
+      },
+      {
+        type: "field_dropdown",
+        name: "OP",
+        options: [
+          ["and", "AND"],
+          ["or", "OR"],
+        ],
+      },
+      {
+        type: "input_value",
+        name: "RIGHT",
+        check: "Boolean",
+      },
+    ],
+    inputsInline: true, // 🔥 Kích hoạt layout ngang
+    output: "Boolean",
+    deletable: true,
+    movable: true,
+    editable: true,
+    style: "ottobit_logic",
+    tooltip: "Kết hợp hai điều kiện với toán tử AND hoặc OR - layout ngang",
+    helpUrl: "",
+  },
+  {
+    type: "ottobit_logic_not",
+    message0: "not %1",
+    args0: [
+      {
+        type: "input_value",
+        name: "BOOL",
+        check: "Boolean",
+      },
+    ],
+    output: "Boolean",
+    deletable: true,
+    movable: true,
+    editable: true,
+    style: "ottobit_logic",
+    tooltip: "Trả về ngược lại của điều kiện",
     helpUrl: "",
   },
   // Variable block đơn giản
@@ -213,7 +270,7 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
       {
         type: "input_value",
         name: "LEFT",
-        check: "Number",
+        check: ["Number", "Boolean"],
       },
       {
         type: "field_dropdown",
@@ -230,15 +287,16 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
       {
         type: "input_value",
         name: "RIGHT",
-        check: "Number",
+        check: ["Number", "Boolean"],
       },
     ],
+    inputsInline: true, // 🔥 Layout ngang cho comparison
     output: "Boolean",
     deletable: true,
     movable: true,
     editable: true,
-    style: "ottobit_var",
-    tooltip: "So sánh hai giá trị",
+    style: "ottobit_control",
+    tooltip: "So sánh hai giá trị hoặc logic - layout ngang",
     helpUrl: "",
   },
   {

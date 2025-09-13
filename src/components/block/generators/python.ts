@@ -349,6 +349,95 @@ pythonGenerator.forBlock["ottobit_bale_number"] = function (
   return ["robot.get_bale_number()", Order.FUNCTION_CALL];
 };
 
+// New Python generators for improved blocks
+// Boolean dropdown block
+pythonGenerator.forBlock["ottobit_boolean"] = function (
+  block: any
+): [string, number] {
+  const value = block.getFieldValue("BOOL") || "TRUE";
+  return [value === "TRUE" ? "True" : "False", Order.ATOMIC];
+};
+
+// Logic operation block with dropdown
+pythonGenerator.forBlock["ottobit_logic_operation"] = function (
+  block: any
+): [string, number] {
+  const leftValue =
+    pythonGenerator.valueToCode(block, "LEFT", Order.LOGICAL_AND) || "False";
+  const rightValue =
+    pythonGenerator.valueToCode(block, "RIGHT", Order.LOGICAL_AND) || "False";
+  const operator = block.getFieldValue("OP") || "AND";
+  
+  const code = operator === "AND" 
+    ? `(${leftValue}) and (${rightValue})`
+    : `(${leftValue}) or (${rightValue})`;
+  
+  const order = operator === "AND" ? Order.LOGICAL_AND : Order.LOGICAL_OR;
+  return [code, order];
+};
+
+// Sensor condition block (tích hợp sensor và comparison)
+pythonGenerator.forBlock["ottobit_sensor_condition"] = function (
+  block: any
+): [string, number] {
+  const sensorType = block.getFieldValue("SENSOR_TYPE") || "DISTANCE";
+  const operator = block.getFieldValue("OP") || "EQ";
+  const value = block.getFieldValue("VALUE") || "0";
+  
+  const operators: { [key: string]: string } = {
+    EQ: "==",
+    NEQ: "!=",
+    LT: "<",
+    LTE: "<=",
+    GT: ">",
+    GTE: ">=",
+  };
+  
+  let sensorCall = "";
+  switch (sensorType) {
+    case "DISTANCE":
+      sensorCall = "motor.read_sensor('DISTANCE')";
+      break;
+    case "LIGHT":
+      sensorCall = "motor.read_sensor('LIGHT')";
+      break;
+    case "TEMPERATURE":
+      sensorCall = "motor.read_sensor('TEMPERATURE')";
+      break;
+    case "BALE_NUMBER":
+      sensorCall = "motor.get_bale_number()";
+      break;
+    default:
+      sensorCall = "motor.read_sensor('DISTANCE')";
+  }
+  
+  const code = `${sensorCall} ${operators[operator]} ${value}`;
+  return [code, Order.RELATIONAL];
+};
+
+// Enhanced comparison block with input values
+pythonGenerator.forBlock["ottobit_comparison"] = function (
+  block: any
+): [string, number] {
+  const valueA =
+    pythonGenerator.valueToCode(block, "A", Order.RELATIONAL) || "0";
+  const op = block.getFieldValue("OP") || "EQ";
+  const valueB =
+    pythonGenerator.valueToCode(block, "B", Order.RELATIONAL) || "0";
+
+  const operators: { [key: string]: string } = {
+    EQ: "==",
+    NEQ: "!=",
+    LT: "<",
+    LTE: "<=",
+    GT: ">",
+    GTE: ">=",
+  };
+
+  const code = `${valueA} ${operators[op]} ${valueB}`;
+  return [code, Order.RELATIONAL];
+};
+
 /**
  * Generate Python code from workspace
  */

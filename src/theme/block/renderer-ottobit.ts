@@ -75,6 +75,14 @@ export function injectOttobitkFieldStyles(): void {
       font-size: 16px !important;
     }
     
+    /* Text trắng cho logic blocks (tím) */
+    g[data-style="ottobit_logic"] .blocklyText,
+    g[data-style="ottobit_control_blue"] .blocklyText {
+      fill: #FFFFFF !important;
+      font-weight: 700 !important;
+      font-size: 16px !important;
+    }
+    
     /* Fallback cho blocks khác */
     .blocklyText {
       font-weight: 700 !important;
@@ -121,6 +129,18 @@ export function injectOttobitkFieldStyles(): void {
     g[data-style="ottobit_math"] .blocklyPath {
       fill: #2C3E50 !important; /* Xanh đậm cho math */
       stroke: #1B2631 !important;
+      stroke-width: 2px !important;
+    }
+    
+    g[data-style="ottobit_logic"] .blocklyPath {
+      fill: #9C27B0 !important; /* Tím cho logic blocks */
+      stroke: #7B1FA2 !important;
+      stroke-width: 2px !important;
+    }
+    
+    g[data-style="ottobit_control_blue"] .blocklyPath {
+      fill: #2196F3 !important; /* Xanh dương cho IF blocks */
+      stroke: #1976D2 !important;
       stroke-width: 2px !important;
     }
     

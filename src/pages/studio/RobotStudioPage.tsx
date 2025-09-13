@@ -155,7 +155,12 @@ const StudioContent = ({ selectedLevel }: { selectedLevel: LevelData }) => {
         height: "100vh",
         display: "flex",
         flexDirection: "column",
-        bgcolor: "#ffffff", // Pure white background
+        bgcolor: "#ffffff",
+        // Mobile-specific adjustments
+        "@media (max-width: 900px)": {
+          height: "100vh",
+          overflow: "hidden", // Prevent page scrolling on mobile
+        },
       }}
     >
       {/* Top Bar - Fixed height */}
@@ -165,29 +170,64 @@ const StudioContent = ({ selectedLevel }: { selectedLevel: LevelData }) => {
         workspace={workspace}
       />
 
-      {/* Main Content Area - Split into 2 columns */}
+      {/* Main Content Area - Mobile-First Responsive Layout */}
       <Box
         sx={{
           flex: 1,
-          display: "grid",
-          gridTemplateColumns: "900px 1fr", // Thu hẹp cột trái để workspace không quá rộng
-          gap: 2,
-          pl: 0,
-          pr: 2,
-          pt: 0,
-          pb: 2,
+          display: { xs: "flex", md: "grid" }, // Flex on mobile, grid on desktop
+          flexDirection: { xs: "column", md: "row" }, // Stack on mobile
+          gridTemplateColumns: {
+            md: "1fr 1fr", // Medium: equal split
+            lg: "900px 1fr", // Large: fixed left, flexible right
+            xl: "1000px 1fr", // Extra large: wider left panel
+          },
+          gap: { xs: 1, sm: 1.5, md: 2 },
+          p: { xs: 1, sm: 1.5, md: 2 },
           overflow: "hidden",
+          minHeight: 0,
+          // Mobile-specific styles
+          "@media (max-width: 900px)": {
+            height: "auto",
+            minHeight: "calc(100vh - 60px)", // Account for header
+          },
         }}
       >
-        {/* Left Panel - Content based on active tab */}
-        <LeftPanelSection
-          activeTab={activeTab}
-          workspace={workspace}
-          onWorkspaceChange={setWorkspace}
-        />
+        {/* Left Panel - Content based on active tab - Mobile Responsive */}
+        <Box
+          sx={{
+            // Mobile: flexible height, desktop: full height
+            flex: { xs: "0 0 auto", md: 1 },
+            height: { xs: "auto", md: "100%" },
+            minHeight: { xs: "200px", md: "auto" },
+            maxHeight: { xs: "40vh", md: "none" },
+            overflow: { xs: "hidden", md: "visible" },
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <LeftPanelSection
+            activeTab={activeTab}
+            workspace={workspace}
+            onWorkspaceChange={setWorkspace}
+          />
+        </Box>
 
-        {/* Right Panel - Robot Simulator */}
-        <Box sx={{ position: "relative" }}>
+        {/* Right Panel - Robot Simulator - Aspect Ratio Friendly */}
+        <Box 
+          sx={{ 
+            position: "relative",
+            // Let simulator define its own height based on aspect ratio
+            flex: { xs: "0 0 auto", md: 1 }, // Don't flex on mobile, flex on desktop
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            // Center the simulator
+            alignItems: "center",
+            justifyContent: "center",
+            // Mobile: allow some padding
+            p: { xs: 1, md: 0 },
+          }}
+        >
           <SimulatorStageSection workspace={workspace} />
 
           {/* Loading Overlay - Hide menu flash during map load */}

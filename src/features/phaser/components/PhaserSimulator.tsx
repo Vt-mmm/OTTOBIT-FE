@@ -146,7 +146,6 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
           width: "100%",
           height: "100%",
           position: "relative",
-          backgroundColor: "#f5f5f5",
           borderRadius: 1,
           overflow: "hidden",
         }}
@@ -160,7 +159,12 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
           allow="fullscreen"
           style={{
             border: "none",
-            borderRadius: "4px",
+            width: "100%",
+            height: "100%",
+            display: "block",
+            margin: 0,
+            padding: 0,
+            backgroundColor: "transparent",
           }}
           title="Phaser Robot Simulator"
         />
@@ -200,7 +204,6 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
         width: "100%",
         height: "100%",
         position: "relative",
-        backgroundColor: "#f5f5f5",
         borderRadius: 1,
         overflow: "hidden",
       }}
@@ -214,7 +217,13 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
         allow="fullscreen"
         style={{
           border: "none",
-          borderRadius: "4px",
+          width: "100%",
+          height: "100%",
+          display: "block",
+          margin: 0,
+          padding: 0,
+          // Let Phaser handle its own scaling with FIT mode
+          backgroundColor: "transparent",
         }}
         title="Phaser Robot Simulator"
       />

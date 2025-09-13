@@ -7,14 +7,21 @@ import { controlBlocks } from "./ottobit_control";
 import { sensorBlocks } from "./ottobit_sensors";
 import { actionBlocks } from "./ottobit_actions";
 
+
 // Import generators to register them automatically
 import "./generators/javascript";
 import "./generators/python";
+
+// Import extensions
+import { registerIfElseMutator } from "./extensions/if_else_mutator";
 
 /**
  * Register all ottobit block definitions following Google Blockly standards
  */
 export function registerottobitBlocks(): void {
+  // Register mutators first
+  registerIfElseMutator();
+  
   // Clear existing blocks first to ensure fresh registration
   Object.keys(Blockly.Blocks).forEach((blockType) => {
     if (blockType.startsWith("ottobit_")) {
@@ -42,8 +49,20 @@ export function registerottobitBlocks(): void {
       };
     });
   });
-  
+
   console.log(`✅ Total blocks registered: ${Object.keys(Blockly.Blocks).filter(k => k.startsWith('ottobit_')).length}`);
+  
+  // List registered logic blocks specifically (cập nhật - thu gọn)
+  const logicBlocks = ['ottobit_boolean', 'ottobit_logic_operation', 'ottobit_logic_compare'];
+  logicBlocks.forEach(blockType => {
+    if (Blockly.Blocks[blockType]) {
+      console.log(`✅ Logic block registered: ${blockType}`);
+    } else {
+      console.error(`❌ Logic block NOT registered: ${blockType}`);
+    }
+  });
+  
+  // Blocks and mutators registered successfully
 }
 
 /**
@@ -70,16 +89,19 @@ export const BLOCK_TYPES = {
   ottobit_repeat_range: "ottobit_repeat_range",
   ottobit_while: "ottobit_while",
   ottobit_while_compare: "ottobit_while_compare",
-  ottobit_if: "ottobit_if",
+  ottobit_if_expandable: "ottobit_if_expandable",
   ottobit_variable_i: "ottobit_variable_i",
   ottobit_logic_compare: "ottobit_logic_compare",
   ottobit_number: "ottobit_number",
 
-  // Sensors
-  ottobit_distance_sensor: "ottobit_distance_sensor",
-  ottobit_touch_sensor: "ottobit_touch_sensor",
-  ottobit_light_sensor: "ottobit_light_sensor",
-  ottobit_sound_sensor: "ottobit_sound_sensor",
+  // Logic blocks (cập nhật - đã thu gọn)
+  ottobit_boolean: "ottobit_boolean",
+  ottobit_logic_operation: "ottobit_logic_operation",
+
+  // Sensors (cập nhật)
+  ottobit_read_sensor: "ottobit_read_sensor",
+  ottobit_sensor_condition: "ottobit_sensor_condition",
+  ottobit_comparison: "ottobit_comparison",
 
   // Actions
   ottobit_led_on: "ottobit_led_on",
@@ -93,10 +115,9 @@ export const BLOCK_TYPES = {
   ottobit_collect_yellow: "ottobit_collect_yellow",
   ottobit_take_bale: "ottobit_take_bale",
   ottobit_put_bale: "ottobit_put_bale",
-  
+
   // Sensors (additional)
   ottobit_bale_number: "ottobit_bale_number",
-  ottobit_comparison: "ottobit_comparison",
 } as const;
 
 export type BlockType = keyof typeof BLOCK_TYPES;

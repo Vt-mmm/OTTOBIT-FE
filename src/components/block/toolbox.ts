@@ -50,19 +50,11 @@ export const ottobit_TOOLBOX = {
         },
         {
           kind: "block",
-          type: "ottobit_if",
-        },
-        {
-          kind: "block",
-          type: "ottobit_if_else_logic",
+          type: "ottobit_if_expandable",
         },
         {
           kind: "block",
           type: "ottobit_variable_i",
-        },
-        {
-          kind: "block",
-          type: "ottobit_logic_compare",
         },
         {
           kind: "block",
@@ -72,20 +64,24 @@ export const ottobit_TOOLBOX = {
     },
     {
       kind: "category",
-      name: "Sensors",
-      colour: "#ff6b6b",
+      name: "Logic",
+      colour: "#9C27B0",
       contents: [
         {
           kind: "block",
-          type: "ottobit_read_sensor",
+          type: "ottobit_boolean",
+        },
+        {
+          kind: "block",
+          type: "ottobit_logic_operation",
+        },
+        {
+          kind: "block",
+          type: "ottobit_logic_compare",
         },
         {
           kind: "block",
           type: "ottobit_bale_number",
-        },
-        {
-          kind: "block",
-          type: "ottobit_comparison",
         },
       ],
     },

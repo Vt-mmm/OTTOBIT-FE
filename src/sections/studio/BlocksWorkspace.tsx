@@ -34,11 +34,13 @@ export default function BlocksWorkspace({
     ],
     conditions: [
       { kind: "block", type: "ottobit_while" },
-      { kind: "block", type: "ottobit_if" },
+      { kind: "block", type: "ottobit_if_expandable" },
       { kind: "block", type: "ottobit_variable_i" },
+      { kind: "block", type: "ottobit_number" },
     ],
-    sensors: [
-      { kind: "block", type: "ottobit_read_sensor" },
+    logic: [
+      { kind: "block", type: "ottobit_boolean" },
+      { kind: "block", type: "ottobit_logic_operation" },
       { kind: "block", type: "ottobit_comparison" },
       { kind: "block", type: "ottobit_bale_number" },
     ],
@@ -152,7 +154,7 @@ export default function BlocksWorkspace({
         refreshBlockColors();
       }, 50);
 
-      // Style workspace with pure white background
+      // Style workspace with pure white background và sửa lỗi tràn
       setTimeout(() => {
         const workspaceEl = document.querySelector(
           ".blocklyWorkspace"
@@ -160,6 +162,7 @@ export default function BlocksWorkspace({
         if (workspaceEl) {
           workspaceEl.style.backgroundColor = "#ffffff";
           workspaceEl.style.backgroundImage = "none";
+          workspaceEl.style.overflow = "hidden"; // Không cho tràn
         }
 
         const mainBackground = document.querySelector(
@@ -176,7 +179,16 @@ export default function BlocksWorkspace({
         if (flyoutBg) {
           flyoutBg.style.fill = "#ffffff";
           flyoutBg.style.fillOpacity = "1";
+          flyoutBg.style.maxWidth = "250px"; // Giới hạn chiều rộng flyout
         }
+
+        // Giới hạn kích thước các blocks trong flyout
+        const blocks = document.querySelectorAll(".blocklyFlyout .blocklyDraggable");
+        blocks.forEach(block => {
+          const blockEl = block as HTMLElement;
+          blockEl.style.maxWidth = "200px";
+          blockEl.style.transform = "scale(0.9)"; // Thu nhỏ blocks
+        });
       }, 500);
     }
 
