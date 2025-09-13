@@ -41,7 +41,6 @@ export function registerottobitBlocks(): void {
   blockModules.forEach((blockModule) => {
     Object.keys(blockModule).forEach((blockType) => {
       const blockDef = blockModule[blockType];
-      console.log(`🔧 Registering block: ${blockType}`);
       Blockly.Blocks[blockType] = {
         init: function () {
           this.jsonInit(blockDef);
@@ -50,17 +49,7 @@ export function registerottobitBlocks(): void {
     });
   });
 
-  console.log(`✅ Total blocks registered: ${Object.keys(Blockly.Blocks).filter(k => k.startsWith('ottobit_')).length}`);
-  
-  // List registered logic blocks specifically (cập nhật - thu gọn)
-  const logicBlocks = ['ottobit_boolean', 'ottobit_logic_operation', 'ottobit_logic_compare'];
-  logicBlocks.forEach(blockType => {
-    if (Blockly.Blocks[blockType]) {
-      console.log(`✅ Logic block registered: ${blockType}`);
-    } else {
-      console.error(`❌ Logic block NOT registered: ${blockType}`);
-    }
-  });
+  // Blocks registered successfully
   
   // Blocks and mutators registered successfully
 }

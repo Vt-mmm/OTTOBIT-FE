@@ -50,47 +50,72 @@ export default function LeftPanelSection({
   const pythonCode = generatePythonCode(workspace);
   const jsCode = generateJavaScriptCode(workspace);
 
+  // Get tab names for header
+  const tabNames = ["Blocks Workspace", "Python Code", "JavaScript Code"];
+
   return (
     <Box
       sx={{
-        height: "780px", // Tăng chiều cao để giống HP Robots
+        height: "100%",
         display: "flex",
         flexDirection: "column",
+        backgroundColor: "#f8f9fa", // Light background to differentiate from simulator
+        border: "2px solid #e9ecef", // Border to create clear frame
+        borderRadius: 2, // Subtle rounded corners
         overflow: "hidden",
-        bgcolor: "#ffffff",
-        borderRadius: "0 0 12px 12px",
-        border: "1px solid #e2e8f0",
-        borderTop: "none",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+        position: "relative",
       }}
     >
-      {/* Header with Actions */}
+      {/* Workspace Header */}
       <Box
         sx={{
-          borderBottom: "1px solid #e2e8f0",
+          px: 2,
+          py: 1.5,
+          backgroundColor: "#ffffff",
+          borderBottom: "1px solid #dee2e6",
           display: "flex",
           alignItems: "center",
-          justifyContent: "flex-end",
-          bgcolor: "#f8fafc",
-          p: 1,
+          justifyContent: "center",
           minHeight: 48,
+          flexShrink: 0,
         }}
       >
-        {}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            color: "#495057",
+            fontWeight: 600,
+            fontSize: "0.95rem",
+          }}
+        >
+          🧩 {tabNames[activeTab]}
+        </Box>
       </Box>
 
-      {/* Tab Content */}
-      <TabPanel value={activeTab} index={0}>
-        <BlocksWorkspace onWorkspaceChange={onWorkspaceChange} />
-      </TabPanel>
+      {/* Workspace Content Container */}
+      <Box
+        sx={{
+          flex: 1,
+          backgroundColor: "#ffffff", // White content area
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* Tab Content */}
+        <TabPanel value={activeTab} index={0}>
+          <BlocksWorkspace onWorkspaceChange={onWorkspaceChange} />
+        </TabPanel>
 
-      <TabPanel value={activeTab} index={1}>
-        <CodeContent code={pythonCode} language="python" />
-      </TabPanel>
+        <TabPanel value={activeTab} index={1}>
+          <CodeContent code={pythonCode} language="python" />
+        </TabPanel>
 
-      <TabPanel value={activeTab} index={2}>
-        <CodeContent code={jsCode} language="javascript" />
-      </TabPanel>
+        <TabPanel value={activeTab} index={2}>
+          <CodeContent code={jsCode} language="javascript" />
+        </TabPanel>
+      </Box>
     </Box>
   );
 }

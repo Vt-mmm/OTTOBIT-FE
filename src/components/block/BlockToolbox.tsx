@@ -4,7 +4,6 @@ import {
   PlayArrow,
   Loop,
   Memory,
-  Sensors,
   Build,
   Psychology
 } from '@mui/icons-material';
@@ -54,13 +53,6 @@ const BlockToolbox: React.FC<BlockToolboxProps> = ({ onCategorySelect }) => {
       selectedColor: '#7b1fa2'
     },
     {
-      id: 'sensors',
-      name: 'SENSORS',
-      icon: Sensors,
-      color: '#ff6b6b',
-      selectedColor: '#f44336'
-    },
-    {
       id: 'actions',
       name: 'ACTIONS',
       icon: Build,
@@ -84,14 +76,15 @@ const BlockToolbox: React.FC<BlockToolboxProps> = ({ onCategorySelect }) => {
   return (
     <Box 
       sx={{ 
-        width: 70,
+        width: { xs: 50, sm: 60, md: 70 }, // Responsive width
         height: '100%',
         backgroundColor: '#ffffff',
-        borderRight: '1px solid #e0e0e0',
+        // Remove border
         display: 'flex',
         flexDirection: 'column',
         padding: 0,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        flexShrink: 0, // Don't shrink on mobile
       }}
     >
       {categories.map((category) => {
@@ -107,13 +100,13 @@ const BlockToolbox: React.FC<BlockToolboxProps> = ({ onCategorySelect }) => {
               alignItems: 'center',
               justifyContent: 'center',
               flexDirection: 'column',
-              padding: '12px 8px',
+              padding: { xs: '8px 4px', sm: '10px 6px', md: '12px 8px' }, // Responsive padding
               backgroundColor: isSelected ? category.color : 'transparent',
               color: isSelected ? '#ffffff' : category.color,
               cursor: 'pointer',
               transition: 'all 0.2s ease',
               borderBottom: '1px solid #f0f0f0',
-              minHeight: '60px',
+              minHeight: { xs: 45, sm: 55, md: 60 }, // Responsive height
               position: 'relative',
               opacity: selectedCategory === '' ? 0.7 : 1, // Dim khi toolbox đóng
               '&:hover': {
@@ -146,8 +139,8 @@ const BlockToolbox: React.FC<BlockToolboxProps> = ({ onCategorySelect }) => {
             >
               <IconComponent 
                 className="category-icon"
-                style={{ 
-                  fontSize: '28px', 
+                sx={{ 
+                  fontSize: { xs: '20px', sm: '24px', md: '28px' }, // Responsive icon size
                   color: isSelected ? '#ffffff' : category.color 
                 }} 
               />

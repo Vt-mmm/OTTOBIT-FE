@@ -155,7 +155,10 @@ const StudioContent = ({ selectedLevel }: { selectedLevel: LevelData }) => {
         height: "100vh",
         display: "flex",
         flexDirection: "column",
-        bgcolor: "#ffffff",
+        bgcolor: "#e9ecef", // Light gray background for the main container
+        m: 0,
+        p: 0,
+        boxSizing: "border-box",
         // Mobile-specific adjustments
         "@media (max-width: 900px)": {
           height: "100vh",
@@ -170,39 +173,37 @@ const StudioContent = ({ selectedLevel }: { selectedLevel: LevelData }) => {
         workspace={workspace}
       />
 
-      {/* Main Content Area - Mobile-First Responsive Layout */}
+      {/* Main Content Area - Enhanced Responsive Layout */}
       <Box
         sx={{
           flex: 1,
-          display: { xs: "flex", md: "grid" }, // Flex on mobile, grid on desktop
-          flexDirection: { xs: "column", md: "row" }, // Stack on mobile
-          gridTemplateColumns: {
-            md: "1fr 1fr", // Medium: equal split
-            lg: "900px 1fr", // Large: fixed left, flexible right
-            xl: "1000px 1fr", // Extra large: wider left panel
-          },
-          gap: { xs: 1, sm: 1.5, md: 2 },
-          p: { xs: 1, sm: 1.5, md: 2 },
+          display: "flex",
+          flexDirection: { xs: "column", lg: "row" }, // Stack on mobile/tablet, side-by-side on large screens
+          gap: { xs: 1, md: 2 }, // Small gaps for visual separation
+          p: { xs: 1, md: 2 }, // Padding around the main content
           overflow: "hidden",
           minHeight: 0,
-          // Mobile-specific styles
-          "@media (max-width: 900px)": {
-            height: "auto",
-            minHeight: "calc(100vh - 60px)", // Account for header
-          },
+          height: "100%",
+          maxWidth: "100vw",
+          backgroundColor: "#e9ecef", // Match container background
         }}
       >
-        {/* Left Panel - Content based on active tab - Mobile Responsive */}
+        {/* Left Panel - Workspace Area */}
         <Box
           sx={{
-            // Mobile: flexible height, desktop: full height
-            flex: { xs: "0 0 auto", md: 1 },
-            height: { xs: "auto", md: "100%" },
-            minHeight: { xs: "200px", md: "auto" },
-            maxHeight: { xs: "40vh", md: "none" },
-            overflow: { xs: "hidden", md: "visible" },
+            // Mobile: take available space but don't overflow
+            flex: { xs: "1 1 0%", lg: "0 0 auto" },
+            width: { xs: "100%", lg: "600px", xl: "720px" }, // Increased width for larger workspace
+            height: { xs: "50vh", sm: "55vh", md: "60vh", lg: "100%" },
+            minHeight: { xs: "300px", lg: "auto" },
+            maxHeight: { xs: "50vh", lg: "none" },
             display: "flex",
             flexDirection: "column",
+            maxWidth: "100%",
+            // Add subtle shadow for depth
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            borderRadius: 2,
+            overflow: "hidden",
           }}
         >
           <LeftPanelSection
@@ -212,20 +213,21 @@ const StudioContent = ({ selectedLevel }: { selectedLevel: LevelData }) => {
           />
         </Box>
 
-        {/* Right Panel - Robot Simulator - Aspect Ratio Friendly */}
+        {/* Right Panel - Robot Simulator */}
         <Box 
           sx={{ 
             position: "relative",
-            // Let simulator define its own height based on aspect ratio
-            flex: { xs: "0 0 auto", md: 1 }, // Don't flex on mobile, flex on desktop
+            flex: { xs: "1 1 0%", lg: 1 },
             width: "100%",
+            height: { xs: "50vh", sm: "45vh", md: "40vh", lg: "100%" },
+            minHeight: { xs: "250px", lg: "auto" },
             display: "flex",
             flexDirection: "column",
-            // Center the simulator
-            alignItems: "center",
-            justifyContent: "center",
-            // Mobile: allow some padding
-            p: { xs: 1, md: 0 },
+            maxWidth: "100%",
+            // Add subtle shadow for depth
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            borderRadius: 2,
+            overflow: "hidden",
           }}
         >
           <SimulatorStageSection workspace={workspace} />

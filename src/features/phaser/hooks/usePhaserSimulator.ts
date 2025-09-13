@@ -53,8 +53,7 @@ export function usePhaserSimulator(
 
   // Default configuration
   const defaultConfig: PhaserConfig = {
-    url:
-      import.meta.env.VITE_PHASER_URL || "https://phaser-map-three.vercel.app",
+    url: import.meta.env.VITE_PHASER_URL || "http://localhost:5174",
     width: 800,
     height: 600,
     allowFullscreen: true,
@@ -94,7 +93,7 @@ export function usePhaserSimulator(
       setGameState((prev) =>
         prev ? { ...prev, programStatus: "completed" } : null
       );
-      
+
       // Handle lesson progress if callback provided
       if (onVictoryProgress) {
         try {
@@ -104,7 +103,7 @@ export function usePhaserSimulator(
           // Continue with victory modal even if progress handling fails
         }
       }
-      
+
       showVictoryModal(data);
     },
     [showVictoryModal, onVictoryProgress]
