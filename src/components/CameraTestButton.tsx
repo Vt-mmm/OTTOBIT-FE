@@ -18,6 +18,7 @@ import {
   Stack,
 } from "@mui/material";
 import { CameraAlt as CameraIcon } from "@mui/icons-material";
+import { useNotification } from "hooks/useNotification";
 
 const CameraTestButton: React.FC = () => {
   const theme = useTheme();
@@ -36,6 +37,7 @@ const CameraTestButton: React.FC = () => {
     []
   );
   const [selectedCameraId, setSelectedCameraId] = useState<string>("");
+  const { showNotification, NotificationComponent } = useNotification();
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -56,12 +58,9 @@ const CameraTestButton: React.FC = () => {
     // Load available cameras
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
-      console.log("All devices:", devices);
-
       const videoDevices = devices.filter(
         (device) => device.kind === "videoinput"
       );
-      console.log("Video devices:", videoDevices);
 
       setAvailableCameras(videoDevices);
       if (videoDevices.length > 0) {
@@ -193,14 +192,16 @@ const CameraTestButton: React.FC = () => {
   };
 
   const handleExecute = async () => {
-    if (!capturedImage) return;
+    if (!capturedImage) {
+      showNotification("Please select an image before executing!", "error");
+      return;
+    }
 
     try {
       const file = base64ToFile(capturedImage, "captured-image.jpg");
       const formData = new FormData();
       formData.append("file", file);
 
-      console.log("Sending image to API...");
       const response = await fetch("/detect?min_thresh=0.5", {
         method: "POST",
         body: formData,
@@ -209,11 +210,37 @@ const CameraTestButton: React.FC = () => {
       if (response.ok) {
         const result = await response.json();
         console.log("Detection result:", result);
+
+        // Close dialog first
+        handleCloseCameraDialog();
+
+        // Show success notification
+        showNotification(
+          "Image analysis completed successfully! Results have been saved.",
+          "success"
+        );
       } else {
         console.error("API Error:", response.status, response.statusText);
+        showNotification(
+          "Server is experiencing issues. Please try again later.",
+          "error"
+        );
       }
     } catch (error) {
       console.error("Error calling API:", error);
+
+      // Show error notification with user-friendly message
+      if (error instanceof Error && error.message.includes("Failed to fetch")) {
+        showNotification(
+          "Unable to connect to server. Please check your network connection and try again.",
+          "error"
+        );
+      } else {
+        showNotification(
+          "An error occurred while analyzing the image. Please try again.",
+          "error"
+        );
+      }
     }
   };
 
@@ -508,6 +535,9 @@ const CameraTestButton: React.FC = () => {
           )}
         </DialogActions>
       </Dialog>
+
+      {/* Notification Component */}
+      <NotificationComponent />
     </>
   );
 };

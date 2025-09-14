@@ -39,6 +39,7 @@ import {
 } from "../../features/microbit/context/MicrobitContext";
 import { MicrobitConnectionDialog } from "../../features/microbit/components/MicrobitConnectionDialog";
 import { usePhaserContext } from "../../features/phaser/context/PhaserContext";
+import { useNotification } from "hooks/useNotification";
 
 interface TopBarSectionProps {
   activeTab?: number;
@@ -83,6 +84,7 @@ function TopBarContent({
   );
   const [selectedCameraId, setSelectedCameraId] = useState<string>("");
   const { isConnected } = useMicrobitContext();
+  const { showNotification, NotificationComponent } = useNotification();
 
   // Phaser context for running programs
   const {
@@ -103,8 +105,6 @@ function TopBarContent({
 
     try {
       // Đảm bảo Phaser thực sự sẵn sàng
-      console.log("🚀 Running program in Phaser...");
-      console.log("🔍 Phaser status:", { phaserConnected, phaserReady });
 
       if (!phaserConnected || !phaserReady) {
         console.warn("⚠️ Phaser not ready, waiting...");
@@ -121,9 +121,7 @@ function TopBarContent({
       // Thêm delay nhỏ trước khi gửi message để đảm bảo Phaser thực sự sẵn sàng
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      console.log("📤 Sending program to Phaser...");
       await runProgramFromWorkspace(workspace);
-      console.log("✅ Program sent to Phaser successfully");
     } catch (error) {
       console.error("❌ Failed to run program:", error);
       setIsRunning(false);
@@ -147,9 +145,7 @@ function TopBarContent({
 
   const handleStop = async () => {
     try {
-      console.log("🛑 Stopping program...");
       await stopProgram();
-      console.log("✅ Program stopped successfully");
     } catch (error) {
       console.error("❌ Failed to stop program:", error);
     }
@@ -158,7 +154,6 @@ function TopBarContent({
 
   const handleValidate = () => {
     // TODO: Implement validation logic
-    console.log("Validating code...");
   };
 
   const handleBluetooth = async () => {
@@ -172,17 +167,13 @@ function TopBarContent({
     // Load available cameras
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
-      console.log("All devices:", devices);
-
       const videoDevices = devices.filter(
         (device) => device.kind === "videoinput"
       );
-      console.log("Video devices:", videoDevices);
 
       setAvailableCameras(videoDevices);
       if (videoDevices.length > 0) {
         setSelectedCameraId(videoDevices[0].deviceId);
-        console.log("Selected camera:", videoDevices[0]);
       }
     } catch (error) {
       console.error("Error loading cameras:", error);
@@ -213,7 +204,6 @@ function TopBarContent({
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       setCameraStream(stream);
-      console.log("Camera started successfully");
     } catch (error: any) {
       console.error("Camera access error:", error);
 
@@ -224,7 +214,6 @@ function TopBarContent({
           audio: false,
         });
         setCameraStream(fallbackStream);
-        console.log("Camera started with fallback constraints");
       } catch (fallbackError: any) {
         setCameraError(
           fallbackError.name === "NotAllowedError"
@@ -280,8 +269,6 @@ function TopBarContent({
       setCapturedImage(imageDataUrl);
       setIsCaptured(true);
       setImageSource("camera");
-
-      console.log("Photo captured successfully!");
     } catch (error) {
       console.error("Failed to capture photo:", error);
       setCameraError("Failed to capture photo. Please try again.");
@@ -310,6 +297,7 @@ function TopBarContent({
   const handleExecute = async () => {
     if (!capturedImage) {
       console.error("No image to execute");
+      showNotification("Please select an image before executing!", "error");
       return;
     }
 
@@ -336,9 +324,38 @@ function TopBarContent({
 
       const result = await response.json();
       console.log("Detection result:", result);
-      console.log("Detection details:", JSON.stringify(result, null, 2));
+
+      // Close dialog first
+      handleCloseCameraDialog();
+
+      // Show success notification
+      showNotification(
+        "Image analysis completed successfully! Results have been saved.",
+        "success"
+      );
     } catch (error) {
       console.error("Error executing detection:", error);
+
+      // Show error notification with user-friendly message
+      if (error instanceof Error && error.message.includes("Failed to fetch")) {
+        showNotification(
+          "Unable to connect to server. Please check your network connection and try again.",
+          "error"
+        );
+      } else if (
+        error instanceof Error &&
+        error.message.includes("HTTP error")
+      ) {
+        showNotification(
+          "Server is experiencing issues. Please try again later.",
+          "error"
+        );
+      } else {
+        showNotification(
+          "An error occurred while analyzing the image. Please try again.",
+          "error"
+        );
+      }
     }
   };
 
@@ -382,10 +399,10 @@ function TopBarContent({
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       }}
     >
-      <Toolbar 
-        sx={{ 
+      <Toolbar
+        sx={{
           minHeight: { xs: "56px", sm: "64px", md: "72px" },
-          px: { xs: 1, sm: 2 }, 
+          px: { xs: 1, sm: 2 },
           gap: { xs: 1, sm: 2 },
           flexWrap: { xs: "wrap", md: "nowrap" }, // Allow wrapping on mobile
         }}
@@ -429,7 +446,7 @@ function TopBarContent({
         >
           Ottobit Studio
         </Typography>
-        
+
         {/* Short title for mobile */}
         <Typography
           variant="h6"
@@ -950,6 +967,9 @@ function TopBarContent({
           )}
         </DialogActions>
       </Dialog>
+
+      {/* Notification Component */}
+      <NotificationComponent />
     </AppBar>
   );
 }
