@@ -32,4 +32,5 @@ export const PATH_USER = {
 
 export const PATH_ADMIN = {
   dashboard: path(ROOTS_ADMIN_DASHBOARD, "/dashboard"),
+  mapDesigner: path(ROOTS_ADMIN_DASHBOARD, "/map-designer"),
 };
