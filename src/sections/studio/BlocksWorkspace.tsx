@@ -34,11 +34,13 @@ export default function BlocksWorkspace({
     ],
     conditions: [
       { kind: "block", type: "ottobit_while" },
-      { kind: "block", type: "ottobit_if" },
+      { kind: "block", type: "ottobit_if_expandable" },
       { kind: "block", type: "ottobit_variable_i" },
+      { kind: "block", type: "ottobit_number" },
     ],
-    sensors: [
-      { kind: "block", type: "ottobit_read_sensor" },
+    logic: [
+      { kind: "block", type: "ottobit_boolean" },
+      { kind: "block", type: "ottobit_logic_operation" },
       { kind: "block", type: "ottobit_comparison" },
       { kind: "block", type: "ottobit_bale_number" },
     ],
@@ -63,14 +65,19 @@ export default function BlocksWorkspace({
       // Register custom blocks using new pattern
       registerottobitBlocks();
 
-      // Initialize Blockly workspace with flyout toolbox (empty initially)
+      // Get screen size for responsive configuration
+      const screenWidth = window.innerWidth;
+      const isMobile = screenWidth < 600;
+      const isTablet = screenWidth >= 600 && screenWidth < 900;
+      
+      // Initialize Blockly workspace with responsive configuration
       const workspace = Blockly.inject(workspaceRef.current, {
         toolbox: {
           kind: "flyoutToolbox",
           contents: [], // Bắt đầu với toolbox rỗng
         },
         grid: {
-          spacing: 25,
+          spacing: isMobile ? 20 : 25, // Smaller grid on mobile
           length: 1,
           colour: "rgba(200,200,200,0.1)",
           snap: true,
@@ -78,9 +85,9 @@ export default function BlocksWorkspace({
         zoom: {
           controls: false,
           wheel: false,
-          startScale: 1.0,
-          maxScale: 1.0,
-          minScale: 1.0,
+          startScale: isMobile ? 0.8 : isTablet ? 0.9 : 1.0, // Smaller scale on mobile
+          maxScale: isMobile ? 1.2 : 1.5,
+          minScale: isMobile ? 0.6 : 0.8,
           scaleSpeed: 1.0,
         },
         move: {
@@ -141,18 +148,54 @@ export default function BlocksWorkspace({
       // Force refresh block colors để đảm bảo hiển thị đúng
       refreshBlockColors();
 
+      // Add responsive resize handler
+      const handleResize = () => {
+        const newScreenWidth = window.innerWidth;
+        
+        // Update flyout width on resize
+        const flyoutBg = document.querySelector(".blocklyFlyoutBackground") as HTMLElement;
+        if (flyoutBg) {
+          if (newScreenWidth < 600) {
+            flyoutBg.style.maxWidth = "150px";
+          } else if (newScreenWidth < 900) {
+            flyoutBg.style.maxWidth = "200px";
+          } else {
+            flyoutBg.style.maxWidth = "250px";
+          }
+        }
+        
+        // Update block sizes
+        const blocks = document.querySelectorAll(".blocklyFlyout .blocklyDraggable");
+        blocks.forEach(block => {
+          const blockEl = block as HTMLElement;
+          if (newScreenWidth < 600) {
+            blockEl.style.maxWidth = "120px";
+            blockEl.style.transform = "scale(0.7)";
+          } else if (newScreenWidth < 900) {
+            blockEl.style.maxWidth = "160px";
+            blockEl.style.transform = "scale(0.8)";
+          } else {
+            blockEl.style.maxWidth = "200px";
+            blockEl.style.transform = "scale(0.9)";
+          }
+        });
+      };
+      
+      window.addEventListener('resize', handleResize);
+
       // Thêm block "ottobit_start" vào workspace ngay khi khởi tạo
       setTimeout(() => {
         const startBlock = workspace.newBlock("ottobit_start");
         startBlock.initSvg();
         startBlock.render();
-        startBlock.moveBy(50, 50); // Đặt vị trí cách top-left 50px
+        const moveDistance = isMobile ? 30 : 50; // Smaller move distance on mobile
+        startBlock.moveBy(moveDistance, moveDistance);
 
         // Refresh colors sau khi thêm block
         refreshBlockColors();
       }, 50);
 
-      // Style workspace with pure white background
+      // Style workspace with pure white background và sửa lỗi tràn
       setTimeout(() => {
         const workspaceEl = document.querySelector(
           ".blocklyWorkspace"
@@ -160,6 +203,7 @@ export default function BlocksWorkspace({
         if (workspaceEl) {
           workspaceEl.style.backgroundColor = "#ffffff";
           workspaceEl.style.backgroundImage = "none";
+          workspaceEl.style.overflow = "hidden"; // Không cho tràn
         }
 
         const mainBackground = document.querySelector(
@@ -176,7 +220,33 @@ export default function BlocksWorkspace({
         if (flyoutBg) {
           flyoutBg.style.fill = "#ffffff";
           flyoutBg.style.fillOpacity = "1";
+          // Responsive flyout width based on screen size
+          const screenWidth = window.innerWidth;
+          if (screenWidth < 600) {
+            flyoutBg.style.maxWidth = "150px"; // Mobile
+          } else if (screenWidth < 900) {
+            flyoutBg.style.maxWidth = "200px"; // Tablet
+          } else {
+            flyoutBg.style.maxWidth = "250px"; // Desktop
+          }
         }
+
+        // Responsive blocks trong flyout
+        const blocks = document.querySelectorAll(".blocklyFlyout .blocklyDraggable");
+        blocks.forEach(block => {
+          const blockEl = block as HTMLElement;
+          const screenWidth = window.innerWidth;
+          if (screenWidth < 600) {
+            blockEl.style.maxWidth = "120px";
+            blockEl.style.transform = "scale(0.7)"; // Smaller on mobile
+          } else if (screenWidth < 900) {
+            blockEl.style.maxWidth = "160px";
+            blockEl.style.transform = "scale(0.8)"; // Medium on tablet
+          } else {
+            blockEl.style.maxWidth = "200px";
+            blockEl.style.transform = "scale(0.9)"; // Normal on desktop
+          }
+        });
       }, 500);
     }
 
@@ -188,6 +258,8 @@ export default function BlocksWorkspace({
       if (workspaceRef.current) {
         workspaceRef.current.removeEventListener("mouseup", () => {});
       }
+      // Remove resize event listener
+      window.removeEventListener('resize', () => {});
     };
   }, []);
 

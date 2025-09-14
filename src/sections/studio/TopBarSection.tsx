@@ -382,18 +382,25 @@ function TopBarContent({
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       }}
     >
-      <Toolbar sx={{ minHeight: "72px !important", px: 2, gap: 2 }}>
-        {/* Ottobit Logo */}
+      <Toolbar 
+        sx={{ 
+          minHeight: { xs: "56px", sm: "64px", md: "72px" },
+          px: { xs: 1, sm: 2 }, 
+          gap: { xs: 1, sm: 2 },
+          flexWrap: { xs: "wrap", md: "nowrap" }, // Allow wrapping on mobile
+        }}
+      >
+        {/* Ottobit Logo - Mobile Responsive */}
         <Box
           sx={{
-            width: 50,
-            height: 50,
+            width: { xs: 40, sm: 45, md: 50 },
+            height: { xs: 40, sm: 45, md: 50 },
             bgcolor: "#ffffff",
-            borderRadius: "12px",
+            borderRadius: { xs: "8px", md: "12px" },
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            mr: 2,
+            mr: { xs: 1, sm: 2 },
             p: 0.5,
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
           }}
@@ -409,23 +416,38 @@ function TopBarContent({
           />
         </Box>
 
-        {/* Project Title - Larger */}
+        {/* Project Title - Responsive */}
         <Typography
           variant="h5"
           sx={{
             fontWeight: 700,
             color: "#ffffff",
-            fontSize: "24px",
+            fontSize: { xs: "18px", sm: "20px", md: "24px" },
             letterSpacing: "0.5px",
+            display: { xs: "none", sm: "block" }, // Hide on very small screens
           }}
         >
           Ottobit Studio
+        </Typography>
+        
+        {/* Short title for mobile */}
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 700,
+            color: "#ffffff",
+            fontSize: "16px",
+            letterSpacing: "0.5px",
+            display: { xs: "block", sm: "none" }, // Only show on very small screens
+          }}
+        >
+          Ottobit
         </Typography>
 
         {/* Spacer to center tabs */}
         <Box sx={{ flexGrow: 1 }} />
 
-        {/* Tabs for switching views - Centered with larger icons */}
+        {/* Tabs for switching views - Hidden on mobile */}
         <Box
           sx={{
             bgcolor: "#ffffff",
@@ -433,6 +455,7 @@ function TopBarContent({
             p: 0.5,
             border: "1px solid rgba(255,255,255,0.2)",
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            display: { xs: "none", md: "block" }, // Hide on mobile and tablet
           }}
         >
           <Tabs
@@ -498,17 +521,18 @@ function TopBarContent({
         {/* Spacer to push buttons right */}
         <Box sx={{ flexGrow: 1 }} />
 
-        {/* All Action Buttons - Wrapped together with larger icons */}
+        {/* All Action Buttons - Mobile Responsive */}
         <Box
           sx={{
             bgcolor: "#ffffff",
-            borderRadius: "20px",
-            p: 0.8,
+            borderRadius: { xs: "12px", md: "20px" },
+            p: { xs: 0.5, sm: 0.6, md: 0.8 },
             border: "1px solid rgba(255,255,255,0.2)",
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
             display: "flex",
-            gap: 0.8,
+            gap: { xs: 0.5, sm: 0.6, md: 0.8 },
             alignItems: "center",
+            flexWrap: { xs: "wrap", sm: "nowrap" },
           }}
         >
           <Tooltip title={isConnected ? "Disconnect" : "Connect Bluetooth"}>
@@ -517,8 +541,8 @@ function TopBarContent({
               sx={{
                 bgcolor: isConnected ? "#3b82f6" : "#e3f2fd",
                 color: isConnected ? "white" : "#1976d2",
-                width: 48,
-                height: 48,
+                width: { xs: 36, sm: 42, md: 48 },
+                height: { xs: 36, sm: 42, md: 48 },
                 "&:hover": {
                   bgcolor: isConnected ? "#2563eb" : "#bbdefb",
                   transform: "translateY(-1px)",
@@ -537,8 +561,8 @@ function TopBarContent({
                   sx={{
                     bgcolor: "#f3e5f5",
                     color: "#7b1fa2",
-                    width: 48,
-                    height: 48,
+                    width: { xs: 36, sm: 42, md: 48 },
+                    height: { xs: 36, sm: 42, md: 48 },
                     "&:hover": {
                       bgcolor: "#e1bee7",
                       transform: "translateY(-1px)",
@@ -582,8 +606,8 @@ function TopBarContent({
                 sx={{
                   bgcolor: isRunning ? "#ef4444" : "#10b981",
                   color: "white",
-                  width: 48,
-                  height: 48,
+                  width: { xs: 36, sm: 42, md: 48 },
+                  height: { xs: 36, sm: 42, md: 48 },
                   "&:hover": {
                     bgcolor: isRunning ? "#dc2626" : "#059669",
                     transform: "translateY(-1px)",
@@ -616,8 +640,8 @@ function TopBarContent({
               sx={{
                 bgcolor: "#e8f5e8",
                 color: "#2e7d32",
-                width: 48,
-                height: 48,
+                width: { xs: 36, sm: 42, md: 48 },
+                height: { xs: 36, sm: 42, md: 48 },
                 border: "2px solid #4caf50",
                 "&:hover": {
                   bgcolor: "#4caf50",

@@ -146,9 +146,8 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
           width: "100%",
           height: "100%",
           position: "relative",
-          backgroundColor: "#f5f5f5",
-          borderRadius: 1,
           overflow: "hidden",
+          backgroundColor: "#f8f9fa", // Light background thay vì trong suốt
         }}
       >
         <iframe
@@ -160,12 +159,18 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
           allow="fullscreen"
           style={{
             border: "none",
-            borderRadius: "4px",
+            width: "100%",
+            height: "100%",
+            display: "block",
+            margin: 0,
+            padding: 0,
+            backgroundColor: "transparent",
+            borderRadius: "inherit",
           }}
           title="Phaser Robot Simulator"
         />
 
-        {/* Loading overlay */}
+        {/* Loading overlay with better styling */}
         <Box
           sx={{
             position: "absolute",
@@ -177,17 +182,30 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            backgroundColor: "rgba(248, 249, 250, 0.95)", // Match container background
             zIndex: 1,
           }}
         >
-          <CircularProgress size={40} sx={{ mb: 2 }} />
-          <Typography variant="h6" color="text.secondary">
-            Phaser Simulator
-          </Typography>
-          <Typography variant="body2" color="text.secondary" textAlign="center">
-            Đang khởi tạo kết nối...
-          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 2,
+              p: 3,
+              backgroundColor: "white",
+              borderRadius: 2,
+              boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+            }}
+          >
+            <CircularProgress size={48} sx={{ color: "#28a745" }} />
+            <Typography variant="h6" color="text.primary" fontWeight={600}>
+              🎮 Robot Simulator
+            </Typography>
+            <Typography variant="body2" color="text.secondary" textAlign="center">
+              Đang khởi tạo kết nối...
+            </Typography>
+          </Box>
         </Box>
       </Box>
     );
@@ -200,9 +218,16 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
         width: "100%",
         height: "100%",
         position: "relative",
-        backgroundColor: "#f5f5f5",
-        borderRadius: 1,
         overflow: "hidden",
+        backgroundColor: "#f8f9fa", // Match container background
+        // Add CSS to handle black bars in iframe
+        "& iframe": {
+          backgroundColor: "#f8f9fa !important",
+        },
+        // Override any internal Phaser black background
+        "& iframe canvas": {
+          backgroundColor: "transparent !important",
+        },
       }}
     >
       <iframe
@@ -214,7 +239,13 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
         allow="fullscreen"
         style={{
           border: "none",
-          borderRadius: "4px",
+          width: "100%",
+          height: "100%",
+          display: "block",
+          margin: 0,
+          padding: 0,
+          backgroundColor: "#f8f9fa", // Match container background
+          borderRadius: "inherit",
         }}
         title="Phaser Robot Simulator"
       />
@@ -231,12 +262,23 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            backgroundColor: "rgba(248, 249, 250, 0.95)", // Match container background
             zIndex: 1,
           }}
         >
-          <Box sx={{ textAlign: "center" }}>
-            <CircularProgress size={40} sx={{ mb: 2 }} />
+          <Box
+            sx={{
+              textAlign: "center",
+              p: 3,
+              backgroundColor: "white",
+              borderRadius: 2,
+              boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+            }}
+          >
+            <CircularProgress size={48} sx={{ mb: 2, color: "#28a745" }} />
+            <Typography variant="h6" color="text.primary" fontWeight={600}>
+              🎮 Robot Simulator
+            </Typography>
             <Typography variant="body2" color="text.secondary">
               Đang tải Phaser simulator...
             </Typography>

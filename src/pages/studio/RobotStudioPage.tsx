@@ -155,7 +155,15 @@ const StudioContent = ({ selectedLevel }: { selectedLevel: LevelData }) => {
         height: "100vh",
         display: "flex",
         flexDirection: "column",
-        bgcolor: "#ffffff", // Pure white background
+        bgcolor: "#e9ecef", // Light gray background for the main container
+        m: 0,
+        p: 0,
+        boxSizing: "border-box",
+        // Mobile-specific adjustments
+        "@media (max-width: 900px)": {
+          height: "100vh",
+          overflow: "hidden", // Prevent page scrolling on mobile
+        },
       }}
     >
       {/* Top Bar - Fixed height */}
@@ -165,29 +173,63 @@ const StudioContent = ({ selectedLevel }: { selectedLevel: LevelData }) => {
         workspace={workspace}
       />
 
-      {/* Main Content Area - Split into 2 columns */}
+      {/* Main Content Area - Enhanced Responsive Layout */}
       <Box
         sx={{
           flex: 1,
-          display: "grid",
-          gridTemplateColumns: "900px 1fr", // Thu hẹp cột trái để workspace không quá rộng
-          gap: 2,
-          pl: 0,
-          pr: 2,
-          pt: 0,
-          pb: 2,
+          display: "flex",
+          flexDirection: { xs: "column", lg: "row" }, // Stack on mobile/tablet, side-by-side on large screens
+          gap: { xs: 1, md: 2 }, // Small gaps for visual separation
+          p: { xs: 1, md: 2 }, // Padding around the main content
           overflow: "hidden",
+          minHeight: 0,
+          height: "100%",
+          maxWidth: "100vw",
+          backgroundColor: "#e9ecef", // Match container background
         }}
       >
-        {/* Left Panel - Content based on active tab */}
-        <LeftPanelSection
-          activeTab={activeTab}
-          workspace={workspace}
-          onWorkspaceChange={setWorkspace}
-        />
+        {/* Left Panel - Workspace Area */}
+        <Box
+          sx={{
+            // Mobile: take available space but don't overflow
+            flex: { xs: "1 1 0%", lg: "0 0 auto" },
+            width: { xs: "100%", lg: "600px", xl: "720px" }, // Increased width for larger workspace
+            height: { xs: "50vh", sm: "55vh", md: "60vh", lg: "100%" },
+            minHeight: { xs: "300px", lg: "auto" },
+            maxHeight: { xs: "50vh", lg: "none" },
+            display: "flex",
+            flexDirection: "column",
+            maxWidth: "100%",
+            // Add subtle shadow for depth
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            borderRadius: 2,
+            overflow: "hidden",
+          }}
+        >
+          <LeftPanelSection
+            activeTab={activeTab}
+            workspace={workspace}
+            onWorkspaceChange={setWorkspace}
+          />
+        </Box>
 
         {/* Right Panel - Robot Simulator */}
-        <Box sx={{ position: "relative" }}>
+        <Box 
+          sx={{ 
+            position: "relative",
+            flex: { xs: "1 1 0%", lg: 1 },
+            width: "100%",
+            height: { xs: "50vh", sm: "45vh", md: "40vh", lg: "100%" },
+            minHeight: { xs: "250px", lg: "auto" },
+            display: "flex",
+            flexDirection: "column",
+            maxWidth: "100%",
+            // Add subtle shadow for depth
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            borderRadius: 2,
+            overflow: "hidden",
+          }}
+        >
           <SimulatorStageSection workspace={workspace} />
 
           {/* Loading Overlay - Hide menu flash during map load */}

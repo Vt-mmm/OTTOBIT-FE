@@ -1,2 +1,2 @@
-import { Sidebar } from './Sidebar';
-export default Sidebar; 
+export { Sidebar } from './Sidebar';
+export { useConfigSidebar } from './useConfigSidebar';

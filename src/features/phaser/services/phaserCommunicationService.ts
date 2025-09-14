@@ -13,7 +13,7 @@ export class PhaserCommunicationService {
       allowedOrigins: [
         "http://localhost:5173",
         "https://phaser-map-three.vercel.app", // Phaser dev server
-        "https://phaser-map-three.vercel.app",
+        "https://phaser-map-three.vercel.app/", // With trailing slash
         "https://your-domain.com",
       ],
       timeout: 5000,
