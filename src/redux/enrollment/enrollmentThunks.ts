@@ -1,0 +1,205 @@
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { AxiosError } from "axios";
+import { axiosClient } from "axiosClient/axiosClient";
+import { ROUTES_API_ENROLLMENT } from "constants/routesApiKeys";
+import {
+  EnrollmentResult,
+  EnrollmentsResponse,
+  CreateEnrollmentRequest,
+  GetEnrollmentsRequest,
+  GetMyEnrollmentsRequest,
+} from "common/@types/enrollment";
+
+// API Response wrapper interface
+interface ApiResponse<T> {
+  message: string;
+  data: T;
+  errors?: string[] | null;
+  errorCode?: string | null;
+  timestamp?: string;
+}
+
+interface ErrorResponse {
+  message: string;
+  errors?: string[];
+}
+
+// Helper function for API calls with retry logic
+async function callApiWithRetry<T>(
+  apiCall: () => Promise<T>,
+  maxRetries = 2
+): Promise<T> {
+  let lastError;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      if (attempt > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+      }
+      return await apiCall();
+    } catch (error) {
+      lastError = error;
+      const axiosError = error as AxiosError;
+      if (axiosError.response?.status === 401) {
+        break;
+      }
+    }
+  }
+  throw lastError;
+}
+
+// Get my enrollments (current user's enrollments)
+export const getMyEnrollmentsThunk = createAsyncThunk<
+  EnrollmentsResponse,
+  GetMyEnrollmentsRequest,
+  { rejectValue: string }
+>("enrollment/getMyEnrollments", async (request, { rejectWithValue }) => {
+  try {
+    const response = await callApiWithRetry(() =>
+      axiosClient.get<ApiResponse<EnrollmentsResponse>>(
+        ROUTES_API_ENROLLMENT.MY_ENROLLMENTS,
+        {
+          params: request,
+        }
+      )
+    );
+
+    if (response.data.errors || response.data.errorCode) {
+      throw new Error(response.data.message || "Failed to fetch enrollments");
+    }
+
+    if (!response.data.data) {
+      throw new Error("No enrollments data received");
+    }
+
+    return response.data.data;
+  } catch (error: any) {
+    const err = error as AxiosError<ErrorResponse>;
+    return rejectWithValue(
+      err.response?.data?.message || "Failed to fetch my enrollments"
+    );
+  }
+});
+
+// Get enrollments with pagination (Admin)
+export const getEnrollmentsThunk = createAsyncThunk<
+  EnrollmentsResponse,
+  GetEnrollmentsRequest,
+  { rejectValue: string }
+>("enrollment/getAll", async (request, { rejectWithValue }) => {
+  try {
+    const response = await callApiWithRetry(() =>
+      axiosClient.get<ApiResponse<EnrollmentsResponse>>(
+        ROUTES_API_ENROLLMENT.GET_ALL,
+        {
+          params: request,
+        }
+      )
+    );
+
+    if (response.data.errors || response.data.errorCode) {
+      throw new Error(response.data.message || "Failed to fetch enrollments");
+    }
+
+    if (!response.data.data) {
+      throw new Error("No enrollments data received");
+    }
+
+    return response.data.data;
+  } catch (error: any) {
+    const err = error as AxiosError<ErrorResponse>;
+    return rejectWithValue(
+      err.response?.data?.message || "Failed to fetch enrollments"
+    );
+  }
+});
+
+// Get enrollment by ID
+export const getEnrollmentByIdThunk = createAsyncThunk<
+  EnrollmentResult,
+  string,
+  { rejectValue: string }
+>("enrollment/getById", async (id, { rejectWithValue }) => {
+  try {
+    const response = await callApiWithRetry(() =>
+      axiosClient.get<ApiResponse<EnrollmentResult>>(
+        ROUTES_API_ENROLLMENT.GET_BY_ID(id)
+      )
+    );
+
+    if (response.data.errors || response.data.errorCode) {
+      throw new Error(response.data.message || "Failed to fetch enrollment");
+    }
+
+    if (!response.data.data) {
+      throw new Error("No enrollment data received");
+    }
+
+    return response.data.data;
+  } catch (error: any) {
+    const err = error as AxiosError<ErrorResponse>;
+    return rejectWithValue(
+      err.response?.data?.message || "Failed to fetch enrollment"
+    );
+  }
+});
+
+// Create enrollment (enroll in course)
+export const createEnrollmentThunk = createAsyncThunk<
+  EnrollmentResult,
+  CreateEnrollmentRequest,
+  { rejectValue: string }
+>("enrollment/create", async (enrollmentData, { rejectWithValue }) => {
+  try {
+    const response = await callApiWithRetry(() =>
+      axiosClient.post<ApiResponse<EnrollmentResult>>(
+        ROUTES_API_ENROLLMENT.CREATE,
+        enrollmentData
+      )
+    );
+
+    if (response.data.errors || response.data.errorCode) {
+      throw new Error(response.data.message || "Failed to create enrollment");
+    }
+
+    if (!response.data.data) {
+      throw new Error("No enrollment data received");
+    }
+
+    return response.data.data;
+  } catch (error: any) {
+    const err = error as AxiosError<ErrorResponse>;
+    return rejectWithValue(
+      err.response?.data?.message || "Failed to enroll in course"
+    );
+  }
+});
+
+// Complete enrollment (mark as finished)
+export const completeEnrollmentThunk = createAsyncThunk<
+  EnrollmentResult,
+  string,
+  { rejectValue: string }
+>("enrollment/complete", async (id, { rejectWithValue }) => {
+  try {
+    const response = await callApiWithRetry(() =>
+      axiosClient.post<ApiResponse<EnrollmentResult>>(
+        ROUTES_API_ENROLLMENT.COMPLETE(id)
+      )
+    );
+
+    if (response.data.errors || response.data.errorCode) {
+      throw new Error(response.data.message || "Failed to complete enrollment");
+    }
+
+    if (!response.data.data) {
+      throw new Error("No enrollment data received");
+    }
+
+    return response.data.data;
+  } catch (error: any) {
+    const err = error as AxiosError<ErrorResponse>;
+    return rejectWithValue(
+      err.response?.data?.message || "Failed to complete enrollment"
+    );
+  }
+});

@@ -49,8 +49,8 @@ export function getIsometricMatrix(angle: number = 30): {
  * Get SVG transform for isometric projection
  */
 export function getSVGIsometricTransform(
-  width: number,
-  height: number,
+  _width: number,
+  _height: number,
   angle: number = 30
 ): string {
   const matrix = getIsometricMatrix(angle);
@@ -82,14 +82,14 @@ export function orthogonalToIsometric(
  */
 export function getIsometric3DStyle(
   baseColor: string,
-  depth: number = 16
+  _depth: number = 16
 ): {
   top: string;
   left: string;
   right: string;
 } {
   // Darken color for sides
-  const darkenColor = (color: string, amount: number) => {
+  const darkenColor = (color: string, _amount: number) => {
     // Simple darkening - in production use a proper color library
     return color;
   };
