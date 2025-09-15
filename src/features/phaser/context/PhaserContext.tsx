@@ -131,6 +131,33 @@ export function PhaserProvider({ children, config }: PhaserProviderProps) {
     }
   }, []); // Only run once on mount
   
+  // Auto-fetch completed maps on mount, with proper error handling
+  useEffect(() => {
+    let isMounted = true;
+    
+    const fetchInitialCompletedMaps = async () => {
+      // Only fetch if we don't have data and we're not already loading
+      if (lessonProgress.completedMapIds.length === 0 && 
+          !lessonProgress.isLoading && 
+          !lessonProgress.hasError) {
+        try {
+          await lessonProgress.fetchCompletedMaps();
+        } catch (error) {
+          // Silently handle errors - 401 will be handled by auth interceptors
+          // Don't retry to avoid infinite loops
+        }
+      }
+    };
+    
+    if (isMounted) {
+      fetchInitialCompletedMaps();
+    }
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Only run once on mount
+  
   // Victory progress handler
   const handleVictoryProgress = async (victoryData: VictoryData) => {
     let currentMapData = mapData.currentMap.mapData;

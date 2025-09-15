@@ -6,6 +6,8 @@ import { movementBlocks } from "./ottobit_movement";
 import { controlBlocks } from "./ottobit_control";
 import { sensorBlocks } from "./ottobit_sensors";
 import { actionBlocks } from "./ottobit_actions";
+import { functionBlocks } from "./ottobit_functions";
+import { ottobit_function_def, ottobit_function_call } from "./blocks/functionBlocks";
 
 
 // Import generators to register them automatically
@@ -36,6 +38,7 @@ export function registerottobitBlocks(): void {
     controlBlocks,
     sensorBlocks,
     actionBlocks,
+    functionBlocks,
   ];
 
   blockModules.forEach((blockModule) => {
@@ -48,6 +51,10 @@ export function registerottobitBlocks(): void {
       };
     });
   });
+
+  // Register custom function blocks
+  Blockly.Blocks['ottobit_function_def'] = ottobit_function_def;
+  Blockly.Blocks['ottobit_function_call'] = ottobit_function_call;
 
   // Blocks registered successfully
   
@@ -82,10 +89,13 @@ export const BLOCK_TYPES = {
   ottobit_variable_i: "ottobit_variable_i",
   ottobit_logic_compare: "ottobit_logic_compare",
   ottobit_number: "ottobit_number",
+  ottobit_condition: "ottobit_condition",
+  ottobit_boolean_equals: "ottobit_boolean_equals",
 
   // Logic blocks (cập nhật - đã thu gọn)
   ottobit_boolean: "ottobit_boolean",
   ottobit_logic_operation: "ottobit_logic_operation",
+
 
   // Sensors (cập nhật)
   ottobit_read_sensor: "ottobit_read_sensor",
@@ -107,6 +117,15 @@ export const BLOCK_TYPES = {
 
   // Sensors (additional)
   ottobit_bale_number: "ottobit_bale_number",
+  
+  // Battery color checks
+  ottobit_is_green: "ottobit_is_green",
+  ottobit_is_red: "ottobit_is_red", 
+  ottobit_is_yellow: "ottobit_is_yellow",
+  
+  // Function blocks (sử dụng custom blocks)
+  ottobit_function_def: "ottobit_function_def",
+  ottobit_function_call: "ottobit_function_call",
 } as const;
 
 export type BlockType = keyof typeof BLOCK_TYPES;

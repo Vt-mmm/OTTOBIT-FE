@@ -11,8 +11,9 @@ export class PhaserCommunicationService {
   constructor(config: Partial<CommunicationConfig> = {}) {
     this.config = {
       allowedOrigins: [
-        "http://localhost:5173",
-        "https://phaser-map-three.vercel.app", // Phaser dev server
+        "http://localhost:5173", // Frontend dev server
+        "http://localhost:5174", // Phaser map dev server
+        "https://phaser-map-three.vercel.app", // Phaser production server
         "https://phaser-map-three.vercel.app/", // With trailing slash
         "https://your-domain.com",
       ],
@@ -167,13 +168,31 @@ export class PhaserCommunicationService {
   }
 
   /**
-   * Load map in Phaser
+   * Load map in Phaser using START_MAP
    */
-  async loadMap(mapKey: string): Promise<void> {
+  async loadMap(mapKey: string, mapData?: any, challengeData?: any): Promise<void> {
     await this.sendMessage({
       source: "parent-website",
-      type: "LOAD_MAP",
-      data: { mapKey },
+      type: "START_MAP",
+      data: { 
+        mapKey,
+        mapJson: mapData,
+        challengeJson: challengeData
+      },
+    });
+  }
+  
+  /**
+   * Load map with full JSON data
+   */
+  async loadMapWithData(mapJson: any, challengeJson?: any): Promise<void> {
+    await this.sendMessage({
+      source: "parent-website",
+      type: "LOAD_MAP_AND_CHALLENGE",
+      data: { 
+        mapJson,
+        challengeJson
+      },
     });
   }
 

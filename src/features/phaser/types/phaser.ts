@@ -8,6 +8,7 @@ export interface PhaserMessage {
     | "START_MAP"
     | "LOAD_MAP"
     | "LOAD_LEVEL"
+    | "LOAD_MAP_AND_CHALLENGE"
     | "RUN_PROGRAM"
     | "GET_STATUS"
     | "PAUSE_PROGRAM"
@@ -17,6 +18,8 @@ export interface PhaserMessage {
     levelId?: string;
     metadata?: any;
     program?: ProgramData;
+    mapJson?: any;
+    challengeJson?: any;
   };
 }
 
