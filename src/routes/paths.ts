@@ -28,6 +28,7 @@ export const PATH_USER = {
   homepage: path(ROOTS_USER, "/homepage"),
   studio: "/studio",
   profile: path(ROOTS_USER, "/profile"),
+  studentProfile: path(ROOTS_USER, "/student-profile"),
 };
 
 export const PATH_ADMIN = {

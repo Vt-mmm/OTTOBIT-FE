@@ -9,7 +9,7 @@ import {
 import { useState, useRef, useEffect } from "react";
 import { MapCell } from "common/models";
 import { MAP_ASSETS } from "./mapAssets.config";
-import { THEME_COLORS, GRID_CONFIG, EMPTY_CELL_STYLE } from "./theme.config";
+import { THEME_COLORS, GRID_CONFIG } from "./theme.config";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import SaveIcon from "@mui/icons-material/Save";
 import RefreshIcon from "@mui/icons-material/Refresh";

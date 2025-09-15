@@ -514,6 +514,25 @@ const Header: React.FC = () => {
                 </MenuItem>
 
                 <MenuItem
+                  onClick={() => {
+                    handleProfileMenuClose();
+                    navigate(PATH_USER.studentProfile);
+                  }}
+                  sx={{
+                    borderRadius: 2,
+                    mx: 1,
+                    "&:hover": {
+                      bgcolor: alpha("#8BC34A", 0.1),
+                    },
+                  }}
+                >
+                  <SchoolIcon
+                    sx={{ mr: 1.5, color: "#2E7D32", fontSize: 20 }}
+                  />
+                  Hồ sơ học viên
+                </MenuItem>
+
+                <MenuItem
                   onClick={() => navigate(PATH_USER.homepage)}
                   sx={{
                     borderRadius: 2,

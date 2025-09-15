@@ -1,5 +1,5 @@
 import { useState, ReactNode } from "react";
-import { Box, useTheme, useMediaQuery } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
 import { Sidebar } from "layout/sidebar";
 import AdminHeader from "layout/components/header/AdminHeader";
 
@@ -9,7 +9,6 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up("lg"));
   const [openNav, setOpenNav] = useState(false);
 
   return (

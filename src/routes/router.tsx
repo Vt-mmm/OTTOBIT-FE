@@ -33,6 +33,7 @@ const ResendEmailConfirmationPage = lazy(
 const SharedHomePage = lazy(() => import("pages/user/Homepage"));
 const RobotStudioPage = lazy(() => import("pages/studio/RobotStudioPage"));
 const UserProfilePage = lazy(() => import("pages/user/UserProfilePage"));
+const StudentProfilePage = lazy(() => import("pages/user/StudentProfilePage"));
 // Error pages
 const Page404 = lazy(() => import("pages/error/Page404"));
 const Page500 = lazy(() => import("pages/error/Page500"));
@@ -168,6 +169,7 @@ function AppRouter() {
           {/* Các trang dành riêng cho user */}
           <ReactRoute path={PATH_USER.homepage} element={<SharedHomePage />} />
           <ReactRoute path={PATH_USER.profile} element={<UserProfilePage />} />
+          <ReactRoute path={PATH_USER.studentProfile} element={<StudentProfilePage />} />
         </ReactRoute>
 
         {/* Auth Routes */}
