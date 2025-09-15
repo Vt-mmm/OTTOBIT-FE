@@ -259,32 +259,65 @@ javascriptGenerator.forBlock["ottobit_while_compare"] = function (
 
 // ottobit_if_expandable generator - Khối IF có thể mở rộng vô hạn
 javascriptGenerator.forBlock["ottobit_if_expandable"] = function (block: any): string {
-  // Main IF condition
+  // Main IF condition - sử dụng IF0 thay vì CONDITION
   const condition =
-    javascriptGenerator.valueToCode(block, "CONDITION", Order.NONE) || "false";
-  const doStatements = javascriptGenerator.statementToCode(block, "DO");
+    javascriptGenerator.valueToCode(block, "IF0", Order.NONE) || "false";
+  const doStatements = javascriptGenerator.statementToCode(block, "DO0");
   
   let code = `if (${condition}) {\n${doStatements}}`;
   
   // Get number of ELSE IF branches from block state
   const elseifCount = block.elseifCount_ || 0;
   
-  // Add ELSE IF branches
+  // Add ELSE IF branches - kiểm tra input tồn tại
   for (let i = 1; i <= elseifCount; i++) {
-    const elseifCondition =
-      javascriptGenerator.valueToCode(block, `IF${i}`, Order.NONE) || "false";
-    const elseifStatements = javascriptGenerator.statementToCode(block, `DO${i}`);
+    const hasIfInput = block.getInput(`IF${i}`) !== null;
+    const hasDoInput = block.getInput(`DO${i}`) !== null;
     
-    code += ` else if (${elseifCondition}) {\n${elseifStatements}}`;
+    if (hasIfInput && hasDoInput) {
+      const elseifCondition =
+        javascriptGenerator.valueToCode(block, `IF${i}`, Order.NONE) || "false";
+      const elseifStatements = javascriptGenerator.statementToCode(block, `DO${i}`);
+      
+      code += ` else if (${elseifCondition}) {\n${elseifStatements}}`;
+    }
   }
   
-  // Add ELSE branch if exists
-  const elseStatements = javascriptGenerator.statementToCode(block, "ELSE");
-  if (elseStatements) {
-    code += ` else {\n${elseStatements}}`;
+  // Add ELSE branch if exists - kiểm tra input tồn tại trước
+  const hasElseInput = block.getInput("ELSE") !== null;
+  if (hasElseInput) {
+    const elseStatements = javascriptGenerator.statementToCode(block, "ELSE");
+    if (elseStatements) {
+      code += ` else {\n${elseStatements}}`;
+    }
   }
   
   return code + '\n';
+};
+
+// Boolean blocks generators
+javascriptGenerator.forBlock["ottobit_boolean"] = function (
+  block: any
+): [string, number] {
+  const value = block.getFieldValue("BOOL") || "TRUE";
+  return [value === "TRUE" ? "true" : "false", Order.ATOMIC];
+};
+
+javascriptGenerator.forBlock["ottobit_logic_operation"] = function (
+  block: any
+): [string, number] {
+  const leftValue =
+    javascriptGenerator.valueToCode(block, "LEFT", Order.LOGICAL_AND) || "false";
+  const rightValue =
+    javascriptGenerator.valueToCode(block, "RIGHT", Order.LOGICAL_AND) || "false";
+  const operator = block.getFieldValue("OP") || "AND";
+  
+  const code = operator === "AND" 
+    ? `(${leftValue}) && (${rightValue})`
+    : `(${leftValue}) || (${rightValue})`;
+  
+  const order = operator === "AND" ? Order.LOGICAL_AND : Order.LOGICAL_OR;
+  return [code, order];
 };
 
 // ottobit_if generator - chỉ IF không có ELSE
@@ -468,6 +501,64 @@ javascriptGenerator.forBlock["ottobit_comparison"] = function (
   return [code, Order.RELATIONAL];
 };
 
+// Battery color check blocks - trả về Boolean
+javascriptGenerator.forBlock["ottobit_is_green"] = function (
+  _block: any
+): [string, number] {
+  return ["isGreen()", Order.FUNCTION_CALL];
+};
+
+javascriptGenerator.forBlock["ottobit_is_red"] = function (
+  _block: any
+): [string, number] {
+  return ["isRed()", Order.FUNCTION_CALL];
+};
+
+javascriptGenerator.forBlock["ottobit_is_yellow"] = function (
+  _block: any
+): [string, number] {
+  return ["isYellow()", Order.FUNCTION_CALL];
+};
+
+// Simple condition block - chỉ chuyển tiếp giá trị Boolean
+javascriptGenerator.forBlock["ottobit_condition"] = function (
+  block: any
+): [string, number] {
+  const condition =
+    javascriptGenerator.valueToCode(block, "CONDITION", Order.NONE) || "false";
+  return [condition, Order.NONE];
+};
+
+// Boolean equals block - so sánh 2 giá trị Boolean
+javascriptGenerator.forBlock["ottobit_boolean_equals"] = function (
+  block: any
+): [string, number] {
+  const leftValue =
+    javascriptGenerator.valueToCode(block, "LEFT", Order.EQUALITY) || "false";
+  const rightValue =
+    javascriptGenerator.valueToCode(block, "RIGHT", Order.EQUALITY) || "false";
+  const code = `${leftValue} === ${rightValue}`;
+  return [code, Order.EQUALITY];
+};
+
+// === CUSTOM FUNCTION BLOCKS ===
+// Custom Function Definition Block
+javascriptGenerator.forBlock['ottobit_function_def'] = function(block: any): string {
+  const functionName = block.getFieldValue('NAME') || 'myFunction';
+  const statements = javascriptGenerator.statementToCode(block, 'STACK');
+  const code = `function ${functionName}() {\n${statements}}\n`;
+  return code;
+};
+
+// Custom Function Call Block
+javascriptGenerator.forBlock['ottobit_function_call'] = function(block: any): string {
+  const functionName = block.getFieldValue('NAME') || 'myFunction';
+  const code = `${functionName}();\n`;
+  return code;
+};
+
+// === PROCEDURES BLOCKS (không sử dụng nữa) ===
+// Đã thay thế bằng custom function blocks
 /**
  * Generate JavaScript code from workspace
  */

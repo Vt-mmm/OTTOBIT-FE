@@ -102,14 +102,14 @@ export const actionBlocks = createBlockDefinitionsFromJsonArray([
   },
   {
     type: "ottobit_take_bale",
-    message0: "%1 take bale",
+    message0: "%1 take box",
     args0: [
       {
         type: "field_image",
         src: "/pin/bale.png", // Icon kiện hàng
         width: 32,
         height: 32,
-        alt: "take bale",
+        alt: "take box",
       },
     ],
     previousStatement: null,
@@ -123,14 +123,14 @@ export const actionBlocks = createBlockDefinitionsFromJsonArray([
   },
   {
     type: "ottobit_put_bale",
-    message0: "%1 put bale",
+    message0: "%1 put box",
     args0: [
       {
         type: "field_image",
         src: "/pin/bale.png", // Icon kiện hàng
         width: 32,
         height: 32,
-        alt: "put bale",
+        alt: "put box",
       },
     ],
     previousStatement: null,

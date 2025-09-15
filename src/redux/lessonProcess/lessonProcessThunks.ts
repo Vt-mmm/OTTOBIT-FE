@@ -19,8 +19,13 @@ async function callApiWithRetry<T>(
     } catch (error) {
       lastError = error;
       const axiosError = error as AxiosError;
-      // Don't retry on 401 Unauthorized
-      if (axiosError.response?.status === 401) {
+      // Don't retry on authentication/authorization errors
+      if (axiosError.response?.status === 401 || axiosError.response?.status === 403) {
+        break;
+      }
+      // Don't retry on client errors (400-499) except network timeouts
+      const status = axiosError.response?.status;
+      if (status && status >= 400 && status < 500 && status !== 408) {
         break;
       }
     }

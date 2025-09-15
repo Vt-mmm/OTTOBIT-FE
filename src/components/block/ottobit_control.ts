@@ -236,24 +236,6 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     tooltip: "Kết hợp hai điều kiện với toán tử AND hoặc OR - layout ngang",
     helpUrl: "",
   },
-  {
-    type: "ottobit_logic_not",
-    message0: "not %1",
-    args0: [
-      {
-        type: "input_value",
-        name: "BOOL",
-        check: "Boolean",
-      },
-    ],
-    output: "Boolean",
-    deletable: true,
-    movable: true,
-    editable: true,
-    style: "ottobit_logic",
-    tooltip: "Trả về ngược lại của điều kiện",
-    helpUrl: "",
-  },
   // Variable block đơn giản
   {
     type: "ottobit_variable_i",
@@ -315,6 +297,50 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     editable: true,
     style: "ottobit_control",
     tooltip: "Một số",
+    helpUrl: "",
+  },
+  // Simple condition block - chỉ để chứa giá trị Boolean
+  {
+    type: "ottobit_condition",
+    message0: "%1",
+    args0: [
+      {
+        type: "input_value",
+        name: "CONDITION",
+        check: "Boolean",
+      },
+    ],
+    output: "Boolean",
+    deletable: true,
+    movable: true,
+    editable: true,
+    style: "ottobit_logic",
+    tooltip: "Block điều kiện đơn giản để chứa giá trị true/false hoặc kết quả kiểm tra",
+    helpUrl: "",
+  },
+  // Boolean equals block - so sánh 2 giá trị Boolean
+  {
+    type: "ottobit_boolean_equals",
+    message0: "%1 = %2",
+    args0: [
+      {
+        type: "input_value",
+        name: "LEFT",
+        check: "Boolean",
+      },
+      {
+        type: "input_value",
+        name: "RIGHT",
+        check: "Boolean",
+      },
+    ],
+    inputsInline: true,
+    output: "Boolean",
+    deletable: true,
+    movable: true,
+    editable: true,
+    style: "ottobit_control",
+    tooltip: "So sánh hai giá trị Boolean (true/false) - tương tự block = nhưng chỉ cho Boolean",
     helpUrl: "",
   },
 ]);

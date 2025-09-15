@@ -173,6 +173,9 @@ export class BlocklyToPhaserConverter {
         case "ottobit_if":
         case "ottobit_if_condition":
           return [this.convertIf(block)];
+        
+        case "ottobit_if_expandable":
+          return [this.convertIfExpandable(block)];
 
         // Function calls
         case "procedures_callnoreturn":
@@ -387,6 +390,73 @@ export class BlocklyToPhaserConverter {
   }
 
   /**
+   * Convert expandable if block (với else if và else)
+   */
+  private static convertIfExpandable(block: any): ProgramAction {
+    // Main IF condition và statement - sử dụng IF0 và DO0
+    const mainConditionInput = block.getInputTargetBlock("IF0");
+    const mainDoBlock = block.getInputTargetBlock("DO0");
+
+    const mainCondition = mainConditionInput
+      ? this.parseCondition(mainConditionInput)
+      : null;
+    const mainThenActions = mainDoBlock
+      ? this.parseBlocksToActionsFromBlock(mainDoBlock)
+      : [];
+
+    const result: any = {
+      type: "if",
+      cond: mainCondition,
+      then: mainThenActions,
+    };
+
+    // Get số lượng ELSE IF từ block state
+    const elseifCount = block.elseifCount_ || 0;
+    
+    // Nếu có else if, tạo elseIf array
+    if (elseifCount > 0) {
+      result.elseIf = [];
+      
+      for (let i = 1; i <= elseifCount; i++) {
+        // Kiểm tra input tồn tại trước khi truy cập
+        const hasIfInput = block.getInput(`IF${i}`) !== null;
+        const hasDoInput = block.getInput(`DO${i}`) !== null;
+        
+        if (hasIfInput && hasDoInput) {
+          const elseifConditionInput = block.getInputTargetBlock(`IF${i}`);
+          const elseifDoBlock = block.getInputTargetBlock(`DO${i}`);
+          
+          const elseifCondition = elseifConditionInput
+            ? this.parseCondition(elseifConditionInput)
+            : null;
+          const elseifThenActions = elseifDoBlock
+            ? this.parseBlocksToActionsFromBlock(elseifDoBlock)
+            : [];
+          
+          result.elseIf.push({
+            cond: elseifCondition,
+            then: elseifThenActions,
+          });
+        }
+      }
+    }
+
+    // Kiểm tra ELSE block - kiểm tra input tồn tại trước
+    const hasElseInput = block.getInput("ELSE") !== null;
+    if (hasElseInput) {
+      const elseDoBlock = block.getInputTargetBlock("ELSE");
+      if (elseDoBlock) {
+        const elseActions = this.parseBlocksToActionsFromBlock(elseDoBlock);
+        if (elseActions.length > 0) {
+          result.else = elseActions;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
    * Convert function call block
    */
   private static convertFunctionCall(block: any): ProgramAction {
@@ -485,6 +555,39 @@ export class BlocklyToPhaserConverter {
         return { type: "condition", function: "isRed", check: true };
       case "ottobit_is_yellow":
         return { type: "condition", function: "isYellow", check: true };
+      
+      // Boolean equals block - xử lý đặc biệt cho pin checks
+      case "ottobit_boolean_equals": {
+        const leftValue = conditionBlock.getInputTargetBlock("LEFT");
+        const rightValue = conditionBlock.getInputTargetBlock("RIGHT");
+        
+        // Kiểm tra nếu một trong hai là pin check block
+        if (leftValue && (leftValue.type === "ottobit_is_green" || leftValue.type === "ottobit_is_red" || leftValue.type === "ottobit_is_yellow")) {
+          const pinType = leftValue.type.replace("ottobit_is_", "");
+          const checkValue = this.getBooleanValue(rightValue);
+          return { type: "condition", function: `is${pinType.charAt(0).toUpperCase() + pinType.slice(1)}`, check: checkValue };
+        }
+        
+        if (rightValue && (rightValue.type === "ottobit_is_green" || rightValue.type === "ottobit_is_red" || rightValue.type === "ottobit_is_yellow")) {
+          const pinType = rightValue.type.replace("ottobit_is_", "");
+          const checkValue = this.getBooleanValue(leftValue);
+          return { type: "condition", function: `is${pinType.charAt(0).toUpperCase() + pinType.slice(1)}`, check: checkValue };
+        }
+        
+        // Fallback to normal boolean comparison
+        return {
+          type: "variableComparison",
+          variable: this.extractVariableOrValue(leftValue),
+          operator: "==",
+          value: this.extractVariableOrValue(rightValue),
+        };
+      }
+      
+      // Condition wrapper block
+      case "ottobit_condition": {
+        const conditionInput = conditionBlock.getInputTargetBlock("CONDITION");
+        return conditionInput ? this.parseCondition(conditionInput) : null;
+      }
 
       // Warehouse/Bale number condition - used in while loops
       case "ottobit_bale_number":
@@ -520,6 +623,24 @@ export class BlocklyToPhaserConverter {
         return block.getFieldValue("TEXT") || "";
       default:
         return 0;
+    }
+  }
+
+  /**
+   * Get boolean value from boolean blocks
+   */
+  private static getBooleanValue(block: any): boolean {
+    if (!block) return false;
+    
+    switch (block.type) {
+      case "ottobit_boolean":
+        const boolValue = block.getFieldValue("BOOL");
+        return boolValue === "TRUE";
+      case "logic_boolean":
+        const logicValue = block.getFieldValue("BOOL");
+        return logicValue === "TRUE";
+      default:
+        return false;
     }
   }
 

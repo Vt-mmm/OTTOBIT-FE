@@ -39,7 +39,13 @@ export function useMapLoader(
         const message: PhaserMessage = {
           source: "parent-website",
           type: "START_MAP",
-          data: { mapKey },
+          data: { 
+            mapKey,
+            // Include mapJson if available from currentMap
+            ...(currentMap?.mapData && {
+              mapJson: currentMap.mapData
+            })
+          },
         };
         await sendMessageFn(message);
         return true;
