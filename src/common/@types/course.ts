@@ -37,9 +37,9 @@ export interface GetCoursesRequest {
 export interface CourseResult extends Course {}
 
 export interface CoursesResponse {
-  data: CourseResult[];
-  pageNumber: number;
-  pageSize: number;
-  totalCount: number;
+  items: CourseResult[];  // Backend trả về 'items' thay vì 'data'
+  page: number;           // Backend trả về 'page' thay vì 'pageNumber'
+  size: number;           // Backend trả về 'size' thay vì 'pageSize'
+  total: number;          // Backend trả về 'total' thay vì 'totalCount'
   totalPages: number;
 }

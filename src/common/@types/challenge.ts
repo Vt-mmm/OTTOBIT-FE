@@ -67,9 +67,9 @@ export interface UpdateChallengeData extends UpdateChallengeRequest {}
 export interface ChallengeResult extends Challenge {}
 
 export interface ChallengesResponse {
-  data: ChallengeResult[];
-  pageNumber: number;
-  pageSize: number;
-  totalCount: number;
+  items: ChallengeResult[];  // Backend trả về 'items' thay vì 'data'
+  page: number;             // Backend trả về 'page' thay vì 'pageNumber'
+  size: number;             // Backend trả về 'size' thay vì 'pageSize'
+  total: number;            // Backend trả về 'total' thay vì 'totalCount'
   totalPages: number;
 }

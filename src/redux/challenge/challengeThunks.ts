@@ -101,6 +101,19 @@ export const getChallengeByIdThunk = createAsyncThunk<
       throw new Error("No challenge data received");
     }
 
+    // Debug: Log the complete challenge response
+    console.log('📊 Challenge API Response Debug:', {
+      challengeId: id,
+      responseStatus: response.status,
+      hasData: !!response.data.data,
+      dataKeys: Object.keys(response.data.data || {}),
+      hasMapJson: !!(response.data.data as any)?.mapJson,
+      mapJsonType: typeof (response.data.data as any)?.mapJson,
+      mapJsonLength: (response.data.data as any)?.mapJson?.length || 0,
+      mapJsonSample: (response.data.data as any)?.mapJson?.substring(0, 100) || 'N/A',
+      fullResponse: response.data
+    });
+
     return response.data.data;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;

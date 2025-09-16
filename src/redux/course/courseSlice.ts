@@ -140,9 +140,9 @@ const courseSlice = createSlice({
         state.operations.isCreating = false;
         state.operations.createError = null;
         // Add to courses list if exists
-        if (state.courses.data?.data) {
-          state.courses.data.data.unshift(action.payload);
-          state.courses.data.totalCount += 1;
+        if (state.courses.data?.items) {
+          state.courses.data.items.unshift(action.payload);
+          state.courses.data.total += 1;
         }
       })
       .addCase(createCourseThunk.rejected, (state, action) => {
@@ -163,12 +163,12 @@ const courseSlice = createSlice({
           state.currentCourse.data = action.payload;
         }
         // Update in courses list if exists
-        if (state.courses.data?.data) {
-          const index = state.courses.data.data.findIndex(
+        if (state.courses.data?.items) {
+          const index = state.courses.data.items.findIndex(
             (course) => course.id === action.payload.id
           );
           if (index !== -1) {
-            state.courses.data.data[index] = action.payload;
+            state.courses.data.items[index] = action.payload;
           }
         }
       })
@@ -186,13 +186,13 @@ const courseSlice = createSlice({
         state.operations.isDeleting = false;
         state.operations.deleteError = null;
         // Remove from courses list if exists
-        if (state.courses.data?.data) {
-          const index = state.courses.data.data.findIndex(
+        if (state.courses.data?.items) {
+          const index = state.courses.data.items.findIndex(
             (course) => course.id === action.payload
           );
           if (index !== -1) {
-            state.courses.data.data.splice(index, 1);
-            state.courses.data.totalCount -= 1;
+            state.courses.data.items.splice(index, 1);
+            state.courses.data.total -= 1;
           }
         }
         // Clear current course if same ID
@@ -214,9 +214,9 @@ const courseSlice = createSlice({
         state.operations.isRestoring = false;
         state.operations.restoreError = null;
         // Add back to courses list if exists
-        if (state.courses.data?.data) {
-          state.courses.data.data.unshift(action.payload);
-          state.courses.data.totalCount += 1;
+        if (state.courses.data?.items) {
+          state.courses.data.items.unshift(action.payload);
+          state.courses.data.total += 1;
         }
       })
       .addCase(restoreCourseThunk.rejected, (state, action) => {

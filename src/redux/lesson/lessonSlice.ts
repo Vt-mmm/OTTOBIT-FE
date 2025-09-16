@@ -128,8 +128,8 @@ const lessonSlice = createSlice({
       const { fromIndex, toIndex } = action.payload;
 
       // Reorder in course lessons
-      if (state.courseLessons.data?.data) {
-        const lessons = [...state.courseLessons.data.data];
+      if (state.courseLessons.data?.items) {
+        const lessons = [...state.courseLessons.data.items];
         const [movedLesson] = lessons.splice(fromIndex, 1);
         lessons.splice(toIndex, 0, movedLesson);
         
@@ -138,12 +138,12 @@ const lessonSlice = createSlice({
           lesson.order = index + 1;
         });
         
-        state.courseLessons.data.data = lessons;
+        state.courseLessons.data.items = lessons;
       }
 
       // Also update in main lessons list if it contains the same lessons
-      if (state.lessons.data?.data) {
-        const lessons = [...state.lessons.data.data];
+      if (state.lessons.data?.items) {
+        const lessons = [...state.lessons.data.items];
         const fromLesson = lessons[fromIndex];
         const toLesson = lessons[toIndex];
         
@@ -155,7 +155,7 @@ const lessonSlice = createSlice({
             lesson.order = index + 1;
           });
           
-          state.lessons.data.data = lessons;
+          state.lessons.data.items = lessons;
         }
       }
     },
@@ -219,16 +219,16 @@ const lessonSlice = createSlice({
         state.operations.createError = null;
         
         // Add to lessons list if exists
-        if (state.lessons.data?.data) {
-          state.lessons.data.data.unshift(action.payload);
-          state.lessons.data.totalCount += 1;
+        if (state.lessons.data?.items) {
+          state.lessons.data.items.unshift(action.payload);
+          state.lessons.data.total += 1;
         }
         
         // Add to course lessons if same course
-        if (state.courseLessons.courseId === action.payload.courseId && state.courseLessons.data?.data) {
+        if (state.courseLessons.courseId === action.payload.courseId && state.courseLessons.data?.items) {
           // Insert in correct order position
           const newLesson = action.payload;
-          const lessons = [...state.courseLessons.data.data];
+          const lessons = [...state.courseLessons.data.items];
           
           // Find correct insertion point based on order
           let insertIndex = lessons.findIndex(lesson => lesson.order > newLesson.order);
@@ -237,8 +237,8 @@ const lessonSlice = createSlice({
           }
           
           lessons.splice(insertIndex, 0, newLesson);
-          state.courseLessons.data.data = lessons;
-          state.courseLessons.data.totalCount += 1;
+          state.courseLessons.data.items = lessons;
+          state.courseLessons.data.total += 1;
         }
       })
       .addCase(createLessonThunk.rejected, (state, action) => {
@@ -261,22 +261,22 @@ const lessonSlice = createSlice({
         }
 
         // Update in lessons list
-        if (state.lessons.data?.data) {
-          const index = state.lessons.data.data.findIndex(
+        if (state.lessons.data?.items) {
+          const index = state.lessons.data.items.findIndex(
             (lesson) => lesson.id === action.payload.id
           );
           if (index !== -1) {
-            state.lessons.data.data[index] = action.payload;
+            state.lessons.data.items[index] = action.payload;
           }
         }
 
         // Update in course lessons
-        if (state.courseLessons.data?.data) {
-          const index = state.courseLessons.data.data.findIndex(
+        if (state.courseLessons.data?.items) {
+          const index = state.courseLessons.data.items.findIndex(
             (lesson) => lesson.id === action.payload.id
           );
           if (index !== -1) {
-            state.courseLessons.data.data[index] = action.payload;
+            state.courseLessons.data.items[index] = action.payload;
           }
         }
       })
@@ -302,24 +302,24 @@ const lessonSlice = createSlice({
         }
 
         // Remove from lessons list
-        if (state.lessons.data?.data) {
-          const index = state.lessons.data.data.findIndex(
+        if (state.lessons.data?.items) {
+          const index = state.lessons.data.items.findIndex(
             (lesson) => lesson.id === lessonId
           );
           if (index !== -1) {
-            state.lessons.data.data.splice(index, 1);
-            state.lessons.data.totalCount -= 1;
+            state.lessons.data.items.splice(index, 1);
+            state.lessons.data.total -= 1;
           }
         }
 
         // Remove from course lessons
-        if (state.courseLessons.data?.data) {
-          const index = state.courseLessons.data.data.findIndex(
+        if (state.courseLessons.data?.items) {
+          const index = state.courseLessons.data.items.findIndex(
             (lesson) => lesson.id === lessonId
           );
           if (index !== -1) {
-            state.courseLessons.data.data.splice(index, 1);
-            state.courseLessons.data.totalCount -= 1;
+            state.courseLessons.data.items.splice(index, 1);
+            state.courseLessons.data.total -= 1;
           }
         }
       })
@@ -338,15 +338,15 @@ const lessonSlice = createSlice({
         state.operations.restoreError = null;
         
         // Add back to lessons list if exists
-        if (state.lessons.data?.data) {
-          state.lessons.data.data.unshift(action.payload);
-          state.lessons.data.totalCount += 1;
+        if (state.lessons.data?.items) {
+          state.lessons.data.items.unshift(action.payload);
+          state.lessons.data.total += 1;
         }
         
         // Add back to course lessons if same course
-        if (state.courseLessons.courseId === action.payload.courseId && state.courseLessons.data?.data) {
-          state.courseLessons.data.data.unshift(action.payload);
-          state.courseLessons.data.totalCount += 1;
+        if (state.courseLessons.courseId === action.payload.courseId && state.courseLessons.data?.items) {
+          state.courseLessons.data.items.unshift(action.payload);
+          state.courseLessons.data.total += 1;
         }
       })
       .addCase(restoreLessonThunk.rejected, (state, action) => {

@@ -28,34 +28,24 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     defeatData,
     isDefeatModalOpen,
     hideDefeatModal,
-    // Map actions
-    loadMap,
-    // Current map
-    currentMapKey,
+    // Note: loadMap and currentMapKey are available through PhaserContext
+    // But they may not be directly exposed in the current interface
   } = usePhaserContext();
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  // Handle replay current map
+  // Handle replay current map - disabled for now
   const handleReplay = async () => {
     try {
-      const mapKeyToReload =
-        currentMapKey || gameState?.mapKey || victoryData?.mapKey;
-
-      if (mapKeyToReload) {
-        await loadMap(mapKeyToReload);
-        hideVictoryModal();
-      } else {
-        console.warn("⚠️ No current map to reload");
-
-        // Fallback: Reload iframe if no mapKey found
-        const iframe = iframeRef.current;
-        if (iframe) {
-          iframe.src = iframe.src; // Force iframe reload
-        }
-
-        hideVictoryModal();
+      console.warn("⚠️ Replay functionality disabled - need loadMap implementation");
+      
+      // Fallback: Reload iframe
+      const iframe = iframeRef.current;
+      if (iframe) {
+        iframe.src = iframe.src; // Force iframe reload
       }
+      
+      hideVictoryModal();
     } catch (error) {
       console.error("❌ Failed to reload map:", error);
       hideVictoryModal();

@@ -50,9 +50,9 @@ export interface UpdateLessonData extends UpdateLessonRequest {}
 export interface LessonResult extends Lesson {}
 
 export interface LessonsResponse {
-  data: LessonResult[];
-  pageNumber: number;
-  pageSize: number;
-  totalCount: number;
+  items: LessonResult[];  // Backend trả về 'items' thay vì 'data'
+  page: number;           // Backend trả về 'page' thay vì 'pageNumber'
+  size: number;           // Backend trả về 'size' thay vì 'pageSize'
+  total: number;          // Backend trả về 'total' thay vì 'totalCount'
   totalPages: number;
 }

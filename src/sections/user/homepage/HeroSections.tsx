@@ -71,7 +71,7 @@ const HeroSection = () => {
       <Box
         component={motion.div}
         initial={{ y: 20, opacity: 0 }}
-        animate={{ y: [0, -10, 0], opacity: 0.6 }}
+        animate={{ y: [0, -10, 0], opacity: 0.3 }}
         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         sx={{
           position: "absolute",
@@ -86,7 +86,7 @@ const HeroSection = () => {
       <Box
         component={motion.div}
         initial={{ y: 20, opacity: 0 }}
-        animate={{ y: [0, -15, 0], opacity: 0.6 }}
+        animate={{ y: [0, -15, 0], opacity: 0.3 }}
         transition={{
           duration: 4,
           repeat: Infinity,
@@ -106,7 +106,7 @@ const HeroSection = () => {
       <Box
         component={motion.div}
         initial={{ y: 20, opacity: 0 }}
-        animate={{ y: [0, -12, 0], opacity: 0.6 }}
+        animate={{ y: [0, -12, 0], opacity: 0.3 }}
         transition={{
           duration: 3.5,
           repeat: Infinity,
@@ -230,7 +230,7 @@ const HeroSection = () => {
                       width: 60,
                       height: 60,
                       borderRadius: "50%",
-                      backgroundColor: "rgba(34, 197, 94, 0.2)",
+                      backgroundColor: "rgba(34, 197, 94, 0.1)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -240,7 +240,7 @@ const HeroSection = () => {
                   >
                     <Engineering sx={{ fontSize: 28, color: "#22c55e" }} />
                   </Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: "#22c55e" }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: "#1f2937" }}>
                     Build
                   </Typography>
                   <Typography variant="body2" sx={{ color: "#374151", opacity: 0.8 }}>
@@ -255,7 +255,7 @@ const HeroSection = () => {
                       width: 60,
                       height: 60,
                       borderRadius: "50%",
-                      backgroundColor: "rgba(34, 197, 94, 0.2)",
+                      backgroundColor: "rgba(34, 197, 94, 0.1)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -265,7 +265,7 @@ const HeroSection = () => {
                   >
                     <Science sx={{ fontSize: 28, color: "#22c55e" }} />
                   </Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: "#22c55e" }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: "#1f2937" }}>
                     Learn
                   </Typography>
                   <Typography variant="body2" sx={{ color: "#374151", opacity: 0.8 }}>
@@ -280,7 +280,7 @@ const HeroSection = () => {
                       width: 60,
                       height: 60,
                       borderRadius: "50%",
-                      backgroundColor: "rgba(34, 197, 94, 0.2)",
+                      backgroundColor: "rgba(34, 197, 94, 0.1)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -290,7 +290,7 @@ const HeroSection = () => {
                   >
                     <School sx={{ fontSize: 28, color: "#22c55e" }} />
                   </Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: "#22c55e" }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: "#1f2937" }}>
                     Expandable
                   </Typography>
                   <Typography variant="body2" sx={{ color: "#374151", opacity: 0.8 }}>

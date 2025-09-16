@@ -149,10 +149,10 @@ function TopBarContent({
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       }}
     >
-      <Toolbar 
-        sx={{ 
+      <Toolbar
+        sx={{
           minHeight: { xs: "56px", sm: "64px", md: "72px" },
-          px: { xs: 1, sm: 2 }, 
+          px: { xs: 1, sm: 2 },
           gap: { xs: 1, sm: 2 },
           flexWrap: { xs: "wrap", md: "nowrap" }, // Allow wrapping on mobile
         }}
@@ -173,7 +173,7 @@ function TopBarContent({
           }}
         >
           <img
-            src="/asset/LogoOttobit.png"
+            src="/asset/OttobitLogoText.png"
             alt="Ottobit Logo"
             style={{
               width: "100%",
@@ -196,7 +196,7 @@ function TopBarContent({
         >
           Ottobit Studio
         </Typography>
-        
+
         {/* Short title for mobile */}
         <Typography
           variant="h6"

@@ -144,10 +144,10 @@ export const useChallenge = () => {
 
   return {
     // State
-    challenges: challengeState.challenges.data?.data || [],
-    totalChallenges: challengeState.challenges.data?.totalCount || 0,
-    lessonChallenges: challengeState.lessonChallenges.data?.data || [],
-    totalLessonChallenges: challengeState.lessonChallenges.data?.totalCount || 0,
+    challenges: challengeState.challenges.data?.items || [],
+    totalChallenges: challengeState.challenges.data?.total || 0,
+    lessonChallenges: challengeState.lessonChallenges.data?.items || [],
+    totalLessonChallenges: challengeState.lessonChallenges.data?.total || 0,
     currentChallenge: challengeState.currentChallenge.data,
     lastQuery: challengeState.challenges.lastQuery,
     currentLessonId: challengeState.lessonChallenges.lessonId,
