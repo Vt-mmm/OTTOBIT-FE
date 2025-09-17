@@ -41,12 +41,6 @@ const AdminLoading = () => (
 );
 
 function AdminRouter() {
-  // Temporarily bypass authentication for admin development
-  // TODO: Re-enable authentication when ready for production
-  return <Outlet />;
-
-  // Original authentication code (commented out for development)
-  /*
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [localAccessToken, setLocalAccessToken] = useState<string | null>(null);
@@ -83,7 +77,6 @@ function AdminRouter() {
     // Redirect to login instead of 403 page
     return <Navigate to={PATH_AUTH.login} state={{ from: location }} replace />;
   }
-  */
 }
 
 export default AdminRouter;
