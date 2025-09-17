@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { Box } from "@mui/material";
 import Header from "../../layout/components/header/Header";
 import TopBarSection from "sections/studio/TopBarSection";
@@ -8,52 +8,15 @@ import SimulatorStageSection from "sections/studio/SimulatorStageSection";
 import {
   PhaserProvider,
   usePhaserContext,
-  useMapData,
 } from "../../features/phaser";
-import LevelMapSelector from "../../features/phaser/components/LevelMapSelector";
-import {
-  LevelData,
-  mapKeyToLevelData,
-  levelDataToUrl,
-  saveCurrentLevel,
-  loadCurrentLevel,
-  clearSavedLevel,
-} from "../../features/phaser/utils/mapUtils";
+import { parseStudioNavigation, storeStudioNavigationData } from "../../utils/studioNavigation";
 
-// Level Selector with Initialization - has access to map data
-const LevelSelectorWithInitialization = ({
-  onLevelSelect,
-  currentLevel,
-  initializeLevel,
-  isInitialized,
+// Simple Challenge Selector - temporary implementation
+const ChallengeSelector = ({
+  onChallengeSelect,
 }: {
-  onLevelSelect: (level: LevelData) => void;
-  currentLevel?: LevelData;
-  initializeLevel: (
-    mapDataFinder: (key: string) => any,
-    urlMapKey?: string
-  ) => void;
-  isInitialized: boolean;
+  onChallengeSelect: (challengeId: string) => void;
 }) => {
-  const { findMapByKey, lessonMaps, fetchLessonMapsData } = useMapData();
-  const { mapKey } = useParams<{ mapKey?: string }>();
-
-  // Force fetch lesson maps on mount if not available
-  useEffect(() => {
-    if (!lessonMaps?.mapsByType) {
-      fetchLessonMapsData();
-    }
-  }, [lessonMaps?.mapsByType, fetchLessonMapsData]);
-
-  // Initialize level when map data becomes available
-  useEffect(() => {
-    const hasMapData = lessonMaps?.mapsByType;
-
-    if (!isInitialized && findMapByKey && hasMapData) {
-      initializeLevel(findMapByKey, mapKey);
-    }
-  }, [isInitialized, findMapByKey, lessonMaps, initializeLevel, mapKey]);
-
   return (
     <>
       <Header />
@@ -64,63 +27,79 @@ const LevelSelectorWithInitialization = ({
           flexDirection: "column",
           bgcolor: "#f5f5f5",
           pt: { xs: "70px", md: "80px" }, // Account for fixed header height
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        <LevelMapSelector
-          onLevelSelect={onLevelSelect}
-          currentLevel={currentLevel}
-        />
+        <Box sx={{ textAlign: "center", p: 4 }}>
+          <h1>Challenge Selector</h1>
+          <p>Temporary challenge selector - implementation pending</p>
+          <button 
+            onClick={() => onChallengeSelect('temp-challenge-id')}
+            style={{ 
+              padding: '12px 24px', 
+              fontSize: '16px', 
+              backgroundColor: '#1976d2', 
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Load Test Challenge
+          </button>
+        </Box>
       </Box>
     </>
   );
 };
 
 // Studio Content Component - để có thể sử dụng PhaserContext
-const StudioContent = ({ selectedLevel }: { selectedLevel: LevelData }) => {
+const StudioContent = ({ challengeId }: { challengeId: string }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [workspace, setWorkspace] = useState<any>(null);
-  const [loadingMapKey, setLoadingMapKey] = useState<string | null>(null);
-  const [loadedMapKey, setLoadedMapKey] = useState<string | null>(null);
+  const [loadingChallengeId, setLoadingChallengeId] = useState<string | null>(null);
+  const [loadedChallengeId, setLoadedChallengeId] = useState<string | null>(null);
   const [showMapLoading, setShowMapLoading] = useState(true);
-  const { loadMap, onMessage, offMessage } = usePhaserContext();
+  const { loadChallenge, onMessage, offMessage, currentChallenge } = usePhaserContext();
 
-  // Reset states when level changes
+  // Reset states when challenge changes
   useEffect(() => {
-    if (selectedLevel?.mapKey && loadedMapKey !== selectedLevel.mapKey) {
-      setLoadedMapKey(null);
+    if (challengeId && loadedChallengeId !== challengeId) {
+      setLoadedChallengeId(null);
       setShowMapLoading(true);
     }
-  }, [selectedLevel?.mapKey, loadedMapKey]);
+  }, [challengeId, loadedChallengeId]);
 
   // Reset loading state when component mounts
   useEffect(() => {
-    if (selectedLevel?.mapKey) {
+    if (challengeId) {
       setShowMapLoading(true);
     }
   }, []); // Only run on mount
 
-  // Load map when Phaser is ready and selectedLevel is available
+  // Load challenge when Phaser is ready and challengeId is available
   useEffect(() => {
-    if (!selectedLevel?.mapKey) {
+    if (!challengeId) {
       return;
     }
 
-    // Prevent duplicate loading of same map
-    if (loadingMapKey === selectedLevel.mapKey) {
+    // Prevent duplicate loading of same challenge
+    if (loadingChallengeId === challengeId) {
       return;
     }
 
-    // Skip if map already loaded
-    if (loadedMapKey === selectedLevel.mapKey) {
+    // Skip if challenge already loaded
+    if (loadedChallengeId === challengeId) {
       return;
     }
 
-    const doLoadMap = () => {
-      setLoadingMapKey(selectedLevel.mapKey);
-      loadMap(selectedLevel.mapKey)
+    const doLoadChallenge = () => {
+      setLoadingChallengeId(challengeId);
+      loadChallenge(challengeId)
         .then((result) => {
           if (result) {
-            setLoadedMapKey(selectedLevel.mapKey);
+            setLoadedChallengeId(challengeId);
             setTimeout(() => {
               setShowMapLoading(false);
             }, 200);
@@ -130,14 +109,14 @@ const StudioContent = ({ selectedLevel }: { selectedLevel: LevelData }) => {
           setShowMapLoading(false);
         })
         .finally(() => {
-          setLoadingMapKey(null);
+          setLoadingChallengeId(null);
         });
     };
 
     // Wait for READY message to ensure Phaser is fully initialized
     const handleReady = () => {
       setTimeout(() => {
-        doLoadMap();
+        doLoadChallenge();
       }, 100);
       offMessage("READY", handleReady);
     };
@@ -147,7 +126,7 @@ const StudioContent = ({ selectedLevel }: { selectedLevel: LevelData }) => {
     return () => {
       offMessage("READY", handleReady);
     };
-  }, [selectedLevel, loadMap, onMessage, offMessage]);
+  }, [challengeId, loadChallenge, onMessage, offMessage]);
 
   return (
     <Box
@@ -284,7 +263,7 @@ const StudioContent = ({ selectedLevel }: { selectedLevel: LevelData }) => {
                       mb: 0.5,
                     }}
                   >
-                    Đang tải {selectedLevel.name}
+                    Đang tải Challenge {currentChallenge?.title || challengeId}
                   </Box>
                   <Box
                     sx={{
@@ -306,95 +285,58 @@ const StudioContent = ({ selectedLevel }: { selectedLevel: LevelData }) => {
 };
 
 const RobotStudioPage = () => {
-  const { mapKey } = useParams<{ mapKey?: string }>();
-  const navigate = useNavigate();
-  const [selectedLevel, setSelectedLevel] = useState<LevelData | null>(null);
-  const [showLevelSelector, setShowLevelSelector] = useState(!mapKey);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const shouldAutoRestore = !!mapKey;
+  const { challengeId } = useParams<{ challengeId?: string }>();
+  const [searchParams] = useSearchParams();
+  const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
+  const [showChallengeSelector, setShowChallengeSelector] = useState(true);
+  // Removed unused navigationData state
+
+  // Parse navigation data from URL on mount
+  useEffect(() => {
+    const navData = parseStudioNavigation(challengeId, searchParams);
+    
+    if (navData) {
+      console.log('🚀 Studio navigation detected:', navData);
+      
+      // Store navigation data
+      storeStudioNavigationData(navData);
+      // TODO: Re-implement navigation data if needed
+      console.log('Navigation data:', navData);
+      setSelectedChallengeId(navData.challengeId);
+      setShowChallengeSelector(false);
+    } else {
+      // No navigation data, show challenge selector
+      setShowChallengeSelector(true);
+      setSelectedChallengeId(null);
+    }
+  }, [challengeId, searchParams]);
 
   // Sync React state with URL changes (for browser back/forward buttons)
   useEffect(() => {
-    // If URL has no mapKey, should show level selector
-    if (!mapKey && !showLevelSelector) {
-      setShowLevelSelector(true);
-      setSelectedLevel(null);
-      setIsInitialized(false);
+    if (challengeId && challengeId !== selectedChallengeId) {
+      setSelectedChallengeId(challengeId);
+      setShowChallengeSelector(false);
+    } else if (!challengeId && !selectedChallengeId) {
+      setShowChallengeSelector(true);
     }
-    // If URL has mapKey but we're showing selector, hide it and initialize
-    else if (mapKey && showLevelSelector) {
-      setShowLevelSelector(false);
-      setIsInitialized(false);
-    }
-    // If URL has different mapKey than current selected level
-    else if (mapKey && selectedLevel && mapKey !== selectedLevel.mapKey) {
-      setSelectedLevel(null);
-      setIsInitialized(false);
-    }
-  }, [mapKey]); // Remove showLevelSelector and selectedLevel from dependencies
+  }, [challengeId, selectedChallengeId]);
 
-  // Initialize level from URL or localStorage
-  const initializeLevel = (
-    mapDataFinder: (key: string) => any,
-    urlMapKey?: string
-  ) => {
-    if (isInitialized) {
-      return;
-    }
-
-    let levelToSet: LevelData | null = null;
-    const targetMapKey = urlMapKey || mapKey;
-
-    if (targetMapKey) {
-      const mapResult = mapDataFinder(targetMapKey);
-      if (mapResult) {
-        levelToSet = mapKeyToLevelData(targetMapKey, mapResult);
-      }
-    } else if (shouldAutoRestore) {
-      const savedLevel = loadCurrentLevel();
-      if (savedLevel?.mapKey) {
-        const mapResult = mapDataFinder(savedLevel.mapKey);
-        if (mapResult) {
-          levelToSet = mapKeyToLevelData(savedLevel.mapKey, mapResult);
-          if (levelToSet) {
-            navigate(levelDataToUrl(levelToSet), { replace: true });
-          }
-        } else {
-          clearSavedLevel();
-        }
-      }
-    }
-
-    if (levelToSet) {
-      setSelectedLevel(levelToSet);
-      setShowLevelSelector(false);
-      saveCurrentLevel(levelToSet);
-    } else {
-      setShowLevelSelector(true);
-    }
-
-    setIsInitialized(true);
-  };
-
-  const handleLevelSelect = (level: LevelData) => {
-    setSelectedLevel(level);
-    setShowLevelSelector(false);
-    saveCurrentLevel(level);
-    navigate(levelDataToUrl(level));
+  const handleChallengeSelect = (challengeIdSelected: string) => {
+    setSelectedChallengeId(challengeIdSelected);
+    setShowChallengeSelector(false);
+    // For now, don't navigate to avoid URL complications
+    // navigate(`/studio/${challengeIdSelected}`);
   };
 
   // Single PhaserProvider to prevent iframe reload issues
   return (
     <PhaserProvider>
-      {showLevelSelector || !isInitialized || !selectedLevel ? (
-        <LevelSelectorWithInitialization
-          onLevelSelect={handleLevelSelect}
-          currentLevel={selectedLevel || undefined}
-          initializeLevel={initializeLevel}
-          isInitialized={isInitialized}
+      {showChallengeSelector || !selectedChallengeId ? (
+        <ChallengeSelector
+          onChallengeSelect={handleChallengeSelect}
         />
       ) : (
-        <StudioContent selectedLevel={selectedLevel} />
+        <StudioContent challengeId={selectedChallengeId} />
       )}
     </PhaserProvider>
   );

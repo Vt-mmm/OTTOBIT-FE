@@ -26,8 +26,16 @@ export const PATH_PUBLIC = {
 
 export const PATH_USER = {
   homepage: path(ROOTS_USER, "/homepage"),
+  courses: path(ROOTS_USER, "/courses"),
+  courseDetail: path(ROOTS_USER, "/courses/:id"),
+  lessons: path(ROOTS_USER, "/lessons"),
+  lessonDetail: path(ROOTS_USER, "/lessons/:id"),
+  challenges: path(ROOTS_USER, "/challenges"),
+  challengeDetail: path(ROOTS_USER, "/challenges/:id"),
   studio: "/studio",
+  studioWithChallenge: "/studio/:challengeId",
   profile: path(ROOTS_USER, "/profile"),
+  studentProfile: path(ROOTS_USER, "/student-profile"),
 };
 
 export const PATH_ADMIN = {

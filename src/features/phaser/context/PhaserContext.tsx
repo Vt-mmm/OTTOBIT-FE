@@ -1,8 +1,7 @@
-import { createContext, useContext, useEffect, ReactNode } from "react";
+import { createContext, useContext, ReactNode } from "react";
 import { usePhaserSimulator } from "../hooks/usePhaserSimulator";
-import { useMapData } from "../hooks/useMapData";
-import { useMapLoader } from "../hooks/useMapLoader";
-import { useLessonProgress } from "../hooks/useLessonProgress";
+import { useChallengeData } from "../hooks/useChallengeData";
+import { useChallengeMapLoader } from "../hooks/useChallengeMapLoader";
 import {
   GameState,
   PhaserConfig,
@@ -10,7 +9,7 @@ import {
   VictoryData,
   ErrorData,
 } from "../types/phaser";
-import { MapType, MapResult, MapsQuery } from "../types/map";
+import { ChallengeResult, GetChallengesRequest } from "../../../common/@types/challenge";
 import { PhaserCommunicationService } from "../services/phaserCommunicationService";
 
 interface PhaserContextType {
@@ -34,21 +33,15 @@ interface PhaserContextType {
   showDefeatModal: (data: ErrorData) => void;
   hideDefeatModal: () => void;
 
-  // Current Map State
-  currentMapKey: string | null;
+  // Current Challenge State
+  currentChallengeId: string | null;
+  currentChallenge: ChallengeResult | null;
 
-  // Map State
-  currentMap: { mapKey: string | null; mapData: MapResult | null };
-  allMaps: any;
-  lessonMaps: any;
-  isLoadingMaps: boolean;
-  mapError: string | null;
-
-  // Lesson Progress State
-  completedMapIds: string[];
-  isProgressLoading: boolean;
-  progressError: string | null;
-  progressStats: any;
+  // Challenge State
+  challenges: any;
+  lessonChallenges: any;
+  isLoadingChallenges: boolean;
+  challengeError: string | null;
 
   // Configuration
   config: PhaserConfig;
@@ -64,39 +57,23 @@ interface PhaserContextType {
   getStatus: () => Promise<GameState | null>;
   clearError: () => void;
 
-  // Map Actions
-  loadMap: (mapKey: string) => Promise<MapResult | null>;
-  loadLessonMap: (
-    mapType: MapType,
-    index?: number
-  ) => Promise<MapResult | null>;
-  loadNextMap: () => Promise<MapResult | null>;
-  loadPreviousMap: () => Promise<MapResult | null>;
-  fetchLessonMaps: () => Promise<void>;
-  fetchAllMaps: (query?: MapsQuery) => Promise<void>;
-  refreshLessonMaps: () => Promise<void>;
-  clearMapError: () => void;
+  // Challenge Actions
+  loadChallenge: (challengeId: string) => Promise<ChallengeResult | null>;
+  loadChallengeByDifficulty: (difficulty: number, index?: number) => Promise<ChallengeResult | null>;
+  fetchChallenges: (params?: GetChallengesRequest) => Promise<void>;
+  fetchChallengesByLesson: (lessonId: string, pageNumber?: number, pageSize?: number) => Promise<void>;
+  clearChallengeError: () => void;
 
-  // Map Helpers
-  findMapByKey: (mapKey: string) => MapResult | null;
-  getMapsByType: (mapType: MapType) => MapResult[];
-  getLessonMapsByType: (mapType: MapType) => MapResult[];
-  getMapNavigationInfo: () => {
+  // Challenge Helpers
+  findChallengeById: (challengeId: string) => ChallengeResult | null;
+  getChallengesByDifficulty: (difficulty: number) => ChallengeResult[];
+  getMapJsonFromChallenge: (challengeId: string) => any | null;
+  getChallengeNavigationInfo: () => {
     hasNext: boolean;
     hasPrevious: boolean;
     currentIndex: number;
-    totalMaps: number;
-    mapType: MapType | null;
-  };
-
-  // Lesson Progress Actions
-  fetchCompletedMaps: () => Promise<void>;
-  markMapCompleted: (mapId: string) => Promise<void>;
-  isMapCompleted: (mapId: string) => boolean;
-  getCategoryProgress: (allMaps: MapResult[], categoryName: string) => {
-    total: number;
-    completed: number;
-    percentage: number;
+    totalChallenges: number;
+    difficulty: number | null;
   };
 
   // Communication
@@ -119,110 +96,25 @@ interface PhaserProviderProps {
 }
 
 export function PhaserProvider({ children, config }: PhaserProviderProps) {
-  const mapData = useMapData();
-  const lessonProgress = useLessonProgress();
+  const challengeData = useChallengeData();
   
-  // Auto-fetch lesson maps on mount to ensure data is available for victory progress
-  useEffect(() => {
-    if (!mapData.lessonMaps?.mapsByType && !mapData.isLoading) {
-      mapData.fetchLessonMapsData().catch(() => {
-        // Silently handle errors - authentication issues will be handled elsewhere
-      });
-    }
-  }, []); // Only run once on mount
-  
-  // Victory progress handler
-  const handleVictoryProgress = async (victoryData: VictoryData) => {
-    let currentMapData = mapData.currentMap.mapData;
-    let mapKeyToUse = victoryData.mapKey || phaserState.currentMapKey || mapData.currentMap.mapKey;
-    
-    // Last resort: check localStorage for current level
-    if (!mapKeyToUse) {
-      try {
-        const savedLevel = localStorage.getItem('studio-current-level');
-        if (savedLevel) {
-          const levelData = JSON.parse(savedLevel);
-          if (levelData?.mapKey) {
-            mapKeyToUse = levelData.mapKey;
-          }
-        }
-      } catch (error) {
-        // Silently handle localStorage errors
+  // Victory progress handler - simplified for challenges
+  const handleVictoryProgress = async (_victoryData: VictoryData) => {
+    try {
+      // For now, just log victory - can extend later for:
+      // 1. Mark challenge as completed
+      // 2. Update submission tracking  
+      // 3. Unlock next challenges
+      // Future implementation could include:
+      // - Update submission/progress API calls
+      // - Navigate to next challenge
+      // - Show completion rewards
+    } catch (error) {
       }
-    }
-    
-    // Final fallback: check URL params
-    if (!mapKeyToUse) {
-      const urlParams = window.location.pathname.match(/\/studio\/([^/]+)/);
-      if (urlParams?.[1]) {
-        mapKeyToUse = urlParams[1];
-      }
-    }
-    
-    // Ensure lesson maps are loaded BEFORE trying to find map
-    if (!mapData.lessonMaps?.mapsByType) {
-      try {
-        await mapData.fetchLessonMapsData();
-        // Wait a bit for state to update
-        await new Promise(resolve => setTimeout(resolve, 100));
-      } catch (error) {
-        return; // Exit early if can't fetch maps
-      }
-    }
-    
-    // Check if lesson maps data is actually empty
-    const hasLessonMapsData = mapData.lessonMaps?.mapsByType && 
-      Object.keys(mapData.lessonMaps.mapsByType).length > 0;
-    
-    if (!hasLessonMapsData) {
-      return; // Exit early - don't proceed without real data
-    }
-    
-    // If no currentMapData but we have a mapKey, try to find it
-    if (!currentMapData && mapKeyToUse) {
-      currentMapData = mapData.findMapByKey(mapKeyToUse);
-      
-      // If still not found, try refreshing map data
-      if (!currentMapData) {
-        try {
-          await mapData.refreshLessonMapsData();
-          await new Promise(resolve => setTimeout(resolve, 200));
-          currentMapData = mapData.findMapByKey(mapKeyToUse);
-        } catch (error) {
-          // Silently handle refresh errors
-        }
-      }
-      
-      // DON'T create mock data - this causes backend Guid validation errors
-      if (!currentMapData && mapKeyToUse) {
-        // Try one more time with a longer wait
-        try {
-          await mapData.refreshLessonMapsData();
-          // Wait longer for Redux state to update
-          await new Promise(resolve => setTimeout(resolve, 500));
-          currentMapData = mapData.findMapByKey(mapKeyToUse);
-        } catch (error) {
-          // Silently handle final attempt errors
-        }
-        
-        // If still no real map data, exit early to prevent backend error
-        if (!currentMapData) {
-          return; // Exit early - don't call handleVictoryProgress with fake data
-        }
-      }
-    }
-    
-    // Create enhanced victoryData with mapKey if missing
-    const enhancedVictoryData = {
-      ...victoryData,
-      mapKey: mapKeyToUse || victoryData.mapKey
-    };
-    
-    await lessonProgress.handleVictoryProgress(enhancedVictoryData, currentMapData || undefined);
   };
   
   const phaserState = usePhaserSimulator(config, handleVictoryProgress);
-  const mapLoader = useMapLoader(phaserState.sendMessage);
+  const challengeLoader = useChallengeMapLoader(phaserState.sendMessage, phaserState.clearError);
 
   // Combine all the state and actions
   const contextValue: PhaserContextType = {
@@ -246,23 +138,17 @@ export function PhaserProvider({ children, config }: PhaserProviderProps) {
     showDefeatModal: phaserState.showDefeatModal,
     hideDefeatModal: phaserState.hideDefeatModal,
 
-    // Current Map State
-    currentMapKey: phaserState.currentMapKey,
+    // Current Challenge State
+    currentChallengeId: challengeData.currentChallenge?.id || null,
+    currentChallenge: challengeData.currentChallenge,
 
-    // Map State
-    currentMap: mapData.currentMap,
-    allMaps: mapData.allMaps,
-    lessonMaps: mapData.lessonMaps,
-    isLoadingMaps: mapData.isLoading,
-    mapError: mapData.hasError
-      ? mapData.allMapsError || mapData.lessonMapsError
-      : mapLoader.mapLoadError,
-
-    // Lesson Progress State
-    completedMapIds: lessonProgress.completedMapIds,
-    isProgressLoading: lessonProgress.isLoading,
-    progressError: lessonProgress.errorMessage,
-    progressStats: lessonProgress.progressStats,
+    // Challenge State
+    challenges: challengeData.challenges,
+    lessonChallenges: challengeData.lessonChallenges,
+    isLoadingChallenges: challengeData.isLoading,
+    challengeError: challengeData.hasError
+      ? challengeData.challengesError || challengeData.lessonChallengesError || challengeData.currentChallengeError
+      : challengeLoader.mapLoadError,
 
     // Configuration
     config: phaserState.config,
@@ -278,40 +164,25 @@ export function PhaserProvider({ children, config }: PhaserProviderProps) {
     getStatus: phaserState.getStatus,
     clearError: phaserState.clearError,
 
-    // Map Actions
-    loadMap: mapLoader.loadMap,
-    loadLessonMap: mapLoader.loadLessonMap,
-    loadNextMap: mapLoader.loadNextMap,
-    loadPreviousMap: mapLoader.loadPreviousMap,
-    fetchLessonMaps: async () => {
-      await mapData.fetchLessonMapsData();
+    // Challenge Actions
+    loadChallenge: challengeLoader.loadChallengeMap,
+    loadChallengeByDifficulty: challengeLoader.loadChallengeByDifficulty,
+    fetchChallenges: async (params) => {
+      await challengeData.fetchChallenges(params || {});
     },
-    fetchAllMaps: async (query) => {
-      await mapData.fetchAllMapsData(query || {});
+    fetchChallengesByLesson: async (lessonId, pageNumber, pageSize) => {
+      await challengeData.fetchChallengesByLesson(lessonId, pageNumber, pageSize);
     },
-    refreshLessonMaps: async () => {
-      await mapData.refreshLessonMapsData();
-    },
-    clearMapError: () => {
-      mapData.clearErrors();
-      mapLoader.clearMapLoadError();
+    clearChallengeError: () => {
+      challengeData.clearErrors();
+      challengeLoader.clearMapLoadError();
     },
 
-    // Map Helpers
-    findMapByKey: mapData.findMapByKey,
-    getMapsByType: mapData.getMapsByType,
-    getLessonMapsByType: mapData.getLessonMapsByType,
-    getMapNavigationInfo: mapLoader.getMapNavigationInfo,
-
-    // Lesson Progress Actions
-    fetchCompletedMaps: async () => {
-      await lessonProgress.fetchCompletedMaps();
-    },
-    markMapCompleted: async (mapId: string) => {
-      await lessonProgress.markMapCompleted(mapId);
-    },
-    isMapCompleted: lessonProgress.isMapCompleted,
-    getCategoryProgress: lessonProgress.getCategoryProgress,
+    // Challenge Helpers
+    findChallengeById: challengeData.findChallengeById,
+    getChallengesByDifficulty: challengeData.getChallengesByDifficulty,
+    getMapJsonFromChallenge: challengeData.getMapJsonFromChallenge,
+    getChallengeNavigationInfo: challengeLoader.getChallengeNavigationInfo,
 
     // Communication
     sendMessage: phaserState.sendMessage,

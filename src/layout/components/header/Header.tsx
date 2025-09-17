@@ -93,8 +93,15 @@ const Header: React.FC = () => {
           isPage: true,
         },
         {
-          name: "Studio",
+          name: "Khóa học",
           icon: <SchoolIcon sx={{ mr: 1, fontSize: "1rem" }} />,
+          href: PATH_USER.courses,
+          id: "courses",
+          isPage: true,
+        },
+        {
+          name: "Studio",
+          icon: <DashboardIcon sx={{ mr: 1, fontSize: "1rem" }} />,
           href: PATH_USER.studio,
           id: "studio",
           isPage: true,
@@ -247,18 +254,18 @@ const Header: React.FC = () => {
         position="fixed"
         elevation={0}
         sx={{
-          bgcolor: "rgba(34, 197, 94, 0.98)",
+          bgcolor: "rgba(255, 255, 255, 0.95)",
           backdropFilter: "blur(15px)",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+          borderBottom: "1px solid rgba(0, 0, 0, 0.08)",
           transition: "all 0.3s ease-in-out",
           boxShadow: mobileMenuOpen
             ? "none"
-            : "0 4px 20px rgba(34, 197, 94, 0.2)",
+            : "0 2px 10px rgba(0, 0, 0, 0.08)",
         }}
       >
         <Toolbar
           sx={{
-            minHeight: { xs: "70px", md: "80px" },
+            minHeight: { xs: "56px", md: "64px" },
             width: "100%",
             maxWidth: "1600px",
             margin: "0 auto",
@@ -274,23 +281,23 @@ const Header: React.FC = () => {
             >
               <Box
                 sx={{
-                  height: { xs: "120px", sm: "150px", md: "60px" },
-                  width: { xs: "120px", sm: "150px", md: "60px" },
+                  height: { xs: "40px", sm: "44px", md: "48px" },
+                  width: { xs: "120px", sm: "140px", md: "160px" },
                   mr: { xs: 1, sm: 1.5, md: 2 },
-                  borderRadius: "12px",
                   cursor: "pointer",
                   transition: "all 0.3s ease",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   "&:hover": {
-                    transform: "translateY(-2px)",
+                    transform: "translateY(-1px)",
+                    opacity: 0.8,
                   },
                 }}
                 onClick={() => scrollToSection("home")}
               >
                 <img
-                  src="/asset/LogoOttobit.png"
+                  src="/asset/OttobitLogoText.png"
                   alt="OttoBit Logo"
                   style={{
                     width: "100%",
@@ -332,7 +339,7 @@ const Header: React.FC = () => {
                   onClick={() => scrollToSection(item.id)}
                   underline="none"
                   sx={{
-                    color: activeSection === item.id ? "#ffffff" : "#dcfce7",
+                    color: activeSection === item.id ? "#22c55e" : "#374151",
                     fontWeight: activeSection === item.id ? 600 : 500,
                     fontSize: { md: "0.95rem", lg: "1.05rem" },
                     position: "relative",
@@ -343,12 +350,12 @@ const Header: React.FC = () => {
                     borderRadius: "8px",
                     background:
                       activeSection === item.id
-                        ? "rgba(255, 255, 255, 0.15)"
+                        ? "rgba(34, 197, 94, 0.1)"
                         : "transparent",
                     transition: "all 0.3s ease",
                     "&:hover": {
-                      color: "#ffffff",
-                      background: "rgba(255, 255, 255, 0.15)",
+                      color: "#22c55e",
+                      background: "rgba(34, 197, 94, 0.1)",
                     },
                     "&::after": {
                       content: '""',
@@ -357,7 +364,7 @@ const Header: React.FC = () => {
                       height: "2px",
                       bottom: "0",
                       left: "35%",
-                      background: "#ffffff",
+                      background: "#22c55e",
                       transition: "width 0.3s ease",
                     },
                     "&:hover::after": {
@@ -514,6 +521,25 @@ const Header: React.FC = () => {
                 </MenuItem>
 
                 <MenuItem
+                  onClick={() => {
+                    handleProfileMenuClose();
+                    navigate(PATH_USER.studentProfile);
+                  }}
+                  sx={{
+                    borderRadius: 2,
+                    mx: 1,
+                    "&:hover": {
+                      bgcolor: alpha("#8BC34A", 0.1),
+                    },
+                  }}
+                >
+                  <SchoolIcon
+                    sx={{ mr: 1.5, color: "#2E7D32", fontSize: 20 }}
+                  />
+                  Hồ sơ học viên
+                </MenuItem>
+
+                <MenuItem
                   onClick={() => navigate(PATH_USER.homepage)}
                   sx={{
                     borderRadius: 2,
@@ -605,10 +631,13 @@ const Header: React.FC = () => {
             onClick={toggleMobileMenu}
             sx={{
               ml: 2,
-              color: "#000000",
+              color: "#374151",
               display: { xs: "flex", md: "none" },
               transition: "transform 0.3s ease",
               transform: mobileMenuOpen ? "rotate(180deg)" : "rotate(0deg)",
+              "&:hover": {
+                color: "#22c55e",
+              },
             }}
           >
             {mobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
@@ -624,7 +653,7 @@ const Header: React.FC = () => {
                 transition={{ duration: 0.3 }}
                 style={{
                   position: "absolute",
-                  top: "70px",
+                  top: "56px",
                   left: 0,
                   width: "100%",
                   zIndex: 1000,

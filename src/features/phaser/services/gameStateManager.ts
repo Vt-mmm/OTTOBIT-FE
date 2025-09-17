@@ -143,8 +143,7 @@ export class GameStateManager {
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.currentState));
     } catch (error) {
-      console.error("Failed to save game state:", error);
-    }
+      }
   }
 
   /**
@@ -162,7 +161,6 @@ export class GameStateManager {
         this.sessionHistory = JSON.parse(savedSessions);
       }
     } catch (error) {
-      console.error("Failed to load game state:", error);
       this.currentState = null;
       this.sessionHistory = [];
     }
@@ -178,8 +176,7 @@ export class GameStateManager {
         JSON.stringify(this.sessionHistory)
       );
     } catch (error) {
-      console.error("Failed to save session history:", error);
-    }
+      }
   }
 
   /**
@@ -220,7 +217,6 @@ export class GameStateManager {
       this.saveSessionHistory();
       return true;
     } catch (error) {
-      console.error("Failed to import game data:", error);
       return false;
     }
   }

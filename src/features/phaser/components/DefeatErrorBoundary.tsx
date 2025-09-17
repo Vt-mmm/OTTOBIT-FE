@@ -41,14 +41,9 @@ export class DefeatErrorBoundary extends React.Component<
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  componentDidCatch(_error: Error, _errorInfo: React.ErrorInfo) {
     // You can also log the error to an error reporting service
-    console.error(
-      "💥 DefeatModal Error Boundary caught an error:",
-      error,
-      errorInfo
-    );
-  }
+    }
 
   componentDidUpdate(prevProps: DefeatErrorBoundaryProps) {
     // Reset error state when modal closes

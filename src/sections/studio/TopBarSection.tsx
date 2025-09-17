@@ -97,7 +97,6 @@ function TopBarContent({
 
   const handleRun = async () => {
     if (!workspace) {
-      console.warn("No workspace provided to run program");
       return;
     }
 
@@ -107,12 +106,10 @@ function TopBarContent({
       // Đảm bảo Phaser thực sự sẵn sàng
 
       if (!phaserConnected || !phaserReady) {
-        console.warn("⚠️ Phaser not ready, waiting...");
         // Đợi một chút để Phaser sẵn sàng
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         if (!phaserConnected || !phaserReady) {
-          console.error("❌ Phaser still not ready after waiting");
           setIsRunning(false);
           return;
         }
@@ -123,7 +120,6 @@ function TopBarContent({
 
       await runProgramFromWorkspace(workspace);
     } catch (error) {
-      console.error("❌ Failed to run program:", error);
       setIsRunning(false);
       return;
     }
@@ -146,9 +142,7 @@ function TopBarContent({
   const handleStop = async () => {
     try {
       await stopProgram();
-    } catch (error) {
-      console.error("❌ Failed to stop program:", error);
-    }
+    } catch (error) {}
     setIsRunning(false);
   };
 
@@ -423,7 +417,7 @@ function TopBarContent({
           }}
         >
           <img
-            src="/asset/LogoOttobit.png"
+            src="/asset/OttobitLogoText.png"
             alt="Ottobit Logo"
             style={{
               width: "100%",

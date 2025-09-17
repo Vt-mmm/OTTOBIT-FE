@@ -62,55 +62,109 @@ export const ottobit_TOOLBOX = {
         },
       ],
     },
+      {
+        kind: "category",
+        name: "Logic",
+        colour: "#9C27B0",
+        contents: [
+          {
+            kind: "block",
+            type: "ottobit_boolean",
+          },
+          {
+            kind: "block",
+            type: "ottobit_logic_operation",
+          },
+          {
+            kind: "block",
+            type: "ottobit_logic_compare",
+          },
+          {
+            kind: "block",
+            type: "ottobit_condition",
+          },
+          {
+            kind: "block",
+            type: "ottobit_boolean_equals",
+          },
+          {
+            kind: "block",
+            type: "ottobit_bale_number",
+          },
+        ],
+      },
     {
       kind: "category",
-      name: "Logic",
-      colour: "#9C27B0",
+      name: "Sensors",
+      colour: "#FF6B35",
       contents: [
         {
           kind: "block",
-          type: "ottobit_boolean",
+          type: "ottobit_is_green",
         },
         {
           kind: "block",
-          type: "ottobit_logic_operation",
+          type: "ottobit_is_red",
         },
         {
           kind: "block",
-          type: "ottobit_logic_compare",
+          type: "ottobit_is_yellow",
         },
         {
           kind: "block",
-          type: "ottobit_bale_number",
+          type: "ottobit_read_sensor",
+        },
+        {
+          kind: "block",
+          type: "ottobit_sensor_condition",
+        },
+        {
+          kind: "block",
+          type: "ottobit_comparison",
         },
       ],
     },
-    {
-      kind: "category",
-      name: "Actions",
-      colour: "#51cf66",
-      contents: [
-        {
-          kind: "block",
-          type: "ottobit_collect_green",
-        },
-        {
-          kind: "block",
-          type: "ottobit_collect_red",
-        },
-        {
-          kind: "block",
-          type: "ottobit_collect_yellow",
-        },
-        {
-          kind: "block",
-          type: "ottobit_take_bale",
-        },
-        {
-          kind: "block",
-          type: "ottobit_put_bale",
-        },
-      ],
-    },
+      {
+        kind: "category",
+        name: "Actions",
+        colour: "#51cf66",
+        contents: [
+          {
+            kind: "block",
+            type: "ottobit_collect_green",
+          },
+          {
+            kind: "block",
+            type: "ottobit_collect_red",
+          },
+          {
+            kind: "block",
+            type: "ottobit_collect_yellow",
+          },
+          {
+            kind: "block",
+            type: "ottobit_take_bale",
+          },
+          {
+            kind: "block",
+            type: "ottobit_put_bale",
+          },
+        ],
+      },
+      {
+        kind: "category",
+        name: "Functions",
+        colour: "#40E0D0",
+        contents: [
+          {
+            kind: "block",
+            type: "ottobit_function_def",
+          },
+          {
+            kind: "block",
+            type: "ottobit_function_call",
+          },
+        ],
+      },
   ],
 };

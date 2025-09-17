@@ -53,7 +53,7 @@ export function usePhaserSimulator(
 
   // Default configuration
   const defaultConfig: PhaserConfig = {
-    url: import.meta.env.VITE_PHASER_URL || "https://phaser-map-three.vercel.app",
+    url: import.meta.env.VITE_PHASER_URL || "http://localhost:5174",
     width: 800,
     height: 600,
     allowFullscreen: true,
@@ -99,7 +99,6 @@ export function usePhaserSimulator(
         try {
           await onVictoryProgress(data);
         } catch (error) {
-          console.error("❌ Failed to handle victory progress:", error);
           // Continue with victory modal even if progress handling fails
         }
       }
@@ -115,7 +114,6 @@ export function usePhaserSimulator(
 
   const handleError = useCallback(
     (data: ErrorData) => {
-      console.error("❌ Phaser error:", data);
       setError(data.message);
       setGameState((prev) =>
         prev ? { ...prev, programStatus: "error" } : null
@@ -215,8 +213,7 @@ export function usePhaserSimulator(
       const errorMessage =
         err instanceof Error ? err.message : "Failed to connect to Phaser";
       setError(errorMessage);
-      console.error("❌ Connection error:", err);
-    } finally {
+      } finally {
       setIsLoading(false);
     }
   }, []);

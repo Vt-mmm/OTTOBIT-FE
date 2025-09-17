@@ -247,6 +247,44 @@ pythonGenerator.forBlock["ottobit_while_compare"] = function (
   return `while ${condition}:\n${statements || "    pass\n"}`;
 };
 
+// ottobit_if_expandable Python generator
+pythonGenerator.forBlock["ottobit_if_expandable"] = function (block: any): string {
+  // Main IF condition - sử dụng IF0 thay vì CONDITION
+  const condition =
+    pythonGenerator.valueToCode(block, "IF0", Order.NONE) || "False";
+  const doStatements = pythonGenerator.statementToCode(block, "DO0");
+  
+  let code = `if ${condition}:\n${doStatements || "    pass\n"}`;
+  
+  // Get number of ELSE IF branches from block state
+  const elseifCount = block.elseifCount_ || 0;
+  
+  // Add ELSE IF branches - kiểm tra input tồn tại
+  for (let i = 1; i <= elseifCount; i++) {
+    const hasIfInput = block.getInput(`IF${i}`) !== null;
+    const hasDoInput = block.getInput(`DO${i}`) !== null;
+    
+    if (hasIfInput && hasDoInput) {
+      const elseifCondition =
+        pythonGenerator.valueToCode(block, `IF${i}`, Order.NONE) || "False";
+      const elseifStatements = pythonGenerator.statementToCode(block, `DO${i}`);
+      
+      code += `elif ${elseifCondition}:\n${elseifStatements || "    pass\n"}`;
+    }
+  }
+  
+  // Add ELSE branch if exists - kiểm tra input tồn tại trước
+  const hasElseInput = block.getInput("ELSE") !== null;
+  if (hasElseInput) {
+    const elseStatements = pythonGenerator.statementToCode(block, "ELSE");
+    if (elseStatements) {
+      code += `else:\n${elseStatements}`;
+    }
+  }
+  
+  return code;
+};
+
 pythonGenerator.forBlock["ottobit_if"] = function (block: any): string {
   const condition1 =
     pythonGenerator.valueToCode(block, "CONDITION1", Order.LOGICAL_AND) ||
@@ -438,6 +476,64 @@ pythonGenerator.forBlock["ottobit_comparison"] = function (
   return [code, Order.RELATIONAL];
 };
 
+// Battery color check blocks - trả về Boolean
+pythonGenerator.forBlock["ottobit_is_green"] = function (
+  _block: any
+): [string, number] {
+  return ["is_green()", Order.FUNCTION_CALL];
+};
+
+pythonGenerator.forBlock["ottobit_is_red"] = function (
+  _block: any
+): [string, number] {
+  return ["is_red()", Order.FUNCTION_CALL];
+};
+
+pythonGenerator.forBlock["ottobit_is_yellow"] = function (
+  _block: any
+): [string, number] {
+  return ["is_yellow()", Order.FUNCTION_CALL];
+};
+
+// Simple condition block - chỉ chuyển tiếp giá trị Boolean
+pythonGenerator.forBlock["ottobit_condition"] = function (
+  block: any
+): [string, number] {
+  const condition =
+    pythonGenerator.valueToCode(block, "CONDITION", Order.NONE) || "False";
+  return [condition, Order.NONE];
+};
+
+// Boolean equals block - so sánh 2 giá trị Boolean
+pythonGenerator.forBlock["ottobit_boolean_equals"] = function (
+  block: any
+): [string, number] {
+  const leftValue =
+    pythonGenerator.valueToCode(block, "LEFT", Order.RELATIONAL) || "False";
+  const rightValue =
+    pythonGenerator.valueToCode(block, "RIGHT", Order.RELATIONAL) || "False";
+  const code = `${leftValue} == ${rightValue}`;
+  return [code, Order.RELATIONAL];
+};
+
+// === CUSTOM FUNCTION BLOCKS ===
+// Custom Function Definition Block
+pythonGenerator.forBlock['ottobit_function_def'] = function(block: any): string {
+  const functionName = block.getFieldValue('NAME') || 'my_function';
+  const statements = pythonGenerator.statementToCode(block, 'STACK');
+  const code = `def ${functionName}():\n${statements || '    pass\n'}\n`;
+  return code;
+};
+
+// Custom Function Call Block
+pythonGenerator.forBlock['ottobit_function_call'] = function(block: any): string {
+  const functionName = block.getFieldValue('NAME') || 'my_function';
+  const code = `${functionName}()\n`;
+  return code;
+};
+
+// === PROCEDURES BLOCKS (không sử dụng nữa) ===
+// Đã thay thế bằng custom function blocks
 /**
  * Generate Python code from workspace
  */
@@ -447,7 +543,6 @@ export function generatePythonCode(workspace: any): string {
   try {
     return pythonGenerator.workspaceToCode(workspace);
   } catch (error) {
-    console.error("Error generating Python code:", error);
     return "# Error generating code";
   }
 }

@@ -41,7 +41,12 @@ export default function BlocksWorkspace({
     logic: [
       { kind: "block", type: "ottobit_boolean" },
       { kind: "block", type: "ottobit_logic_operation" },
-      { kind: "block", type: "ottobit_comparison" },
+      { kind: "block", type: "ottobit_logic_compare" },
+      { kind: "block", type: "ottobit_condition" },
+      { kind: "block", type: "ottobit_boolean_equals" },
+      { kind: "block", type: "ottobit_is_green" },
+      { kind: "block", type: "ottobit_is_red" },
+      { kind: "block", type: "ottobit_is_yellow" },
       { kind: "block", type: "ottobit_bale_number" },
     ],
     actions: [
@@ -50,6 +55,10 @@ export default function BlocksWorkspace({
       { kind: "block", type: "ottobit_collect_yellow" },
       { kind: "block", type: "ottobit_take_bale" },
       { kind: "block", type: "ottobit_put_bale" },
+    ],
+    functions: [
+      { kind: "block", type: "ottobit_function_def" },
+      { kind: "block", type: "ottobit_function_call" },
     ],
   };
 

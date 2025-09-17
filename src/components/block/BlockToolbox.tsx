@@ -5,7 +5,8 @@ import {
   Loop,
   Memory,
   Build,
-  Psychology
+  Psychology,
+  Functions
 } from '@mui/icons-material';
 
 interface ToolboxCategory {
@@ -58,6 +59,13 @@ const BlockToolbox: React.FC<BlockToolboxProps> = ({ onCategorySelect }) => {
       icon: Build,
       color: '#51cf66',
       selectedColor: '#4caf50'
+    },
+    {
+      id: 'functions',
+      name: 'FUNCTIONS',
+      icon: Functions,
+      color: '#40E0D0',
+      selectedColor: '#20B2AA'
     }
   ];
 

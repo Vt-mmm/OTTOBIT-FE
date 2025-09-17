@@ -466,7 +466,7 @@ const MapDesignerPage = () => {
             <ToggleButtonGroup
               value={viewMode}
               exclusive
-              onChange={(e, newMode) => newMode && setViewMode(newMode)}
+              onChange={(_, newMode) => newMode && setViewMode(newMode)}
               aria-label="view mode"
               size="small"
             >
