@@ -9,14 +9,11 @@ import {
 import { useState, useRef, useEffect } from "react";
 import { MapCell } from "common/models";
 import { MAP_ASSETS } from "./mapAssets.config";
-import { THEME_COLORS, GRID_CONFIG, EMPTY_CELL_STYLE } from "./theme.config";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import { THEME_COLORS, GRID_CONFIG } from "./theme.config";
 import SaveIcon from "@mui/icons-material/Save";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
-import GridOnIcon from "@mui/icons-material/GridOn";
-import InfoIcon from "@mui/icons-material/Info";
 
 interface MapGridSectionProps {
   mapGrid: MapCell[][];
@@ -37,7 +34,7 @@ export default function MapGridSection({
   const MAP_VIEWPORT_HEIGHT = 700; // px - fixed map viewport height
   const [isDrawing, setIsDrawing] = useState(false);
   const [zoom, setZoom] = useState(1);
-  const [showGrid, setShowGrid] = useState(true);
+  const [showGrid] = useState(true);
   const [hoveredCell, setHoveredCell] = useState<{
     row: number;
     col: number;
