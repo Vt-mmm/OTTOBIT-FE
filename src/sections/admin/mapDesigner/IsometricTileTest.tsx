@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Box, Paper, Typography, Button, Grid } from "@mui/material";
 import { ISOMETRIC_CONFIG } from "./isometricHelpers";
 import { MAP_ASSETS } from "./mapAssets.config";
@@ -9,7 +9,7 @@ export default function IsometricTileTest() {
   // Render a single isometric tile
   const renderIsometricTile = (row: number, col: number, assetId?: string) => {
     const asset = assetId ? MAP_ASSETS.find((a) => a.id === assetId) : null;
-    
+
     // Calculate isometric position
     const x = (col - row) * (ISOMETRIC_CONFIG.tileWidth / 2);
     const y = (col + row) * (ISOMETRIC_CONFIG.tileHeight / 2);
@@ -21,13 +21,18 @@ export default function IsometricTileTest() {
     const getTileColor = () => {
       if (!asset) return "#E0E0E0";
       switch (asset.id) {
-        case "grass": return "#4CAF50";
-        case "water": return "#2196F3";
-        case "wood": return "#8D6E63";
+        case "grass":
+          return "#4CAF50";
+        case "water":
+          return "#2196F3";
+        case "wood":
+          return "#8D6E63";
         case "road_h":
         case "road_v":
-        case "crossroad": return "#616161";
-        default: return "#BDBDBD";
+        case "crossroad":
+          return "#616161";
+        default:
+          return "#BDBDBD";
       }
     };
 
@@ -37,7 +42,7 @@ export default function IsometricTileTest() {
         style={{
           position: "absolute",
           left: x + 200, // Center offset
-          top: y + 100,  // Center offset
+          top: y + 100, // Center offset
           width: ISOMETRIC_CONFIG.tileWidth,
           height: ISOMETRIC_CONFIG.tileHeight + depth,
           zIndex: row + col,
@@ -47,14 +52,22 @@ export default function IsometricTileTest() {
         <g>
           {/* Left face */}
           <polygon
-            points={`0,${halfHeight} ${halfWidth},${ISOMETRIC_CONFIG.tileHeight} ${halfWidth},${ISOMETRIC_CONFIG.tileHeight + depth} 0,${halfHeight + depth}`}
+            points={`0,${halfHeight} ${halfWidth},${
+              ISOMETRIC_CONFIG.tileHeight
+            } ${halfWidth},${ISOMETRIC_CONFIG.tileHeight + depth} 0,${
+              halfHeight + depth
+            }`}
             fill={asset ? "#2D4A3E" : "#666"}
             stroke="#333"
             strokeWidth="0.5"
           />
           {/* Right face */}
           <polygon
-            points={`${halfWidth},${ISOMETRIC_CONFIG.tileHeight} ${ISOMETRIC_CONFIG.tileWidth},${halfHeight} ${ISOMETRIC_CONFIG.tileWidth},${halfHeight + depth} ${halfWidth},${ISOMETRIC_CONFIG.tileHeight + depth}`}
+            points={`${halfWidth},${ISOMETRIC_CONFIG.tileHeight} ${
+              ISOMETRIC_CONFIG.tileWidth
+            },${halfHeight} ${ISOMETRIC_CONFIG.tileWidth},${
+              halfHeight + depth
+            } ${halfWidth},${ISOMETRIC_CONFIG.tileHeight + depth}`}
             fill={asset ? "#1E3A2F" : "#555"}
             stroke="#333"
             strokeWidth="0.5"
@@ -98,8 +111,8 @@ export default function IsometricTileTest() {
   const testTiles = [];
   for (let row = 0; row < 3; row++) {
     for (let col = 0; col < 3; col++) {
-      const assetId = (row === 1 && col === 1) ? selectedAsset : null;
-      testTiles.push(renderIsometricTile(row, col, assetId));
+      const assetId = row === 1 && col === 1 ? selectedAsset : null;
+      testTiles.push(renderIsometricTile(row, col, assetId || ""));
     }
   }
 

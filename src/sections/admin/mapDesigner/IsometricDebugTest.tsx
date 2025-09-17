@@ -1,5 +1,4 @@
-import React from "react";
-import { Box, Paper, Typography, Button } from "@mui/material";
+import { Box, Paper, Typography } from "@mui/material";
 import { ISOMETRIC_CONFIG } from "./isometricHelpers";
 import { GRID_CONFIG } from "./theme.config";
 
@@ -41,14 +40,24 @@ export default function IsometricDebugTest() {
         <g>
           {/* Left face */}
           <polygon
-            points={`0,${halfHeight} ${halfWidth},${ISOMETRIC_CONFIG.tileHeight} ${halfWidth},${ISOMETRIC_CONFIG.tileHeight + ISOMETRIC_CONFIG.tileDepth} 0,${halfHeight + ISOMETRIC_CONFIG.tileDepth}`}
+            points={`0,${halfHeight} ${halfWidth},${
+              ISOMETRIC_CONFIG.tileHeight
+            } ${halfWidth},${
+              ISOMETRIC_CONFIG.tileHeight + ISOMETRIC_CONFIG.tileDepth
+            } 0,${halfHeight + ISOMETRIC_CONFIG.tileDepth}`}
             fill="#4CAF50"
             stroke="#333"
             strokeWidth="0.5"
           />
           {/* Right face */}
           <polygon
-            points={`${halfWidth},${ISOMETRIC_CONFIG.tileHeight} ${ISOMETRIC_CONFIG.tileWidth},${halfHeight} ${ISOMETRIC_CONFIG.tileWidth},${halfHeight + ISOMETRIC_CONFIG.tileDepth} ${halfWidth},${ISOMETRIC_CONFIG.tileHeight + ISOMETRIC_CONFIG.tileDepth}`}
+            points={`${halfWidth},${ISOMETRIC_CONFIG.tileHeight} ${
+              ISOMETRIC_CONFIG.tileWidth
+            },${halfHeight} ${ISOMETRIC_CONFIG.tileWidth},${
+              halfHeight + ISOMETRIC_CONFIG.tileDepth
+            } ${halfWidth},${
+              ISOMETRIC_CONFIG.tileHeight + ISOMETRIC_CONFIG.tileDepth
+            }`}
             fill="#2E7D32"
             stroke="#333"
             strokeWidth="0.5"
@@ -109,7 +118,9 @@ export default function IsometricDebugTest() {
           bgcolor: "#f9f9f9",
         }}
       >
-        {testGrid.map((row) => row.map((cell) => renderTestTile(cell.row, cell.col)))}
+        {testGrid.map((row) =>
+          row.map((cell) => renderTestTile(cell.row, cell.col))
+        )}
       </Box>
 
       <Box sx={{ mt: 2, p: 2, bgcolor: "#e3f2fd", borderRadius: 1 }}>

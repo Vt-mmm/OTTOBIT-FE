@@ -6,8 +6,6 @@ import {
   Button,
   IconButton,
   Chip,
-  Switch,
-  FormControlLabel,
 } from "@mui/material";
 import { useNotification } from "hooks/useNotification";
 import { MapCell } from "common/models";
@@ -15,7 +13,6 @@ import { MAP_ASSETS } from "./mapAssets.config";
 import { THEME_COLORS, GRID_CONFIG } from "./theme.config";
 import {
   gridToIsometric,
-  getIsometricZIndex,
   getIsometricGridDimensions,
   ISOMETRIC_CONFIG,
 } from "./isometricHelpers";
@@ -52,11 +49,7 @@ export default function SimpleIsometricMapGrid({
     col: number;
   } | null>(null);
   // Per-cell frame corner offsets for empty cell diamonds (visual-only)
-  const [selectedCell, setSelectedCell] = useState<{
-    row: number;
-    col: number;
-  } | null>(null);
-  const [cornerOffsetsByCell, setCornerOffsetsByCell] = useState<
+  const [cornerOffsetsByCell] = useState<
     Record<string, { top: number; right: number; bottom: number; left: number }>
   >({});
   const gridRef = useRef<HTMLDivElement>(null);
@@ -64,10 +57,6 @@ export default function SimpleIsometricMapGrid({
   // Drag-to-pan state
   const [isPanning, setIsPanning] = useState(false);
   const panStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const scrollStartRef = useRef<{ left: number; top: number }>({
-    left: 0,
-    top: 0,
-  });
   const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({
     x: 0,
     y: 0,
@@ -89,7 +78,6 @@ export default function SimpleIsometricMapGrid({
       if (!targetCell || !targetCell.terrain) {
         showNotification("Place on a terrain tile first.", "warning");
         setHoveredCell({ row, col });
-        setSelectedCell({ row, col });
         return;
       }
     }
@@ -97,7 +85,6 @@ export default function SimpleIsometricMapGrid({
     setIsDrawing(true);
     onCellClick(row, col);
     setHoveredCell({ row, col });
-    setSelectedCell({ row, col });
   };
 
   const handleMouseEnter = (row: number, col: number) => {

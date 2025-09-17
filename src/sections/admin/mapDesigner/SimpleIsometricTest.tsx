@@ -1,4 +1,3 @@
-import React from "react";
 import { Box, Paper, Typography } from "@mui/material";
 
 export default function SimpleIsometricTest() {
@@ -7,7 +6,7 @@ export default function SimpleIsometricTest() {
       <Typography variant="h5" gutterBottom>
         🎯 Simple Isometric Test
       </Typography>
-      
+
       <Box
         sx={{
           position: "relative",
@@ -76,8 +75,13 @@ export default function SimpleIsometricTest() {
         </svg>
       </Box>
 
-      <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: "center" }}>
-        Nếu bạn thấy hình kim cương 3D ở trên, thì 2.5D isometric đang hoạt động!
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ mt: 2, textAlign: "center" }}
+      >
+        Nếu bạn thấy hình kim cương 3D ở trên, thì 2.5D isometric đang hoạt
+        động!
       </Typography>
     </Paper>
   );
