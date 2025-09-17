@@ -32,6 +32,8 @@ import {
   ISOMETRIC_CONFIG,
 } from "sections/admin/mapDesigner/isometricHelpers";
 import BlocksWorkspace from "sections/studio/BlocksWorkspace";
+import { axiosClient } from "axiosClient";
+import { ROUTES_API_LESSON } from "constants/routesApiKeys";
 import { BlocklyToPhaserConverter } from "../../../features/phaser/services/blocklyToPhaserConverter";
 
 interface WinConditionsSectionProps {
@@ -72,6 +74,9 @@ export default function WinConditionsSection({
   const [openSolution, setOpenSolution] = useState(false);
   const [openChallenge, setOpenChallenge] = useState(false);
   const solutionWorkspaceRef = useRef<any>(null);
+  const [lessonOptions, setLessonOptions] = useState<
+    { id: string; title: string }[]
+  >([]);
   // Challenge basic fields
   const [robotX, setRobotX] = useState<number>(0);
   const [robotY, setRobotY] = useState<number>(0);
@@ -210,6 +215,50 @@ export default function WinConditionsSection({
     setBoxTiles(boxes);
     // No warehouse anymore
   }, [openChallenge, mapGrid]);
+
+  // Fetch lessons for dropdown (value=id, label=title)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await axiosClient.get(ROUTES_API_LESSON.GET_ALL);
+        const items = res?.data?.data?.items as
+          | { id: string; title: string }[]
+          | undefined;
+        if (!cancelled && Array.isArray(items)) {
+          const options = items.map((i) => ({ id: i.id, title: i.title }));
+          setLessonOptions(options);
+          // Auto-select first lesson if none selected
+          if (
+            options.length > 0 &&
+            (!lessonId || lessonId.trim().length === 0)
+          ) {
+            onLessonIdChange(options[0].id);
+          }
+        }
+      } catch (e) {
+        // Silent fail but notify
+        try {
+          if ((window as any).Snackbar?.enqueueSnackbar) {
+            (window as any).Snackbar.enqueueSnackbar(
+              "Không tải được danh sách bài học",
+              {
+                variant: "error",
+                anchorOrigin: { vertical: "top", horizontal: "right" },
+              }
+            );
+          } else {
+            showToast("Không tải được danh sách bài học", "error");
+          }
+        } catch {
+          // no-op
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [lessonId, onLessonIdChange]);
   return (
     <Paper
       sx={{
@@ -275,23 +324,24 @@ export default function WinConditionsSection({
 
       {/* Lesson, Order, Difficulty */}
       <Box sx={{ mt: 5, display: "flex", flexDirection: "column", gap: 2 }}>
-        <FormControl fullWidth size="small">
+        <FormControl fullWidth size="small" error={!lessonId}>
           <InputLabel>Bài học (Lesson)</InputLabel>
           <Select
             label="Bài học (Lesson)"
             value={lessonId}
             onChange={(e) => onLessonIdChange(e.target.value as string)}
           >
-            {/* Dữ liệu ảo tạm thời */}
-            <MenuItem value="3fa85f64-5717-4562-b3fc-2c963f66afa6">
-              Lesson 1
-            </MenuItem>
-            <MenuItem value="7b6b7c1a-1234-4567-89ab-11c22d33e44f">
-              Lesson 2
-            </MenuItem>
-            <MenuItem value="9c9d9e9f-aaaa-bbbb-cccc-ddddeeeffff0">
-              Lesson 3
-            </MenuItem>
+            {lessonOptions.length === 0 ? (
+              <MenuItem value="" disabled>
+                Không có dữ liệu
+              </MenuItem>
+            ) : (
+              lessonOptions.map((opt) => (
+                <MenuItem key={opt.id} value={opt.id}>
+                  {opt.title}
+                </MenuItem>
+              ))
+            )}
           </Select>
         </FormControl>
 

@@ -19,6 +19,8 @@ import { GRID_CONFIG } from "sections/admin/mapDesigner/theme.config";
 import { MAP_ASSETS } from "sections/admin/mapDesigner/mapAssets.config";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import ThreeDRotationIcon from "@mui/icons-material/ThreeDRotation";
+import { axiosClient } from "axiosClient";
+import { ROUTES_API_CHALLENGE } from "constants/routesApiKeys";
 
 const MapDesignerPage = () => {
   const [selectedAsset, setSelectedAsset] = useState<string>("grass");
@@ -26,9 +28,7 @@ const MapDesignerPage = () => {
   const [mapDescription, setMapDescription] = useState<string>("");
   const [solutionJson, setSolutionJson] = useState<string | null>(null);
   const [challengeJson, setChallengeJson] = useState<string | null>(null);
-  const [lessonId, setLessonId] = useState<string>(
-    "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-  );
+  const [lessonId, setLessonId] = useState<string>("");
   const [order, setOrder] = useState<number>(1);
   const [difficulty, setDifficulty] = useState<number>(1);
   const [viewMode, setViewMode] = useState<"orthogonal" | "isometric">(
@@ -186,8 +186,24 @@ const MapDesignerPage = () => {
     setMapGrid(newGrid);
   };
 
-  const handleSaveMap = () => {
+  const handleSaveMap = async () => {
     // Validate required fields
+    if (!lessonId || lessonId.trim().length === 0) {
+      const msg = "Vui lòng chọn Bài học (Lesson) trước khi lưu";
+      try {
+        if ((window as any).Snackbar?.enqueueSnackbar) {
+          (window as any).Snackbar.enqueueSnackbar(msg, {
+            variant: "error",
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+          });
+        } else {
+          showLocalToast(msg, "error");
+        }
+      } catch {
+        showLocalToast(msg, "error");
+      }
+      return;
+    }
     const missingName = !mapName || mapName.trim().length === 0;
     const missingDescription =
       !mapDescription || mapDescription.trim().length === 0;
@@ -323,7 +339,7 @@ const MapDesignerPage = () => {
         {
           columns: 1,
           firstgid: 1,
-          image: "../../../../../../../Downloads/assetV3/Enviroment/road_v.png",
+          image: ".",
           imageheight: 128,
           imagewidth: 128,
           margin: 0,
@@ -336,7 +352,7 @@ const MapDesignerPage = () => {
         {
           columns: 1,
           firstgid: 2,
-          image: "../../../../../../../Downloads/assetV3/Enviroment/road_h.png",
+          image: ".",
           imageheight: 128,
           imagewidth: 128,
           margin: 0,
@@ -349,7 +365,7 @@ const MapDesignerPage = () => {
         {
           columns: 1,
           firstgid: 3,
-          image: "../../../../../../../Downloads/assetV3/Enviroment/wood.png",
+          image: ".",
           imageheight: 128,
           imagewidth: 128,
           margin: 0,
@@ -362,7 +378,7 @@ const MapDesignerPage = () => {
         {
           columns: 1,
           firstgid: 4,
-          image: "../../../../../../../Downloads/assetV3/Enviroment/water.png",
+          image: ".",
           imageheight: 128,
           imagewidth: 128,
           margin: 0,
@@ -375,7 +391,7 @@ const MapDesignerPage = () => {
         {
           columns: 1,
           firstgid: 5,
-          image: "../../../../../../../Downloads/assetV3/Enviroment/grass.png",
+          image: ".",
           imageheight: 128,
           imagewidth: 128,
           margin: 0,
@@ -388,8 +404,7 @@ const MapDesignerPage = () => {
         {
           columns: 1,
           firstgid: 6,
-          image:
-            "../../../../../../../Downloads/assetV3/Enviroment/crossroad.png",
+          image: ".",
           imageheight: 128,
           imagewidth: 128,
           margin: 0,
@@ -418,7 +433,33 @@ const MapDesignerPage = () => {
       solutionJson: solutionJson,
     };
 
-    console.log("Lesson Data:", JSON.stringify(lessonData, null, 2));
+    try {
+      const res = await axiosClient.post(
+        ROUTES_API_CHALLENGE.CREATE,
+        lessonData
+      );
+      const ok = res && (res.status === 200 || res.status === 201);
+      const msg = ok ? "Lưu map (challenge) thành công" : "Lưu map thất bại";
+      const variant = ok ? "success" : "error";
+      if ((window as any).Snackbar?.enqueueSnackbar) {
+        (window as any).Snackbar.enqueueSnackbar(msg, {
+          variant,
+          anchorOrigin: { vertical: "top", horizontal: "right" },
+        });
+      } else {
+        showLocalToast(msg, variant as any);
+      }
+    } catch (e: any) {
+      const msg = "Lưu map thất bại";
+      if ((window as any).Snackbar?.enqueueSnackbar) {
+        (window as any).Snackbar.enqueueSnackbar(msg, {
+          variant: "error",
+          anchorOrigin: { vertical: "top", horizontal: "right" },
+        });
+      } else {
+        showLocalToast(msg, "error");
+      }
+    }
   };
 
   const handleClearMap = () => {
