@@ -37,10 +37,8 @@ export class VictoryErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("🚨 Victory Modal Error:", error);
-    console.error("Error Info:", errorInfo);
-  }
+  componentDidCatch(_error: Error, _errorInfo: React.ErrorInfo) {
+    }
 
   render() {
     if (this.state.hasError && this.props.isOpen) {

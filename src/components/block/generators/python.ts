@@ -543,7 +543,6 @@ export function generatePythonCode(workspace: any): string {
   try {
     return pythonGenerator.workspaceToCode(workspace);
   } catch (error) {
-    console.error("Error generating Python code:", error);
     return "# Error generating code";
   }
 }

@@ -15,7 +15,6 @@ export function fixLayerName(layerName: string): string {
     .replace(/([a-zA-Z])(\d)/g, '$1 $2') // Add space between letter and number
     .replace(/(\d)([a-zA-Z])/g, '$1 $2'); // Add space between number and letter
 
-  console.log(`🔧 Fixed layer name: "${layerName}" → "${fixed}"`);
   return fixed;
 }
 
@@ -52,34 +51,62 @@ export function fixDescription(description: string): string {
   // Clean up multiple spaces
   fixed = fixed.replace(/\s+/g, ' ').trim();
 
-  if (fixed !== description) {
-    console.log(`🔧 Fixed description: "${description}" → "${fixed}"`);
+  return fixed;
+}
+
+/**
+ * Fix tileset image paths to use /map/ directory
+ */
+export function fixTilesetImagePath(imagePath: string): string {
+  if (!imagePath) return imagePath;
+  
+  // If already using /map/ prefix, keep it
+  if (imagePath.startsWith('/map/')) {
+    return imagePath;
   }
   
-  return fixed;
+  // Extract filename from any path format
+  const filename = imagePath.split(/[\/\\]/).pop()?.replace(/\.[^/.]+$/, '') || 'unknown';
+  
+  // Return standardized /map/ path
+  return `/map/${filename}.png`;
 }
 
 /**
  * Fix map JSON formatting issues
  */
 export function fixMapJson(mapJson: any): any {
-  if (!mapJson) return mapJson;
+  if (!mapJson) {
+    return mapJson; // Return original value, don't convert to null
+  }
 
   const fixedMapJson = { ...mapJson };
 
-  // Fix layer names
+  // IMPORTANT: Keep original orientation - DO NOT CHANGE!
+  // Phaser needs to know if it's isometric or orthogonal
+  
+  // WARNING: DO NOT modify these critical properties:
+  // - orientation (isometric/orthogonal)
+  // - tileheight/tilewidth (must match original map design)
+  // These are set by the map designer and MUST be preserved!
+
+  // Only fix layer names for display
   if (fixedMapJson.layers && Array.isArray(fixedMapJson.layers)) {
     fixedMapJson.layers = fixedMapJson.layers.map((layer: any) => ({
       ...layer,
       name: fixLayerName(layer.name)
     }));
   }
-
-  console.log('🗺️ Map JSON formatting fixed:', {
-    layersFixed: fixedMapJson.layers?.length || 0,
-    originalOrientation: mapJson.orientation,
-    fixedOrientation: fixedMapJson.orientation
-  });
+  
+  // Keep tileset data mostly as-is
+  if (fixedMapJson.tilesets && Array.isArray(fixedMapJson.tilesets)) {
+    // DO NOT change tileset dimensions - they must match the actual image files!
+    fixedMapJson.tilesets = fixedMapJson.tilesets.map((tileset: any) => ({
+      ...tileset
+      // Keep all original tileset properties
+      // DO NOT override tilewidth/tileheight
+    }));
+  }
 
   return fixedMapJson;
 }
@@ -88,7 +115,9 @@ export function fixMapJson(mapJson: any): any {
  * Fix challenge JSON formatting issues
  */
 export function fixChallengeJson(challengeJson: any): any {
-  if (!challengeJson) return challengeJson;
+  if (!challengeJson) {
+    return challengeJson; // Return original value, don't convert to null
+  }
 
   const fixedChallengeJson = { ...challengeJson };
 
@@ -100,13 +129,6 @@ export function fixChallengeJson(challengeJson: any): any {
   // Fix any other text fields that might have spacing issues
   // You can add more fixes here as needed
 
-  console.log('🏆 Challenge JSON formatting fixed:', {
-    hasVictoryDescription: !!fixedChallengeJson.victory?.description,
-    victoryDescription: fixedChallengeJson.victory?.description,
-    hasRobot: !!fixedChallengeJson.robot,
-    batteriesCount: fixedChallengeJson.batteries?.length || 0
-  });
-
   return fixedChallengeJson;
 }
 
@@ -117,20 +139,8 @@ export function formatDataForPhaser(mapJson: any, challengeJson: any): {
   fixedMapJson: any;
   fixedChallengeJson: any;
 } {
-  console.log('🔧 Applying data formatting fixes...');
-
   const fixedMapJson = fixMapJson(mapJson);
   const fixedChallengeJson = fixChallengeJson(challengeJson);
-
-  console.log('✅ Data formatting completed:', {
-    mapChanges: {
-      layersCount: fixedMapJson?.layers?.length || 0,
-      layerNames: fixedMapJson?.layers?.map((l: any) => l.name) || []
-    },
-    challengeChanges: {
-      victoryDescription: fixedChallengeJson?.victory?.description || 'N/A'
-    }
-  });
 
   return {
     fixedMapJson,

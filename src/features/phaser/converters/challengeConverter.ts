@@ -78,29 +78,12 @@ export interface BackendChallengeJson {
  */
 export function convertChallengeToJson(challengeData: ChallengeResult): PhaserChallengeJson {
   if (!challengeData) {
-    console.warn('⚠️ No challenge data provided, returning empty challengeJson');
     return createEmptyChallengeJson();
   }
 
   // Cast to any to access properties that might not be in ChallengeResult interface
   const data = challengeData as any;
 
-  console.log('🔄 Converting challenge data to challengeJson:', {
-    challengeId: challengeData.id,
-    challengeTitle: challengeData.title,
-    hasRobot: !!data.robot,
-    batteriesCount: data.batteries?.length || 0,
-    boxesCount: data.boxes?.length || 0,
-    hasVictory: !!data.victory,
-    statementsCount: data.statement?.length || 0,
-    // Log raw data for inspection
-    rawRobot: data.robot,
-    rawBatteries: data.batteries,
-    rawBoxes: data.boxes,
-    rawVictory: data.victory,
-    rawStatement: data.statement,
-    rawStatementNumber: data.statementNumber
-  });
 
   const challengeJson: PhaserChallengeJson = {
     robot: data.robot || {},
@@ -111,32 +94,6 @@ export function convertChallengeToJson(challengeData: ChallengeResult): PhaserCh
     statementNumber: data.statementNumber || 0,
   };
 
-  // Log the converted structure
-  console.log('✅ Challenge converted to challengeJson:', {
-    robot: {
-      hasData: Object.keys(challengeJson.robot).length > 0,
-      keys: Object.keys(challengeJson.robot),
-      preview: challengeJson.robot,
-    },
-    batteries: {
-      count: challengeJson.batteries.length,
-      preview: challengeJson.batteries.slice(0, 2), // First 2 items
-    },
-    boxes: {
-      count: challengeJson.boxes.length,
-      preview: challengeJson.boxes.slice(0, 2),
-    },
-    victory: {
-      hasData: Object.keys(challengeJson.victory).length > 0,
-      keys: Object.keys(challengeJson.victory),
-      preview: challengeJson.victory,
-    },
-    statement: {
-      count: challengeJson.statement.length,
-      preview: challengeJson.statement.slice(0, 2),
-    },
-    statementNumber: challengeJson.statementNumber,
-  });
 
   return challengeJson;
 }
@@ -160,7 +117,6 @@ export function createEmptyChallengeJson(): PhaserChallengeJson {
  */
 export function validateChallengeJson(challengeJson: any): challengeJson is PhaserChallengeJson {
   if (!challengeJson || typeof challengeJson !== 'object') {
-    console.error('❌ Invalid challengeJson: not an object');
     return false;
   }
 
@@ -170,7 +126,6 @@ export function validateChallengeJson(challengeJson: any): challengeJson is Phas
     'tile' in challengeJson.robot;
 
   if (hasBackendFormat) {
-    console.log('✅ challengeJson validation passed (backend format detected)');
     return true; // Accept backend format as-is
   }
 
@@ -179,7 +134,6 @@ export function validateChallengeJson(challengeJson: any): challengeJson is Phas
   const missingFields = requiredFields.filter(field => !(field in challengeJson));
   
   if (missingFields.length > 0) {
-    console.warn('⚠️ challengeJson missing some fields, but may still be valid:', missingFields);
     // Don't fail validation - just warn
   }
 
@@ -187,7 +141,6 @@ export function validateChallengeJson(challengeJson: any): challengeJson is Phas
   const arrayFields = ['batteries', 'statement'];
   for (const field of arrayFields) {
     if (field in challengeJson && !Array.isArray(challengeJson[field])) {
-      console.error(`❌ Invalid challengeJson: ${field} should be an array`);
       return false;
     }
   }
@@ -196,71 +149,22 @@ export function validateChallengeJson(challengeJson: any): challengeJson is Phas
   const objectFields = ['robot', 'victory'];
   for (const field of objectFields) {
     if (field in challengeJson && (typeof challengeJson[field] !== 'object' || challengeJson[field] === null)) {
-      console.error(`❌ Invalid challengeJson: ${field} should be an object`);
       return false;
     }
   }
 
   // Validate statementNumber if exists
   if ('statementNumber' in challengeJson && typeof challengeJson.statementNumber !== 'number') {
-    console.error('❌ Invalid challengeJson: statementNumber should be a number');
     return false;
   }
 
-  console.log('✅ challengeJson validation passed');
   return true;
 }
 
 /**
  * Debug function to log challengeJson structure
  */
-export function logChallengeJson(challengeJson: any, challengeId?: string) {
-  if (!challengeJson) {
-    console.log(`🔍 ChallengeJson Debug ${challengeId ? `(${challengeId})` : ''}: challengeJson is null/undefined`);
-    return;
-  }
-
-  try {
-    console.log(`🔍 ChallengeJson Debug ${challengeId ? `(${challengeId})` : ''}:`, {
-      structure: {
-        robot: {
-          type: typeof challengeJson.robot,
-          keys: challengeJson.robot ? Object.keys(challengeJson.robot) : [],
-          empty: challengeJson.robot ? Object.keys(challengeJson.robot).length === 0 : true,
-        },
-        batteries: {
-          type: Array.isArray(challengeJson.batteries) ? 'array' : typeof challengeJson.batteries,
-          count: challengeJson.batteries?.length || 0,
-          empty: !challengeJson.batteries || challengeJson.batteries.length === 0,
-        },
-        boxes: {
-          type: challengeJson.boxes ? (Array.isArray(challengeJson.boxes) ? 'array' : typeof challengeJson.boxes) : 'undefined',
-          count: challengeJson.boxes?.length || 0,
-          empty: !challengeJson.boxes || challengeJson.boxes.length === 0,
-        },
-        victory: {
-          type: typeof challengeJson.victory,
-          keys: challengeJson.victory ? Object.keys(challengeJson.victory) : [],
-          empty: challengeJson.victory ? Object.keys(challengeJson.victory).length === 0 : true,
-        },
-        statement: {
-          type: Array.isArray(challengeJson.statement) ? 'array' : typeof challengeJson.statement,
-          count: challengeJson.statement?.length || 0,
-          empty: !challengeJson.statement || challengeJson.statement.length === 0,
-        },
-        statementNumber: {
-          type: typeof challengeJson.statementNumber,
-          value: challengeJson.statementNumber,
-        },
-      },
-      data: challengeJson,
-    });
-  } catch (error: any) {
-    console.error(`❌ Error in logChallengeJson:`, {
-      error: error?.message || 'Unknown error',
-      challengeId,
-      challengeJsonType: typeof challengeJson,
-      challengeJsonKeys: challengeJson ? Object.keys(challengeJson) : 'N/A'
-    });
-  }
+export function logChallengeJson(_challengeJson: any, _challengeId?: string) {
+  // Debug logging disabled in production
+  return;
 }

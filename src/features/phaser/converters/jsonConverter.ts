@@ -57,10 +57,6 @@ export function parseJsonSafely<T = any>(jsonString: string, fieldName = "JSON")
     return result;
   } catch (error: any) {
     result.error = `Invalid ${fieldName}: ${error.message}`;
-    console.error(`JSON Parse Error for ${fieldName}:`, {
-      error: error.message,
-      originalString: jsonString.substring(0, 200) + (jsonString.length > 200 ? '...' : ''),
-    });
     return result;
   }
 }
@@ -144,38 +140,17 @@ export function validateMapJson(mapData: ParsedMapJson): { valid: boolean; error
 
 // Helper to get safe parsed data or fallback
 export function getSafeMapData(mapJsonString: string, fallback?: ParsedMapJson): ParsedMapJson | null {
-  console.log('🔍 Parsing map JSON string:', {
-    type: typeof mapJsonString,
-    length: mapJsonString?.length || 0,
-    sample: mapJsonString?.substring(0, 100) || 'N/A',
-    isEmpty: !mapJsonString
-  });
-  
   const result = parseMapJson(mapJsonString);
-  
-  console.log('🔍 Parse result:', {
-    success: result.success,
-    hasData: !!result.data,
-    error: result.error,
-    originalStringLength: result.originalString?.length || 0
-  });
   
   if (result.success && result.data) {
     const validation = validateMapJson(result.data);
-    console.log('🔍 Validation result:', {
-      valid: validation.valid,
-      errors: validation.errors
-    });
     
     if (validation.valid) {
-      console.log('✅ Map data is valid and ready for Phaser');
       return result.data;
     } else {
-      console.warn("⚠️ Map validation failed:", validation.errors);
       return fallback || null;
     }
   }
   
-  console.error('❌ Failed to parse or validate map JSON');
   return fallback || null;
 }

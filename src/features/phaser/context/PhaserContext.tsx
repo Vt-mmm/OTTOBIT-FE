@@ -99,25 +99,22 @@ export function PhaserProvider({ children, config }: PhaserProviderProps) {
   const challengeData = useChallengeData();
   
   // Victory progress handler - simplified for challenges
-  const handleVictoryProgress = async (victoryData: VictoryData) => {
+  const handleVictoryProgress = async (_victoryData: VictoryData) => {
     try {
       // For now, just log victory - can extend later for:
       // 1. Mark challenge as completed
       // 2. Update submission tracking  
       // 3. Unlock next challenges
-      console.log("Victory achieved for challenge:", victoryData);
-      
       // Future implementation could include:
       // - Update submission/progress API calls
       // - Navigate to next challenge
       // - Show completion rewards
     } catch (error) {
-      console.error("Error handling victory progress:", error);
-    }
+      }
   };
   
   const phaserState = usePhaserSimulator(config, handleVictoryProgress);
-  const challengeLoader = useChallengeMapLoader(phaserState.sendMessage);
+  const challengeLoader = useChallengeMapLoader(phaserState.sendMessage, phaserState.clearError);
 
   // Combine all the state and actions
   const contextValue: PhaserContextType = {

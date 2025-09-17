@@ -203,14 +203,6 @@ export function convertBackendMapToPhaser(
   backendMap: BackendMapJson
 ): MapConvertResult {
   try {
-      
-      console.log('🔄 Starting map conversion from Backend to Phaser format');
-      console.log('📥 Backend map input:', {
-        width: backendMap.width,
-        height: backendMap.height,
-        layers: backendMap.layers?.length || 0,
-        tilesets: backendMap.tilesets?.length || 0
-      });
 
       const debugInfo = {
         originalLayers: backendMap.layers?.length || 0,
@@ -246,7 +238,6 @@ export function convertBackendMapToPhaser(
             from: originalName,
             to: standardName
           });
-          console.log(`🏷️ Layer name change: "${originalName}" -> "${standardName}"`);
         }
 
         return {
@@ -292,7 +283,6 @@ export function convertBackendMapToPhaser(
             to: fixedPath,
             name: tilesetName
           });
-          console.log(`🖼️ Image path change for "${tilesetName}": "${originalPath}" -> "${fixedPath}"`);
         }
 
         return {
@@ -332,27 +322,7 @@ export function convertBackendMapToPhaser(
         nextobjectid: backendMap.nextobjectid || 1
       };
       
-      // Log the critical fixes applied
-      console.log('🔧 Applied critical fixes:', {
-        originalOrientation: backendMap.orientation,
-        fixedOrientation: 'orthogonal',
-        originalTileHeight: backendMap.tileheight,
-        fixedTileHeight: MAP_CONSTANTS.DEFAULT_TILE_SIZE,
-        originalTileWidth: backendMap.tilewidth,
-        fixedTileWidth: MAP_CONSTANTS.DEFAULT_TILE_SIZE
-      });
-
-      console.log('✅ Map conversion completed successfully');
-      console.log('📤 Phaser map output:', {
-        width: phaserMap.width,
-        height: phaserMap.height,
-        layers: phaserMap.layers.length,
-        tilesets: phaserMap.tilesets.length,
-        layerNames: phaserMap.layers.map(l => l.name),
-        tilesetNames: phaserMap.tilesets.map(t => t.name)
-      });
-
-      console.log('🔍 Conversion debug info:', debugInfo);
+      // Critical fixes applied for Phaser compatibility
 
       return {
         success: true,
@@ -361,7 +331,6 @@ export function convertBackendMapToPhaser(
       };
       
     } catch (error: any) {
-      console.error('❌ Map conversion failed:', error);
       return {
         success: false,
         error: error.message || 'Unknown conversion error'
@@ -376,7 +345,6 @@ export function validatePhaserMap(phaserMap: PhaserMapJson): boolean {
   try {
     // Use type guard first
     if (!isPhaserMapJson(phaserMap)) {
-      console.error('❌ Validation failed: does not match PhaserMapJson structure');
       return false;
     }
 
@@ -388,13 +356,7 @@ export function validatePhaserMap(phaserMap: PhaserMapJson): boolean {
       );
       
       if (!hasValidExtension) {
-        console.error(`❌ Validation failed: tileset "${tileset.name}" has unsupported image format: ${tileset.image}`);
         return false;
-      }
-      
-      // Check if image path uses our assets prefix
-      if (!tileset.image.startsWith(MAP_CONSTANTS.ASSETS_PATH_PREFIX)) {
-        console.warn(`⚠️ Tileset "${tileset.name}" image path may not be accessible: ${tileset.image}`);
       }
     }
 
@@ -402,16 +364,13 @@ export function validatePhaserMap(phaserMap: PhaserMapJson): boolean {
     for (const layer of phaserMap.layers) {
       const expectedDataLength = layer.width * layer.height;
       if (layer.data.length !== expectedDataLength) {
-        console.error(`❌ Validation failed: layer "${layer.name}" data length (${layer.data.length}) doesn't match dimensions (${layer.width}x${layer.height}=${expectedDataLength})`);
         return false;
       }
     }
 
-    console.log('✅ Phaser map validation passed');
     return true;
     
   } catch (error) {
-    console.error('❌ Map validation error:', error);
     return false;
   }
 }

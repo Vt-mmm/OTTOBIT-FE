@@ -27,13 +27,7 @@ export function processBackendDataForPhaser(
   let mapJson = null;
   let challengeJson = {};
 
-  console.log('🔄 PROCESSING BACKEND DATA FOR PHASER:', {
-    challengeId,
-    hasMapJson: !!challengeData.mapJson,
-    hasChallengeJson: !!challengeData.challengeJson,
-    mapJsonLength: challengeData.mapJson?.length || 0,
-    challengeJsonLength: challengeData.challengeJson?.length || 0
-  });
+  // Process backend data for Phaser
 
   try {
     // 1. Process Map JSON
@@ -49,41 +43,20 @@ export function processBackendDataForPhaser(
     // 2. Process Challenge JSON
     if (challengeData.challengeJson) {
       try {
-        console.log('🔄 Parsing challengeJson from string:', {
-          rawChallengeJson: challengeData.challengeJson,
-          challengeJsonType: typeof challengeData.challengeJson,
-          challengeJsonLength: challengeData.challengeJson.length
-        });
-
         challengeJson = JSON.parse(challengeData.challengeJson);
-        
-        console.log('✅ Challenge JSON parsed successfully:', {
-          parsedChallengeJson: challengeJson,
-          parsedType: typeof challengeJson,
-          parsedKeys: Object.keys(challengeJson)
-        });
 
       } catch (error: any) {
-        console.error('❌ Failed to parse challengeJson string:', {
-          error: error?.message || 'Unknown error',
-          rawChallengeJson: challengeData.challengeJson,
-          challengeId
-        });
-
         // Fallback to converter utility if string parsing fails
-        console.log('🔄 Falling back to converter utility...');
         challengeJson = convertChallengeToJson(challengeData);
         errors.push('Challenge JSON parsing failed, used fallback');
       }
     } else {
-      console.warn('⚠️ No challengeJson string found, using converter utility...');
       challengeJson = convertChallengeToJson(challengeData);
       errors.push('No challenge JSON string provided, used converter fallback');
     }
 
     // 3. Validate Challenge JSON
     if (challengeJson && !validateChallengeJson(challengeJson)) {
-      console.warn('⚠️ Challenge JSON validation failed, but continuing with best effort');
       errors.push('Challenge JSON validation failed');
     }
 
@@ -93,13 +66,7 @@ export function processBackendDataForPhaser(
     // 5. Apply Data Formatting Fixes
     const { fixedMapJson, fixedChallengeJson } = formatDataForPhaser(mapJson, challengeJson);
 
-    console.log('✅ BACKEND DATA PROCESSING COMPLETED:', {
-      challengeId,
-      success: errors.length === 0,
-      errorsCount: errors.length,
-      hasMapJson: !!fixedMapJson,
-      hasChallengeJson: !!fixedChallengeJson
-    });
+    // Backend data processing completed
 
     return {
       mapJson: fixedMapJson,
@@ -110,11 +77,6 @@ export function processBackendDataForPhaser(
 
   } catch (error: any) {
     const errorMessage = error?.message || 'Unknown processing error';
-    console.error('❌ BACKEND DATA PROCESSING FAILED:', {
-      challengeId,
-      error: errorMessage,
-      stack: error?.stack
-    });
 
     errors.push(errorMessage);
     return {
@@ -130,8 +92,7 @@ export function processBackendDataForPhaser(
  * Create Phaser PostMessage from processed data
  */
 export function createPhaserMessage(
-  processedData: ProcessedPhaserData,
-  challengeId: string
+  processedData: ProcessedPhaserData
 ): PhaserMessage {
   const message: PhaserMessage = {
     source: "parent-website",
@@ -142,14 +103,7 @@ export function createPhaserMessage(
     },
   };
 
-  console.log('📤 PHASER MESSAGE CREATED:', {
-    challengeId,
-    messageType: message.type,
-    messageSource: message.source,
-    hasMapJson: !!message.data.mapJson,
-    hasChallengeJson: !!message.data.challengeJson,
-    totalMessageSize: JSON.stringify(message).length
-  });
+  // Phaser message created
 
   return message;
 }
@@ -161,28 +115,11 @@ export function processAndCreatePhaserMessage(
   challengeData: ChallengeResult,
   challengeId: string
 ): { message: PhaserMessage; success: boolean; errors: string[] } {
-  console.log('🚀 STARTING COMPLETE DATA PROCESSING PIPELINE:', {
-    challengeId,
-    timestamp: new Date().toISOString()
-  });
-
   const processedData = processBackendDataForPhaser(challengeData, challengeId);
-  
-  if (!processedData.success) {
-    console.error('❌ PROCESSING PIPELINE FAILED:', {
-      challengeId,
-      errors: processedData.errors
-    });
-  }
 
-  const message = createPhaserMessage(processedData, challengeId);
+  const message = createPhaserMessage(processedData);
 
-  console.log('🎉 DATA PROCESSING PIPELINE COMPLETED:', {
-    challengeId,
-    success: processedData.success,
-    errorsCount: processedData.errors.length,
-    timestamp: new Date().toISOString()
-  });
+  // Data processing pipeline completed
 
   return {
     message,

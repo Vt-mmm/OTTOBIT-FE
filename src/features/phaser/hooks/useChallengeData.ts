@@ -86,16 +86,8 @@ export function useChallengeData() {
   // Helper functions
   const findChallengeById = useCallback(
     (challengeId: string): ChallengeResult | null => {
-      console.log('🔍 findChallengeById called with:', challengeId);
-      console.log('🔍 Current challenge state:', {
-        hasCurrentChallenge: !!currentChallenge.data,
-        currentChallengeId: currentChallenge.data?.id,
-        matchesTarget: currentChallenge.data?.id === challengeId
-      });
-      
       // Check current challenge first
       if (currentChallenge.data?.id === challengeId) {
-        console.log('✅ Found challenge in currentChallenge');
         return currentChallenge.data;
       }
 
@@ -103,7 +95,6 @@ export function useChallengeData() {
       if (challenges.data?.items) {
         const found = challenges.data.items.find((challenge) => challenge.id === challengeId);
         if (found) {
-          console.log('✅ Found challenge in challenges.items');
           return found;
         }
       }
@@ -112,16 +103,10 @@ export function useChallengeData() {
       if (lessonChallenges.data?.items) {
         const found = lessonChallenges.data.items.find((challenge) => challenge.id === challengeId);
         if (found) {
-          console.log('✅ Found challenge in lessonChallenges.items');
           return found;
         }
       }
 
-      console.log('❌ Challenge not found in any collection:', {
-        challengesCount: challenges.data?.items?.length || 0,
-        lessonChallengesCount: lessonChallenges.data?.items?.length || 0,
-        hasCurrentChallenge: !!currentChallenge.data
-      });
       return null;
     },
     [currentChallenge.data, challenges.data, lessonChallenges.data]
@@ -141,35 +126,13 @@ export function useChallengeData() {
 
   const getMapJsonFromChallenge = useCallback(
     (challengeId: string): any | null => {
-      console.log('💾 Getting map JSON for challenge:', challengeId);
-      
       const challenge = findChallengeById(challengeId);
-      console.log('💾 Challenge found:', {
-        found: !!challenge,
-        hasMapJson: !!challenge?.mapJson,
-        mapJsonType: typeof challenge?.mapJson,
-        mapJsonLength: challenge?.mapJson?.length || 0,
-        mapJsonSample: challenge?.mapJson?.substring(0, 50) || 'N/A'
-      });
       
       if (!challenge?.mapJson) {
-        console.error('❌ No challenge or mapJson found:', {
-          challengeExists: !!challenge,
-          mapJsonExists: !!challenge?.mapJson
-        });
         return null;
       }
 
       const safeMapData = getSafeMapData(challenge.mapJson);
-      console.log('💾 Safe map data result:', {
-        success: !!safeMapData,
-        data: safeMapData ? {
-          width: safeMapData.width,
-          height: safeMapData.height,
-          hasLayers: !!safeMapData.layers
-        } : null
-      });
-      
       return safeMapData;
     },
     [findChallengeById]
@@ -214,28 +177,18 @@ export function useChallengeData() {
   // Auto-load challenge by ID if needed
   const ensureChallengeLoaded = useCallback(
     async (challengeId: string): Promise<ChallengeResult | null> => {
-      console.log('🔄 ensureChallengeLoaded called for:', challengeId);
-      
       const existingChallenge = findChallengeById(challengeId);
       if (existingChallenge) {
-        console.log('✅ Challenge found in existing data, setting as current');
         setCurrentChallengeData(existingChallenge);
         return existingChallenge;
       }
 
       try {
-        console.log('🚀 Fetching challenge from API:', challengeId);
         // Try to fetch by ID
         const result = await fetchChallengeById(challengeId);
-        console.log('🚀 Fetch result:', {
-          type: result.type,
-          hasPayload: !!result.payload,
-          payloadId: (result.payload as any)?.id
-        });
         
         if (result.type === "challenge/getById/fulfilled") {
           const challengeData = result.payload as ChallengeResult;
-          console.log('✅ Challenge fetched successfully, setting as current:', challengeData.id);
           setCurrentChallengeData(challengeData);
           
           // Wait a bit for Redux state to update
@@ -244,17 +197,14 @@ export function useChallengeData() {
           // Verify that the challenge is now findable
           const verifyChallenge = findChallengeById(challengeId);
           if (!verifyChallenge) {
-            console.warn('⚠️ Challenge not found after setting, returning fetched data directly');
             return challengeData;
           }
           
           return challengeData;
         }
         
-        console.error('❌ Fetch result type not fulfilled:', result.type);
         return null;
       } catch (error) {
-        console.error('❌ Error loading challenge:', error);
         return null;
       }
     },

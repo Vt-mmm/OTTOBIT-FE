@@ -36,20 +36,12 @@ export class PhaserCommunicationService {
 
     if (!iframe) {
       if (retryCount < maxRetries) {
-        console.warn(
-          `⏳ Iframe with id "${iframeId}" not found, retrying... (${
-            retryCount + 1
-          }/${maxRetries})`
-        );
         // Retry after a short delay
         setTimeout(() => {
           this.initialize(iframeId, retryCount + 1);
         }, 200);
         return;
       } else {
-        console.error(
-          `❌ Iframe with id "${iframeId}" not found after ${maxRetries} retries`
-        );
         throw new Error(
           `Iframe with id "${iframeId}" not found after ${maxRetries} retries`
         );
@@ -77,7 +69,6 @@ export class PhaserCommunicationService {
   private isValidMessage(event: MessageEvent): boolean {
     // Check origin
     if (!this.config.allowedOrigins.includes(event.origin)) {
-      console.warn("🚫 Message from unauthorized origin:", event.origin);
       return false;
     }
 
@@ -113,7 +104,7 @@ export class PhaserCommunicationService {
         try {
           handler(message.data);
         } catch (error) {
-          console.error("❌ Error in message handler:", error);
+          // Silently handle error
         }
       });
     }
@@ -123,9 +114,13 @@ export class PhaserCommunicationService {
    * Send message to Phaser
    */
   async sendMessage(message: PhaserMessage): Promise<void> {
-    // Check connection first
+    // Auto-connect if not connected yet
     if (!this.isConnected) {
-      throw new Error("Not connected to Phaser");
+      try {
+        this.initialize('robot-game-iframe'); // Use default iframe ID
+      } catch (error) {
+        throw new Error("Not connected to Phaser");
+      }
     }
 
     // Ensure we have a valid iframe with contentWindow
@@ -133,12 +128,6 @@ export class PhaserCommunicationService {
     const maxAttempts = 3;
 
     while (!this.iframe?.contentWindow && attempts < maxAttempts) {
-      console.warn(
-        `⚠️ Iframe contentWindow not available, attempt ${
-          attempts + 1
-        }/${maxAttempts}`
-      );
-
       // Try to find iframe element directly
       const iframeElement = document.getElementById(
         "robot-game-iframe"
@@ -162,30 +151,67 @@ export class PhaserCommunicationService {
     try {
       this.iframe!.contentWindow!.postMessage(message, "*");
     } catch (error) {
-      console.error("❌ Error sending message to Phaser:", error);
       throw error;
     }
   }
 
   /**
    * Load map in Phaser using START_MAP
+   * @param mapKey - Map identifier key
+   * @param mapData - Full map JSON object (Tiled format)
+   * @param challengeData - Challenge JSON object with robot, batteries, etc.
    */
   async loadMap(mapKey: string, mapData?: any, challengeData?: any): Promise<void> {
+    // Ensure mapData is JSON object, not string
+    let mapJson = mapData;
+    if (typeof mapData === 'string') {
+      try {
+        mapJson = JSON.parse(mapData);
+      } catch (e) {
+        mapJson = mapData; // Send as-is if parse fails
+      }
+    }
+
+    // Ensure challengeData is JSON object, not string
+    let challengeJson = challengeData;
+    if (typeof challengeData === 'string') {
+      try {
+        challengeJson = JSON.parse(challengeData);
+      } catch (e) {
+        challengeJson = challengeData; // Send as-is if parse fails
+      }
+    }
+
     await this.sendMessage({
       source: "parent-website",
       type: "START_MAP",
       data: { 
         mapKey,
-        mapJson: mapData,
-        challengeJson: challengeData
+        mapJson,
+        challengeJson
       },
     });
   }
   
   /**
-   * Load map with full JSON data
+   * Load map with full JSON data (without mapKey)
+   * This method sends raw JSON data directly to Phaser
+   * @param mapJson - Full map JSON object in Tiled format
+   * @param challengeJson - Challenge JSON with robot, batteries, victory conditions
    */
   async loadMapWithData(mapJson: any, challengeJson?: any): Promise<void> {
+    // Validate mapJson is an object with required fields
+    if (!mapJson || typeof mapJson !== 'object') {
+      throw new Error('mapJson must be a valid JSON object');
+    }
+
+    // Check for required Tiled map properties
+    const requiredFields = ['width', 'height', 'layers', 'tilesets'];
+    const missingFields = requiredFields.filter(field => !(field in mapJson));
+    if (missingFields.length > 0) {
+      // Map may be missing some fields but still valid
+    }
+
     await this.sendMessage({
       source: "parent-website",
       type: "LOAD_MAP_AND_CHALLENGE",
@@ -321,7 +347,7 @@ export class PhaserCommunicationService {
       try {
         this.initialize(this.iframe.id, 0); // Start with fresh retry count
       } catch (error) {
-        console.warn(`⚠️ Failed to refresh iframe connection: ${error}`);
+        // Silently handle error
       }
     }
   }

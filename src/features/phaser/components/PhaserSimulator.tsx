@@ -37,7 +37,6 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
   // Handle replay current map - disabled for now
   const handleReplay = async () => {
     try {
-      console.warn("⚠️ Replay functionality disabled - need loadMap implementation");
       
       // Fallback: Reload iframe
       const iframe = iframeRef.current;
@@ -47,7 +46,6 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
       
       hideVictoryModal();
     } catch (error) {
-      console.error("❌ Failed to reload map:", error);
       hideVictoryModal();
     }
   };
@@ -57,8 +55,7 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     if (!isConnected && !isLoading) {
       // Small delay to ensure iframe is rendered
       const timer = setTimeout(() => {
-        connect().catch((err) => {
-          console.error("Failed to connect to Phaser:", err);
+        connect().catch((_err) => {
         });
       }, 500);
 
@@ -71,39 +68,12 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
   //   if (isReady && !gameState?.mapKey) {
   //     // Load basic1 map for testing
   //     loadMap("basic1").catch((err) => {
-  //       console.error("Failed to load basic1 map:", err);
-  //     });
+  //       //     });
   //   }
   // }, [isReady, gameState?.mapKey, loadMap]);
 
-  if (error) {
-    return (
-      <Box
-        className={className}
-        sx={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          p: 2,
-        }}
-      >
-        <Alert
-          severity="error"
-          onClose={clearError}
-          sx={{ mb: 2, width: "100%", maxWidth: 600 }}
-        >
-          {error}
-        </Alert>
-        <Typography variant="body2" color="text.secondary" textAlign="center">
-          Không thể kết nối đến Phaser simulator. Vui lòng kiểm tra kết nối và
-          thử lại.
-        </Typography>
-      </Box>
-    );
-  }
+  // REMOVED: Don't hide iframe on error - keep it available for message sending
+  // This allows us to send mapJson/challengeJson even after initial Phaser errors
 
   if (isLoading) {
     return (
@@ -240,8 +210,39 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
         title="Phaser Robot Simulator"
       />
 
+      {/* Error overlay - shown over iframe, not replacing it */}
+      {error && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(248, 249, 250, 0.98)",
+            zIndex: 10, // Higher z-index than loading overlay
+            p: 2,
+          }}
+        >
+          <Alert
+            severity="warning" // Changed from error to warning since we're trying to recover
+            onClose={clearError}
+            sx={{ mb: 2, width: "100%", maxWidth: 600 }}
+          >
+            {error}
+          </Alert>
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            Đang khởi tạo simulator... Nếu lỗi vẫn còn, vui lòng thử tải lại trang.
+          </Typography>
+        </Box>
+      )}
+
       {/* Status overlay */}
-      {!isReady && (
+      {!isReady && !error && (
         <Box
           sx={{
             position: "absolute",
