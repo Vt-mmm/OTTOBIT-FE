@@ -50,7 +50,7 @@ export default function StudentProfileDisplay() {
   };
 
   // Real data tính toán từ API responses  
-  const enrollmentsArray = myEnrollments?.data?.data || [];
+  const enrollmentsArray = myEnrollments?.data?.items || [];
   const submissionsArray = mySubmissions?.data?.data || [];
   
   const realData = {
@@ -305,7 +305,7 @@ export default function StudentProfileDisplay() {
                 </Typography>
               </Box>
             ) : realData.learningProgress.length > 0 ? (
-              realData.learningProgress.map((course, index) => (
+              realData.learningProgress.map((course: any, index: number) => (
                 <Box key={index} sx={{ mb: 2 }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
                     <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -366,7 +366,7 @@ export default function StudentProfileDisplay() {
                 </Typography>
               </Box>
             ) : realData.upcomingTasks.length > 0 ? (
-              realData.upcomingTasks.map((task, index) => (
+              realData.upcomingTasks.map((task: any, index: number) => (
                 <Box key={index} sx={{ 
                   display: "flex", 
                   alignItems: "center", 

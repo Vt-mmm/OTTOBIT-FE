@@ -54,11 +54,11 @@ export default function SimulatorStageSection({
         sx={{
           flex: 1,
           width: "100%",
+          minHeight: 0, // Critical for flex layout
           position: "relative",
           backgroundColor: "#f8f9fa", // Match outer container background
           display: "flex",
           flexDirection: "column",
-          minHeight: "300px",
           // Remove padding to maximize space
           p: 0,
         }}
@@ -68,19 +68,22 @@ export default function SimulatorStageSection({
           sx={{
             width: "100%",
             height: "100%",
+            flex: 1,
+            minHeight: 0, // Critical for flex layout
             position: "relative",
             overflow: "hidden",
             backgroundColor: "#f8f9fa", // Match background to eliminate black areas
-            flex: 1,
             // Ensure minimum size for mobile
             minWidth: { xs: "280px", sm: "320px" },
-            minHeight: { xs: "180px", sm: "240px" },
-            // Mobile optimizations
-            "@media (max-width: 768px)": {
-              minHeight: "200px",
+            // Mobile optimizations with responsive minHeight
+            "@media (min-width: 600px)": {
+              minHeight: "300px",
+            },
+            "@media (max-width: 599px)": {
+              minHeight: "240px",
             },
             "@media (max-width: 480px)": {
-              minHeight: "160px",
+              minHeight: "200px",
             },
           }}
         >

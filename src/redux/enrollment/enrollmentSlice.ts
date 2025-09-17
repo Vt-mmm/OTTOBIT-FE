@@ -116,16 +116,16 @@ const enrollmentSlice = createSlice({
       }
 
       // Update in my enrollments
-      if (state.myEnrollments.data?.data) {
-        const enrollment = state.myEnrollments.data.data.find(e => e.id === id);
+      if (state.myEnrollments.data?.items) {
+        const enrollment = state.myEnrollments.data.items.find(e => e.id === id);
         if (enrollment) {
           enrollment.progress = progress;
         }
       }
 
       // Update in all enrollments
-      if (state.enrollments.data?.data) {
-        const enrollment = state.enrollments.data.data.find(e => e.id === id);
+      if (state.enrollments.data?.items) {
+        const enrollment = state.enrollments.data.items.find(e => e.id === id);
         if (enrollment) {
           enrollment.progress = progress;
         }
@@ -195,9 +195,9 @@ const enrollmentSlice = createSlice({
         state.operations.isEnrolling = false;
         state.operations.enrollError = null;
         // Add to my enrollments if exists
-        if (state.myEnrollments.data?.data) {
-          state.myEnrollments.data.data.unshift(action.payload);
-          state.myEnrollments.data.totalCount += 1;
+        if (state.myEnrollments.data?.items) {
+          state.myEnrollments.data.items.unshift(action.payload);
+          state.myEnrollments.data.total += 1;
         }
       })
       .addCase(createEnrollmentThunk.rejected, (state, action) => {
@@ -220,22 +220,22 @@ const enrollmentSlice = createSlice({
         }
 
         // Update in my enrollments
-        if (state.myEnrollments.data?.data) {
-          const index = state.myEnrollments.data.data.findIndex(
+        if (state.myEnrollments.data?.items) {
+          const index = state.myEnrollments.data.items.findIndex(
             (enrollment) => enrollment.id === action.payload.id
           );
           if (index !== -1) {
-            state.myEnrollments.data.data[index] = action.payload;
+            state.myEnrollments.data.items[index] = action.payload;
           }
         }
 
         // Update in enrollments list
-        if (state.enrollments.data?.data) {
-          const index = state.enrollments.data.data.findIndex(
+        if (state.enrollments.data?.items) {
+          const index = state.enrollments.data.items.findIndex(
             (enrollment) => enrollment.id === action.payload.id
           );
           if (index !== -1) {
-            state.enrollments.data.data[index] = action.payload;
+            state.enrollments.data.items[index] = action.payload;
           }
         }
       })
