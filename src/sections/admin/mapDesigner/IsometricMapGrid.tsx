@@ -116,8 +116,12 @@ export default function IsometricMapGrid({
 
     return {
       top: row > 0 && mapGrid[row - 1]?.[col]?.terrain === currentTerrain,
-      right: col < mapGrid[0].length - 1 && mapGrid[row]?.[col + 1]?.terrain === currentTerrain,
-      bottom: row < mapGrid.length - 1 && mapGrid[row + 1]?.[col]?.terrain === currentTerrain,
+      right:
+        col < mapGrid[0].length - 1 &&
+        mapGrid[row]?.[col + 1]?.terrain === currentTerrain,
+      bottom:
+        row < mapGrid.length - 1 &&
+        mapGrid[row + 1]?.[col]?.terrain === currentTerrain,
       left: col > 0 && mapGrid[row]?.[col - 1]?.terrain === currentTerrain,
     };
   };
@@ -126,7 +130,7 @@ export default function IsometricMapGrid({
   const shouldHaveSeamlessCorners = (row: number, col: number): boolean => {
     const adjacent = getAdjacentTerrain(row, col);
     if (!adjacent) return false;
-    
+
     // If 2 or more adjacent tiles are the same, use seamless rendering
     const sameTerrainCount = Object.values(adjacent).filter(Boolean).length;
     return sameTerrainCount >= 2;
@@ -216,12 +220,16 @@ export default function IsometricMapGrid({
                 halfHeight + depth
               }`}
               fill={terrainAsset ? "#3a3a3a" : "#707070"}
-              opacity={shouldHaveSeamlessCorners(cell.row, cell.col) ? "0.4" : "0.7"}
+              opacity={
+                shouldHaveSeamlessCorners(cell.row, cell.col) ? "0.4" : "0.7"
+              }
               stroke="none"
               style={{
                 shapeRendering: "crispEdges",
                 imageRendering: "pixelated",
-                mixBlendMode: shouldHaveSeamlessCorners(cell.row, cell.col) ? "multiply" : "normal",
+                mixBlendMode: shouldHaveSeamlessCorners(cell.row, cell.col)
+                  ? "multiply"
+                  : "normal",
               }}
             />
             {/* Right face - seamless connection with edge detection */}
@@ -232,12 +240,16 @@ export default function IsometricMapGrid({
                 halfHeight + depth
               } ${halfWidth},${ISOMETRIC_CONFIG.tileHeight + depth}`}
               fill={terrainAsset ? "#2a2a2a" : "#606060"}
-              opacity={shouldHaveSeamlessCorners(cell.row, cell.col) ? "0.5" : "0.8"}
+              opacity={
+                shouldHaveSeamlessCorners(cell.row, cell.col) ? "0.5" : "0.8"
+              }
               stroke="none"
               style={{
                 shapeRendering: "crispEdges",
                 imageRendering: "pixelated",
-                mixBlendMode: shouldHaveSeamlessCorners(cell.row, cell.col) ? "multiply" : "normal",
+                mixBlendMode: shouldHaveSeamlessCorners(cell.row, cell.col)
+                  ? "multiply"
+                  : "normal",
               }}
             />
           </g>
@@ -335,11 +347,15 @@ export default function IsometricMapGrid({
                     : `url(#global-pattern-${terrainAsset.id})`
                 }
                 stroke="none"
-style={{
+                style={{
                   shapeRendering: "crispEdges",
                   imageRendering: "pixelated",
-                  mixBlendMode: shouldHaveSeamlessCorners(cell.row, cell.col) ? "multiply" : "normal",
-                  opacity: shouldHaveSeamlessCorners(cell.row, cell.col) ? "0.9" : "1",
+                  mixBlendMode: shouldHaveSeamlessCorners(cell.row, cell.col)
+                    ? "multiply"
+                    : "normal",
+                  opacity: shouldHaveSeamlessCorners(cell.row, cell.col)
+                    ? "0.9"
+                    : "1",
                 }}
               />
 
@@ -347,10 +363,14 @@ style={{
               <polygon
                 points={`${halfWidth},0 ${ISOMETRIC_CONFIG.tileWidth},${halfHeight} ${halfWidth},${ISOMETRIC_CONFIG.tileHeight} 0,${halfHeight}`}
                 fill={`url(#enhanced-3d-lighting-${cell.row}-${cell.col})`}
-opacity={shouldHaveSeamlessCorners(cell.row, cell.col) ? "0.1" : "0.3"}
+                opacity={
+                  shouldHaveSeamlessCorners(cell.row, cell.col) ? "0.1" : "0.3"
+                }
                 stroke="none"
                 style={{
-                  mixBlendMode: shouldHaveSeamlessCorners(cell.row, cell.col) ? "multiply" : "normal",
+                  mixBlendMode: shouldHaveSeamlessCorners(cell.row, cell.col)
+                    ? "multiply"
+                    : "normal",
                 }}
               />
 

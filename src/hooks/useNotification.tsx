@@ -7,7 +7,15 @@
 import { Alert, Snackbar } from "@mui/material";
 import { useState } from "react";
 
-export function useNotification() {
+type AnchorVertical = "top" | "bottom";
+type AnchorHorizontal = "left" | "center" | "right";
+
+interface UseNotificationConfig {
+  anchorOrigin?: { vertical: AnchorVertical; horizontal: AnchorHorizontal };
+  autoHideDurationMs?: number;
+}
+
+export function useNotification(config?: UseNotificationConfig) {
   const [notification, setNotification] = useState<{
     open: boolean;
     message: string;
@@ -39,9 +47,11 @@ export function useNotification() {
   const NotificationComponent = () => (
     <Snackbar
       open={notification.open}
-      autoHideDuration={4000}
+      autoHideDuration={config?.autoHideDurationMs ?? 4000}
       onClose={hideNotification}
-      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      anchorOrigin={
+        config?.anchorOrigin ?? { vertical: "bottom", horizontal: "right" }
+      }
     >
       <Alert
         onClose={hideNotification}

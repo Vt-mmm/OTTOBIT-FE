@@ -4,7 +4,7 @@ export interface MapAsset {
   id: string;
   name: string;
   imagePath: string;
-  category: 'terrain' | 'object' | 'robot' | 'item' | 'tool';
+  category: "terrain" | "object" | "robot" | "item" | "tool";
   rotatable?: boolean;
   description?: string;
 }

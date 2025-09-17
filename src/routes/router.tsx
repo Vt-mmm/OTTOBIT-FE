@@ -147,21 +147,18 @@ function AppRouter() {
           ))}
         </ReactRoute>
 
-        {/* Login Redirect Logic for Admin section */}
+        {/* Admin section - Direct access for development */}
         <ReactRoute
           path="/admin"
-          element={
-            isAuthenticated && isAdmin && accessToken ? (
-              <Navigate to={PATH_ADMIN.dashboard} replace />
-            ) : (
-              <Navigate to={PATH_AUTH.login} replace />
-            )
-          }
+          element={<Navigate to={PATH_ADMIN.dashboard} replace />}
         />
 
         {/* Studio Route - Public Access (Bypass Authentication) */}
         <ReactRoute path={PATH_USER.studio} element={<RobotStudioPage />} />
-        <ReactRoute path={`${PATH_USER.studio}/:mapKey`} element={<RobotStudioPage />} />
+        <ReactRoute
+          path={`${PATH_USER.studio}/:mapKey`}
+          element={<RobotStudioPage />}
+        />
 
         {/* User Routes - Protected */}
         <ReactRoute element={<UserRouter />}>
