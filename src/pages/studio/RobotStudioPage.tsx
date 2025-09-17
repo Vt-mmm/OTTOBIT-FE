@@ -199,7 +199,7 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
             flex: { xs: "1 1 0%", lg: 1 },
             width: "100%",
             height: { xs: "50vh", sm: "45vh", md: "40vh", lg: "100%" },
-            minHeight: { xs: "250px", lg: "auto" },
+            minHeight: { xs: "250px", lg: 0 }, // Critical: minHeight: 0 for desktop
             display: "flex",
             flexDirection: "column",
             maxWidth: "100%",
