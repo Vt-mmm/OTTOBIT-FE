@@ -4,7 +4,6 @@ export * from "./route";
 export * from "./sidebar";
 export * from "./account";
 export * from "./resendEmail";
-export * from "./lessonProcess";
 export * from "./student";
 export * from "./course";
 export * from "./lesson";

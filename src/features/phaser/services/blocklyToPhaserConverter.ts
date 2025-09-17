@@ -40,22 +40,8 @@ export class BlocklyToPhaserConverter {
         program.actions = this.parseBlocksToActions(startBlock);
       }
 
-      // Debug logging
-      console.log("🗺️ Generated Program:", JSON.stringify(program, null, 2));
-      console.log("🤖 Actions:", program.actions);
-      program.actions.forEach((action, index) => {
-        if (action.type === "while") {
-          console.log(`🔄 Action ${index} (while):`, {
-            type: action.type,
-            cond: action.cond,
-            body: action.body,
-          });
-        }
-      });
-
       return program;
     } catch (error) {
-      console.error("❌ Error converting workspace:", error);
       throw new Error(`Failed to convert workspace: ${error}`);
     }
   }
@@ -189,7 +175,6 @@ export class BlocklyToPhaserConverter {
         // Sensor blocks (now supported)
         case "ottobit_bale_number":
           // This is handled in condition parsing, not as standalone action
-          console.log(`📊 Bale number sensor block found: ${blockType}`);
           return null;
 
         // Unsupported blocks
@@ -198,15 +183,12 @@ export class BlocklyToPhaserConverter {
         case "ottobit_touch_sensor":
         case "ottobit_light_sensor":
         case "ottobit_sound_sensor":
-          console.warn(`⚠️ Sensor block not supported by Phaser: ${blockType}`);
           return null;
 
         default:
-          console.warn(`⚠️ Unknown block type: ${blockType}`);
           return null;
       }
     } catch (error) {
-      console.error(`❌ Error converting block ${blockType}:`, error);
       return null;
     }
   }
@@ -598,7 +580,6 @@ export class BlocklyToPhaserConverter {
         };
 
       default:
-        console.warn(`⚠️ Unknown condition block type: ${blockType}`);
         return null;
     }
   }

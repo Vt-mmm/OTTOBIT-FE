@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { Home } from "@mui/icons-material";
 import { Link as RouterLink } from "react-router-dom";
 import LoginForm from "sections/auth/LoginForm";
@@ -73,16 +73,13 @@ const LoginPage: React.FC = () => {
           }}
         >
           <img
-            src="/asset/LogoOttobit.png"
+            src="/asset/OttobitLogoText.png"
             alt="OttoBit Logo"
             style={{
-              height: "50px",
+              height: "30px",
               width: "auto",
             }}
           />
-          <Typography>
-            OTTOBIT
-          </Typography>
         </Box>
 
         {/* Left Side - Login Form - Giảm kích thước */}

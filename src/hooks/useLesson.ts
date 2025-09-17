@@ -105,8 +105,8 @@ export const useLesson = () => {
 
   return {
     // State
-    lessons: lessonState.lessons.data?.data || [],
-    totalLessons: lessonState.lessons.data?.totalCount || 0,
+    lessons: lessonState.lessons.data?.items || [],
+    totalLessons: lessonState.lessons.data?.total || 0,
     currentLesson: lessonState.currentLesson.data,
     lastQuery: lessonState.lessons.lastQuery,
 

@@ -1,10 +1,7 @@
 // Components
 export { default as PhaserSimulator } from "./components/PhaserSimulator";
 export { PhaserControlPanel } from "./components/PhaserControlPanel";
-export { PhaserStatusDisplay } from "./components/PhaserStatusDisplay";
 export { default as LevelSelector } from "./components/LevelSelector";
-export { default as LevelMapSelector } from "./components/LevelMapSelector";
-export { MapSelector } from "./components/MapSelector";
 
 // Services
 export { PhaserCommunicationService } from "./services/phaserCommunicationService";
@@ -18,10 +15,11 @@ export {
 
 // Hooks
 export { usePhaserCommunication } from "./hooks/usePhaserCommunication";
-export { useGameState } from "./hooks/useGameState";
 export { usePhaserSimulator } from "./hooks/usePhaserSimulator";
-export { useMapData } from "./hooks/useMapData";
-export { useMapLoader } from "./hooks/useMapLoader";
+export { useChallengeData } from "./hooks/useChallengeData";
+export { useChallengeMapLoader } from "./hooks/useChallengeMapLoader";
+// Converters
+export * from "./converters";
 
 // Context
 export { PhaserProvider, usePhaserContext } from "./context/PhaserContext";

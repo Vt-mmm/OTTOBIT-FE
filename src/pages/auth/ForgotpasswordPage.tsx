@@ -1,10 +1,5 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Typography,
-  Link,
-  Grid,
-} from "@mui/material";
+import { Box, Typography, Link, Grid } from "@mui/material";
 import { motion } from "framer-motion";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import LockResetIcon from "@mui/icons-material/LockReset";
@@ -100,7 +95,6 @@ const ForgotPassword: React.FC = () => {
             p: { xs: 3, sm: 4, md: 6 },
           }}
         >
-
           <Box
             sx={{
               width: "100%",
@@ -109,10 +103,17 @@ const ForgotPassword: React.FC = () => {
             }}
           >
             {/* Header with Logo */}
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", mb: 5 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                mb: 5,
+              }}
+            >
               <Box
                 component="img"
-                src="/asset/LogoOttobit.png"
+                src="/asset/OttobitLogoText.png"
                 alt="Ottobit Logo"
                 sx={{
                   height: 60,
@@ -135,16 +136,16 @@ const ForgotPassword: React.FC = () => {
                   color: "#22c55e",
                 }}
               />
-              <Typography 
-                variant="h4" 
-                fontWeight={700} 
+              <Typography
+                variant="h4"
+                fontWeight={700}
                 sx={{ mb: 2, color: "#1a1a1a" }}
               >
                 Quên mật khẩu?
               </Typography>
 
-              <Typography 
-                variant="body1" 
+              <Typography
+                variant="body1"
                 color="text.secondary"
                 fontSize={16}
                 sx={{ maxWidth: 400, mx: "auto", lineHeight: 1.6 }}
@@ -195,8 +196,8 @@ const ForgotPassword: React.FC = () => {
                     color="text.secondary"
                     sx={{ maxWidth: 400, mx: "auto", lineHeight: 1.6 }}
                   >
-                    Yêu cầu đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra email
-                    của bạn để tiếp tục.
+                    Yêu cầu đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra
+                    email của bạn để tiếp tục.
                   </Typography>
                 </Box>
 
@@ -235,7 +236,7 @@ const ForgotPassword: React.FC = () => {
                     fontWeight: 600,
                     fontSize: "1rem",
                     textDecoration: "none",
-                    "&:hover": { 
+                    "&:hover": {
                       textDecoration: "underline",
                       color: "#16a34a",
                     },

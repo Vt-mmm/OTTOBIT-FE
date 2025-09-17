@@ -182,9 +182,9 @@ const challengeSlice = createSlice({
         state.operations.isCreating = false;
         state.operations.createError = null;
         
-        if (state.challenges.data?.data) {
-          state.challenges.data.data.unshift(action.payload);
-          state.challenges.data.totalCount += 1;
+        if (state.challenges.data?.items) {
+          state.challenges.data.items.unshift(action.payload);
+          state.challenges.data.total += 1;
         }
       })
       .addCase(createChallengeThunk.rejected, (state, action) => {
@@ -204,12 +204,12 @@ const challengeSlice = createSlice({
           state.currentChallenge.data = action.payload;
         }
 
-        if (state.challenges.data?.data) {
-          const index = state.challenges.data.data.findIndex(
+        if (state.challenges.data?.items) {
+          const index = state.challenges.data.items.findIndex(
             (challenge) => challenge.id === action.payload.id
           );
           if (index !== -1) {
-            state.challenges.data.data[index] = action.payload;
+            state.challenges.data.items[index] = action.payload;
           }
         }
       })
@@ -233,13 +233,13 @@ const challengeSlice = createSlice({
           state.solving = initialState.solving;
         }
 
-        if (state.challenges.data?.data) {
-          const index = state.challenges.data.data.findIndex(
+        if (state.challenges.data?.items) {
+          const index = state.challenges.data.items.findIndex(
             (challenge) => challenge.id === challengeId
           );
           if (index !== -1) {
-            state.challenges.data.data.splice(index, 1);
-            state.challenges.data.totalCount -= 1;
+            state.challenges.data.items.splice(index, 1);
+            state.challenges.data.total -= 1;
           }
         }
       })
@@ -256,9 +256,9 @@ const challengeSlice = createSlice({
         state.operations.isRestoring = false;
         state.operations.restoreError = null;
         
-        if (state.challenges.data?.data) {
-          state.challenges.data.data.unshift(action.payload);
-          state.challenges.data.totalCount += 1;
+        if (state.challenges.data?.items) {
+          state.challenges.data.items.unshift(action.payload);
+          state.challenges.data.total += 1;
         }
       })
       .addCase(restoreChallengeThunk.rejected, (state, action) => {

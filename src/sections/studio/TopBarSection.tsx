@@ -69,7 +69,6 @@ function TopBarContent({
 
   const handleRun = async () => {
     if (!workspace) {
-      console.warn("No workspace provided to run program");
       return;
     }
 
@@ -77,16 +76,11 @@ function TopBarContent({
 
     try {
       // Đảm bảo Phaser thực sự sẵn sàng
-      console.log("🚀 Running program in Phaser...");
-      console.log("🔍 Phaser status:", { phaserConnected, phaserReady });
-
       if (!phaserConnected || !phaserReady) {
-        console.warn("⚠️ Phaser not ready, waiting...");
         // Đợi một chút để Phaser sẵn sàng
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         if (!phaserConnected || !phaserReady) {
-          console.error("❌ Phaser still not ready after waiting");
           setIsRunning(false);
           return;
         }
@@ -95,11 +89,8 @@ function TopBarContent({
       // Thêm delay nhỏ trước khi gửi message để đảm bảo Phaser thực sự sẵn sàng
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      console.log("📤 Sending program to Phaser...");
       await runProgramFromWorkspace(workspace);
-      console.log("✅ Program sent to Phaser successfully");
-    } catch (error) {
-      console.error("❌ Failed to run program:", error);
+      } catch (error) {
       setIsRunning(false);
       return;
     }
@@ -121,19 +112,15 @@ function TopBarContent({
 
   const handleStop = async () => {
     try {
-      console.log("🛑 Stopping program...");
       await stopProgram();
-      console.log("✅ Program stopped successfully");
-    } catch (error) {
-      console.error("❌ Failed to stop program:", error);
-    }
+      } catch (error) {
+      }
     setIsRunning(false);
   };
 
   const handleValidate = () => {
     // TODO: Implement validation logic
-    console.log("Validating code...");
-  };
+    };
 
   const handleBluetooth = async () => {
     setShowConnectionDialog(true);
@@ -149,10 +136,10 @@ function TopBarContent({
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       }}
     >
-      <Toolbar 
-        sx={{ 
+      <Toolbar
+        sx={{
           minHeight: { xs: "56px", sm: "64px", md: "72px" },
-          px: { xs: 1, sm: 2 }, 
+          px: { xs: 1, sm: 2 },
           gap: { xs: 1, sm: 2 },
           flexWrap: { xs: "wrap", md: "nowrap" }, // Allow wrapping on mobile
         }}
@@ -173,7 +160,7 @@ function TopBarContent({
           }}
         >
           <img
-            src="/asset/LogoOttobit.png"
+            src="/asset/OttobitLogoText.png"
             alt="Ottobit Logo"
             style={{
               width: "100%",
@@ -196,7 +183,7 @@ function TopBarContent({
         >
           Ottobit Studio
         </Typography>
-        
+
         {/* Short title for mobile */}
         <Typography
           variant="h6"

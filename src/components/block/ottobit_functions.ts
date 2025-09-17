@@ -20,5 +20,4 @@ export const blocks = functionBlocks;
 export function initializeProcedures() {
   // Procedures blocks được tự động đăng ký bởi Blockly
   // Chúng ta có thể customize chúng ở đây nếu cần
-  console.log('📦 Procedures blocks initialized');
-}
+  }

@@ -568,7 +568,6 @@ export function generateJavaScriptCode(workspace: any): string {
   try {
     return javascriptGenerator.workspaceToCode(workspace);
   } catch (error) {
-    console.error("Error generating JavaScript code:", error);
     return "// Error generating code";
   }
 }
