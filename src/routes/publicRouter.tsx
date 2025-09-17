@@ -43,6 +43,9 @@ export default function PublicRouter() {
     return <Outlet />;
   }
 
+  // Temporarily disable admin redirect for development
+  // TODO: Re-enable when ready for production
+  /*
   // Check for authenticated admin access to other public routes
   if (
     isAuthenticated &&
@@ -52,6 +55,7 @@ export default function PublicRouter() {
     // Redirect admin users to admin dashboard when they try to access public routes
     return <Navigate to={PATH_ADMIN.dashboard} />;
   }
+  */
 
   // Check for authenticated regular user access to other public routes
   if (

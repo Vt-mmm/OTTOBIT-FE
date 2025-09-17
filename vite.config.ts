@@ -25,6 +25,10 @@ export default defineConfig({
     },
   },
   server: {
+    host: "localhost", // Only show localhost
+    port: 5173,
+    strictPort: true,
+    open: false,
     proxy: {
       "/api": {
         target: "https://localhost:7093",
@@ -34,6 +38,11 @@ export default defineConfig({
       },
       "/api/ai-proxy": {
         target: "http://localhost:3001",
+        changeOrigin: true,
+        rewrite: (path) => path,
+      },
+      "/detect": {
+        target: "http://127.0.0.1:8000",
         changeOrigin: true,
         rewrite: (path) => path,
       },

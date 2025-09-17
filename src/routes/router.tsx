@@ -34,7 +34,9 @@ const SharedHomePage = lazy(() => import("pages/user/Homepage"));
 const CoursesPage = lazy(() => import("pages/user/CoursesPage"));
 const CourseDetailPage = lazy(() => import("pages/user/CourseDetailPage"));
 const LessonDetailPage = lazy(() => import("pages/user/LessonDetailPage"));
-const ChallengeDetailPage = lazy(() => import("pages/user/ChallengeDetailPage"));
+const ChallengeDetailPage = lazy(
+  () => import("pages/user/ChallengeDetailPage")
+);
 const RobotStudioPage = lazy(() => import("pages/studio/RobotStudioPage"));
 const UserProfilePage = lazy(() => import("pages/user/UserProfilePage"));
 const StudentProfilePage = lazy(() => import("pages/user/StudentProfilePage"));
@@ -152,32 +154,41 @@ function AppRouter() {
           ))}
         </ReactRoute>
 
-        {/* Login Redirect Logic for Admin section */}
+        {/* Admin section - Direct access for development */}
         <ReactRoute
           path="/admin"
-          element={
-            isAuthenticated && isAdmin && accessToken ? (
-              <Navigate to={PATH_ADMIN.dashboard} replace />
-            ) : (
-              <Navigate to={PATH_AUTH.login} replace />
-            )
-          }
+          element={<Navigate to={PATH_ADMIN.dashboard} replace />}
         />
 
         {/* Studio Route - Public Access (Bypass Authentication) */}
         <ReactRoute path={PATH_USER.studio} element={<RobotStudioPage />} />
-        <ReactRoute path={PATH_USER.studioWithChallenge} element={<RobotStudioPage />} />
+        <ReactRoute
+          path={PATH_USER.studioWithChallenge}
+          element={<RobotStudioPage />}
+        />
 
         {/* User Routes - Protected */}
         <ReactRoute element={<UserRouter />}>
           {/* Các trang dành riêng cho user */}
           <ReactRoute path={PATH_USER.homepage} element={<SharedHomePage />} />
           <ReactRoute path={PATH_USER.courses} element={<CoursesPage />} />
-          <ReactRoute path={PATH_USER.courseDetail} element={<CourseDetailPage />} />
-          <ReactRoute path={PATH_USER.lessonDetail} element={<LessonDetailPage />} />
-          <ReactRoute path={PATH_USER.challengeDetail} element={<ChallengeDetailPage />} />
+          <ReactRoute
+            path={PATH_USER.courseDetail}
+            element={<CourseDetailPage />}
+          />
+          <ReactRoute
+            path={PATH_USER.lessonDetail}
+            element={<LessonDetailPage />}
+          />
+          <ReactRoute
+            path={PATH_USER.challengeDetail}
+            element={<ChallengeDetailPage />}
+          />
           <ReactRoute path={PATH_USER.profile} element={<UserProfilePage />} />
-          <ReactRoute path={PATH_USER.studentProfile} element={<StudentProfilePage />} />
+          <ReactRoute
+            path={PATH_USER.studentProfile}
+            element={<StudentProfilePage />}
+          />
         </ReactRoute>
 
         {/* Auth Routes */}

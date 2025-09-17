@@ -21,8 +21,6 @@ import SearchIcon from "@mui/icons-material/Search";
 interface WorkspaceSectionProps {
   selectedAsset: string;
   onAssetSelect: (assetId: string) => void;
-  mapName: string;
-  onMapNameChange: (name: string) => void;
 }
 
 interface TabPanelProps {
@@ -42,8 +40,6 @@ function TabPanel({ children, value, index }: TabPanelProps) {
 export default function WorkspaceSection({
   selectedAsset,
   onAssetSelect,
-  mapName,
-  onMapNameChange,
 }: WorkspaceSectionProps) {
   const [tabValue, setTabValue] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
@@ -107,14 +103,11 @@ export default function WorkspaceSection({
           }}
         >
           {asset.imagePath ? (
-            <img
+            <Box
+              component="img"
               src={asset.imagePath}
               alt={asset.name}
-              style={{
-                width: 28,
-                height: 28,
-                imageRendering: "pixelated",
-              }}
+              sx={{ width: 28, height: 28, objectFit: "contain" }}
             />
           ) : isEmpty ? (
             <CropFreeIcon sx={{ fontSize: 28, color: "#9E9E9E" }} />
@@ -164,26 +157,6 @@ export default function WorkspaceSection({
       >
         Workspace
       </Typography>
-
-      {/* Map Name Input */}
-      <TextField
-        fullWidth
-        label="Tên map"
-        value={mapName}
-        onChange={(e) => onMapNameChange(e.target.value)}
-        size="small"
-        sx={{
-          mb: 1.5,
-          "& .MuiOutlinedInput-root": {
-            "&.Mui-focused fieldset": {
-              borderColor: THEME_COLORS.primary,
-            },
-          },
-          "& .MuiInputLabel-root.Mui-focused": {
-            color: THEME_COLORS.primary,
-          },
-        }}
-      />
 
       {/* Search Field */}
       <TextField
@@ -275,17 +248,6 @@ export default function WorkspaceSection({
           >
             {filterAssets(getAssetsByCategory("robot")).map(renderAssetButton)}
           </Box>
-          <Typography
-            variant="caption"
-            sx={{
-              display: "block",
-              mt: 1,
-              color: THEME_COLORS.text.secondary,
-              fontSize: "0.7rem",
-            }}
-          >
-            * Chỉ được đặt 1 robot trên map
-          </Typography>
         </TabPanel>
 
         {/* Items Tab */}
@@ -409,9 +371,7 @@ export default function WorkspaceSection({
         <Typography
           variant="caption"
           sx={{ display: "block", color: THEME_COLORS.text.secondary }}
-        >
-          • Items có thể xếp chồng nhiều cái
-        </Typography>
+        ></Typography>
       </Box>
     </Paper>
   );

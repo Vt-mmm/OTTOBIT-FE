@@ -5,6 +5,8 @@ import { PATH_ADMIN } from "routes/paths";
 
 // Lazy load admin pages
 const MapDesignerPage = lazy(() => import("pages/admin/MapDesignerPage"));
+const MapManagementPage = lazy(() => import("pages/admin/MapManagementPage"));
+const AdminTestPage = lazy(() => import("pages/admin/AdminTestPage"));
 
 export const adminRoutes: Route[] = [
   {
@@ -15,6 +17,16 @@ export const adminRoutes: Route[] = [
   {
     path: PATH_ADMIN.mapDesigner,
     component: <MapDesignerPage />,
+    index: false,
+  },
+  {
+    path: PATH_ADMIN.mapManagement,
+    component: <MapManagementPage />,
+    index: false,
+  },
+  {
+    path: "/admin/test",
+    component: <AdminTestPage />,
     index: false,
   },
 ];

@@ -9,7 +9,6 @@ import { actionBlocks } from "./ottobit_actions";
 import { functionBlocks } from "./ottobit_functions";
 import { ottobit_function_def, ottobit_function_call } from "./blocks/functionBlocks";
 
-
 // Import generators to register them automatically
 import "./generators/javascript";
 import "./generators/python";
@@ -17,13 +16,23 @@ import "./generators/python";
 // Import extensions
 import { registerIfElseMutator } from "./extensions/if_else_mutator";
 
+// Prevent duplicate mutator registration across multiple mounts/usages
+let isMutatorRegistered = false;
+
 /**
  * Register all ottobit block definitions following Google Blockly standards
  */
 export function registerottobitBlocks(): void {
-  // Register mutators first
-  registerIfElseMutator();
-  
+  // Register mutators first (guard against double registration)
+  if (!isMutatorRegistered) {
+    try {
+      registerIfElseMutator();
+    } catch (e) {
+      // Ignore if already registered by another workspace
+    }
+    isMutatorRegistered = true;
+  }
+
   // Clear existing blocks first to ensure fresh registration
   Object.keys(Blockly.Blocks).forEach((blockType) => {
     if (blockType.startsWith("ottobit_")) {
@@ -57,7 +66,7 @@ export function registerottobitBlocks(): void {
   Blockly.Blocks['ottobit_function_call'] = ottobit_function_call;
 
   // Blocks registered successfully
-  
+
   // Blocks and mutators registered successfully
 }
 

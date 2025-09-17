@@ -1,6 +1,7 @@
 // @mui icons
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import EditLocationAltIcon from "@mui/icons-material/EditLocationAlt";
+import MapIcon from "@mui/icons-material/Map";
 import { PATH_ADMIN } from "routes/paths";
 
 function useConfigSidebar() {
@@ -23,10 +24,14 @@ function useConfigSidebar() {
           path: PATH_ADMIN.mapDesigner,
           icon: <EditLocationAltIcon fontSize="medium" />,
         },
+        {
+          title: "Quản lý Map",
+          path: PATH_ADMIN.mapManagement,
+          icon: <MapIcon fontSize="medium" />,
+        },
       ],
     },
   ];
-
 
   return { navAdmin };
 }

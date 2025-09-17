@@ -9,7 +9,7 @@ import {
 import { useState, useRef, useEffect } from "react";
 import { MapCell } from "common/models";
 import { MAP_ASSETS } from "./mapAssets.config";
-import { THEME_COLORS, GRID_CONFIG } from "./theme.config";
+import { THEME_COLORS, GRID_CONFIG, EMPTY_CELL_STYLE } from "./theme.config";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import SaveIcon from "@mui/icons-material/Save";
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -23,7 +23,6 @@ interface MapGridSectionProps {
   selectedAsset: string;
   onCellClick: (row: number, col: number) => void;
   onSaveMap: () => void;
-  onTestMap: () => void;
   onClearMap: () => void;
 }
 
@@ -32,9 +31,10 @@ export default function MapGridSection({
   selectedAsset,
   onCellClick,
   onSaveMap,
-  onTestMap,
   onClearMap,
 }: MapGridSectionProps) {
+  const ENABLE_PAN = true;
+  const MAP_VIEWPORT_HEIGHT = 700; // px - fixed map viewport height
   const [isDrawing, setIsDrawing] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [showGrid, setShowGrid] = useState(true);
@@ -44,6 +44,14 @@ export default function MapGridSection({
   } | null>(null);
   const [previewAsset, setPreviewAsset] = useState<string | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isPanning, setIsPanning] = useState(false);
+  const panStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
+  const panStartOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const handleMouseDown = (row: number, col: number) => {
     setIsDrawing(true);
@@ -58,12 +66,45 @@ export default function MapGridSection({
 
   const handleMouseUp = () => {
     setIsDrawing(false);
+    setIsPanning(false);
   };
 
   useEffect(() => {
     window.addEventListener("mouseup", handleMouseUp);
     return () => window.removeEventListener("mouseup", handleMouseUp);
   }, []);
+
+  // Background drag-to-pan handlers
+  const handleBackgroundMouseDown = (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    if (!ENABLE_PAN) return;
+    if (e.button !== 0) return; // left button only
+    // Only start panning when clicking background (not on the grid content)
+    if (gridRef.current && gridRef.current.contains(e.target as Node)) return;
+    setIsPanning(true);
+    panStartRef.current = { x: e.clientX, y: e.clientY };
+    panStartOffsetRef.current = { x: panOffset.x, y: panOffset.y };
+  };
+
+  const handleBackgroundMouseMove = (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    if (!ENABLE_PAN) return;
+    if (!isPanning) return;
+    const dx = e.clientX - panStartRef.current.x;
+    const dy = e.clientY - panStartRef.current.y;
+    setPanOffset({
+      x: panStartOffsetRef.current.x - dx,
+      y: panStartOffsetRef.current.y - dy,
+    });
+  };
+
+  const handleBackgroundMouseLeave = () => {
+    if (!ENABLE_PAN) return;
+    if (!isPanning) return;
+    setIsPanning(false);
+  };
 
   const handleZoomIn = () => {
     setZoom((prev) => Math.min(prev + 0.1, 2));
@@ -392,6 +433,7 @@ export default function MapGridSection({
         bgcolor: THEME_COLORS.surface,
         borderRadius: 2,
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        position: "relative",
       }}
     >
       {/* Header with title and controls */}
@@ -412,18 +454,6 @@ export default function MapGridSection({
           </Typography>
 
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-            {/* Grid toggle */}
-            <IconButton
-              size="small"
-              onClick={() => setShowGrid(!showGrid)}
-              sx={{
-                color: showGrid ? THEME_COLORS.primary : "#999",
-                bgcolor: showGrid ? `${THEME_COLORS.primary}10` : "transparent",
-              }}
-            >
-              <GridOnIcon />
-            </IconButton>
-
             {/* Zoom controls */}
             <IconButton
               size="small"
@@ -446,63 +476,94 @@ export default function MapGridSection({
             </IconButton>
           </Box>
         </Box>
-
-        {/* Cell info */}
-        {hoveredCell && (
-          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-            <InfoIcon
-              sx={{ fontSize: 16, color: THEME_COLORS.text.secondary }}
-            />
-            <Typography
-              variant="caption"
-              sx={{ color: THEME_COLORS.text.secondary }}
-            >
-              Ô [{hoveredCell.row}, {hoveredCell.col}]
-            </Typography>
-          </Box>
-        )}
       </Box>
 
-      {/* Grid container with scroll */}
+      {/* Grid viewport wrapper (non-scrolling) */}
       <Box
         sx={{
-          flexGrow: 1,
-          overflow: "auto",
+          flexGrow: 0,
+          height: MAP_VIEWPORT_HEIGHT,
+          minHeight: MAP_VIEWPORT_HEIGHT,
+          position: "relative",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
           bgcolor: "#e8e8e8", // Nền xám nhạt giống Tiled
           borderRadius: 1,
           p: 3,
-          position: "relative",
+          overflow: "hidden",
         }}
       >
+        {/* Fixed badge inside map area (won't scroll) */}
         <Box
-          ref={gridRef}
           sx={{
-            display: "grid",
-            gridTemplateColumns: `repeat(${GRID_CONFIG.cols}, ${GRID_CONFIG.cellSize}px)`,
-            gridTemplateRows: `repeat(${GRID_CONFIG.rows}, ${GRID_CONFIG.cellSize}px)`,
-            gap: 0, // Không có gap - tiles sát nhau hoàn toàn
-            transform: `scale(${zoom})`,
-            transformOrigin: "center",
-            transition: "transform 0.2s",
-            userSelect: "none",
-            // Outer border cho toàn bộ grid
-            border: "2px solid #333",
-            borderRadius: 0, // Không bo tròn để tiles vuông vắn
-            bgcolor: "#ffffff",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-            // Dùng overflow hidden để tiles không tràn ra ngoài grid
-            overflow: "hidden",
-            position: "relative",
-            // Cải thiện rendering quality
-            imageRendering: "pixelated",
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden",
+            position: "absolute",
+            top: 8,
+            right: 8,
+            zIndex: 1000,
+            display: "flex",
+            gap: 1,
+            alignItems: "center",
+            bgcolor: "rgba(0,0,0,0.7)",
+            color: "white",
+            px: 1.5,
+            py: 0.5,
+            borderRadius: 1,
+            fontSize: "12px",
+            fontWeight: 500,
+            pointerEvents: "none",
           }}
         >
-          {mapGrid.map((row) => row.map((cell) => renderCell(cell)))}
+          <Typography variant="caption" sx={{ color: "white" }}>
+            Cell [{hoveredCell?.row ?? "-"}, {hoveredCell?.col ?? "-"}]
+          </Typography>
+        </Box>
+
+        {/* Scrollable map pane */}
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            overflow: "auto",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: 1,
+            cursor: isPanning ? "grabbing" : "grab",
+          }}
+          ref={scrollContainerRef}
+          onMouseDown={handleBackgroundMouseDown}
+          onMouseMove={handleBackgroundMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleBackgroundMouseLeave}
+        >
+          <Box
+            ref={gridRef}
+            sx={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${GRID_CONFIG.cols}, ${GRID_CONFIG.cellSize}px)`,
+              gridTemplateRows: `repeat(${GRID_CONFIG.rows}, ${GRID_CONFIG.cellSize}px)`,
+              gap: 0, // Không có gap - tiles sát nhau hoàn toàn
+              transform: `translate(${-panOffset.x}px, ${-panOffset.y}px) scale(${zoom})`,
+              transformOrigin: "top left",
+              transition: "transform 0.2s",
+              userSelect: "none",
+              // No border or background
+              border: "none",
+              borderRadius: 0,
+              bgcolor: "transparent",
+              boxShadow: "none",
+              // Cho phép nội dung zoom tràn để không bị cắt mất các ô cuối
+              overflow: "visible",
+              position: "relative",
+              // Cải thiện rendering quality
+              imageRendering: "pixelated",
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+            }}
+          >
+            {mapGrid.map((row) => row.map((cell) => renderCell(cell)))}
+          </Box>
         </Box>
       </Box>
 
@@ -522,22 +583,6 @@ export default function MapGridSection({
           }}
         >
           Xóa tất cả
-        </Button>
-
-        <Button
-          variant="outlined"
-          startIcon={<PlayArrowIcon />}
-          onClick={onTestMap}
-          sx={{
-            borderColor: THEME_COLORS.primary,
-            color: THEME_COLORS.primary,
-            "&:hover": {
-              borderColor: THEME_COLORS.primaryDark,
-              bgcolor: THEME_COLORS.hover,
-            },
-          }}
-        >
-          Test Map
         </Button>
 
         <Button

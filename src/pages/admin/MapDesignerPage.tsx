@@ -8,21 +8,29 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import AdminLayout from "layout/admin/AdminLayout";
-import { MapCell, WinCondition } from "common/models";
+import { MapCell } from "common/models";
 import {
   WorkspaceSection,
   MapGridSection,
-  IsometricMapGrid,
   WinConditionsSection,
 } from "sections/admin/mapDesigner";
+import SimpleIsometricMapGrid from "sections/admin/mapDesigner/SimpleIsometricMapGrid";
 import { GRID_CONFIG } from "sections/admin/mapDesigner/theme.config";
 import { MAP_ASSETS } from "sections/admin/mapDesigner/mapAssets.config";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import ThreeDRotationIcon from "@mui/icons-material/ThreeDRotation";
+import { axiosClient } from "axiosClient";
+import { ROUTES_API_CHALLENGE } from "constants/routesApiKeys";
 
 const MapDesignerPage = () => {
   const [selectedAsset, setSelectedAsset] = useState<string>("grass");
   const [mapName, setMapName] = useState<string>("New Map");
+  const [mapDescription, setMapDescription] = useState<string>("");
+  const [solutionJson, setSolutionJson] = useState<string | null>(null);
+  const [challengeJson, setChallengeJson] = useState<string | null>(null);
+  const [lessonId, setLessonId] = useState<string>("");
+  const [order, setOrder] = useState<number>(1);
+  const [difficulty, setDifficulty] = useState<number>(1);
   const [viewMode, setViewMode] = useState<"orthogonal" | "isometric">(
     "isometric"
   );
@@ -40,7 +48,67 @@ const MapDesignerPage = () => {
           }))
       )
   );
-  const [winConditions, setWinConditions] = useState<WinCondition[]>([]);
+
+  // Lightweight toast fallback (top-right) when global Snackbar is unavailable
+  const showLocalToast = (
+    message: string,
+    variant: "success" | "error" | "info" | "warning" = "info"
+  ) => {
+    const containerId = "local-toast-container";
+    let container = document.getElementById(containerId);
+    if (!container) {
+      container = document.createElement("div");
+      container.id = containerId;
+      Object.assign(container.style, {
+        position: "fixed",
+        top: "16px",
+        right: "16px",
+        zIndex: "9999",
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+        pointerEvents: "none",
+      } as CSSStyleDeclaration);
+      document.body.appendChild(container);
+    }
+    const toast = document.createElement("div");
+    const bgMap: Record<string, string> = {
+      success: "#2e7d32",
+      error: "#d32f2f",
+      info: "#0288d1",
+      warning: "#ed6c02",
+    };
+    // Align styles to MUI/Notistack look & feel
+    Object.assign(toast.style, {
+      background: bgMap[variant] || "#323232",
+      color: "#fff",
+      padding: "6px 16px",
+      borderRadius: "4px",
+      boxShadow:
+        "rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px",
+      fontSize: "0.875rem",
+      lineHeight: "1.43",
+      fontWeight: "500",
+      letterSpacing: "0.01071em",
+      pointerEvents: "auto",
+      transition: "opacity 0.3s, transform 0.3s",
+      opacity: "0",
+      transform: "translateY(-6px)",
+    } as CSSStyleDeclaration);
+    toast.textContent = message;
+    toast.setAttribute("role", "alert");
+    container.appendChild(toast);
+    requestAnimationFrame(() => {
+      toast.style.opacity = "1";
+      toast.style.transform = "translateY(0)";
+    });
+    const remove = () => {
+      toast.style.opacity = "0";
+      toast.style.transform = "translateY(-6px)";
+      setTimeout(() => toast.remove(), 300);
+    };
+    setTimeout(remove, 2500);
+  };
 
   const handleCellClick = (row: number, col: number) => {
     const newGrid = [...mapGrid];
@@ -51,15 +119,17 @@ const MapDesignerPage = () => {
 
     // Tool actions
     if (selectedAsset === "eraser") {
-      // Erase object and items on the cell (keep terrain)
-      currentCell.object = null;
-      currentCell.items = [];
-      currentCell.itemCount = 0;
+      // Simple rule: if cell has itemCount > 1, decrement; else clear object
+      if ((currentCell.itemCount || 0) > 1) {
+        currentCell.itemCount = (currentCell.itemCount || 1) - 1;
+      } else {
+        currentCell.object = null;
+        currentCell.itemCount = 0;
+      }
     } else if (selectedAsset === "empty") {
       // Clear the cell completely
       currentCell.terrain = null;
       currentCell.object = null;
-      currentCell.items = [];
       currentCell.itemCount = 0;
     }
     // Asset placement
@@ -80,32 +150,27 @@ const MapDesignerPage = () => {
       );
       currentCell.object = selectedAsset;
     } else if (asset.category === "item") {
-      // Handle items (pins) - can stack multiple items
-      if (!currentCell.items) {
-        currentCell.items = [];
-      }
-
-      // Check if item already exists in this cell
-      const existingItemIndex = currentCell.items.findIndex(
-        (item) => item === selectedAsset
-      );
-
-      if (existingItemIndex >= 0) {
-        // Remove existing item
-        currentCell.items.splice(existingItemIndex, 1);
-        currentCell.itemCount = Math.max(0, (currentCell.itemCount || 1) - 1);
-
-        // Update object display
-        if (currentCell.items.length === 0) {
-          currentCell.object = null;
-        } else {
-          currentCell.object = currentCell.items[0];
-        }
+      // Special rule for box: allow only one on the entire map, no stacking
+      if (selectedAsset === "box") {
+        // Remove existing box anywhere
+        newGrid.forEach((gridRow) =>
+          gridRow.forEach((cell) => {
+            if (cell.object === "box") {
+              cell.object = null;
+              cell.itemCount = 0;
+            }
+          })
+        );
+        currentCell.object = "box";
+        currentCell.itemCount = 1;
       } else {
-        // Add new item
-        currentCell.items.push(selectedAsset);
-        currentCell.itemCount = (currentCell.itemCount || 0) + 1;
-        currentCell.object = selectedAsset; // Show the latest item
+        // Other items: keep single object id and a count
+        if (currentCell.object === selectedAsset) {
+          currentCell.itemCount = (currentCell.itemCount || 0) + 1;
+        } else {
+          currentCell.object = selectedAsset;
+          currentCell.itemCount = 1;
+        }
       }
     } else if (asset.category === "object") {
       // Handle other objects (obstacles, decorations)
@@ -121,14 +186,280 @@ const MapDesignerPage = () => {
     setMapGrid(newGrid);
   };
 
-  const handleSaveMap = () => {
-    // TODO: Implement save map logic
-    console.log("Save map:", { mapName, mapGrid, winConditions });
-  };
+  const handleSaveMap = async () => {
+    // Validate required fields
+    if (!lessonId || lessonId.trim().length === 0) {
+      const msg = "Vui lòng chọn Bài học (Lesson) trước khi lưu";
+      try {
+        if ((window as any).Snackbar?.enqueueSnackbar) {
+          (window as any).Snackbar.enqueueSnackbar(msg, {
+            variant: "error",
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+          });
+        } else {
+          showLocalToast(msg, "error");
+        }
+      } catch {
+        showLocalToast(msg, "error");
+      }
+      return;
+    }
+    const missingName = !mapName || mapName.trim().length === 0;
+    const missingDescription =
+      !mapDescription || mapDescription.trim().length === 0;
+    if (missingName || missingDescription) {
+      const bothMissing = missingName && missingDescription;
+      const msg = bothMissing
+        ? "Vui lòng nhập tên map và mô tả map"
+        : missingName
+        ? "Vui lòng nhập tên map"
+        : "Vui lòng nhập mô tả map";
+      const variant: "error" | "warning" = bothMissing ? "error" : "warning";
+      try {
+        if ((window as any).Snackbar?.enqueueSnackbar) {
+          (window as any).Snackbar.enqueueSnackbar(msg, {
+            variant,
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+          });
+        } else {
+          showLocalToast(msg, variant);
+        }
+      } catch {
+        showLocalToast(msg, variant);
+      }
+      return;
+    }
 
-  const handleTestMap = () => {
-    // TODO: Implement test map logic
-    console.log("Test map");
+    // Validate: must have a robot placed on the map
+    let hasRobot = false;
+    outer: for (const row of mapGrid) {
+      for (const cell of row) {
+        if (!cell.object) continue;
+        const asset = MAP_ASSETS.find((a) => a.id === cell.object);
+        if (asset && (asset as any).category === "robot") {
+          hasRobot = true;
+          break outer;
+        }
+      }
+    }
+    if (!hasRobot) {
+      const msg = "Vui lòng đặt robot lên bản đồ trước khi lưu";
+      try {
+        if ((window as any).Snackbar?.enqueueSnackbar) {
+          (window as any).Snackbar.enqueueSnackbar(msg, {
+            variant: "error",
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+          });
+        } else {
+          showLocalToast(msg, "error");
+        }
+      } catch {
+        showLocalToast(msg, "error");
+      }
+      return;
+    }
+
+    // Validate: solution and challenge must be configured
+    const missingSolution = !solutionJson || solutionJson.trim().length === 0;
+    const missingChallenge =
+      !challengeJson || challengeJson.trim().length === 0;
+    if (missingSolution || missingChallenge) {
+      const msg =
+        missingSolution && missingChallenge
+          ? "Vui lòng thiết lập Solution và Challenge trước khi lưu"
+          : missingSolution
+          ? "Vui lòng thiết lập Solution trước khi lưu"
+          : "Vui lòng thiết lập Challenge trước khi lưu";
+      try {
+        if ((window as any).Snackbar?.enqueueSnackbar) {
+          (window as any).Snackbar.enqueueSnackbar(msg, {
+            variant: "error",
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+          });
+        } else {
+          showLocalToast(msg, "error");
+        }
+      } catch {
+        showLocalToast(msg, "error");
+      }
+      return;
+    }
+
+    // Convert mapGrid to Tiled format
+    const data: number[] = [];
+
+    // Flatten the 2D grid to 1D array (row by row)
+    for (let row = 0; row < GRID_CONFIG.rows; row++) {
+      for (let col = 0; col < GRID_CONFIG.cols; col++) {
+        const cell = mapGrid[row][col];
+        let tileId = 0; // 0 = empty
+
+        if (cell.terrain) {
+          // Map terrain assets to tile IDs
+          const terrainMap: { [key: string]: number } = {
+            grass: 5,
+            water: 4,
+            wood: 3,
+            road_h: 2,
+            road_v: 1,
+            crossroad: 6,
+          };
+          tileId = terrainMap[cell.terrain] || 0;
+        }
+
+        data.push(tileId);
+      }
+    }
+
+    const tiledMap = {
+      compressionlevel: -1,
+      height: 10,
+      infinite: false,
+      layers: [
+        {
+          data: data,
+          height: 10,
+          id: 1,
+          name: "Tile Layer 1",
+          opacity: 1,
+          type: "tilelayer",
+          visible: true,
+          width: 10,
+          x: 0,
+          y: 0,
+        },
+      ],
+      nextlayerid: 2,
+      nextobjectid: 1,
+      orientation: "isometric",
+      renderorder: "right-down",
+      tiledversion: "1.11.2",
+      tileheight: 80,
+      tilesets: [
+        {
+          columns: 1,
+          firstgid: 1,
+          image: ".",
+          imageheight: 128,
+          imagewidth: 128,
+          margin: 0,
+          name: "road_v",
+          spacing: 0,
+          tilecount: 1,
+          tileheight: 128,
+          tilewidth: 128,
+        },
+        {
+          columns: 1,
+          firstgid: 2,
+          image: ".",
+          imageheight: 128,
+          imagewidth: 128,
+          margin: 0,
+          name: "road_h",
+          spacing: 0,
+          tilecount: 1,
+          tileheight: 128,
+          tilewidth: 128,
+        },
+        {
+          columns: 1,
+          firstgid: 3,
+          image: ".",
+          imageheight: 128,
+          imagewidth: 128,
+          margin: 0,
+          name: "wood",
+          spacing: 0,
+          tilecount: 1,
+          tileheight: 128,
+          tilewidth: 128,
+        },
+        {
+          columns: 1,
+          firstgid: 4,
+          image: ".",
+          imageheight: 128,
+          imagewidth: 128,
+          margin: 0,
+          name: "water",
+          spacing: 0,
+          tilecount: 1,
+          tileheight: 128,
+          tilewidth: 128,
+        },
+        {
+          columns: 1,
+          firstgid: 5,
+          image: ".",
+          imageheight: 128,
+          imagewidth: 128,
+          margin: 0,
+          name: "grass",
+          spacing: 0,
+          tilecount: 1,
+          tileheight: 128,
+          tilewidth: 128,
+        },
+        {
+          columns: 1,
+          firstgid: 6,
+          image: ".",
+          imageheight: 128,
+          imagewidth: 128,
+          margin: 0,
+          name: "crossroad",
+          spacing: 0,
+          tilecount: 1,
+          tileheight: 128,
+          tilewidth: 128,
+        },
+      ],
+      tilewidth: 128,
+      type: "map",
+      version: "1.10",
+      width: 10,
+    };
+
+    // Create lesson form data
+    const lessonData = {
+      lessonId,
+      title: mapName,
+      description: mapDescription,
+      order,
+      difficulty,
+      mapJson: JSON.stringify(tiledMap),
+      challengeJson: challengeJson,
+      solutionJson: solutionJson,
+    };
+
+    try {
+      const res = await axiosClient.post(
+        ROUTES_API_CHALLENGE.CREATE,
+        lessonData
+      );
+      const ok = res && (res.status === 200 || res.status === 201);
+      const msg = ok ? "Lưu map (challenge) thành công" : "Lưu map thất bại";
+      const variant = ok ? "success" : "error";
+      if ((window as any).Snackbar?.enqueueSnackbar) {
+        (window as any).Snackbar.enqueueSnackbar(msg, {
+          variant,
+          anchorOrigin: { vertical: "top", horizontal: "right" },
+        });
+      } else {
+        showLocalToast(msg, variant as any);
+      }
+    } catch (e: any) {
+      const msg = "Lưu map thất bại";
+      if ((window as any).Snackbar?.enqueueSnackbar) {
+        (window as any).Snackbar.enqueueSnackbar(msg, {
+          variant: "error",
+          anchorOrigin: { vertical: "top", horizontal: "right" },
+        });
+      } else {
+        showLocalToast(msg, "error");
+      }
+    }
   };
 
   const handleClearMap = () => {
@@ -146,14 +477,6 @@ const MapDesignerPage = () => {
             }))
         )
     );
-  };
-
-  const handleAddCondition = (condition: WinCondition) => {
-    setWinConditions([...winConditions, condition]);
-  };
-
-  const handleRemoveCondition = (id: string) => {
-    setWinConditions(winConditions.filter((c) => c.id !== id));
   };
 
   return (
@@ -206,8 +529,6 @@ const MapDesignerPage = () => {
             <WorkspaceSection
               selectedAsset={selectedAsset}
               onAssetSelect={setSelectedAsset}
-              mapName={mapName}
-              onMapNameChange={setMapName}
             />
           </Grid>
 
@@ -219,27 +540,37 @@ const MapDesignerPage = () => {
                 selectedAsset={selectedAsset}
                 onCellClick={handleCellClick}
                 onSaveMap={handleSaveMap}
-                onTestMap={handleTestMap}
                 onClearMap={handleClearMap}
               />
             ) : (
-              <IsometricMapGrid
+              <SimpleIsometricMapGrid
                 mapGrid={mapGrid}
                 selectedAsset={selectedAsset}
                 onCellClick={handleCellClick}
                 onSaveMap={handleSaveMap}
-                onTestMap={handleTestMap}
                 onClearMap={handleClearMap}
               />
             )}
           </Grid>
 
-          {/* Right Panel - Win Conditions */}
+          {/* Right Panel - Map Info */}
           <Grid item xs={12} md={3}>
             <WinConditionsSection
-              conditions={winConditions}
-              onAddCondition={handleAddCondition}
-              onRemoveCondition={handleRemoveCondition}
+              mapName={mapName}
+              onMapNameChange={setMapName}
+              mapDescription={mapDescription}
+              onMapDescriptionChange={setMapDescription}
+              lessonId={lessonId}
+              onLessonIdChange={setLessonId}
+              order={order}
+              onOrderChange={setOrder}
+              difficulty={difficulty}
+              onDifficultyChange={setDifficulty}
+              mapGrid={mapGrid}
+              onSolutionJsonChange={setSolutionJson}
+              solutionJson={solutionJson}
+              onChallengeJsonChange={setChallengeJson}
+              challengeJson={challengeJson}
             />
           </Grid>
         </Grid>
