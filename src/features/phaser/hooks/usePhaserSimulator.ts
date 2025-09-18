@@ -417,6 +417,42 @@ export function usePhaserSimulator(
     setError(null);
   }, []);
 
+  // Restart scene
+  const restartScene = useCallback(async () => {
+    console.log("🔄 [usePhaserSimulator] Restarting scene...");
+    
+    if (!communicationServiceRef.current) {
+      throw new Error("Not connected to Phaser");
+    }
+
+    try {
+      await communicationServiceRef.current.restartScene();
+      console.log("✅ [usePhaserSimulator] Scene restarted successfully");
+      
+      // Reset current program state
+      setCurrentProgram(null);
+      
+      // Reset game state to initial values
+      setGameState((prev) => prev ? {
+        ...prev,
+        robotPosition: { x: 0, y: 0 },
+        robotDirection: 0,
+        collectedBatteries: 0,
+        collectedBatteryTypes: { red: 0, yellow: 0, green: 0 },
+        programStatus: "idle",
+        currentStep: 0,
+        totalSteps: 0,
+      } : null);
+      
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to restart scene";
+      console.error("❌ [usePhaserSimulator] Error restarting scene:", err);
+      setError(errorMessage);
+      throw err;
+    }
+  }, []);
+
   // Send message
   const sendMessage = useCallback(async (message: any) => {
     if (!communicationServiceRef.current) {
@@ -478,6 +514,7 @@ export function usePhaserSimulator(
     stopProgram,
     getStatus,
     clearError,
+    restartScene,
 
     // Victory Actions
     showVictoryModal,

@@ -24,6 +24,8 @@ import {
   CheckCircle,
   PlayArrow,
   HomeOutlined,
+  Star,
+  StarBorder,
 } from "@mui/icons-material";
 import { TransitionProps } from "@mui/material/transitions";
 import { VictoryData } from "../types/phaser";
@@ -87,6 +89,25 @@ const confettiAnimation = `
   }
 `;
 
+// Helper function to calculate stars from score
+function calculateStarsFromScore(score: number): number {
+  // Clamp function
+  const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
+  
+  // Formula: stars = clamp(ceil(cardScore * 3), 1, 3)
+  const stars = clamp(Math.ceil(score * 3), 1, 3);
+  
+  console.log("🌟 [Stars Calculation] Input score:", score);
+  console.log("🌟 [Stars Calculation] Formula: stars = clamp(ceil(score * 3), 1, 3)");
+  console.log("🌟 [Stars Calculation] Step by step:");
+  console.log(`   score * 3 = ${score} * 3 = ${score * 3}`);
+  console.log(`   ceil(${score * 3}) = ${Math.ceil(score * 3)}`);
+  console.log(`   clamp(${Math.ceil(score * 3)}, 1, 3) = ${stars}`);
+  console.log("🌟 [Stars Calculation] Final result:", stars, "stars");
+  
+  return stars;
+}
+
 export default function VictoryModal({
   open,
   onClose,
@@ -96,6 +117,27 @@ export default function VictoryModal({
   onGoHome,
 }: VictoryModalProps) {
   if (!victoryData) return null;
+
+  // Calculate stars from score if not provided
+  console.log("🔍 [Victory Modal] Raw victory data received:", victoryData);
+  console.log("🔍 [Victory Modal] Data analysis:", {
+    hasStarScore: victoryData.starScore !== undefined,
+    starScoreValue: victoryData.starScore,
+    hasScore: victoryData.score !== undefined,
+    scoreValue: victoryData.score,
+    hasStars: victoryData.stars !== undefined,
+    starsValue: victoryData.stars
+  });
+  
+  const score = victoryData.starScore ?? victoryData.score ?? 0;
+  console.log("🎯 [Victory Modal] Final score used for calculation:", score);
+  
+  const calculatedStars = victoryData.stars ?? calculateStarsFromScore(score);
+
+  // Only log when modal opens to show the final calculated stars
+  if (open) {
+    console.log("🏆 [Victory Modal] Final stars to display:", calculatedStars);
+  }
 
   // Simple win/lose check - no stars
   const isVictory = victoryData.isVictory === true;
@@ -269,6 +311,43 @@ export default function VictoryModal({
               }}
             />
           </Box>
+
+          {/* Stars Rating Section - Simplified */}
+          {isVictory && (
+            <Box sx={{ textAlign: "center", mb: 4 }}>
+              <Typography
+                variant="h6"
+                sx={{ mb: 2, color: "#475569", fontWeight: 600 }}
+              >
+                Đánh giá hiệu quả
+              </Typography>
+              
+              {/* Always show calculated stars */}
+              <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5, mb: 2 }}>
+                {[1, 2, 3].map((starIndex) => {
+                  return (
+                    <Box key={starIndex} sx={{ position: "relative" }}>
+                      {starIndex <= calculatedStars ? (
+                        <Star sx={{ fontSize: 48, color: "#fbbf24" }} />
+                      ) : (
+                        <StarBorder sx={{ fontSize: 48, color: "#d1d5db" }} />
+                      )}
+                    </Box>
+                  );
+                })}
+              </Box>
+              
+              {/* Show score percentage */}
+              <Typography variant="body1" sx={{ color: "#64748b", mb: 1 }}>
+                Điểm hiệu quả: <strong>{Math.round(score * 100)}%</strong>
+              </Typography>
+              
+              {/* Show number of stars */}
+              <Typography variant="body2" sx={{ color: "#94a3b8" }}>
+                {calculatedStars} sao / 3 sao
+              </Typography>
+            </Box>
+          )}
 
           {/* Progress */}
           <Box sx={{ mb: 4 }}>

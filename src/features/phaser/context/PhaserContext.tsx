@@ -56,6 +56,7 @@ interface PhaserContextType {
   stopProgram: () => Promise<void>;
   getStatus: () => Promise<GameState | null>;
   clearError: () => void;
+  restartScene: () => Promise<void>;
 
   // Challenge Actions
   loadChallenge: (challengeId: string) => Promise<ChallengeResult | null>;
@@ -163,6 +164,7 @@ export function PhaserProvider({ children, config }: PhaserProviderProps) {
     stopProgram: phaserState.stopProgram,
     getStatus: phaserState.getStatus,
     clearError: phaserState.clearError,
+    restartScene: phaserState.restartScene,
 
     // Challenge Actions
     loadChallenge: challengeLoader.loadChallengeMap,
