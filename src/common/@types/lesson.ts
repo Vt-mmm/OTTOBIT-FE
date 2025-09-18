@@ -1,3 +1,6 @@
+// Import Challenge type for relationship
+import { Challenge } from './challenge';
+
 // Lesson entity interfaces based on BE models
 export interface Lesson {
   id: string;
@@ -10,6 +13,7 @@ export interface Lesson {
   updatedAt: string;
   challengesCount?: number;
   courseTitle?: string;
+  challenges?: Challenge[]; // Array of challenges for this lesson
 }
 
 // Request types

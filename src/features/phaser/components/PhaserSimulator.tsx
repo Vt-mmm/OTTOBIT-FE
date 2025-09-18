@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { Box, Typography, CircularProgress, Alert } from "@mui/material";
 import { usePhaserContext } from "../context/PhaserContext.js";
 import VictoryModal from "./VictoryModal.js";
@@ -33,6 +33,8 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
   } = usePhaserContext();
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
   // Handle replay current map - disabled for now
   const handleReplay = async () => {
@@ -49,6 +51,44 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
       hideVictoryModal();
     }
   };
+
+  // Handle iframe resize based on container size
+  const handleContainerResize = useCallback((entries: ResizeObserverEntry[]) => {
+    const entry = entries[0];
+    if (entry && iframeRef.current) {
+      const { width, height } = entry.contentRect;
+      const iframe = iframeRef.current;
+      
+      // Notify Phaser about resize via postMessage
+      try {
+        iframe.contentWindow?.postMessage({
+          source: "parent-website",
+          type: "RESIZE",
+          data: { width, height }
+        }, "*");
+      } catch (error) {
+        // Silently ignore errors if iframe is not ready
+      }
+    }
+  }, []);
+
+  // Setup ResizeObserver to monitor container size changes
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Create ResizeObserver
+    const resizeObserver = new ResizeObserver(handleContainerResize);
+    resizeObserverRef.current = resizeObserver;
+    
+    // Start observing
+    resizeObserver.observe(container);
+
+    return () => {
+      resizeObserver.disconnect();
+      resizeObserverRef.current = null;
+    };
+  }, [handleContainerResize]);
 
   // Auto-connect when component mounts
   useEffect(() => {
@@ -78,10 +118,13 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
   if (isLoading) {
     return (
       <Box
+        ref={containerRef}
         className={className}
         sx={{
           width: "100%",
           height: "100%",
+          flex: 1,
+          minHeight: 0,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -101,10 +144,13 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
   if (!isConnected) {
     return (
       <Box
+        ref={containerRef}
         className={className}
         sx={{
           width: "100%",
           height: "100%",
+          flex: 1,
+          minHeight: 0,
           position: "relative",
           overflow: "hidden",
           backgroundColor: "#f8f9fa", // Light background thay vì trong suốt
@@ -173,10 +219,13 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
 
   return (
     <Box
+      ref={containerRef}
       className={className}
       sx={{
         width: "100%",
         height: "100%",
+        flex: 1,
+        minHeight: 0,
         position: "relative",
         overflow: "hidden",
         backgroundColor: "#f8f9fa", // Match container background
