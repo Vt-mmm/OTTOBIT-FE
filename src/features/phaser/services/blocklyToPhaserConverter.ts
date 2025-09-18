@@ -5,20 +5,31 @@ export class BlocklyToPhaserConverter {
    * Convert Blockly workspace to Phaser program
    */
   static convertWorkspace(workspace: any): ProgramData {
+    console.log("🔄 [BlocklyToPhaserConverter] Starting workspace conversion...");
+    
     if (!workspace) {
+      console.error("❌ [BlocklyToPhaserConverter] Workspace is required");
       throw new Error("Workspace is required");
     }
 
+    console.log("✅ [BlocklyToPhaserConverter] Workspace is valid");
+    
     const program: ProgramData = {
       version: "1.0.0",
       programName: "user_program",
       actions: [],
       functions: [], // Thêm functions array để hỗ trợ function definitions
     };
+    
+    console.log("📋 [BlocklyToPhaserConverter] Initial program structure created");
 
     try {
       // Get all blocks from workspace
       const blocks = workspace.getAllBlocks();
+      console.log("📊 [BlocklyToPhaserConverter] Found blocks:", {
+        totalBlocks: blocks.length,
+        blockTypes: blocks.map((b: any) => ({ type: b.type, id: b.id }))
+      });
 
       // Find function definition blocks first
       const functionBlocks = blocks.filter(
@@ -26,22 +37,43 @@ export class BlocklyToPhaserConverter {
           block.type === "procedures_defnoreturn" ||
           block.type === "ottobit_function_def"
       );
+      
+      console.log("🔍 [BlocklyToPhaserConverter] Function blocks found:", functionBlocks.length);
 
       if (functionBlocks.length > 0) {
+        console.log("⚡ [BlocklyToPhaserConverter] Parsing function definitions...");
         program.functions = this.parseFunctionDefinitions(functionBlocks);
+        console.log("✅ [BlocklyToPhaserConverter] Functions parsed:", program.functions);
       }
 
       // Find start block
       const startBlock = blocks.find(
         (block: any) => block.type === "ottobit_start"
       );
+      
+      console.log("🏁 [BlocklyToPhaserConverter] Start block:", {
+        found: !!startBlock,
+        id: startBlock?.id,
+        type: startBlock?.type
+      });
 
       if (startBlock) {
+        console.log("⚡ [BlocklyToPhaserConverter] Parsing actions from start block...");
         program.actions = this.parseBlocksToActions(startBlock);
+        console.log("✅ [BlocklyToPhaserConverter] Actions parsed:", {
+          actionsCount: program.actions.length,
+          actions: program.actions
+        });
+      } else {
+        console.warn("⚠️ [BlocklyToPhaserConverter] No start block found, program will have no actions");
       }
 
+      console.log("✅ [BlocklyToPhaserConverter] Workspace conversion completed successfully");
+      console.log("📋 [BlocklyToPhaserConverter] Final program:", program);
+      
       return program;
     } catch (error) {
+      console.error("❌ [BlocklyToPhaserConverter] Error during conversion:", error);
       throw new Error(`Failed to convert workspace: ${error}`);
     }
   }

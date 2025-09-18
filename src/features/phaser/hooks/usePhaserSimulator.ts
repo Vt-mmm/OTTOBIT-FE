@@ -53,7 +53,7 @@ export function usePhaserSimulator(
 
   // Default configuration
   const defaultConfig: PhaserConfig = {
-    url: import.meta.env.VITE_PHASER_URL || "http://localhost:5174",
+    url: import.meta.env.VITE_PHASER_URL || "https://phaser-map-three.vercel.app",
     width: 800,
     height: 600,
     allowFullscreen: true,
@@ -274,24 +274,41 @@ export function usePhaserSimulator(
 
   // Run program
   const runProgram = useCallback(async (program: ProgramData) => {
+    console.log("📻 [runProgram] Starting program execution...");
+    
     if (!communicationServiceRef.current) {
+      console.error("❌ [runProgram] No communication service available");
       throw new Error("Not connected to Phaser");
     }
+
+    console.log("🔗 [runProgram] Communication service is available");
 
     try {
       setIsLoading(true);
       setError(null);
       setCurrentProgram(program);
 
+      console.log("🔍 [runProgram] Validating program...");
       const validation = BlocklyToPhaserConverter.validateProgram(program);
+      console.log("📋 [runProgram] Validation result:", validation);
+      
       if (!validation.isValid) {
+        console.error("❌ [runProgram] Program validation failed:", validation.errors);
         throw new Error(`Invalid program: ${validation.errors.join(", ")}`);
       }
 
+      console.log("✅ [runProgram] Program is valid, sending to Phaser...");
+      console.log("📦 [runProgram] Sending program data:", JSON.stringify(program, null, 2));
+      
       await communicationServiceRef.current.runProgram(program);
+      console.log("✅ [runProgram] Program sent to Phaser successfully");
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to run program";
+      console.error("❌ [runProgram] Error occurred:", {
+        error: err,
+        errorMessage
+      });
       setError(errorMessage);
       throw err;
     } finally {
@@ -302,14 +319,41 @@ export function usePhaserSimulator(
   // Run program from workspace
   const runProgramFromWorkspace = useCallback(
     async (workspace: any) => {
+      console.log("🔄 [usePhaserSimulator] Converting workspace to program...");
+      
       try {
+        // Log workspace details
+        const allBlocks = workspace.getAllBlocks();
+        console.log("📊 [usePhaserSimulator] Workspace analysis:", {
+          totalBlocks: allBlocks.length,
+          blockTypes: allBlocks.map((b: any) => b.type),
+          topBlocks: workspace.getTopBlocks().map((b: any) => b.type)
+        });
+        
         const program = BlocklyToPhaserConverter.convertWorkspace(workspace);
+        
+        console.log("✅ [usePhaserSimulator] Program converted successfully:");
+        console.log("📋 [usePhaserSimulator] Program structure:", {
+          version: program.version,
+          programName: program.programName,
+          actionsCount: program.actions?.length || 0,
+          functionsCount: program.functions?.length || 0
+        });
+        
+        console.log("🎯 [usePhaserSimulator] Full program data:");
+        console.log(JSON.stringify(program, null, 2));
+        
+        console.log("▶️ [usePhaserSimulator] Sending to runProgram...");
         await runProgram(program);
       } catch (err) {
         const errorMessage =
           err instanceof Error
             ? err.message
             : "Failed to convert and run program";
+        console.error("❌ [usePhaserSimulator] Error in runProgramFromWorkspace:", {
+          error: err,
+          errorMessage
+        });
         setError(errorMessage);
         throw err;
       }

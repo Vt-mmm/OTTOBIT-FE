@@ -12,10 +12,10 @@ export class PhaserCommunicationService {
     this.config = {
       allowedOrigins: [
         "http://localhost:5173", // Frontend dev server
-        "http://localhost:5174", // Phaser map dev server
+        "https://phaser-map-three.vercel.app", // Phaser map dev server
         "https://phaser-map-three.vercel.app", // Phaser production server
         "https://phaser-map-three.vercel.app/", // With trailing slash
-        "https://your-domain.com",
+        "https://phaser-map-three.vercel.app",
       ],
       timeout: 5000,
       retryAttempts: 3,
@@ -114,26 +114,40 @@ export class PhaserCommunicationService {
    * Send message to Phaser
    */
   async sendMessage(message: PhaserMessage): Promise<void> {
+    console.log("📨 [sendMessage] Attempting to send message:", {
+      type: message.type,
+      source: message.source,
+      hasData: !!message.data
+    });
+    
     // Auto-connect if not connected yet
     if (!this.isConnected) {
+      console.log("🔗 [sendMessage] Not connected, attempting auto-connect...");
       try {
-        this.initialize('robot-game-iframe'); // Use default iframe ID
+        this.initialize("robot-game-iframe"); // Use default iframe ID
+        console.log("✅ [sendMessage] Auto-connect successful");
       } catch (error) {
+        console.error("❌ [sendMessage] Auto-connect failed:", error);
         throw new Error("Not connected to Phaser");
       }
     }
 
+    console.log("🔍 [sendMessage] Checking iframe contentWindow...");
+    
     // Ensure we have a valid iframe with contentWindow
     let attempts = 0;
     const maxAttempts = 3;
 
     while (!this.iframe?.contentWindow && attempts < maxAttempts) {
+      console.log(`⏳ [sendMessage] Attempt ${attempts + 1}/${maxAttempts} to find iframe contentWindow...`);
+      
       // Try to find iframe element directly
       const iframeElement = document.getElementById(
         "robot-game-iframe"
       ) as HTMLIFrameElement;
 
       if (iframeElement && iframeElement.contentWindow) {
+        console.log("✅ [sendMessage] Found iframe contentWindow");
         this.iframe = iframeElement;
         break;
       }
@@ -145,12 +159,18 @@ export class PhaserCommunicationService {
 
     // Final check
     if (!this.iframe?.contentWindow) {
+      console.error("❌ [sendMessage] Failed to get iframe contentWindow after retries");
       throw new Error("Iframe contentWindow not available after retries");
     }
 
+    console.log("📦 [sendMessage] Ready to send message, iframe contentWindow available");
+    console.log("📜 [sendMessage] Complete message being sent:", JSON.stringify(message, null, 2));
+
     try {
       this.iframe!.contentWindow!.postMessage(message, "*");
+      console.log("✅ [sendMessage] Message sent successfully via postMessage");
     } catch (error) {
+      console.error("❌ [sendMessage] Error sending message:", error);
       throw error;
     }
   }
@@ -161,10 +181,14 @@ export class PhaserCommunicationService {
    * @param mapData - Full map JSON object (Tiled format)
    * @param challengeData - Challenge JSON object with robot, batteries, etc.
    */
-  async loadMap(mapKey: string, mapData?: any, challengeData?: any): Promise<void> {
+  async loadMap(
+    mapKey: string,
+    mapData?: any,
+    challengeData?: any
+  ): Promise<void> {
     // Ensure mapData is JSON object, not string
     let mapJson = mapData;
-    if (typeof mapData === 'string') {
+    if (typeof mapData === "string") {
       try {
         mapJson = JSON.parse(mapData);
       } catch (e) {
@@ -174,7 +198,7 @@ export class PhaserCommunicationService {
 
     // Ensure challengeData is JSON object, not string
     let challengeJson = challengeData;
-    if (typeof challengeData === 'string') {
+    if (typeof challengeData === "string") {
       try {
         challengeJson = JSON.parse(challengeData);
       } catch (e) {
@@ -185,14 +209,14 @@ export class PhaserCommunicationService {
     await this.sendMessage({
       source: "parent-website",
       type: "START_MAP",
-      data: { 
+      data: {
         mapKey,
         mapJson,
-        challengeJson
+        challengeJson,
       },
     });
   }
-  
+
   /**
    * Load map with full JSON data (without mapKey)
    * This method sends raw JSON data directly to Phaser
@@ -201,13 +225,13 @@ export class PhaserCommunicationService {
    */
   async loadMapWithData(mapJson: any, challengeJson?: any): Promise<void> {
     // Validate mapJson is an object with required fields
-    if (!mapJson || typeof mapJson !== 'object') {
-      throw new Error('mapJson must be a valid JSON object');
+    if (!mapJson || typeof mapJson !== "object") {
+      throw new Error("mapJson must be a valid JSON object");
     }
 
     // Check for required Tiled map properties
-    const requiredFields = ['width', 'height', 'layers', 'tilesets'];
-    const missingFields = requiredFields.filter(field => !(field in mapJson));
+    const requiredFields = ["width", "height", "layers", "tilesets"];
+    const missingFields = requiredFields.filter((field) => !(field in mapJson));
     if (missingFields.length > 0) {
       // Map may be missing some fields but still valid
     }
@@ -215,9 +239,9 @@ export class PhaserCommunicationService {
     await this.sendMessage({
       source: "parent-website",
       type: "LOAD_MAP_AND_CHALLENGE",
-      data: { 
+      data: {
         mapJson,
-        challengeJson
+        challengeJson,
       },
     });
   }
@@ -250,11 +274,27 @@ export class PhaserCommunicationService {
    * Run program in Phaser
    */
   async runProgram(program: any): Promise<void> {
-    await this.sendMessage({
+    console.log("📡 [PhaserCommunicationService] Preparing to run program...");
+    
+    const message = {
       source: "parent-website",
       type: "RUN_PROGRAM",
       data: { program },
-    });
+    };
+    
+    console.log("📦 [PhaserCommunicationService] Message structure:");
+    console.log("- Source:", message.source);
+    console.log("- Type:", message.type);
+    console.log("- Program actions count:", program?.actions?.length || 0);
+    console.log("- Program functions count:", program?.functions?.length || 0);
+    console.log("📜 [PhaserCommunicationService] Complete program data:");
+    console.log(JSON.stringify(program, null, 2));
+    
+    console.log("🚀 [PhaserCommunicationService] Sending RUN_PROGRAM message to Phaser...");
+    
+    await this.sendMessage(message);
+    
+    console.log("✅ [PhaserCommunicationService] RUN_PROGRAM message sent successfully");
   }
 
   /**
