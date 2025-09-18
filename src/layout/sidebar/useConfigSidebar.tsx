@@ -7,7 +7,7 @@ import { PATH_ADMIN } from "routes/paths";
 function useConfigSidebar() {
   const navAdmin = [
     {
-      missions: "Tổng quan",
+      missions: "Overview",
       listNav: [
         {
           title: "Dashboard",
@@ -17,15 +17,15 @@ function useConfigSidebar() {
       ],
     },
     {
-      missions: "Công cụ",
+      missions: "Tools",
       listNav: [
         {
-          title: "Thiết kế Map",
+          title: "Map Designer",
           path: PATH_ADMIN.mapDesigner,
           icon: <EditLocationAltIcon fontSize="medium" />,
         },
         {
-          title: "Quản lý Map",
+          title: "Map Management",
           path: PATH_ADMIN.mapManagement,
           icon: <MapIcon fontSize="medium" />,
         },

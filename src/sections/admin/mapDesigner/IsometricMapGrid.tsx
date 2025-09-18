@@ -865,7 +865,7 @@ export default function IsometricMapGrid({
               variant="caption"
               sx={{ color: THEME_COLORS.text.secondary }}
             >
-              Ô [{hoveredCell.row}, {hoveredCell.col}]
+              Cell [{hoveredCell.row}, {hoveredCell.col}]
             </Typography>
           </Box>
         )}
@@ -923,7 +923,7 @@ export default function IsometricMapGrid({
             },
           }}
         >
-          Xóa tất cả
+          Clear All
         </Button>
 
         <Button
@@ -953,7 +953,7 @@ export default function IsometricMapGrid({
             },
           }}
         >
-          Lưu Map
+          Save Map
         </Button>
       </Box>
     </Paper>

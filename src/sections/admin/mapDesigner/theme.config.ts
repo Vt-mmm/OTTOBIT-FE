@@ -23,7 +23,7 @@ export const THEME_COLORS = {
 export const GRID_CONFIG = {
   rows: 10,
   cols: 10,
-  cellSize: 48, // pixels - tối ưu cho seamless rendering
+  cellSize: 48, // pixels - optimized for seamless rendering
   defaultTerrain: null, // No default terrain - cells start empty
 };
 
@@ -37,41 +37,41 @@ export const EMPTY_CELL_STYLE = {
 export const WIN_CONDITION_TYPES = [
   {
     id: "collect_all_items",
-    name: "Thu thập tất cả",
-    description: "Thu thập tất cả các vật phẩm trên map",
+    name: "Collect All",
+    description: "Collect all items on the map",
     requiresValue: false,
   },
   {
     id: "collect_specific",
-    name: "Thu thập cụ thể",
-    description: "Thu thập số lượng vật phẩm nhất định",
+    name: "Collect Specific",
+    description: "Collect a specific number of items",
     requiresValue: true,
-    valueLabel: "Số lượng",
+    valueLabel: "Quantity",
   },
   {
     id: "reach_position",
-    name: "Đến vị trí",
-    description: "Di chuyển robot đến vị trí mục tiêu",
+    name: "Reach Position",
+    description: "Move robot to target position",
     requiresValue: false,
   },
   {
     id: "avoid_water",
-    name: "Tránh nước",
-    description: "Hoàn thành mà không đi vào nước",
+    name: "Avoid Water",
+    description: "Complete without stepping on water",
     requiresValue: false,
   },
   {
     id: "step_limit",
-    name: "Giới hạn bước",
-    description: "Hoàn thành trong số bước tối đa",
+    name: "Step Limit",
+    description: "Complete within maximum number of steps",
     requiresValue: true,
-    valueLabel: "Số bước tối đa",
+    valueLabel: "Max Steps",
   },
   {
     id: "time_limit",
-    name: "Giới hạn thời gian",
-    description: "Hoàn thành trong thời gian cho phép",
+    name: "Time Limit",
+    description: "Complete within allowed time",
     requiresValue: true,
-    valueLabel: "Thời gian (giây)",
+    valueLabel: "Time (seconds)",
   },
 ];

@@ -17,11 +17,11 @@ export enum ChallengeStatus {
 
 // Difficulty labels for UI
 export const DIFFICULTY_LABELS = {
-  [ChallengeDifficulty.VERY_EASY]: "Rất dễ",
-  [ChallengeDifficulty.EASY]: "Dễ",
-  [ChallengeDifficulty.MEDIUM]: "Trung bình",
-  [ChallengeDifficulty.HARD]: "Khó",
-  [ChallengeDifficulty.VERY_HARD]: "Rất khó",
+  [ChallengeDifficulty.VERY_EASY]: "Very Easy",
+  [ChallengeDifficulty.EASY]: "Easy",
+  [ChallengeDifficulty.MEDIUM]: "Medium",
+  [ChallengeDifficulty.HARD]: "Hard",
+  [ChallengeDifficulty.VERY_HARD]: "Very Hard",
 } as const;
 
 // Difficulty colors for UI

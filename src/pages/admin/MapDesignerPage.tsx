@@ -5,8 +5,13 @@ import {
   Grid,
   ToggleButton,
   ToggleButtonGroup,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AdminLayout from "layout/admin/AdminLayout";
 import { MapCell } from "common/models";
 import {
@@ -24,6 +29,7 @@ import { ROUTES_API_CHALLENGE } from "constants/routesApiKeys";
 
 const MapDesignerPage = () => {
   const [selectedAsset, setSelectedAsset] = useState<string>("grass");
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [mapName, setMapName] = useState<string>("New Map");
   const [mapDescription, setMapDescription] = useState<string>("");
   const [solutionJson, setSolutionJson] = useState<string | null>(null);
@@ -31,6 +37,7 @@ const MapDesignerPage = () => {
   const [lessonId, setLessonId] = useState<string>("");
   const [order, setOrder] = useState<number>(1);
   const [difficulty, setDifficulty] = useState<number>(1);
+  const [openUpdateConfirm, setOpenUpdateConfirm] = useState(false);
   const [viewMode, setViewMode] = useState<"orthogonal" | "isometric">(
     "isometric"
   );
@@ -48,6 +55,195 @@ const MapDesignerPage = () => {
           }))
       )
   );
+
+  // Prefill from query params when navigated from Map Management (Edit)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const qpTitle = params.get("title");
+    const qpDescription = params.get("description");
+    const qpOrder = params.get("order");
+    const qpDifficulty = params.get("difficulty");
+    const qpLessonId = params.get("lessonId");
+    const qpId = params.get("id");
+
+    if (qpTitle) setMapName(qpTitle);
+    if (qpDescription) setMapDescription(qpDescription);
+    if (qpOrder && !Number.isNaN(Number(qpOrder))) setOrder(Number(qpOrder));
+    if (qpDifficulty && !Number.isNaN(Number(qpDifficulty)))
+      setDifficulty(Number(qpDifficulty));
+    if (qpLessonId) setLessonId(qpLessonId);
+
+    // If an id is present, set edit mode and fetch details to load mapJson and solution/challenge into state
+    if (qpId) {
+      setEditingId(qpId);
+      (async () => {
+        try {
+          const res = await axiosClient.get(
+            ROUTES_API_CHALLENGE.GET_BY_ID(qpId)
+          );
+          const item = res?.data?.data;
+          if (item?.solutionJson) setSolutionJson(item.solutionJson);
+          if (item?.challengeJson) setChallengeJson(item.challengeJson);
+
+          const mapJsonStr: string | undefined = item?.mapJson;
+          let newGrid: (MapCell & { itemCount?: number })[][] | null = null;
+          if (mapJsonStr) {
+            try {
+              const parsed = JSON.parse(mapJsonStr);
+              const width: number = parsed?.width ?? GRID_CONFIG.cols;
+              const height: number = parsed?.height ?? GRID_CONFIG.rows;
+              const layer = Array.isArray(parsed?.layers)
+                ? parsed.layers[0]
+                : null;
+              const data: number[] = Array.isArray(layer?.data)
+                ? layer.data
+                : [];
+
+              if (data.length >= width * height) {
+                const idToTerrain: Record<number, string | null> = {
+                  0: null,
+                  1: "road_v",
+                  2: "road_h",
+                  3: "wood",
+                  4: "water",
+                  5: "grass",
+                  6: "crossroad",
+                };
+
+                newGrid = Array(GRID_CONFIG.rows)
+                  .fill(null)
+                  .map((_, row) =>
+                    Array(GRID_CONFIG.cols)
+                      .fill(null)
+                      .map((_, col) => {
+                        const idx = row * GRID_CONFIG.cols + col;
+                        const tileId = data[idx] || 0;
+                        const terrain = idToTerrain[tileId] ?? null;
+                        return {
+                          row,
+                          col,
+                          terrain: terrain as any,
+                          object: null,
+                          itemCount: 0,
+                        } as any;
+                      })
+                  );
+              }
+            } catch (e) {
+              // ignore parse errors
+            }
+          }
+
+          // Overlay challengeJson robot/items
+          try {
+            const chStr: string | null | undefined = item?.challengeJson;
+            if (chStr) {
+              const ch = JSON.parse(chStr);
+              if (!newGrid) {
+                newGrid = Array(GRID_CONFIG.rows)
+                  .fill(null)
+                  .map((_, row) =>
+                    Array(GRID_CONFIG.cols)
+                      .fill(null)
+                      .map((_, col) => ({
+                        row,
+                        col,
+                        terrain: null,
+                        object: null,
+                        itemCount: 0,
+                      }))
+                  );
+              }
+
+              // Robot
+              const robot = ch?.robot;
+              if (
+                robot?.tile &&
+                typeof robot.tile.x === "number" &&
+                typeof robot.tile.y === "number"
+              ) {
+                const r = robot.tile.y;
+                const c = robot.tile.x;
+                if (
+                  r >= 0 &&
+                  r < GRID_CONFIG.rows &&
+                  c >= 0 &&
+                  c < GRID_CONFIG.cols
+                ) {
+                  const dir = String(robot.direction || "east").toLowerCase();
+                  const dirToAsset: Record<string, string> = {
+                    north: "robot_north",
+                    east: "robot_east",
+                    south: "robot_south",
+                    west: "robot_west",
+                  };
+                  newGrid[r][c].object = dirToAsset[dir] || "robot_east";
+                  newGrid[r][c].itemCount = 1;
+                }
+              }
+
+              // Boxes
+              const boxes = Array.isArray(ch?.boxes) ? ch.boxes : [];
+              boxes.forEach((box: any) => {
+                const tiles = Array.isArray(box?.tiles) ? box.tiles : [];
+                tiles.forEach((t: any) => {
+                  const c = t?.x;
+                  const r = t?.y;
+                  const count = typeof t?.count === "number" ? t.count : 1;
+                  if (
+                    typeof r === "number" &&
+                    typeof c === "number" &&
+                    r >= 0 &&
+                    r < GRID_CONFIG.rows &&
+                    c >= 0 &&
+                    c < GRID_CONFIG.cols
+                  ) {
+                    newGrid![r][c].object = "box";
+                    newGrid![r][c].itemCount = count;
+                  }
+                });
+              });
+
+              // Batteries
+              const batteries = Array.isArray(ch?.batteries)
+                ? ch.batteries
+                : [];
+              const typeToAsset: Record<string, string> = {
+                yellow: "pin_yellow",
+                red: "pin_red",
+                green: "pin_green",
+              };
+              batteries.forEach((batt: any) => {
+                const tiles = Array.isArray(batt?.tiles) ? batt.tiles : [];
+                tiles.forEach((t: any) => {
+                  const c = t?.x;
+                  const r = t?.y;
+                  const count = typeof t?.count === "number" ? t.count : 1;
+                  const type = String(t?.type || "yellow").toLowerCase();
+                  const assetId = typeToAsset[type] || "pin_yellow";
+                  if (
+                    typeof r === "number" &&
+                    typeof c === "number" &&
+                    r >= 0 &&
+                    r < GRID_CONFIG.rows &&
+                    c >= 0 &&
+                    c < GRID_CONFIG.cols
+                  ) {
+                    newGrid![r][c].object = assetId as any;
+                    newGrid![r][c].itemCount = count;
+                  }
+                });
+              });
+            }
+          } catch {}
+
+          if (newGrid) setMapGrid(newGrid);
+        } catch (e) {
+          // ignore fetch errors
+        }
+      })();
+    }
+  }, []);
 
   // Lightweight toast fallback (top-right) when global Snackbar is unavailable
   const showLocalToast = (
@@ -189,7 +385,7 @@ const MapDesignerPage = () => {
   const handleSaveMap = async () => {
     // Validate required fields
     if (!lessonId || lessonId.trim().length === 0) {
-      const msg = "Vui lòng chọn Bài học (Lesson) trước khi lưu";
+      const msg = "Please select a Lesson before saving";
       try {
         if ((window as any).Snackbar?.enqueueSnackbar) {
           (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -204,17 +400,25 @@ const MapDesignerPage = () => {
       }
       return;
     }
-    const missingName = !mapName || mapName.trim().length === 0;
-    const missingDescription =
-      !mapDescription || mapDescription.trim().length === 0;
-    if (missingName || missingDescription) {
-      const bothMissing = missingName && missingDescription;
-      const msg = bothMissing
-        ? "Vui lòng nhập tên map và mô tả map"
-        : missingName
-        ? "Vui lòng nhập tên map"
-        : "Vui lòng nhập mô tả map";
-      const variant: "error" | "warning" = bothMissing ? "error" : "warning";
+    const nameTrim = (mapName || "").trim();
+    const descTrim = (mapDescription || "").trim();
+    const missingName = nameTrim.length === 0;
+    const missingDescription = descTrim.length === 0;
+    const tooShortDescription = !missingDescription && descTrim.length < 10;
+
+    if (missingName || missingDescription || tooShortDescription) {
+      let msg = "";
+      if (missingName && missingDescription) {
+        msg = "Please enter map name and description";
+      } else if (missingName) {
+        msg = "Please enter map name";
+      } else if (missingDescription) {
+        msg = "Please enter map description";
+      } else if (tooShortDescription) {
+        msg = "Map description must be at least 10 characters";
+      }
+      const variant: "error" | "warning" =
+        missingName || missingDescription ? "error" : "warning";
       try {
         if ((window as any).Snackbar?.enqueueSnackbar) {
           (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -242,8 +446,14 @@ const MapDesignerPage = () => {
         }
       }
     }
+
+    // If editing, confirm before proceeding
+    if (editingId) {
+      setOpenUpdateConfirm(true);
+      return;
+    }
     if (!hasRobot) {
-      const msg = "Vui lòng đặt robot lên bản đồ trước khi lưu";
+      const msg = "Please place a robot on the map before saving";
       try {
         if ((window as any).Snackbar?.enqueueSnackbar) {
           (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -266,10 +476,10 @@ const MapDesignerPage = () => {
     if (missingSolution || missingChallenge) {
       const msg =
         missingSolution && missingChallenge
-          ? "Vui lòng thiết lập Solution và Challenge trước khi lưu"
+          ? "Please configure Solution and Challenge before saving"
           : missingSolution
-          ? "Vui lòng thiết lập Solution trước khi lưu"
-          : "Vui lòng thiết lập Challenge trước khi lưu";
+          ? "Please configure Solution before saving"
+          : "Please configure Challenge before saving";
       try {
         if ((window as any).Snackbar?.enqueueSnackbar) {
           (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -434,12 +644,30 @@ const MapDesignerPage = () => {
     };
 
     try {
-      const res = await axiosClient.post(
-        ROUTES_API_CHALLENGE.CREATE,
-        lessonData
-      );
+      let res;
+      if (editingId) {
+        // Update existing challenge via PUT
+        const updateBody = {
+          title: mapName,
+          description: mapDescription,
+          order,
+          difficulty,
+          mapJson: JSON.stringify(tiledMap),
+          challengeJson: challengeJson,
+          solutionJson: solutionJson,
+        } as any;
+        res = await axiosClient.put(
+          ROUTES_API_CHALLENGE.UPDATE(editingId),
+          updateBody
+        );
+      } else {
+        // Create new challenge
+        res = await axiosClient.post(ROUTES_API_CHALLENGE.CREATE, lessonData);
+      }
       const ok = res && (res.status === 200 || res.status === 201);
-      const msg = ok ? "Lưu map (challenge) thành công" : "Lưu map thất bại";
+      const msg = ok
+        ? "Map (challenge) saved successfully"
+        : "Failed to save map";
       const variant = ok ? "success" : "error";
       if ((window as any).Snackbar?.enqueueSnackbar) {
         (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -450,7 +678,7 @@ const MapDesignerPage = () => {
         showLocalToast(msg, variant as any);
       }
     } catch (e: any) {
-      const msg = "Lưu map thất bại";
+      const msg = "Failed to save map";
       if ((window as any).Snackbar?.enqueueSnackbar) {
         (window as any).Snackbar.enqueueSnackbar(msg, {
           variant: "error",
@@ -496,10 +724,10 @@ const MapDesignerPage = () => {
                 variant="h4"
                 sx={{ fontWeight: 600, color: "#1B5E20", mb: 1 }}
               >
-                Thiết kế Map - Tiled Studio
+                Map Designer - Tiled Studio
               </Typography>
               <Typography variant="body1" sx={{ color: "#558B2F" }}>
-                Tạo và chỉnh sửa map cho game robot với các tiles thực tế
+                Create and edit maps for robot game with realistic tiles
               </Typography>
             </Box>
 
@@ -575,6 +803,113 @@ const MapDesignerPage = () => {
           </Grid>
         </Grid>
       </Container>
+      <Dialog
+        open={openUpdateConfirm}
+        onClose={() => setOpenUpdateConfirm(false)}
+      >
+        <DialogTitle>Confirm Update</DialogTitle>
+        <DialogContent>
+          You are updating an existing map. Proceed?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenUpdateConfirm(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={async () => {
+              setOpenUpdateConfirm(false);
+              try {
+                const data: number[] = [];
+                for (let row = 0; row < GRID_CONFIG.rows; row++) {
+                  for (let col = 0; col < GRID_CONFIG.cols; col++) {
+                    const cell = mapGrid[row][col];
+                    let tileId = 0;
+                    if (cell.terrain) {
+                      const terrainMap: { [key: string]: number } = {
+                        grass: 5,
+                        water: 4,
+                        wood: 3,
+                        road_h: 2,
+                        road_v: 1,
+                        crossroad: 6,
+                      };
+                      tileId = terrainMap[cell.terrain] || 0;
+                    }
+                    data.push(tileId);
+                  }
+                }
+                const tiledMap = {
+                  compressionlevel: -1,
+                  height: 10,
+                  infinite: false,
+                  layers: [
+                    {
+                      data: data,
+                      height: 10,
+                      id: 1,
+                      name: "Tile Layer 1",
+                      opacity: 1,
+                      type: "tilelayer",
+                      visible: true,
+                      width: 10,
+                      x: 0,
+                      y: 0,
+                    },
+                  ],
+                  nextlayerid: 2,
+                  nextobjectid: 1,
+                  orientation: "isometric",
+                  renderorder: "right-down",
+                  tiledversion: "1.11.2",
+                  tileheight: 80,
+                  tilesets: [],
+                  tilewidth: 128,
+                  type: "map",
+                  version: "1.10",
+                  width: 10,
+                } as any;
+                const updateBody = {
+                  title: mapName,
+                  description: mapDescription,
+                  order,
+                  difficulty,
+                  mapJson: JSON.stringify(tiledMap),
+                  challengeJson: challengeJson,
+                  solutionJson: solutionJson,
+                } as any;
+                const res = await axiosClient.put(
+                  ROUTES_API_CHALLENGE.UPDATE(editingId as string),
+                  updateBody
+                );
+                const ok = res && (res.status === 200 || res.status === 201);
+                const msg = ok
+                  ? "Map (challenge) saved successfully"
+                  : "Failed to save map";
+                const variant = ok ? "success" : "error";
+                if ((window as any).Snackbar?.enqueueSnackbar) {
+                  (window as any).Snackbar.enqueueSnackbar(msg, {
+                    variant,
+                    anchorOrigin: { vertical: "top", horizontal: "right" },
+                  });
+                } else {
+                  showLocalToast(msg, variant as any);
+                }
+              } catch (e) {
+                const msg = "Failed to save map";
+                if ((window as any).Snackbar?.enqueueSnackbar) {
+                  (window as any).Snackbar.enqueueSnackbar(msg, {
+                    variant: "error",
+                    anchorOrigin: { vertical: "top", horizontal: "right" },
+                  });
+                } else {
+                  showLocalToast(msg, "error");
+                }
+              }
+            }}
+          >
+            Update
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AdminLayout>
   );
 };

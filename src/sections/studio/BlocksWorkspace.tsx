@@ -12,10 +12,12 @@ import BlockToolbox from "../../components/block/BlockToolbox";
 
 interface BlocksWorkspaceProps {
   onWorkspaceChange?: (workspace: any) => void;
+  initialProgramActionsJson?: any; // optional structured program to load
 }
 
 export default function BlocksWorkspace({
   onWorkspaceChange,
+  initialProgramActionsJson,
 }: BlocksWorkspaceProps) {
   const workspaceRef = useRef<HTMLDivElement>(null);
   const [blocklyWorkspace, setBlocklyWorkspace] = useState<any>(null);
@@ -78,7 +80,7 @@ export default function BlocksWorkspace({
       const screenWidth = window.innerWidth;
       const isMobile = screenWidth < 600;
       const isTablet = screenWidth >= 600 && screenWidth < 900;
-      
+
       // Initialize Blockly workspace with responsive configuration
       const workspace = Blockly.inject(workspaceRef.current, {
         toolbox: {
@@ -160,9 +162,11 @@ export default function BlocksWorkspace({
       // Add responsive resize handler
       const handleResize = () => {
         const newScreenWidth = window.innerWidth;
-        
+
         // Update flyout width on resize
-        const flyoutBg = document.querySelector(".blocklyFlyoutBackground") as HTMLElement;
+        const flyoutBg = document.querySelector(
+          ".blocklyFlyoutBackground"
+        ) as HTMLElement;
         if (flyoutBg) {
           if (newScreenWidth < 600) {
             flyoutBg.style.maxWidth = "150px";
@@ -172,10 +176,12 @@ export default function BlocksWorkspace({
             flyoutBg.style.maxWidth = "250px";
           }
         }
-        
+
         // Update block sizes
-        const blocks = document.querySelectorAll(".blocklyFlyout .blocklyDraggable");
-        blocks.forEach(block => {
+        const blocks = document.querySelectorAll(
+          ".blocklyFlyout .blocklyDraggable"
+        );
+        blocks.forEach((block) => {
           const blockEl = block as HTMLElement;
           if (newScreenWidth < 600) {
             blockEl.style.maxWidth = "120px";
@@ -189,20 +195,150 @@ export default function BlocksWorkspace({
           }
         });
       };
-      
-      window.addEventListener('resize', handleResize);
 
-      // Thêm block "ottobit_start" vào workspace ngay khi khởi tạo
+      window.addEventListener("resize", handleResize);
+
+      // If there is an initial program, try to render minimal equivalent blocks
       setTimeout(() => {
+        const moveDistance = isMobile ? 30 : 50;
+        // Always ensure a start block exists
         const startBlock = workspace.newBlock("ottobit_start");
         startBlock.initSvg();
         startBlock.render();
-        const moveDistance = isMobile ? 30 : 50; // Smaller move distance on mobile
         startBlock.moveBy(moveDistance, moveDistance);
 
-        // Refresh colors sau khi thêm block
+        try {
+          const program = initialProgramActionsJson;
+          const actions = program?.actions;
+
+          // Helper: create block from action type
+          const createBlockFromAction = (act: any, index: number) => {
+            let blockType: string | null = null;
+            // Normalize common aliases
+            const type = String(act?.type || "").toLowerCase();
+            if (type === "repeat") blockType = "ottobit_repeat";
+            else if (type === "repeatrange") blockType = "ottobit_repeat_range";
+            else if (type === "forward" || type === "move_forward")
+              blockType = "ottobit_move_forward";
+            else if (type === "turnright" || type === "rotate")
+              blockType = "ottobit_rotate";
+            else if (type === "if") blockType = "ottobit_if_expandable";
+            else if (type === "while") blockType = "ottobit_while";
+            else if (type === "takebox") blockType = "ottobit_take_bale";
+            else if (type === "putbox") blockType = "ottobit_put_bale";
+            else if (type === "collect") {
+              const color = String(act?.color || "yellow").toLowerCase();
+              if (color === "red") blockType = "ottobit_collect_red";
+              else if (color === "green") blockType = "ottobit_collect_green";
+              else blockType = "ottobit_collect_yellow";
+            }
+
+            if (!blockType) return null;
+
+            const block: any = workspace.newBlock(blockType);
+            block.initSvg();
+            block.render();
+            block.moveBy(moveDistance + 200, moveDistance + index * 70);
+
+            // Try set common fields if exist
+            try {
+              if (typeof act.count === "number" && block.setFieldValue) {
+                // Prefer COUNT field when available
+                const countField =
+                  block.getField &&
+                  (block.getField("COUNT")
+                    ? "COUNT"
+                    : block.getField("count")
+                    ? "count"
+                    : null);
+                if (countField)
+                  block.setFieldValue(String(act.count), countField);
+              }
+              if (blockType === "ottobit_repeat_range") {
+                const varField =
+                  block.getField && (block.getField("VAR") ? "VAR" : null);
+                if (varField && typeof act.variable === "string")
+                  block.setFieldValue(act.variable, varField);
+                const fromField =
+                  block.getField && (block.getField("FROM") ? "FROM" : null);
+                const toField =
+                  block.getField && (block.getField("TO") ? "TO" : null);
+                const stepField =
+                  block.getField && (block.getField("STEP") ? "STEP" : null);
+                if (fromField && typeof act.from === "number")
+                  block.setFieldValue(String(act.from), fromField);
+                if (toField && typeof act.to === "number")
+                  block.setFieldValue(String(act.to), toField);
+                if (stepField && typeof act.step === "number")
+                  block.setFieldValue(String(act.step), stepField);
+              }
+            } catch {}
+
+            // Handle nested bodies: connect first body block to first statement input
+            try {
+              const body = Array.isArray(act.body) ? act.body : [];
+              if (body.length > 0) {
+                // Find first statement input on this block
+                const stmtInput = (block.inputList || []).find(
+                  (inp: any) =>
+                    inp.type === 3 /*Blockly.NEXT_STATEMENT*/ || inp.connection
+                );
+                if (stmtInput && stmtInput.connection) {
+                  // Recursively create body block chain
+                  let prevInner: any = null;
+                  body.forEach((childAct: any, childIdx: number) => {
+                    const childBlock = createBlockFromAction(
+                      childAct,
+                      index * 10 + childIdx + 1
+                    );
+                    if (!childBlock) return;
+                    if (
+                      prevInner &&
+                      prevInner.nextConnection &&
+                      childBlock.previousConnection &&
+                      !prevInner.nextConnection.isConnected()
+                    ) {
+                      prevInner.nextConnection.connect(
+                        childBlock.previousConnection
+                      );
+                    } else if (!prevInner && childBlock.previousConnection) {
+                      stmtInput.connection.connect(
+                        childBlock.previousConnection
+                      );
+                    }
+                    prevInner = childBlock;
+                  });
+                }
+              }
+            } catch {}
+
+            return block;
+          };
+
+          if (Array.isArray(actions) && actions.length > 0) {
+            let prev: any = startBlock as any;
+            actions.forEach((act: any, idx: number) => {
+              const b = createBlockFromAction(act, idx);
+              if (!b) return;
+              // Chain sequentially after previous
+              try {
+                if (
+                  prev &&
+                  prev.nextConnection &&
+                  b.previousConnection &&
+                  !prev.nextConnection.isConnected()
+                ) {
+                  prev.nextConnection.connect(b.previousConnection);
+                }
+              } catch {}
+              prev = b;
+            });
+          }
+        } catch {}
+
+        // Refresh colors
         refreshBlockColors();
-      }, 50);
+      }, 80);
 
       // Style workspace with pure white background và sửa lỗi tràn
       setTimeout(() => {
@@ -241,8 +377,10 @@ export default function BlocksWorkspace({
         }
 
         // Responsive blocks trong flyout
-        const blocks = document.querySelectorAll(".blocklyFlyout .blocklyDraggable");
-        blocks.forEach(block => {
+        const blocks = document.querySelectorAll(
+          ".blocklyFlyout .blocklyDraggable"
+        );
+        blocks.forEach((block) => {
           const blockEl = block as HTMLElement;
           const screenWidth = window.innerWidth;
           if (screenWidth < 600) {
@@ -268,7 +406,7 @@ export default function BlocksWorkspace({
         workspaceRef.current.removeEventListener("mouseup", () => {});
       }
       // Remove resize event listener
-      window.removeEventListener('resize', () => {});
+      window.removeEventListener("resize", () => {});
     };
   }, []);
 

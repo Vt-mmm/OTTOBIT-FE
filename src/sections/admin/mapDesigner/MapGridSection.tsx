@@ -138,12 +138,12 @@ export default function MapGridSection({
         sx={{
           width: GRID_CONFIG.cellSize,
           height: GRID_CONFIG.cellSize,
-          // Không dùng border/shadow cho cells - chỉ dùng cho hover
+          // No border/shadow for cells - only for hover
           cursor: "pointer",
           position: "relative",
-          overflow: "visible", // Cho phép tiles tràn ra ngoài để kết nối
+          overflow: "visible", // Allow tiles to overflow for connection
           boxSizing: "border-box",
-          // Empty cell với pattern nhẹ
+          // Empty cell with light pattern
           ...(isEmpty
             ? {
                 background:
@@ -154,9 +154,9 @@ export default function MapGridSection({
                 }),
               }
             : {
-                background: "transparent", // Không có background khi có asset
+                background: "transparent", // No background when asset exists
               }),
-          // Hover effect với outline không ảnh hưởng layout
+          // Hover effect with outline that does not affect layout
           ...(isHovered && {
             "&::after": {
               content: '""',
@@ -485,7 +485,7 @@ export default function MapGridSection({
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          bgcolor: "#e8e8e8", // Nền xám nhạt giống Tiled
+          bgcolor: "#e8e8e8", // Light gray background like Tiled
           borderRadius: 1,
           p: 3,
           overflow: "hidden",
@@ -540,7 +540,7 @@ export default function MapGridSection({
               display: "grid",
               gridTemplateColumns: `repeat(${GRID_CONFIG.cols}, ${GRID_CONFIG.cellSize}px)`,
               gridTemplateRows: `repeat(${GRID_CONFIG.rows}, ${GRID_CONFIG.cellSize}px)`,
-              gap: 0, // Không có gap - tiles sát nhau hoàn toàn
+              gap: 0, // No gap - tiles are completely adjacent
               transform: `translate(${-panOffset.x}px, ${-panOffset.y}px) scale(${zoom})`,
               transformOrigin: "top left",
               transition: "transform 0.2s",
@@ -550,10 +550,10 @@ export default function MapGridSection({
               borderRadius: 0,
               bgcolor: "transparent",
               boxShadow: "none",
-              // Cho phép nội dung zoom tràn để không bị cắt mất các ô cuối
+              // Allow zoomed content to overflow so end cells are not cut off
               overflow: "visible",
               position: "relative",
-              // Cải thiện rendering quality
+              // Improve rendering quality
               imageRendering: "pixelated",
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
@@ -579,7 +579,7 @@ export default function MapGridSection({
             },
           }}
         >
-          Xóa tất cả
+          Clear All
         </Button>
 
         <Button
@@ -593,7 +593,7 @@ export default function MapGridSection({
             },
           }}
         >
-          Lưu Map
+          Save Map
         </Button>
       </Box>
     </Paper>

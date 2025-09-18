@@ -103,7 +103,7 @@ export default function IsometricDebugTest() {
         🔍 Isometric Debug Test
       </Typography>
       <Typography variant="body2" color="text.secondary" paragraph>
-        Test component để kiểm tra 2.5D isometric rendering
+        Test component to check 2.5D isometric rendering
       </Typography>
 
       {/* Test Grid */}

@@ -108,6 +108,86 @@ export default function WinConditionsSection({
   const [victoryRed, setVictoryRed] = useState<number>(0);
   const [victoryGreen, setVictoryGreen] = useState<number>(0);
   const [victoryDescription, setVictoryDescription] = useState<string>("");
+  // Prefill statements from incoming challengeJson
+  useEffect(() => {
+    try {
+      if (!challengeJson) return;
+      const parsed = JSON.parse(challengeJson);
+      if (Array.isArray(parsed?.statement)) {
+        setSelectedStatements(parsed.statement as string[]);
+      }
+      if (typeof parsed?.statementNumber === "number") {
+        setStatementNumber(parsed.statementNumber as number);
+      }
+    } catch {}
+  }, [challengeJson]);
+
+  // Prefill battery tiles and victory counts from challengeJson
+  useEffect(() => {
+    try {
+      if (!challengeJson) return;
+      const parsed = JSON.parse(challengeJson);
+      // Auto select target type based on available data when editing
+      if (!selectedTargetKey) {
+        if (Array.isArray(parsed?.batteries) && parsed.batteries.length > 0) {
+          setSelectedTargetKey("battery");
+        } else if (Array.isArray(parsed?.boxes) && parsed.boxes.length > 0) {
+          setSelectedTargetKey("box");
+        }
+      }
+
+      // Tiles
+      const batteries = Array.isArray(parsed?.batteries)
+        ? parsed.batteries
+        : [];
+      const tilesAccum: ({
+        x: number;
+        y: number;
+        count: number | "";
+        type: "yellow" | "red" | "green";
+        spread: number | "";
+        allowedCollect: boolean;
+      } | null)[] = [];
+      batteries.forEach((b: any) => {
+        const tiles = Array.isArray(b?.tiles) ? b.tiles : [];
+        tiles.forEach((t: any) => {
+          if (
+            typeof t?.x === "number" &&
+            typeof t?.y === "number" &&
+            typeof t?.count === "number"
+          ) {
+            const type = String(t?.type || "yellow").toLowerCase();
+            const spread = typeof t?.spread === "number" ? t.spread : 1;
+            const allowedCollect = Boolean(t?.allowedCollect);
+            const typ: "yellow" | "red" | "green" =
+              type === "red" ? "red" : type === "green" ? "green" : "yellow";
+            tilesAccum.push({
+              x: t.x,
+              y: t.y,
+              count: t.count,
+              type: typ,
+              spread: spread,
+              allowedCollect,
+            });
+          }
+        });
+      });
+      if (tilesAccum.length) {
+        setBatteryTiles(tilesAccum.filter(Boolean) as any);
+      }
+
+      // Victory counts + description (battery variant)
+      const vt = parsed?.victory?.byType?.[0];
+      if (vt) {
+        if (typeof vt.yellow === "number") setVictoryYellow(vt.yellow);
+        if (typeof vt.red === "number") setVictoryRed(vt.red);
+        if (typeof vt.green === "number") setVictoryGreen(vt.green);
+      }
+      if (typeof parsed?.victory?.description === "string") {
+        setVictoryDescription(parsed.victory.description);
+      }
+    } catch {}
+  }, [challengeJson]);
   // Box config state (shown when Map = box)
   const [boxTiles, setBoxTiles] = useState<
     {
@@ -132,6 +212,33 @@ export default function WinConditionsSection({
     row: number;
     col: number;
   } | null>(null);
+
+  // Prefill Box victory from challengeJson (byType + description)
+  useEffect(() => {
+    try {
+      if (!challengeJson) return;
+      const parsed = JSON.parse(challengeJson);
+      const byType = Array.isArray(parsed?.victory?.byType)
+        ? parsed.victory.byType
+        : [];
+      const mapped = byType
+        .map((t: any) => {
+          if (
+            typeof t?.x === "number" &&
+            typeof t?.y === "number" &&
+            typeof t?.count === "number"
+          ) {
+            return { x: t.x, y: t.y, count: t.count };
+          }
+          return null;
+        })
+        .filter(Boolean) as { x: number; y: number; count: number }[];
+      if (mapped.length > 0) setBoxVictoryTargets(mapped);
+      if (typeof parsed?.victory?.description === "string") {
+        setBoxVictoryDescription(parsed.victory.description);
+      }
+    } catch {}
+  }, [challengeJson]);
   useEffect(() => {
     if (!openChallenge) return;
     let found = false;
@@ -241,14 +348,14 @@ export default function WinConditionsSection({
         try {
           if ((window as any).Snackbar?.enqueueSnackbar) {
             (window as any).Snackbar.enqueueSnackbar(
-              "Không tải được danh sách bài học",
+              "Failed to load lesson list",
               {
                 variant: "error",
                 anchorOrigin: { vertical: "top", horizontal: "right" },
               }
             );
           } else {
-            showToast("Không tải được danh sách bài học", "error");
+            showToast("Failed to load lesson list", "error");
           }
         } catch {
           // no-op
@@ -278,13 +385,13 @@ export default function WinConditionsSection({
           color: THEME_COLORS.text.primary,
         }}
       >
-        Thông tin map
+        Map Information
       </Typography>
 
       {/* Map Name Input */}
       <TextField
         fullWidth
-        label="Tên map"
+        label="Map Name"
         value={mapName}
         onChange={(e) => onMapNameChange(e.target.value)}
         size="small"
@@ -304,7 +411,7 @@ export default function WinConditionsSection({
       {/* Map Description Input */}
       <TextField
         fullWidth
-        label="Mô tả map"
+        label="Map Description"
         value={mapDescription}
         onChange={(e) => onMapDescriptionChange(e.target.value)}
         size="small"
@@ -325,15 +432,15 @@ export default function WinConditionsSection({
       {/* Lesson, Order, Difficulty */}
       <Box sx={{ mt: 5, display: "flex", flexDirection: "column", gap: 2 }}>
         <FormControl fullWidth size="small" error={!lessonId}>
-          <InputLabel>Bài học (Lesson)</InputLabel>
+          <InputLabel>Lesson</InputLabel>
           <Select
-            label="Bài học (Lesson)"
+            label="Lesson"
             value={lessonId}
             onChange={(e) => onLessonIdChange(e.target.value as string)}
           >
             {lessonOptions.length === 0 ? (
               <MenuItem value="" disabled>
-                Không có dữ liệu
+                No data
               </MenuItem>
             ) : (
               lessonOptions.map((opt) => (
@@ -346,9 +453,9 @@ export default function WinConditionsSection({
         </FormControl>
 
         <FormControl fullWidth size="small">
-          <InputLabel>Thứ tự (1-5)</InputLabel>
+          <InputLabel>Order (1-5)</InputLabel>
           <Select
-            label="Thứ tự (1-5)"
+            label="Order (1-5)"
             value={order}
             onChange={(e) => onOrderChange(Number(e.target.value))}
           >
@@ -361,9 +468,9 @@ export default function WinConditionsSection({
         </FormControl>
 
         <FormControl fullWidth size="small">
-          <InputLabel>Độ khó (1-5)</InputLabel>
+          <InputLabel>Difficulty (1-5)</InputLabel>
           <Select
-            label="Độ khó (1-5)"
+            label="Difficulty (1-5)"
             value={difficulty}
             onChange={(e) => onDifficultyChange(Number(e.target.value))}
           >
@@ -392,9 +499,7 @@ export default function WinConditionsSection({
             "&:hover": { bgcolor: solutionJson ? "#4FC3F7" : "#81D4FA" },
           }}
         >
-          {solutionJson
-            ? "Solution (đã thiết lập)"
-            : "Solution (chưa thiết lập)"}
+          {solutionJson ? "Solution (configured)" : "Solution (not configured)"}
         </Button>
         <Button
           variant="contained"
@@ -411,8 +516,8 @@ export default function WinConditionsSection({
           }}
         >
           {challengeJson
-            ? "Challenge (đã thiết lập)"
-            : "Challenge (chưa thiết lập)"}
+            ? "Challenge (configured)"
+            : "Challenge (not configured)"}
         </Button>
       </Box>
 
@@ -437,6 +542,16 @@ export default function WinConditionsSection({
                 onWorkspaceChange={(ws) => {
                   solutionWorkspaceRef.current = ws;
                 }}
+                initialProgramActionsJson={(() => {
+                  try {
+                    if (!solutionJson) return undefined;
+                    const parsed = JSON.parse(solutionJson);
+                    const program = parsed?.data?.program;
+                    return program;
+                  } catch {
+                    return undefined;
+                  }
+                })()}
               />
             </Box>
             {/* Right: Isometric mini map preview */}
@@ -653,11 +768,11 @@ export default function WinConditionsSection({
                 // Feedback: toast and close
                 // Using native alert as placeholder toast if no hook available here
                 // You can replace with your notification system
-                // e.g., enqueueSnackbar("Lưu solution thành công", { variant: "success" })
+                // e.g., enqueueSnackbar("Solution saved successfully", { variant: "success" })
                 try {
                   (window as any).Snackbar?.enqueueSnackbar &&
                     (window as any).Snackbar.enqueueSnackbar(
-                      "Lưu solution thành công",
+                      "Solution saved successfully",
                       { variant: "success" }
                     );
                 } catch {}
@@ -691,16 +806,14 @@ export default function WinConditionsSection({
             title={
               <Box>
                 <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
-                  Hướng dẫn Spread:
+                  Spread Guide:
                 </Typography>
                 <Typography variant="body2">
-                  • Khoảng cách giữa các vật phẩm trong cùng một tile
+                  • Distance between items in the same tile
                 </Typography>
+                <Typography variant="body2">• 1 item: spread = 1</Typography>
                 <Typography variant="body2">
-                  • 1 vật phẩm: spread = 1
-                </Typography>
-                <Typography variant="body2">
-                  • Nhiều hơn 2: spread = 1.2
+                  • More than 2: spread = 1.2
                 </Typography>
               </Box>
             }
@@ -791,7 +904,7 @@ export default function WinConditionsSection({
                     if (next === "battery") {
                       const hasAnyBattery = batteryTiles.length > 0;
                       if (!hasAnyBattery) {
-                        const msg = "Map Battery: chưa có pin nào trên bản đồ";
+                        const msg = "Map Battery: no batteries on the map";
                         try {
                           if ((window as any).Snackbar?.enqueueSnackbar) {
                             (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -812,7 +925,7 @@ export default function WinConditionsSection({
                     } else if (next === "box") {
                       const hasAnyBox = boxTiles.length > 0;
                       if (!hasAnyBox) {
-                        const msg = "Map Box: chưa có box nào trên bản đồ";
+                        const msg = "Map Box: no boxes on the map";
                         try {
                           if ((window as any).Snackbar?.enqueueSnackbar) {
                             (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -989,7 +1102,7 @@ export default function WinConditionsSection({
                       Victory
                     </Typography>
                     <Tooltip
-                      title="Nhập số lượng pin cần thu thập để dành chiến thắng. Lưu ý: tổng số cần thu phải nhỏ hơn hoặc bằng số lượng pin có trên map."
+                      title="Enter the number of batteries to collect for victory. Note: total required must be less than or equal to the number of batteries available on the map."
                       placement="right"
                     >
                       <IconButton
@@ -1236,7 +1349,7 @@ export default function WinConditionsSection({
                       Victory
                     </Typography>
                     <Tooltip
-                      title="Thêm vị trí và số lượng box cần đặt để dành chiến thắng. Lưu ý: tổng số lượng box cần đặt phải nhỏ hơn hoặc bằng số lượng có sẵn."
+                      title="Add position and number of boxes to place for victory. Note: total number of boxes to place must be less than or equal to the available quantity."
                       placement="right"
                     >
                       <IconButton
@@ -1278,15 +1391,9 @@ export default function WinConditionsSection({
                           type="number"
                           size="small"
                           value={t.x}
-                          onChange={(e) =>
-                            setBoxVictoryTargets((arr) =>
-                              arr.map((it, i) =>
-                                i === idx
-                                  ? { ...it, x: Number(e.target.value) }
-                                  : it
-                              )
-                            )
-                          }
+                          InputProps={{
+                            readOnly: true,
+                          }}
                           sx={{ width: 100 }}
                         />
                         <TextField
@@ -1294,15 +1401,9 @@ export default function WinConditionsSection({
                           type="number"
                           size="small"
                           value={t.y}
-                          onChange={(e) =>
-                            setBoxVictoryTargets((arr) =>
-                              arr.map((it, i) =>
-                                i === idx
-                                  ? { ...it, y: Number(e.target.value) }
-                                  : it
-                              )
-                            )
-                          }
+                          InputProps={{
+                            readOnly: true,
+                          }}
                           sx={{ width: 100 }}
                         />
                         <TextField
@@ -1374,14 +1475,14 @@ export default function WinConditionsSection({
                         variant="body2"
                         sx={{ fontWeight: 600, mb: 0.5 }}
                       >
-                        Hướng dẫn Constraints:
+                        Constraints Guide:
                       </Typography>
                       <Typography variant="body2">
-                        • Hãy chọn những thẻ mà người chơi bắt buộc phải sử dụng
-                        để vượt qua màn chơi
+                        • Select the cards that players must use to complete the
+                        level
                       </Typography>
                       <Typography variant="body2">
-                        • Và số lượng thẻ tối thiểu mà người chơi phải dùng
+                        • And the minimum number of cards players must use
                       </Typography>
                     </Box>
                   }
@@ -1479,8 +1580,7 @@ export default function WinConditionsSection({
                 selectedTargetKey !== "box" &&
                 selectedTargetKey !== "battery"
               ) {
-                const msg =
-                  "Vui lòng chọn Map (Box hoặc Battery) trước khi lưu";
+                const msg = "Please select Map (Box or Battery) before saving";
                 try {
                   if ((window as any).Snackbar?.enqueueSnackbar) {
                     (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1510,10 +1610,10 @@ export default function WinConditionsSection({
                 if (invalidTile || invalidSpread) {
                   const msg =
                     invalidTile && invalidSpread
-                      ? "Giá trị Box count và spread phải từ 1 trở lên"
+                      ? "Box count and spread values must be 1 or higher"
                       : invalidTile
-                      ? "Mỗi box cần có Count ít nhất là 1"
-                      : "Spread phải từ 1 trở lên";
+                      ? "Each box must have Count of at least 1"
+                      : "Spread must be 1 or higher";
                   try {
                     if ((window as any).Snackbar?.enqueueSnackbar) {
                       (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1529,7 +1629,8 @@ export default function WinConditionsSection({
                   return;
                 }
                 if (missingTargets) {
-                  const msg = "Victory phải có ít nhất 1 target (x, y, count)";
+                  const msg =
+                    "Victory must have at least 1 target (x, y, count)";
                   try {
                     if ((window as any).Snackbar?.enqueueSnackbar) {
                       (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1545,7 +1646,8 @@ export default function WinConditionsSection({
                   return;
                 }
                 if (invalidTargetCounts) {
-                  const msg = "Mỗi target trong Victory cần Count ít nhất là 1";
+                  const msg =
+                    "Each target in Victory must have Count of at least 1";
                   try {
                     if ((window as any).Snackbar?.enqueueSnackbar) {
                       (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1561,7 +1663,7 @@ export default function WinConditionsSection({
                   return;
                 }
                 if (missingDescription) {
-                  const msg = "Gợi ý Victory không được để trống";
+                  const msg = "Victory description cannot be empty";
                   try {
                     if ((window as any).Snackbar?.enqueueSnackbar) {
                       (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1588,7 +1690,7 @@ export default function WinConditionsSection({
                   Number(victoryGreen) < 1;
                 if (invalidBattery) {
                   const msg =
-                    "Batteries on Map: Count và Spread phải từ 1 trở lên";
+                    "Batteries on Map: Count and Spread must be 1 or higher";
                   try {
                     if ((window as any).Snackbar?.enqueueSnackbar) {
                       (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1604,7 +1706,7 @@ export default function WinConditionsSection({
                   return;
                 }
                 if (missingBatteryDescription) {
-                  const msg = "Gợi ý Victory không được để trống";
+                  const msg = "Victory description cannot be empty";
                   try {
                     if ((window as any).Snackbar?.enqueueSnackbar) {
                       (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1621,7 +1723,7 @@ export default function WinConditionsSection({
                 }
                 if (allVictoryCountsZero) {
                   const msg =
-                    "Victory: ít nhất một trong ba loại pin (Yellow/Red/Green) phải có số lượng từ 1 trở lên";
+                    "Victory: at least one of the three battery types (Yellow/Red/Green) must have quantity of 1 or higher";
                   try {
                     if ((window as any).Snackbar?.enqueueSnackbar) {
                       (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1639,7 +1741,7 @@ export default function WinConditionsSection({
               }
               // Validate minimum statement count
               if (Number(statementNumber) < 1) {
-                const msg = "Min statement count phải từ 1 trở lên";
+                const msg = "Min statement count must be 1 or higher";
                 try {
                   if ((window as any).Snackbar?.enqueueSnackbar) {
                     (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1741,7 +1843,7 @@ export default function WinConditionsSection({
               try {
                 (window as any).Snackbar?.enqueueSnackbar &&
                   (window as any).Snackbar.enqueueSnackbar(
-                    "Lưu challenge thành công",
+                    "Challenge saved successfully",
                     { variant: "success" }
                   );
               } catch {}

@@ -514,7 +514,7 @@ export default function SimpleIsometricMapGrid({
             },
           }}
         >
-          Xóa tất cả
+          Clear All
         </Button>
 
         <Button
@@ -528,7 +528,7 @@ export default function SimpleIsometricMapGrid({
             },
           }}
         >
-          Lưu Map
+          Save Map
         </Button>
       </Box>
     </Paper>
