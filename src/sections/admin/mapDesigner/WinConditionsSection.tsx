@@ -81,7 +81,8 @@ export default function WinConditionsSection({
   const [robotX, setRobotX] = useState<number>(0);
   const [robotY, setRobotY] = useState<number>(0);
   const [robotDir] = useState<"north" | "east" | "south" | "west">("east");
-  const [statementNumber, setStatementNumber] = useState<number>(1);
+  const [minCards, setMinCards] = useState<number>(1);
+  const [maxCards, setMaxCards] = useState<number>(12);
   const [selectedStatements, setSelectedStatements] = useState<string[]>([]);
   const [robotImagePath, setRobotImagePath] = useState<string | null>(null);
   const [targetOptions, setTargetOptions] = useState<
@@ -116,8 +117,11 @@ export default function WinConditionsSection({
       if (Array.isArray(parsed?.statement)) {
         setSelectedStatements(parsed.statement as string[]);
       }
-      if (typeof parsed?.statementNumber === "number") {
-        setStatementNumber(parsed.statementNumber as number);
+      if (typeof parsed?.minCards === "number") {
+        setMinCards(parsed.minCards as number);
+      }
+      if (typeof parsed?.maxCards === "number") {
+        setMaxCards(parsed.maxCards as number);
       }
     } catch {}
   }, [challengeJson]);
@@ -680,28 +684,19 @@ export default function WinConditionsSection({
                                 : 1;
                               const ITEM_STEP = Math.round(20 * scaleY);
                               const ROBOT_BASE_LIFT = Math.round(20 * scaleY);
+                              // Adjustable base lift height for items in Solution mini-map (no stacking)
+                              const ITEM_BASE_LIFT = Math.round(15 * scaleY);
                               const isRobot =
                                 (object as any)?.category === "robot" ||
                                 (object?.id?.startsWith &&
                                   object.id.startsWith("robot_"));
 
-                              // For robots: don't lift based on item count since robot replaces the position
-                              // For items: lift based on stack level
+                              // Elevation: robots have base lift; items have constant adjustable lift
                               let stackShift = 0;
-                              let stackLevel = 0;
                               if (isRobot) {
-                                // Robot always has base lift, no additional stacking
                                 stackShift = ROBOT_BASE_LIFT;
                               } else {
-                                // Items: calculate stack level normally
-                                stackLevel = Math.max(
-                                  (cell as any).itemCount ?? 0,
-                                  Array.isArray((cell as any).items)
-                                    ? (cell as any).items.length
-                                    : 0
-                                );
-                                stackShift =
-                                  stackLevel > 0 ? stackLevel * ITEM_STEP : 0;
+                                stackShift = ITEM_BASE_LIFT; // tweak ITEM_BASE_LIFT to adjust item height
                               }
                               // Scale object similar to main map: robot ~0.85, item ~0.5
                               const SCALE = isRobot ? 0.85 : 0.5;
@@ -1555,19 +1550,24 @@ export default function WinConditionsSection({
                   </Box>
                 </FormGroup>
               </Box>
-              <TextField
-                label="Min statement count"
-                type="number"
-                size="small"
-                value={statementNumber}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  // Allow free typing (including empty); we'll validate on save
-                  setStatementNumber(Number(val));
-                }}
-                error={Number(statementNumber) < 1}
-                inputProps={{ min: 0 }}
-              />
+              <Box sx={{ display: "flex", gap: 2 }}>
+                <TextField
+                  label="Min cards"
+                  type="number"
+                  size="small"
+                  value={minCards}
+                  onChange={(e) => setMinCards(Number(e.target.value))}
+                  inputProps={{ min: 0 }}
+                />
+                <TextField
+                  label="Max cards"
+                  type="number"
+                  size="small"
+                  value={maxCards}
+                  onChange={(e) => setMaxCards(Number(e.target.value))}
+                  inputProps={{ min: 0 }}
+                />
+              </Box>
             </Box>
           </Box>
         </DialogContent>
@@ -1739,9 +1739,42 @@ export default function WinConditionsSection({
                   return;
                 }
               }
-              // Validate minimum statement count
-              if (Number(statementNumber) < 1) {
-                const msg = "Min statement count must be 1 or higher";
+              // Validate min/max cards coherence
+              if (Number(minCards) < 1) {
+                const msg = "Min cards must be 1 or higher";
+                try {
+                  if ((window as any).Snackbar?.enqueueSnackbar) {
+                    (window as any).Snackbar.enqueueSnackbar(msg, {
+                      variant: "error",
+                      anchorOrigin: { vertical: "top", horizontal: "right" },
+                    });
+                  } else {
+                    showToast(msg, "error");
+                  }
+                } catch {
+                  showToast(msg, "error");
+                }
+                return;
+              }
+              if (Number(maxCards) < 1) {
+                const msg = "Max cards must be 1 or higher";
+                try {
+                  if ((window as any).Snackbar?.enqueueSnackbar) {
+                    (window as any).Snackbar.enqueueSnackbar(msg, {
+                      variant: "error",
+                      anchorOrigin: { vertical: "top", horizontal: "right" },
+                    });
+                  } else {
+                    showToast(msg, "error");
+                  }
+                } catch {
+                  showToast(msg, "error");
+                }
+                return;
+              }
+              if (Number(maxCards) < Number(minCards)) {
+                const msg =
+                  "Max cards must be greater than or equal to Min cards";
                 try {
                   if ((window as any).Snackbar?.enqueueSnackbar) {
                     (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1772,6 +1805,75 @@ export default function WinConditionsSection({
               }
 
               const statements = selectedStatements;
+
+              // Validate Box victory: total required count must not exceed total boxes configured in inputs
+              if (selectedTargetKey === "box") {
+                try {
+                  const boxesOnMap = (boxTiles || []).reduce(
+                    (sum, t) => sum + Math.max(1, Number(t?.count) || 0),
+                    0
+                  );
+                  const victoryTotal = (boxVictoryTargets || []).reduce(
+                    (sum: number, t: any) =>
+                      sum + (typeof t?.count === "number" ? t.count : 1),
+                    0
+                  );
+                  if (victoryTotal > boxesOnMap) {
+                    const msg = `Box victory total (${victoryTotal}) exceeds boxes configured (${boxesOnMap}).`;
+                    if ((window as any).Snackbar?.enqueueSnackbar) {
+                      (window as any).Snackbar.enqueueSnackbar(msg, {
+                        variant: "error",
+                        anchorOrigin: { vertical: "top", horizontal: "right" },
+                      });
+                    } else {
+                      showToast(msg, "error");
+                    }
+                    return;
+                  }
+                } catch {}
+              }
+
+              // Validate Battery victory: per-color counts must not exceed configured pins by color
+              if (selectedTargetKey === "battery") {
+                try {
+                  const have = { yellow: 0, red: 0, green: 0 } as Record<
+                    string,
+                    number
+                  >;
+                  for (const b of batteryTiles || []) {
+                    const c = Math.max(1, Number(b?.count) || 0);
+                    const type = String(b?.type || "yellow").toLowerCase();
+                    if (type === "red") have.red += c;
+                    else if (type === "green") have.green += c;
+                    else have.yellow += c;
+                  }
+                  const need = {
+                    yellow: Math.max(0, Number(victoryYellow) || 0),
+                    red: Math.max(0, Number(victoryRed) || 0),
+                    green: Math.max(0, Number(victoryGreen) || 0),
+                  };
+                  const exceededColor =
+                    need.yellow > have.yellow
+                      ? "yellow"
+                      : need.red > have.red
+                      ? "red"
+                      : need.green > have.green
+                      ? "green"
+                      : null;
+                  if (exceededColor) {
+                    const msg = `Battery victory for ${exceededColor} requires ${need[exceededColor]} but only ${have[exceededColor]} configured.`;
+                    if ((window as any).Snackbar?.enqueueSnackbar) {
+                      (window as any).Snackbar.enqueueSnackbar(msg, {
+                        variant: "error",
+                        anchorOrigin: { vertical: "top", horizontal: "right" },
+                      });
+                    } else {
+                      showToast(msg, "error");
+                    }
+                    return;
+                  }
+                } catch {}
+              }
               const payload = {
                 robot: {
                   tile: placedRobot ?? { x: robotX, y: robotY },
@@ -1835,7 +1937,8 @@ export default function WinConditionsSection({
                       ]
                     : undefined,
                 statement: statements,
-                statementNumber,
+                minCards,
+                maxCards,
               };
               console.log("[Challenge Save] payload:", JSON.stringify(payload));
               // Pass to parent state

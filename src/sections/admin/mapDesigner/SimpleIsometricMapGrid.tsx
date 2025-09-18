@@ -318,21 +318,12 @@ export default function SimpleIsometricMapGrid({
                   (objectAsset?.id?.startsWith &&
                     objectAsset.id.startsWith("robot_"));
 
-                // For robots: don't lift based on item count since robot replaces the position
-                // For items: lift based on stack level
+                // Elevation: robots have a base lift; items do NOT stack vertically by count
                 let stackShiftY = 0;
-                let stackLevel = 0;
                 if (isRobot) {
-                  // Robot always has base lift, no additional stacking
                   stackShiftY = 20; // ROBOT_BASE_LIFT
                 } else {
-                  // Items: calculate stack level normally
-                  stackLevel = Math.max(
-                    cell.itemCount ?? 0,
-                    Array.isArray(cell.items) ? cell.items.length : 0
-                  );
-                  const ITEM_STEP = 20;
-                  stackShiftY = stackLevel > 0 ? stackLevel * ITEM_STEP : 0;
+                  stackShiftY = 20; // keep constant height for items regardless of itemCount
                 }
                 const isHovered =
                   hoveredCell?.row === cell.row &&
