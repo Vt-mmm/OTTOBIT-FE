@@ -6,6 +6,8 @@ import { PATH_ADMIN } from "routes/paths";
 // Lazy load admin pages
 const MapDesignerPage = lazy(() => import("pages/admin/MapDesignerPage"));
 const MapManagementPage = lazy(() => import("pages/admin/MapManagementPage"));
+const CourseManagementPage = lazy(() => import("pages/admin/CourseManagementPage"));
+const LessonManagementPage = lazy(() => import("pages/admin/LessonManagementPage"));
 const AdminTestPage = lazy(() => import("pages/admin/AdminTestPage"));
 
 export const adminRoutes: Route[] = [
@@ -22,6 +24,16 @@ export const adminRoutes: Route[] = [
   {
     path: PATH_ADMIN.mapManagement,
     component: <MapManagementPage />,
+    index: false,
+  },
+  {
+    path: PATH_ADMIN.courseManagement,
+    component: <CourseManagementPage />,
+    index: false,
+  },
+  {
+    path: PATH_ADMIN.lessonManagement,
+    component: <LessonManagementPage />,
     index: false,
   },
   {

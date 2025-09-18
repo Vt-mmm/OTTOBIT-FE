@@ -42,4 +42,6 @@ export const PATH_ADMIN = {
   dashboard: path(ROOTS_ADMIN_DASHBOARD, "/dashboard"),
   mapDesigner: path(ROOTS_ADMIN_DASHBOARD, "/map-designer"),
   mapManagement: path(ROOTS_ADMIN_DASHBOARD, "/map-management"),
+  courseManagement: path(ROOTS_ADMIN_DASHBOARD, "/course-management"),
+  lessonManagement: path(ROOTS_ADMIN_DASHBOARD, "/lesson-management"),
 };

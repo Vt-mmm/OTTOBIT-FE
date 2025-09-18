@@ -1,0 +1,99 @@
+import { useState } from "react";
+import { Box, Container, Typography } from "@mui/material";
+import AdminLayout from "../../layout/admin/AdminLayout";
+import CourseListSection from "../../sections/admin/course/CourseListSection";
+import CourseFormSection from "../../sections/admin/course/CourseFormSection";
+import CourseDetailsSection from "../../sections/admin/course/CourseDetailsSection";
+import { CourseResult } from "../../common/@types/course";
+
+type ViewMode = "list" | "create" | "edit" | "details";
+
+export default function CourseManagementPage() {
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [selectedCourse, setSelectedCourse] = useState<CourseResult | null>(null);
+
+  const handleViewModeChange = (mode: ViewMode, course?: CourseResult) => {
+    setViewMode(mode);
+    setSelectedCourse(course || null);
+  };
+
+  const handleBackToList = () => {
+    setViewMode("list");
+    setSelectedCourse(null);
+  };
+
+  const renderContent = () => {
+    switch (viewMode) {
+      case "create":
+        return (
+          <CourseFormSection
+            mode="create"
+            onBack={handleBackToList}
+            onSuccess={handleBackToList}
+          />
+        );
+      
+      case "edit":
+        return (
+          <CourseFormSection
+            mode="edit"
+            course={selectedCourse}
+            onBack={handleBackToList}
+            onSuccess={handleBackToList}
+          />
+        );
+      
+      case "details":
+        return (
+          <CourseDetailsSection
+            course={selectedCourse}
+            onBack={handleBackToList}
+            onEdit={(course) => handleViewModeChange("edit", course)}
+          />
+        );
+      
+      default:
+        return (
+          <CourseListSection
+            onCreateNew={() => handleViewModeChange("create")}
+            onEditCourse={(course) => handleViewModeChange("edit", course)}
+            onViewDetails={(course) => handleViewModeChange("details", course)}
+          />
+        );
+    }
+  };
+
+  return (
+    <AdminLayout>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ mb: 4 }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{
+              fontWeight: 700,
+              color: "#1a1a1a",
+              mb: 1,
+            }}
+          >
+            Quản lý Khóa học
+          </Typography>
+          
+          <Typography
+            variant="body1"
+            sx={{
+              color: "#666",
+            }}
+          >
+            {viewMode === "list" && "Danh sách tất cả khóa học trong hệ thống"}
+            {viewMode === "create" && "Tạo khóa học mới"}
+            {viewMode === "edit" && `Chỉnh sửa khóa học: ${selectedCourse?.title}`}
+            {viewMode === "details" && `Chi tiết khóa học: ${selectedCourse?.title}`}
+          </Typography>
+        </Box>
+
+        {renderContent()}
+      </Container>
+    </AdminLayout>
+  );
+}
