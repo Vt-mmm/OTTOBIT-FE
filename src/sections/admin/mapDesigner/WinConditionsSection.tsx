@@ -682,7 +682,6 @@ export default function WinConditionsSection({
                               const scaleY = ISOMETRIC_CONFIG.tileHeight
                                 ? MINI.tileHeight / ISOMETRIC_CONFIG.tileHeight
                                 : 1;
-                              const ITEM_STEP = Math.round(20 * scaleY);
                               const ROBOT_BASE_LIFT = Math.round(20 * scaleY);
                               // Adjustable base lift height for items in Solution mini-map (no stacking)
                               const ITEM_BASE_LIFT = Math.round(15 * scaleY);
@@ -2170,7 +2169,6 @@ export default function WinConditionsSection({
                                     ? MINI.tileHeight /
                                       ISOMETRIC_CONFIG.tileHeight
                                     : 1;
-                                  const ITEM_STEP = Math.round(20 * scaleY);
                                   const ROBOT_BASE_LIFT = Math.round(
                                     20 * scaleY
                                   );
@@ -2183,16 +2181,7 @@ export default function WinConditionsSection({
                                   if (isRobot) {
                                     stackShift = ROBOT_BASE_LIFT;
                                   } else {
-                                    const stackLevel = Math.max(
-                                      (cell as any).itemCount ?? 0,
-                                      Array.isArray((cell as any).items)
-                                        ? (cell as any).items.length
-                                        : 0
-                                    );
-                                    stackShift =
-                                      stackLevel > 0
-                                        ? stackLevel * ITEM_STEP
-                                        : 0;
+                                    stackShift = 0;
                                   }
                                   const SCALE = isRobot ? 0.85 : 0.5;
                                   const ow = tw * SCALE;
