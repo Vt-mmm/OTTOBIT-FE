@@ -206,15 +206,17 @@ export class PhaserCommunicationService {
       }
     }
 
-    await this.sendMessage({
-      source: "parent-website",
-      type: "START_MAP",
+    const message: PhaserMessage = {
+      source: "parent-website" as const,
+      type: "START_MAP" as const,
       data: {
         mapKey,
         mapJson,
         challengeJson,
       },
-    });
+    };
+    
+    await this.sendMessage(message);
   }
 
   /**
@@ -236,14 +238,16 @@ export class PhaserCommunicationService {
       // Map may be missing some fields but still valid
     }
 
-    await this.sendMessage({
-      source: "parent-website",
-      type: "LOAD_MAP_AND_CHALLENGE",
+    const message: PhaserMessage = {
+      source: "parent-website" as const,
+      type: "LOAD_MAP_AND_CHALLENGE" as const,
       data: {
         mapJson,
         challengeJson,
       },
-    });
+    };
+    
+    await this.sendMessage(message);
   }
 
   /**
@@ -254,9 +258,9 @@ export class PhaserCommunicationService {
     mapKey: string,
     metadata?: any
   ): Promise<void> {
-    await this.sendMessage({
-      source: "parent-website",
-      type: "LOAD_LEVEL",
+    const message: PhaserMessage = {
+      source: "parent-website" as const,
+      type: "LOAD_LEVEL" as const,
       data: {
         levelId,
         mapKey,
@@ -267,7 +271,9 @@ export class PhaserCommunicationService {
           ...metadata,
         },
       },
-    });
+    };
+    
+    await this.sendMessage(message);
   }
 
   /**
@@ -276,9 +282,9 @@ export class PhaserCommunicationService {
   async runProgram(program: any): Promise<void> {
     console.log("📡 [PhaserCommunicationService] Preparing to run program...");
     
-    const message = {
-      source: "parent-website",
-      type: "RUN_PROGRAM",
+    const message: PhaserMessage = {
+      source: "parent-website" as const,
+      type: "RUN_PROGRAM" as const,
       data: { program },
     };
     
@@ -301,22 +307,26 @@ export class PhaserCommunicationService {
    * Pause current program
    */
   async pauseProgram(): Promise<void> {
-    await this.sendMessage({
-      source: "parent-website",
-      type: "PAUSE_PROGRAM",
+    const message: PhaserMessage = {
+      source: "parent-website" as const,
+      type: "PAUSE_PROGRAM" as const,
       data: {},
-    });
+    };
+    
+    await this.sendMessage(message);
   }
 
   /**
    * Stop current program
    */
   async stopProgram(): Promise<void> {
-    await this.sendMessage({
-      source: "parent-website",
-      type: "STOP_PROGRAM",
+    const message: PhaserMessage = {
+      source: "parent-website" as const,
+      type: "STOP_PROGRAM" as const,
       data: {},
-    });
+    };
+    
+    await this.sendMessage(message);
   }
 
   /**
@@ -335,11 +345,14 @@ export class PhaserCommunicationService {
       };
 
       this.onMessage("STATUS", handler);
-      this.sendMessage({
-        source: "parent-website",
-        type: "GET_STATUS",
+      
+      const message: PhaserMessage = {
+        source: "parent-website" as const,
+        type: "GET_STATUS" as const,
         data: {},
-      });
+      };
+      
+      this.sendMessage(message);
     });
   }
 
