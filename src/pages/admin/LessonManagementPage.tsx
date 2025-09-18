@@ -1,0 +1,103 @@
+import { useState } from "react";
+import { Box, Container, Typography } from "@mui/material";
+import AdminLayout from "../../layout/admin/AdminLayout";
+import LessonListSection from "../../sections/admin/lesson/LessonListSection";
+import LessonFormSection from "../../sections/admin/lesson/LessonFormSection";
+import LessonDetailsSection from "../../sections/admin/lesson/LessonDetailsSection";
+import { LessonResult } from "../../common/@types/lesson";
+
+type ViewMode = "list" | "create" | "edit" | "details";
+
+export default function LessonManagementPage() {
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [selectedLesson, setSelectedLesson] = useState<LessonResult | null>(null);
+  const [selectedCourseId, setSelectedCourseId] = useState<string>("");
+
+  const handleViewModeChange = (mode: ViewMode, lesson?: LessonResult, courseId?: string) => {
+    setViewMode(mode);
+    setSelectedLesson(lesson || null);
+    if (courseId) setSelectedCourseId(courseId);
+  };
+
+  const handleBackToList = () => {
+    setViewMode("list");
+    setSelectedLesson(null);
+    setSelectedCourseId("");
+  };
+
+  const renderContent = () => {
+    switch (viewMode) {
+      case "create":
+        return (
+          <LessonFormSection
+            mode="create"
+            courseId={selectedCourseId}
+            onBack={handleBackToList}
+            onSuccess={handleBackToList}
+          />
+        );
+      
+      case "edit":
+        return (
+          <LessonFormSection
+            mode="edit"
+            lesson={selectedLesson}
+            onBack={handleBackToList}
+            onSuccess={handleBackToList}
+          />
+        );
+      
+      case "details":
+        return (
+          <LessonDetailsSection
+            lesson={selectedLesson}
+            onBack={handleBackToList}
+            onEdit={(lesson) => handleViewModeChange("edit", lesson)}
+          />
+        );
+      
+      default:
+        return (
+          <LessonListSection
+            onCreateNew={(courseId) => handleViewModeChange("create", undefined, courseId)}
+            onEditLesson={(lesson) => handleViewModeChange("edit", lesson)}
+            onViewDetails={(lesson) => handleViewModeChange("details", lesson)}
+          />
+        );
+    }
+  };
+
+  return (
+    <AdminLayout>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ mb: 4 }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{
+              fontWeight: 700,
+              color: "#1a1a1a",
+              mb: 1,
+            }}
+          >
+            Quản lý Bài học
+          </Typography>
+          
+          <Typography
+            variant="body1"
+            sx={{
+              color: "#666",
+            }}
+          >
+            {viewMode === "list" && "Danh sách tất cả bài học trong hệ thống"}
+            {viewMode === "create" && "Tạo bài học mới"}
+            {viewMode === "edit" && `Chỉnh sửa bài học: ${selectedLesson?.title}`}
+            {viewMode === "details" && `Chi tiết bài học: ${selectedLesson?.title}`}
+          </Typography>
+        </Box>
+
+        {renderContent()}
+      </Container>
+    </AdminLayout>
+  );
+}
