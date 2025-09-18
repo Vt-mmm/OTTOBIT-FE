@@ -346,27 +346,12 @@ const MapDesignerPage = () => {
       );
       currentCell.object = selectedAsset;
     } else if (asset.category === "item") {
-      // Special rule for box: allow only one on the entire map, no stacking
-      if (selectedAsset === "box") {
-        // Remove existing box anywhere
-        newGrid.forEach((gridRow) =>
-          gridRow.forEach((cell) => {
-            if (cell.object === "box") {
-              cell.object = null;
-              cell.itemCount = 0;
-            }
-          })
-        );
-        currentCell.object = "box";
-        currentCell.itemCount = 1;
+      // Items (including box): clicking same item stacks count on the same cell
+      if (currentCell.object === selectedAsset) {
+        currentCell.itemCount = (currentCell.itemCount || 0) + 1;
       } else {
-        // Other items: keep single object id and a count
-        if (currentCell.object === selectedAsset) {
-          currentCell.itemCount = (currentCell.itemCount || 0) + 1;
-        } else {
-          currentCell.object = selectedAsset;
-          currentCell.itemCount = 1;
-        }
+        currentCell.object = selectedAsset;
+        currentCell.itemCount = 1;
       }
     } else if (asset.category === "object") {
       // Handle other objects (obstacles, decorations)
@@ -447,11 +432,7 @@ const MapDesignerPage = () => {
       }
     }
 
-    // If editing, confirm before proceeding
-    if (editingId) {
-      setOpenUpdateConfirm(true);
-      return;
-    }
+    // Continue to build payload first; for editing, we'll open confirm right before API call
     if (!hasRobot) {
       const msg = "Please place a robot on the map before saving";
       try {
@@ -493,6 +474,57 @@ const MapDesignerPage = () => {
         showLocalToast(msg, "error");
       }
       return;
+    }
+
+    // Extra validation for Battery challenge: per-color victory must not exceed available pins on map
+    try {
+      const ch = JSON.parse(challengeJson || "{}");
+      const victory = ch?.victory || {};
+      const batteries = Array.isArray(ch?.batteries) ? ch.batteries : [];
+      const batteryTiles =
+        batteries.length > 0 && Array.isArray(batteries[0]?.tiles)
+          ? batteries[0].tiles
+          : [];
+      if (Array.isArray(victory?.byType) && victory.byType.length > 0) {
+        const needObj = victory.byType[0] || {};
+        const need = {
+          yellow: Math.max(0, Number(needObj.yellow) || 0),
+          red: Math.max(0, Number(needObj.red) || 0),
+          green: Math.max(0, Number(needObj.green) || 0),
+        };
+        const have = { yellow: 0, red: 0, green: 0 } as Record<string, number>;
+        for (const t of batteryTiles) {
+          const c = Math.max(1, Number(t?.count) || 0);
+          const type = String(t?.type || "yellow").toLowerCase();
+          if (type === "red") have.red += c;
+          else if (type === "green") have.green += c;
+          else have.yellow += c;
+        }
+        if (
+          need.yellow > have.yellow ||
+          need.red > have.red ||
+          need.green > have.green
+        ) {
+          const color =
+            need.yellow > have.yellow
+              ? "yellow"
+              : need.red > have.red
+              ? "red"
+              : "green";
+          const msg = `Battery victory for ${color} requires ${need[color]} but only ${have[color]} on map.`;
+          if ((window as any).Snackbar?.enqueueSnackbar) {
+            (window as any).Snackbar.enqueueSnackbar(msg, {
+              variant: "error",
+              anchorOrigin: { vertical: "top", horizontal: "right" },
+            });
+          } else {
+            showLocalToast(msg, "error");
+          }
+          return;
+        }
+      }
+    } catch {
+      // ignore parse errors; validation best-effort
     }
 
     // Convert mapGrid to Tiled format
@@ -646,20 +678,9 @@ const MapDesignerPage = () => {
     try {
       let res;
       if (editingId) {
-        // Update existing challenge via PUT
-        const updateBody = {
-          title: mapName,
-          description: mapDescription,
-          order,
-          difficulty,
-          mapJson: JSON.stringify(tiledMap),
-          challengeJson: challengeJson,
-          solutionJson: solutionJson,
-        } as any;
-        res = await axiosClient.put(
-          ROUTES_API_CHALLENGE.UPDATE(editingId),
-          updateBody
-        );
+        // Ask for confirmation only after all validations pass, before PUT
+        setOpenUpdateConfirm(true);
+        return;
       } else {
         // Create new challenge
         res = await axiosClient.post(ROUTES_API_CHALLENGE.CREATE, lessonData);
@@ -705,6 +726,50 @@ const MapDesignerPage = () => {
             }))
         )
     );
+  };
+
+  // Sync boxes from challengeJson into mapGrid when Challenge modal saves
+  const handleChallengeJsonChange = (newJson: string) => {
+    setChallengeJson(newJson);
+    try {
+      const ch = JSON.parse(newJson || "{}");
+      const boxes = Array.isArray(ch?.boxes) ? ch.boxes : [];
+      const tiles =
+        boxes.length > 0 && Array.isArray(boxes[0]?.tiles)
+          ? boxes[0].tiles
+          : [];
+      if (!Array.isArray(tiles)) return;
+      setMapGrid((prev) => {
+        const next = prev.map((row) => row.map((cell) => ({ ...cell })));
+        // Clear existing boxes
+        for (const row of next) {
+          for (const cell of row) {
+            if (cell.object === "box") {
+              cell.object = null;
+              (cell as any).itemCount = 0;
+            }
+          }
+        }
+        // Apply tiles from challengeJson
+        tiles.forEach((t: any) => {
+          const x = Number(t?.x);
+          const y = Number(t?.y);
+          const count = Math.max(1, Number(t?.count) || 0);
+          if (
+            Number.isFinite(x) &&
+            Number.isFinite(y) &&
+            y >= 0 &&
+            y < GRID_CONFIG.rows &&
+            x >= 0 &&
+            x < GRID_CONFIG.cols
+          ) {
+            next[y][x].object = "box";
+            (next[y][x] as any).itemCount = count;
+          }
+        });
+        return next;
+      });
+    } catch {}
   };
 
   return (
@@ -797,7 +862,7 @@ const MapDesignerPage = () => {
               mapGrid={mapGrid}
               onSolutionJsonChange={setSolutionJson}
               solutionJson={solutionJson}
-              onChallengeJsonChange={setChallengeJson}
+              onChallengeJsonChange={handleChallengeJsonChange}
               challengeJson={challengeJson}
             />
           </Grid>
@@ -861,7 +926,86 @@ const MapDesignerPage = () => {
                   renderorder: "right-down",
                   tiledversion: "1.11.2",
                   tileheight: 80,
-                  tilesets: [],
+                  tilesets: [
+                    {
+                      columns: 1,
+                      firstgid: 1,
+                      image: ".",
+                      imageheight: 128,
+                      imagewidth: 128,
+                      margin: 0,
+                      name: "road_v",
+                      spacing: 0,
+                      tilecount: 1,
+                      tileheight: 128,
+                      tilewidth: 128,
+                    },
+                    {
+                      columns: 1,
+                      firstgid: 2,
+                      image: ".",
+                      imageheight: 128,
+                      imagewidth: 128,
+                      margin: 0,
+                      name: "road_h",
+                      spacing: 0,
+                      tilecount: 1,
+                      tileheight: 128,
+                      tilewidth: 128,
+                    },
+                    {
+                      columns: 1,
+                      firstgid: 3,
+                      image: ".",
+                      imageheight: 128,
+                      imagewidth: 128,
+                      margin: 0,
+                      name: "wood",
+                      spacing: 0,
+                      tilecount: 1,
+                      tileheight: 128,
+                      tilewidth: 128,
+                    },
+                    {
+                      columns: 1,
+                      firstgid: 4,
+                      image: ".",
+                      imageheight: 128,
+                      imagewidth: 128,
+                      margin: 0,
+                      name: "water",
+                      spacing: 0,
+                      tilecount: 1,
+                      tileheight: 128,
+                      tilewidth: 128,
+                    },
+                    {
+                      columns: 1,
+                      firstgid: 5,
+                      image: ".",
+                      imageheight: 128,
+                      imagewidth: 128,
+                      margin: 0,
+                      name: "grass",
+                      spacing: 0,
+                      tilecount: 1,
+                      tileheight: 128,
+                      tilewidth: 128,
+                    },
+                    {
+                      columns: 1,
+                      firstgid: 6,
+                      image: ".",
+                      imageheight: 128,
+                      imagewidth: 128,
+                      margin: 0,
+                      name: "crossroad",
+                      spacing: 0,
+                      tilecount: 1,
+                      tileheight: 128,
+                      tilewidth: 128,
+                    },
+                  ],
                   tilewidth: 128,
                   type: "map",
                   version: "1.10",
