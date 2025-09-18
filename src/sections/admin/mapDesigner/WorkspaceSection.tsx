@@ -161,7 +161,7 @@ export default function WorkspaceSection({
       {/* Search Field */}
       <TextField
         fullWidth
-        placeholder="Tìm kiếm asset..."
+        placeholder="Search assets..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         size="small"
@@ -213,11 +213,11 @@ export default function WorkspaceSection({
           },
         }}
       >
-        <Tab label="Địa hình" />
+        <Tab label="Terrain" />
         <Tab label="Robot" />
-        <Tab label="Vật phẩm" />
-        <Tab label="Chướng ngại" />
-        <Tab label="Công cụ" />
+        <Tab label="Items" />
+        <Tab label="Obstacles" />
+        <Tab label="Tools" />
       </Tabs>
 
       {/* Scrollable content area */}
@@ -297,7 +297,7 @@ export default function WorkspaceSection({
           variant="subtitle2"
           sx={{ mb: 1, color: THEME_COLORS.text.primary, fontWeight: 600 }}
         >
-          Mẫu nhanh
+          Quick Templates
         </Typography>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
           <Button
@@ -311,7 +311,7 @@ export default function WorkspaceSection({
               fontSize: "0.75rem",
             }}
           >
-            Fill toàn bộ cỏ
+            Fill All Grass
           </Button>
           <Button
             size="small"
@@ -324,7 +324,7 @@ export default function WorkspaceSection({
               fontSize: "0.75rem",
             }}
           >
-            Vẽ đường ngang
+            Draw Horizontal Road
           </Button>
         </Box>
       </Box>
@@ -342,31 +342,31 @@ export default function WorkspaceSection({
           variant="subtitle2"
           sx={{ mb: 1, color: THEME_COLORS.text.primary, fontWeight: 600 }}
         >
-          Hướng dẫn
+          Guide
         </Typography>
         <Typography
           variant="caption"
           sx={{ display: "block", mb: 0.5, color: THEME_COLORS.text.secondary }}
         >
-          • Chọn asset từ danh sách bên trên
+          • Select asset from the list above
         </Typography>
         <Typography
           variant="caption"
           sx={{ display: "block", mb: 0.5, color: THEME_COLORS.text.secondary }}
         >
-          • Click để đặt asset, kéo để vẽ liên tục
+          • Click to place asset, drag to draw continuously
         </Typography>
         <Typography
           variant="caption"
           sx={{ display: "block", mb: 0.5, color: THEME_COLORS.text.secondary }}
         >
-          • Click lại asset đã đặt để xóa
+          • Click placed asset again to delete
         </Typography>
         <Typography
           variant="caption"
           sx={{ display: "block", mb: 0.5, color: THEME_COLORS.text.secondary }}
         >
-          • Robot chỉ được đặt 1 con/map
+          • Only 1 robot allowed per map
         </Typography>
         <Typography
           variant="caption"

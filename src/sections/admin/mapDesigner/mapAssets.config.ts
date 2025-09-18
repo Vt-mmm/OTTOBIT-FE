@@ -1,132 +1,132 @@
 import { MapAsset } from "common/models";
 
 // Static assets configuration
-// Sau này có thể được thay thế bằng API call
+// Can be replaced with API call later
 export const MAP_ASSETS: MapAsset[] = [
   // Terrain tiles
   {
     id: "grass",
-    name: "Cỏ",
+    name: "Grass",
     imagePath: "/map/grass.png",
     category: "terrain",
-    description: "Địa hình cỏ cơ bản",
+    description: "Basic grass terrain",
   },
   {
     id: "water",
-    name: "Nước",
+    name: "Water",
     imagePath: "/map/water.png",
     category: "terrain",
-    description: "Địa hình nước - không thể đi qua",
+    description: "Water terrain - impassable",
   },
   {
     id: "wood",
-    name: "Gỗ",
+    name: "Wood",
     imagePath: "/map/wood.png",
     category: "terrain",
-    description: "Sàn gỗ",
+    description: "Wooden floor",
   },
   {
     id: "road_h",
-    name: "Đường ngang",
+    name: "Horizontal Road",
     imagePath: "/map/road_h.png",
     category: "terrain",
-    description: "Đường nằm ngang",
+    description: "Horizontal road",
   },
   {
     id: "road_v",
-    name: "Đường dọc",
+    name: "Vertical Road",
     imagePath: "/map/road_v.png",
     category: "terrain",
-    description: "Đường thẳng đứng",
+    description: "Vertical road",
   },
   {
     id: "crossroad",
-    name: "Ngã tư",
+    name: "Crossroad",
     imagePath: "/map/crossroad.png",
     category: "terrain",
-    description: "Giao lộ ngã tư",
+    description: "Crossroad intersection",
   },
   {
     id: "empty",
-    name: "Ô trống",
+    name: "Empty Cell",
     imagePath: "",
     category: "tool",
-    description: "Đặt ô trống (không có gì)",
+    description: "Place empty cell (nothing)",
   },
 
   // Robot with directions
   {
     id: "robot_north",
-    name: "Robot (Bắc)",
+    name: "Robot (North)",
     imagePath: "/map/robot_north.png",
     category: "robot",
     rotatable: true,
-    description: "Robot hướng lên trên",
+    description: "Robot facing up",
   },
   {
     id: "robot_east",
-    name: "Robot (Đông)",
+    name: "Robot (East)",
     imagePath: "/map/robot_east.png",
     category: "robot",
     rotatable: true,
-    description: "Robot hướng sang phải",
+    description: "Robot facing right",
   },
   {
     id: "robot_south",
-    name: "Robot (Nam)",
+    name: "Robot (South)",
     imagePath: "/map/robot_south.png",
     category: "robot",
     rotatable: true,
-    description: "Robot hướng xuống dưới",
+    description: "Robot facing down",
   },
   {
     id: "robot_west",
-    name: "Robot (Tây)",
+    name: "Robot (West)",
     imagePath: "/map/robot_west.png",
     category: "robot",
     rotatable: true,
-    description: "Robot hướng sang trái",
+    description: "Robot facing left",
   },
 
   // Items to collect
   {
     id: "pin_green",
-    name: "Pin xanh",
+    name: "Green Battery",
     imagePath: "/map/pin_green.png",
     category: "item",
-    description: "Pin năng lượng xanh",
+    description: "Green energy battery",
   },
   {
     id: "pin_yellow",
-    name: "Pin vàng",
+    name: "Yellow Battery",
     imagePath: "/map/pin_yellow.png",
     category: "item",
-    description: "Pin năng lượng vàng",
+    description: "Yellow energy battery",
   },
   {
     id: "pin_red",
-    name: "Pin đỏ",
+    name: "Red Battery",
     imagePath: "/map/pin_red.png",
     category: "item",
-    description: "Pin năng lượng đỏ",
+    description: "Red energy battery",
   },
 
   // Objects/Obstacles
   {
     id: "box",
-    name: "Hộp",
+    name: "Box",
     imagePath: "/map/box.png",
     category: "item",
-    description: "Chướng ngại vật hộp",
+    description: "Box obstacle",
   },
 
   // Tools
   {
     id: "eraser",
-    name: "Xóa vật thể",
+    name: "Delete Object",
     imagePath: "",
     category: "tool",
-    description: "Xóa vật thể trên ô (giữ lại terrain)",
+    description: "Delete object on cell (keep terrain)",
   },
 ];
 

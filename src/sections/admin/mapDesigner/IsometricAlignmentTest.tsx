@@ -160,7 +160,7 @@ export default function IsometricAlignmentTest() {
         🔧 Isometric Alignment Test
       </Typography>
       <Typography variant="body2" color="text.secondary" paragraph>
-        Điều chỉnh các thông số để các tile khớp với nhau hoàn hảo
+        Adjust parameters to make tiles fit together perfectly
       </Typography>
 
       {/* Controls */}
@@ -309,18 +309,18 @@ export default function IsometricAlignmentTest() {
         </Typography>
         <ul>
           <li>
-            Điều chỉnh <strong>Tile Width</strong> và{" "}
-            <strong>Tile Height</strong> để các tile khớp với nhau
+            Adjust <strong>Tile Width</strong> and <strong>Tile Height</strong>{" "}
+            to make tiles fit together
           </li>
           <li>
-            <strong>Tile Height</strong> thường bằng một nửa{" "}
-            <strong>Tile Width</strong> cho isometric chuẩn
+            <strong>Tile Height</strong> is usually half of{" "}
+            <strong>Tile Width</strong> for standard isometric
           </li>
           <li>
-            Sử dụng <strong>Offset X/Y</strong> để căn chỉnh vị trí tổng thể
+            Use <strong>Offset X/Y</strong> to align overall position
           </li>
           <li>
-            Khi hài lòng, click <strong>Apply to Config</strong> để áp dụng
+            When satisfied, click <strong>Apply to Config</strong> to apply
           </li>
         </ul>
       </Box>

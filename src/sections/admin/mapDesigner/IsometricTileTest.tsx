@@ -122,13 +122,13 @@ export default function IsometricTileTest() {
         🧱 Isometric Tile Test
       </Typography>
       <Typography variant="body2" color="text.secondary" paragraph>
-        Test component để kiểm tra việc render các tile 2.5D
+        Test component to check 2.5D tile rendering
       </Typography>
 
       {/* Asset Selection */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h6" gutterBottom>
-          Chọn Asset:
+          Select Asset:
         </Typography>
         <Grid container spacing={1}>
           {MAP_ASSETS.slice(0, 6).map((asset) => (
@@ -163,19 +163,19 @@ export default function IsometricTileTest() {
 
       <Box sx={{ mt: 2, p: 2, bgcolor: "#e3f2fd", borderRadius: 1 }}>
         <Typography variant="h6" gutterBottom>
-          📊 Thông tin:
+          📊 Information:
         </Typography>
         <Typography variant="body2">
-          - Tile ở giữa (1,1) sẽ hiển thị asset đã chọn
+          - Center tile (1,1) will display selected asset
         </Typography>
         <Typography variant="body2">
-          - Các tile khác sẽ hiển thị màu xám (empty)
+          - Other tiles will display gray (empty)
         </Typography>
         <Typography variant="body2">
-          - Mỗi tile có 3 mặt: trái, phải, trên
+          - Each tile has 3 faces: left, right, top
         </Typography>
         <Typography variant="body2">
-          - Tọa độ hiển thị ở giữa mỗi tile
+          - Coordinates displayed in center of each tile
         </Typography>
       </Box>
     </Paper>

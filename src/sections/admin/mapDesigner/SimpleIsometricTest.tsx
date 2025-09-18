@@ -80,8 +80,7 @@ export default function SimpleIsometricTest() {
         color="text.secondary"
         sx={{ mt: 2, textAlign: "center" }}
       >
-        Nếu bạn thấy hình kim cương 3D ở trên, thì 2.5D isometric đang hoạt
-        động!
+        If you see the 3D diamond above, then 2.5D isometric is working!
       </Typography>
     </Paper>
   );
