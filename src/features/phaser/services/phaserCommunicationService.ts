@@ -90,11 +90,9 @@ export class PhaserCommunicationService {
       this.isReady = true;
     }
 
-    // Simple logging for key events
+    // Log score from victory message for debugging
     if (message.type === "VICTORY") {
-    }
-
-    if (message.type === "LOSE") {
+      console.log("🏆 [Victory] Received score from Phaser:", message.data?.score);
     }
 
     // Notify handlers
@@ -354,6 +352,25 @@ export class PhaserCommunicationService {
       
       this.sendMessage(message);
     });
+  }
+
+  /**
+   * Restart current scene (reload map with existing data)
+   */
+  async restartScene(): Promise<void> {
+    console.log("🔄 [PhaserCommunicationService] Restarting scene...");
+    
+    const message: PhaserMessage = {
+      source: "parent-website" as const,
+      type: "RESTART_SCENE" as const,
+      data: {},
+    };
+    
+    console.log("🚀 [PhaserCommunicationService] Sending RESTART_SCENE message to Phaser...");
+    
+    await this.sendMessage(message);
+    
+    console.log("✅ [PhaserCommunicationService] RESTART_SCENE message sent successfully");
   }
 
   /**

@@ -33,6 +33,9 @@ export interface PhaserChallengeJson {
     target?: any;
     [key: string]: any;
   };
+  // Support scoring inputs for Phaser (min/max cards)
+  minCards?: number;
+  maxCards?: number;
   statement: Array<{
     text?: string;
     order?: number;
@@ -69,6 +72,9 @@ export interface BackendChallengeJson {
     description?: string;
     [key: string]: any;
   };
+  // Support scoring inputs for Phaser (min/max cards)
+  minCards?: number;
+  maxCards?: number;
   statement: string[];
   statementNumber: number;
 }
@@ -84,16 +90,42 @@ export function convertChallengeToJson(challengeData: ChallengeResult): PhaserCh
   // Cast to any to access properties that might not be in ChallengeResult interface
   const data = challengeData as any;
 
+  // If challengeJson exists as string/object, attempt to parse and preserve min/max
+  let rootMinCards: number | undefined;
+  let rootMaxCards: number | undefined;
+  try {
+    const raw = data.challengeJson;
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (parsed && typeof parsed === 'object') {
+      if (typeof parsed.minCards === 'number') rootMinCards = parsed.minCards;
+      if (typeof parsed.maxCards === 'number') rootMaxCards = parsed.maxCards;
+      // Also check nested victory block
+      if (parsed.victory) {
+        if (typeof parsed.victory.minCards === 'number') rootMinCards = parsed.victory.minCards;
+        if (typeof parsed.victory.maxCards === 'number') rootMaxCards = parsed.victory.maxCards;
+      }
+    }
+  } catch {}
 
   const challengeJson: PhaserChallengeJson = {
     robot: data.robot || {},
     batteries: data.batteries || [],
     boxes: data.boxes || [],
     victory: data.victory || {},
+    // Preserve scoring bounds if present
+    minCards: typeof data.minCards === 'number' ? data.minCards : rootMinCards,
+    maxCards: typeof data.maxCards === 'number' ? data.maxCards : rootMaxCards,
     statement: data.statement || [],
     statementNumber: data.statementNumber || 0,
   };
 
+  // Debug log to verify minCards/maxCards are preserved
+  console.log('🔧 challengeConverter: Preserved minCards/maxCards', {
+    minCards: challengeJson.minCards,
+    maxCards: challengeJson.maxCards,
+    fromRootData: { minCards: data.minCards, maxCards: data.maxCards },
+    fromParsedJson: { minCards: rootMinCards, maxCards: rootMaxCards }
+  });
 
   return challengeJson;
 }
@@ -107,6 +139,9 @@ export function createEmptyChallengeJson(): PhaserChallengeJson {
     batteries: [],
     boxes: [],
     victory: {},
+    // No defaults for min/max; Phaser will fall back if undefined
+    minCards: undefined,
+    maxCards: undefined,
     statement: [],
     statementNumber: 0,
   };

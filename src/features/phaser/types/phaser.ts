@@ -12,7 +12,8 @@ export interface PhaserMessage {
     | "RUN_PROGRAM"
     | "GET_STATUS"
     | "PAUSE_PROGRAM"
-    | "STOP_PROGRAM";
+    | "STOP_PROGRAM"
+    | "RESTART_SCENE";
   data: {
     mapKey?: string;
     levelId?: string;
@@ -109,6 +110,11 @@ export interface VictoryData {
     total: number;
     byType: { red: number; yellow: number; green: number };
   };
+  // Scoring system data
+  stars?: number;         // Số sao (0-3)
+  starScore?: number;     // Điểm số (0-1)
+  starDetail?: string;    // Chi tiết cách tính
+  score?: number;         // Alias cho starScore để backward compatibility
 }
 
 export interface ProgressData {

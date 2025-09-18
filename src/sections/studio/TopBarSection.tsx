@@ -31,6 +31,7 @@ import {
   Download as DownloadIcon,
   CameraAlt as CameraIcon,
   PhotoLibrary as PhotoLibraryIcon,
+  Refresh as RestartIcon,
 } from "@mui/icons-material";
 import DownloadMenu from "../../features/microbit/components/DownloadMenu";
 import {
@@ -92,6 +93,7 @@ function TopBarContent({
     isReady: phaserReady,
     runProgramFromWorkspace,
     stopProgram,
+    restartScene,
     gameState,
   } = usePhaserContext();
 
@@ -162,6 +164,21 @@ function TopBarContent({
       await stopProgram();
     } catch (error) {}
     setIsRunning(false);
+  };
+
+  const handleRestart = async () => {
+    console.log("🔄 [TopBar] Restart button clicked");
+    
+    try {
+      console.log("⏳ [TopBar] Calling restartScene...");
+      await restartScene();
+      console.log("✅ [TopBar] Scene restarted successfully");
+      
+      showNotification("Map đã được tải lại thành công!", "success");
+    } catch (error) {
+      console.error("❌ [TopBar] Error restarting scene:", error);
+      showNotification("Không thể tải lại map. Vui lòng thử lại.", "error");
+    }
   };
 
   const handleValidate = () => {
@@ -659,6 +676,37 @@ function TopBarContent({
                 ) : (
                   <RunIcon sx={{ fontSize: 24 }} />
                 )}
+              </IconButton>
+            </span>
+          </Tooltip>
+
+          <Tooltip title="Restart Map">
+            <span>
+              <IconButton
+                onClick={handleRestart}
+                disabled={!phaserConnected || !phaserReady}
+                sx={{
+                  bgcolor: "#f3f4f6",
+                  color: "#6b7280",
+                  width: { xs: 36, sm: 42, md: 48 },
+                  height: { xs: 36, sm: 42, md: 48 },
+                  "&:hover": {
+                    bgcolor: "#ff9800",
+                    color: "white",
+                    transform: "translateY(-1px)",
+                    boxShadow: "0 4px 12px rgba(255, 152, 0, 0.4)",
+                  },
+                  "&:disabled": {
+                    bgcolor: "#f3f4f6",
+                    color: "#9ca3af",
+                    "&:hover": {
+                      transform: "none",
+                      boxShadow: "none",
+                    },
+                  },
+                }}
+              >
+                <RestartIcon sx={{ fontSize: 24 }} />
               </IconButton>
             </span>
           </Tooltip>
