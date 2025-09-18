@@ -96,30 +96,48 @@ function TopBarContent({
   } = usePhaserContext();
 
   const handleRun = async () => {
+    console.log("🚀 [TopBar] Execute button clicked");
+    
     if (!workspace) {
+      console.error("❌ [TopBar] No workspace available");
       return;
     }
+
+    console.log("📋 [TopBar] Workspace available:", {
+      workspaceId: workspace.id,
+      blockCount: workspace.getAllBlocks().length,
+      hasStartBlock: workspace.getAllBlocks().some((b: any) => b.type === "ottobit_start")
+    });
 
     setIsRunning(true);
 
     try {
       // Đảm bảo Phaser thực sự sẵn sàng
+      console.log("🎮 [TopBar] Checking Phaser connection:", {
+        phaserConnected,
+        phaserReady
+      });
 
       if (!phaserConnected || !phaserReady) {
+        console.log("⏳ [TopBar] Waiting for Phaser to be ready...");
         // Đợi một chút để Phaser sẵn sàng
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         if (!phaserConnected || !phaserReady) {
+          console.error("❌ [TopBar] Phaser still not ready after wait");
           setIsRunning(false);
           return;
         }
       }
 
       // Thêm delay nhỏ trước khi gửi message để đảm bảo Phaser thực sự sẵn sàng
+      console.log("⏳ [TopBar] Adding safety delay before execution...");
       await new Promise((resolve) => setTimeout(resolve, 500));
 
+      console.log("🎯 [TopBar] Calling runProgramFromWorkspace...");
       await runProgramFromWorkspace(workspace);
     } catch (error) {
+      console.error("❌ [TopBar] Error during execution:", error);
       setIsRunning(false);
       return;
     }
