@@ -17,7 +17,9 @@ import {
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getCourses } from "../../../redux/course/courseSlice";
 import { createEnrollment, getMyEnrollments } from "../../../redux/enrollment/enrollmentSlice";
+import { getStudentByUserThunk } from "../../../redux/student/studentThunks";
 import { PATH_USER } from "../../../routes/paths";
+import StudentProfileRequiredDialog from "./StudentProfileRequiredDialog";
 // import CourseFilterSidebar from "./CourseFilterSidebar";
 // import CourseListingHeader, { SortOption } from "./CourseListingHeader";
 
@@ -33,11 +35,19 @@ export default function CourseListingSection({ searchQuery }: CourseListingSecti
   const navigate = useNavigate();
   const { data: courses, isLoading, error } = useAppSelector((state) => state.course.courses);
   const { myEnrollments } = useAppSelector((state) => state.enrollment);
+  const { studentData } = useAppSelector((state) => ({
+    studentData: state.student.currentStudent.data,
+  }));
   
   // State for UI
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [currentPage, setCurrentPage] = useState(1);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" as "success" | "error" });
+  const [profileDialog, setProfileDialog] = useState({ 
+    open: false, 
+    courseName: "", 
+    courseId: "" 
+  });
   const itemsPerPage = 12;
 
 
@@ -92,8 +102,46 @@ export default function CourseListingSection({ searchQuery }: CourseListingSecti
     navigate(PATH_USER.courseDetail.replace(":id", courseId));
   };
 
-  const handleEnrollCourse = async (courseId: string) => {
+  // Check if user has student profile
+  const checkStudentProfile = async (): Promise<boolean> => {
     try {
+      if (studentData) {
+        return true;
+      }
+      
+      const result = await dispatch(getStudentByUserThunk()).unwrap();
+      return !!result;
+    } catch (error: any) {
+      // If 404 or NO_STUDENT_PROFILE, user doesn't have profile
+      if (error.includes?.("404") || error === "NO_STUDENT_PROFILE" || 
+          (typeof error === "string" && error.toLowerCase().includes("not found"))) {
+        return false;
+      }
+      // For other errors, assume no profile to be safe
+      return false;
+    }
+  };
+
+  const handleEnrollCourse = async (courseId: string) => {
+    // Find course name for better UX
+    const course = courses?.items?.find(c => c.id === courseId);
+    const courseName = course?.title || "khóa học này";
+    
+    try {
+      // First check if user has student profile
+      const hasProfile = await checkStudentProfile();
+      
+      if (!hasProfile) {
+        // Show dialog to prompt user to create profile
+        setProfileDialog({
+          open: true,
+          courseName,
+          courseId
+        });
+        return;
+      }
+
+      // If has profile, proceed with enrollment
       await dispatch(createEnrollment({ courseId })).unwrap();
       
       setSnackbar({ 
@@ -104,12 +152,29 @@ export default function CourseListingSection({ searchQuery }: CourseListingSecti
       
       // Refresh enrollments to update UI immediately
       dispatch(getMyEnrollments({ pageSize: 100 }));
-    } catch (error) {
-      setSnackbar({ 
-        open: true, 
-        message: typeof error === 'string' ? error : "Không thể tham gia khóa học. Vui lòng thử lại.", 
-        severity: "error" 
-      });
+    } catch (error: any) {
+      // Check if error indicates missing student profile
+      const requiresProfile = typeof error === "string" && [
+        "student not found",
+        "student profile required",
+        "no student profile", 
+        "create student profile",
+        "missing student profile"
+      ].some(keyword => error.toLowerCase().includes(keyword));
+      
+      if (requiresProfile) {
+        setProfileDialog({
+          open: true,
+          courseName,
+          courseId
+        });
+      } else {
+        setSnackbar({ 
+          open: true, 
+          message: typeof error === 'string' ? error : "Không thể tham gia khóa học. Vui lòng thử lại.", 
+          severity: "error" 
+        });
+      }
     }
   };
 
@@ -128,6 +193,15 @@ export default function CourseListingSection({ searchQuery }: CourseListingSecti
 
   const handleCloseSnackbar = () => {
     setSnackbar(prev => ({ ...prev, open: false }));
+  };
+
+  const handleCloseProfileDialog = () => {
+    setProfileDialog({ open: false, courseName: "", courseId: "" });
+  };
+
+  const handleCreateProfile = () => {
+    navigate(PATH_USER.studentProfile);
+    handleCloseProfileDialog();
   };
 
 
@@ -273,6 +347,14 @@ export default function CourseListingSection({ searchQuery }: CourseListingSecti
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {/* Student Profile Required Dialog */}
+      <StudentProfileRequiredDialog
+        open={profileDialog.open}
+        onClose={handleCloseProfileDialog}
+        courseName={profileDialog.courseName}
+        onCreateProfile={handleCreateProfile}
+      />
     </Container>
   );
 }

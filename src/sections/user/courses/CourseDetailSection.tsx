@@ -16,7 +16,9 @@ import {
   createEnrollment,
   getMyEnrollments,
 } from "../../../redux/enrollment/enrollmentSlice";
+import { getStudentByUserThunk } from "../../../redux/student/studentThunks";
 import { PATH_USER } from "../../../routes/paths";
+import StudentProfileRequiredDialog from "./StudentProfileRequiredDialog";
 
 // Import the new sections
 import CourseHeroSection from "./detail/CourseHeroSection";
@@ -38,6 +40,11 @@ export default function CourseDetailSection({
     message: "",
     severity: "success" as "success" | "error" | "warning",
   });
+  const [profileDialog, setProfileDialog] = useState({ 
+    open: false, 
+    courseName: "", 
+    courseId: "" 
+  });
 
   const {
     data: course,
@@ -54,6 +61,9 @@ export default function CourseDetailSection({
   const { myEnrollments, operations } = useAppSelector(
     (state) => state.enrollment
   );
+  const { studentData } = useAppSelector((state) => ({
+    studentData: state.student.currentStudent.data,
+  }));
   const { isEnrolling } = operations;
 
   useEffect(() => {
@@ -73,8 +83,44 @@ export default function CourseDetailSection({
       (enrollment) => enrollment.courseId === courseId
     ) || false;
 
-  const handleEnrollCourse = async () => {
+  // Check if user has student profile
+  const checkStudentProfile = async (): Promise<boolean> => {
     try {
+      if (studentData) {
+        return true;
+      }
+      
+      const result = await dispatch(getStudentByUserThunk()).unwrap();
+      return !!result;
+    } catch (error: any) {
+      // If 404 or NO_STUDENT_PROFILE, user doesn't have profile
+      if (error.includes?.("404") || error === "NO_STUDENT_PROFILE" || 
+          (typeof error === "string" && error.toLowerCase().includes("not found"))) {
+        return false;
+      }
+      // For other errors, assume no profile to be safe
+      return false;
+    }
+  };
+
+  const handleEnrollCourse = async () => {
+    const courseName = course?.title || "khóa học này";
+    
+    try {
+      // First check if user has student profile
+      const hasProfile = await checkStudentProfile();
+      
+      if (!hasProfile) {
+        // Show dialog to prompt user to create profile
+        setProfileDialog({
+          open: true,
+          courseName,
+          courseId
+        });
+        return;
+      }
+
+      // If has profile, proceed with enrollment
       await dispatch(createEnrollment({ courseId })).unwrap();
 
       setSnackbar({
@@ -85,15 +131,32 @@ export default function CourseDetailSection({
 
       // Refresh enrollments to update UI immediately
       dispatch(getMyEnrollments({ pageSize: 100 }));
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message:
-          typeof error === "string"
-            ? error
-            : "Không thể tham gia khóa học. Vui lòng thử lại.",
-        severity: "error",
-      });
+    } catch (error: any) {
+      // Check if error indicates missing student profile
+      const requiresProfile = typeof error === "string" && (
+        error.toLowerCase().includes("student not found") ||
+        error.toLowerCase().includes("student profile required") ||
+        error.toLowerCase().includes("no student profile") || 
+        error.toLowerCase().includes("create student profile") ||
+        error.toLowerCase().includes("missing student profile")
+      );
+      
+      if (requiresProfile) {
+        setProfileDialog({
+          open: true,
+          courseName,
+          courseId
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message:
+            typeof error === "string"
+              ? error
+              : "Không thể tham gia khóa học. Vui lòng thử lại.",
+          severity: "error",
+        });
+      }
     }
   };
 
@@ -118,6 +181,15 @@ export default function CourseDetailSection({
 
   const handleCloseSnackbar = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
+  };
+
+  const handleCloseProfileDialog = () => {
+    setProfileDialog({ open: false, courseName: "", courseId: "" });
+  };
+
+  const handleCreateProfile = () => {
+    navigate(PATH_USER.studentProfile);
+    handleCloseProfileDialog();
   };
 
   const isLoading = courseLoading || lessonsLoading;
@@ -237,6 +309,14 @@ export default function CourseDetailSection({
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {/* Student Profile Required Dialog */}
+      <StudentProfileRequiredDialog
+        open={profileDialog.open}
+        onClose={handleCloseProfileDialog}
+        courseName={profileDialog.courseName}
+        onCreateProfile={handleCreateProfile}
+      />
     </>
   );
 }

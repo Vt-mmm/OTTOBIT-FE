@@ -168,9 +168,26 @@ export const createEnrollmentThunk = createAsyncThunk<
     return response.data.data;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to enroll in course"
-    );
+    
+    // Parse error message from different response formats
+    let errorMessage = "Failed to enroll in course";
+    
+    if (err.response?.data) {
+      const responseData = err.response.data;
+      
+      // Handle different error response formats
+      if (typeof responseData === "string") {
+        errorMessage = responseData;
+      } else if (responseData.message) {
+        errorMessage = responseData.message;
+      } else if (responseData.errors && Array.isArray(responseData.errors)) {
+        errorMessage = responseData.errors[0] || errorMessage;
+      }
+    } else if (err.message) {
+      errorMessage = err.message;
+    }
+    
+    return rejectWithValue(errorMessage);
   }
 });
 
