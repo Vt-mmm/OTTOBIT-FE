@@ -86,12 +86,10 @@ export default function StudentProfileCreate({
         dateOfBirth: formData.dateOfBirth!.toISOString(),
       };
 
-      console.log('🚀 Creating student with data:', studentData);
-      const result = await dispatch(createStudentThunk(studentData)).unwrap();
-      console.log('✅ Student created successfully:', result);
+      await dispatch(createStudentThunk(studentData)).unwrap();
       onStudentCreated();
     } catch (error) {
-      console.error('❌ Failed to create student profile:', error);
+      // Error handling is managed by Redux thunk
     }
   };
 

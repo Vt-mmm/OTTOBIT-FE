@@ -244,12 +244,12 @@ export const logoutThunk = createAsyncThunk<
     thunkAPI.dispatch(setStatus());
 
     // Reset all related slices
-    thunkAPI.dispatch({ type: "psychologist/resetPsychologistState" });
-    thunkAPI.dispatch({ type: "package/resetPackageState" });
-    thunkAPI.dispatch({ type: "user/resetUser" });
-    thunkAPI.dispatch({ type: "appointment/resetAppointmentState" });
-    thunkAPI.dispatch({ type: "payment/resetPaymentState" });
-    thunkAPI.dispatch({ type: "usertest/resetUserTestState" });
+    thunkAPI.dispatch({ type: "student/resetStudentState" });
+    thunkAPI.dispatch({ type: "course/resetCourseState" });
+    thunkAPI.dispatch({ type: "enrollment/resetEnrollmentState" });
+    thunkAPI.dispatch({ type: "lesson/resetLessonState" });
+    thunkAPI.dispatch({ type: "challenge/resetChallengeState" });
+    thunkAPI.dispatch({ type: "submission/resetSubmissionState" });
 
     // Đảm bảo xóa headers của axios instances
     try {

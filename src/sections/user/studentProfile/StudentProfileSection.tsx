@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useAppDispatch, useAppSelector } from "store/config";
 import { getStudentByUserThunk } from "store/student/studentThunks";
@@ -15,44 +15,57 @@ export default function StudentProfileSection({
   onStudentCreated 
 }: StudentProfileSectionProps) {
   const dispatch = useAppDispatch();
-  const { currentStudent } = useAppSelector(
-    (state) => state.student
+  
+  // Optimized selector to avoid unnecessary re-renders
+  const { studentData, isLoading } = useAppSelector(
+    (state) => ({
+      studentData: state.student.currentStudent.data,
+      isLoading: state.student.currentStudent.isLoading
+    })
   );
-  const isLoading = false; // Handle loading state through API calls
 
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  useEffect(() => {
-    const checkStudentProfile = async () => {
-      console.log('🔍 Checking student profile...');
-      try {
-        const result = await dispatch(getStudentByUserThunk()).unwrap();
-        console.log('✅ Student profile found:', result);
-        if (result) {
-          setHasProfile(true);
-        }
-      } catch (error: any) {
-        console.log('❌ Error checking student profile:', error);
-        if (error.includes("404") || error === "NO_STUDENT_PROFILE") {
-          console.log('📝 No profile found, showing empty state');
-          setHasProfile(false);
-          // Không tự động hiển thị form, để user tự click button
-        } else {
-          console.log('⚠️ Other error, showing empty state');
-          setHasProfile(false);
-        }
-      }
-    };
-
-    console.log('🚀 StudentProfileSection useEffect, currentStudent:', currentStudent);
-    if (!currentStudent || !currentStudent.data) {
-      checkStudentProfile();
-    } else {
-      console.log('✅ Already has student profile');
-      setHasProfile(true);
+  // Memoized function to check student profile
+  const checkStudentProfile = useCallback(async () => {
+    if (isInitialized || isLoading) {
+      return; // Prevent duplicate calls
     }
-  }, [dispatch, currentStudent]);
+    
+    try {
+      const result = await dispatch(getStudentByUserThunk()).unwrap();
+      if (result) {
+        setHasProfile(true);
+      }
+    } catch (error: any) {
+      if (error.includes("404") || error === "NO_STUDENT_PROFILE") {
+        setHasProfile(false);
+      } else {
+        setHasProfile(false);
+      }
+    } finally {
+      setIsInitialized(true);
+    }
+  }, [dispatch, isInitialized, isLoading]);
+
+  // Effect to initialize profile check - only run once
+  useEffect(() => {
+    if (!isInitialized && !studentData) {
+      checkStudentProfile();
+    } else if (studentData && !isInitialized) {
+      setHasProfile(true);
+      setIsInitialized(true);
+    }
+  }, [checkStudentProfile, studentData, isInitialized]);
+
+  // Separate effect to handle studentData changes after initialization
+  useEffect(() => {
+    if (isInitialized) {
+      setHasProfile(!!studentData);
+    }
+  }, [studentData, isInitialized]);
 
   const handleStudentCreated = () => {
     setHasProfile(true);
@@ -64,7 +77,8 @@ export default function StudentProfileSection({
     setShowCreateForm(true);
   };
 
-  if (isLoading || hasProfile === null) {
+  // Show loading if Redux is loading or we haven't initialized yet
+  if (isLoading || (!isInitialized && hasProfile === null)) {
     return <StudentProfileLoading />;
   }
 
