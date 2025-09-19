@@ -10,29 +10,29 @@ export default function SimulatorStageSection({
 }: SimulatorStageSectionProps) {
   return (
     <Box
-      sx={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: "#f8f9fa", // Light background để phân biệt với workspace
-        border: "2px solid #e9ecef", // Border để tạo khung rõ ràng
-        borderRadius: 2, // Bo góc nhẹ
-        overflow: "hidden",
-        position: "relative",
-      }}
+        sx={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          backgroundColor: "white",
+          border: "1px solid #e9ecef",
+          borderRadius: 1,
+          overflow: "hidden",
+          position: "relative",
+        }}
     >
-      {/* Simulator Header */}
+      {/* Simulator Header - Compact như HP Robots */}
       <Box
         sx={{
           px: 2,
-          py: 1.5,
-          backgroundColor: "#ffffff",
-          borderBottom: "1px solid #dee2e6",
+          py: 1,
+          backgroundColor: "#f8f9fa",
+          borderBottom: "1px solid #e9ecef",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          minHeight: 48,
+          minHeight: 40, // Compact hơn để dành space cho map
         }}
       >
         <Box
@@ -40,55 +40,27 @@ export default function SimulatorStageSection({
             display: "flex",
             alignItems: "center",
             gap: 1,
-            color: "#495057",
-            fontWeight: 600,
-            fontSize: "0.95rem",
+            color: "#6c757d",
+            fontWeight: 500,
+            fontSize: "0.875rem",
           }}
         >
-          🎮 Robot Simulator
+          🤖 Robot Simulator
         </Box>
       </Box>
 
-      {/* Phaser Simulator Container */}
+      {/* Simplified Phaser Simulator Container */}
       <Box
         sx={{
           flex: 1,
           width: "100%",
-          minHeight: 0, // Critical for flex layout
+          minHeight: 0,
           position: "relative",
-          backgroundColor: "#f8f9fa", // Match outer container background
-          display: "flex",
-          flexDirection: "column",
-          // Remove padding to maximize space
-          p: 0,
+          backgroundColor: "#f8f9fa",
+          overflow: "hidden",
         }}
       >
-        {/* Full-width simulator - Fully responsive */}
-        <Box
-          sx={{
-            width: "100%",
-            height: "100%",
-            flex: 1,
-            minHeight: 0, // Critical for flex layout
-            position: "relative",
-            overflow: "hidden",
-            backgroundColor: "#f8f9fa", // Match background to eliminate black areas
-            // Ensure minimum size for mobile
-            minWidth: { xs: "280px", sm: "320px" },
-            // Mobile optimizations with responsive minHeight
-            "@media (min-width: 600px)": {
-              minHeight: "300px",
-            },
-            "@media (max-width: 599px)": {
-              minHeight: "240px",
-            },
-            "@media (max-width: 480px)": {
-              minHeight: "200px",
-            },
-          }}
-        >
-          <PhaserSimulator />
-        </Box>
+        <PhaserSimulator />
       </Box>
     </Box>
   );

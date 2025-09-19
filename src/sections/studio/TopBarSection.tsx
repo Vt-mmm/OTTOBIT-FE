@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   AppBar,
@@ -41,6 +42,7 @@ import {
 import { MicrobitConnectionDialog } from "../../features/microbit/components/MicrobitConnectionDialog";
 import { usePhaserContext } from "../../features/phaser/context/PhaserContext";
 import { useNotification } from "hooks/useNotification";
+import { forceCleanupBeforeExecute } from "../../theme/block/renderer-ottobit";
 
 interface TopBarSectionProps {
   activeTab?: number;
@@ -86,6 +88,7 @@ function TopBarContent({
   const [selectedCameraId, setSelectedCameraId] = useState<string>("");
   const { isConnected } = useMicrobitContext();
   const { showNotification, NotificationComponent } = useNotification();
+  const navigate = useNavigate();
 
   // Phaser context for running programs
   const {
@@ -99,6 +102,10 @@ function TopBarContent({
 
   const handleRun = async () => {
     console.log("🚀 [TopBar] Execute button clicked");
+    
+    // CRITICAL: Emergency cleanup before execute to prevent field editor leaks
+    console.log("🚨 [TopBar] Running emergency cleanup before execute...");
+    forceCleanupBeforeExecute();
     
     if (!workspace) {
       console.error("❌ [TopBar] No workspace available");
@@ -140,6 +147,10 @@ function TopBarContent({
       await runProgramFromWorkspace(workspace);
     } catch (error) {
       console.error("❌ [TopBar] Error during execution:", error);
+      
+      // CRITICAL: Cleanup again on error to prevent leaks
+      forceCleanupBeforeExecute();
+      
       setIsRunning(false);
       return;
     }
@@ -436,8 +447,9 @@ function TopBarContent({
           flexWrap: { xs: "wrap", md: "nowrap" }, // Allow wrapping on mobile
         }}
       >
-        {/* Ottobit Logo - Mobile Responsive */}
+        {/* Ottobit Logo - Mobile Responsive with Navigation */}
         <Box
+          onClick={() => navigate('/')}
           sx={{
             width: { xs: 40, sm: 45, md: 50 },
             height: { xs: 40, sm: 45, md: 50 },
@@ -449,11 +461,21 @@ function TopBarContent({
             mr: { xs: 1, sm: 2 },
             p: 0.5,
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            cursor: "pointer",
+            transition: "all 0.2s ease-in-out",
+            "&:hover": {
+              transform: "translateY(-1px)",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              bgcolor: "#f8f9fa",
+            },
+            "&:active": {
+              transform: "translateY(0)",
+            },
           }}
         >
           <img
             src="/asset/OttobitLogoText.png"
-            alt="Ottobit Logo"
+            alt="Ottobit Logo - Click to go home"
             style={{
               width: "100%",
               height: "100%",
@@ -462,29 +484,43 @@ function TopBarContent({
           />
         </Box>
 
-        {/* Project Title - Responsive */}
+        {/* Project Title - Responsive with Navigation */}
         <Typography
           variant="h5"
+          onClick={() => navigate('/')}
           sx={{
             fontWeight: 700,
             color: "#ffffff",
             fontSize: { xs: "18px", sm: "20px", md: "24px" },
             letterSpacing: "0.5px",
             display: { xs: "none", sm: "block" }, // Hide on very small screens
+            cursor: "pointer",
+            transition: "all 0.2s ease-in-out",
+            "&:hover": {
+              color: "#d1fae5",
+              textShadow: "0 2px 4px rgba(0,0,0,0.2)",
+            },
           }}
         >
           Ottobit Studio
         </Typography>
 
-        {/* Short title for mobile */}
+        {/* Short title for mobile with Navigation */}
         <Typography
           variant="h6"
+          onClick={() => navigate('/')}
           sx={{
             fontWeight: 700,
             color: "#ffffff",
             fontSize: "16px",
             letterSpacing: "0.5px",
             display: { xs: "block", sm: "none" }, // Only show on very small screens
+            cursor: "pointer",
+            transition: "all 0.2s ease-in-out",
+            "&:hover": {
+              color: "#d1fae5",
+              textShadow: "0 2px 4px rgba(0,0,0,0.2)",
+            },
           }}
         >
           Ottobit

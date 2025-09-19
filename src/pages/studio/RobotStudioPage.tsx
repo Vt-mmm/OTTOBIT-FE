@@ -60,23 +60,14 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
   const [workspace, setWorkspace] = useState<any>(null);
   const [loadingChallengeId, setLoadingChallengeId] = useState<string | null>(null);
   const [loadedChallengeId, setLoadedChallengeId] = useState<string | null>(null);
-  const [showMapLoading, setShowMapLoading] = useState(true);
-  const { loadChallenge, onMessage, offMessage, currentChallenge } = usePhaserContext();
+  const { loadChallenge, onMessage, offMessage } = usePhaserContext();
 
   // Reset states when challenge changes
   useEffect(() => {
     if (challengeId && loadedChallengeId !== challengeId) {
       setLoadedChallengeId(null);
-      setShowMapLoading(true);
     }
   }, [challengeId, loadedChallengeId]);
-
-  // Reset loading state when component mounts
-  useEffect(() => {
-    if (challengeId) {
-      setShowMapLoading(true);
-    }
-  }, []); // Only run on mount
 
   // Load challenge when Phaser is ready and challengeId is available
   useEffect(() => {
@@ -100,13 +91,10 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
         .then((result) => {
           if (result) {
             setLoadedChallengeId(challengeId);
-            setTimeout(() => {
-              setShowMapLoading(false);
-            }, 200);
           }
         })
         .catch(() => {
-          setShowMapLoading(false);
+          // Challenge load failed
         })
         .finally(() => {
           setLoadingChallengeId(null);
@@ -152,37 +140,48 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
         workspace={workspace}
       />
 
-      {/* Main Content Area - Enhanced Responsive Layout */}
+      {/* Main Content Area - Optimized cho map full size */}
       <Box
         sx={{
           flex: 1,
           display: "flex",
-          flexDirection: { xs: "column", lg: "row" }, // Stack on mobile/tablet, side-by-side on large screens
-          gap: { xs: 1, md: 2 }, // Small gaps for visual separation
-          p: { xs: 1, md: 2 }, // Padding around the main content
+          flexDirection: { xs: "column", lg: "row" },
+          gap: { xs: 1, lg: 2 }, // Giảm gap để tận dụng space
+          p: { xs: 1, lg: 1.5 }, // Giảm padding để maximize space
           overflow: "hidden",
           minHeight: 0,
           height: "100%",
           maxWidth: "100vw",
-          backgroundColor: "#e9ecef", // Match container background
+          backgroundColor: "#f8f9fa", // Lighter background
         }}
       >
-        {/* Left Panel - Workspace Area */}
+        {/* Left Panel - Workspace Area - Compact như HP Robots */}
         <Box
           sx={{
-            // Mobile: take available space but don't overflow
+            // Desktop: fixed width để map có thể full size
             flex: { xs: "1 1 0%", lg: "0 0 auto" },
-            width: { xs: "100%", lg: "600px", xl: "720px" }, // Increased width for larger workspace
-            height: { xs: "50vh", sm: "55vh", md: "60vh", lg: "100%" },
-            minHeight: { xs: "300px", lg: "auto" },
-            maxHeight: { xs: "50vh", lg: "none" },
+            width: { 
+              xs: "100%", 
+              sm: "100%", 
+              md: "100%", 
+              lg: "480px", // Compact hơn để dành chỗ cho map
+              xl: "680px" // Vẫn đủ space cho blocks
+            },
+            height: { 
+              xs: "45vh", // Giảm xuống để map có nhiều space hơn
+              sm: "45vh", 
+              md: "48vh", 
+              lg: "100%" 
+            },
+            minHeight: { xs: "280px", sm: "300px", lg: "auto" },
+            maxHeight: { xs: "45vh", sm: "45vh", md: "48vh", lg: "none" },
             display: "flex",
             flexDirection: "column",
             maxWidth: "100%",
-            // Add subtle shadow for depth
-            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-            borderRadius: 2,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+            borderRadius: 1,
             overflow: "hidden",
+            backgroundColor: "white",
           }}
         >
           <LeftPanelSection
@@ -192,92 +191,24 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
           />
         </Box>
 
-        {/* Right Panel - Robot Simulator */}
+        {/* Right Panel - Robot Simulator - Full size như HP Robots */}
         <Box 
           sx={{ 
             position: "relative",
-            flex: { xs: "1 1 0%", lg: 1 },
+            flex: 1, // Lấy hết remaining space
             width: "100%",
-            height: { xs: "50vh", sm: "45vh", md: "40vh", lg: "100%" },
-            minHeight: { xs: "250px", lg: 0 }, // Critical: minHeight: 0 for desktop
+            height: "100%",
+            minHeight: { xs: "350px", lg: 0 }, // Minimum cho mobile
+            maxHeight: { xs: "55vh", lg: "100%" }, // Giới hạn mobile, free desktop
             display: "flex",
             flexDirection: "column",
-            maxWidth: "100%",
-            // Add subtle shadow for depth
-            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-            borderRadius: 2,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+            borderRadius: 1,
             overflow: "hidden",
+            backgroundColor: "white",
           }}
         >
           <SimulatorStageSection workspace={workspace} />
-
-          {/* Loading Overlay - Hide menu flash during map load */}
-          {showMapLoading && (
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "rgba(255, 255, 255, 0.95)",
-                zIndex: 1000,
-                borderRadius: 1,
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 2,
-                }}
-              >
-                {/* Loading Animation */}
-                <Box
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    border: "4px solid #e3f2fd",
-                    borderTop: "4px solid #1976d2",
-                    borderRadius: "50%",
-                    animation: "spin 1s linear infinite",
-                    "@keyframes spin": {
-                      "0%": { transform: "rotate(0deg)" },
-                      "100%": { transform: "rotate(360deg)" },
-                    },
-                  }}
-                />
-
-                {/* Loading Text */}
-                <Box sx={{ textAlign: "center" }}>
-                  <Box
-                    sx={{
-                      fontSize: "1.2rem",
-                      fontWeight: 600,
-                      color: "#1976d2",
-                      mb: 0.5,
-                    }}
-                  >
-                    Đang tải Challenge {currentChallenge?.title || challengeId}
-                  </Box>
-                  <Box
-                    sx={{
-                      fontSize: "0.9rem",
-                      color: "#666",
-                      opacity: 0.8,
-                    }}
-                  >
-                    Vui lòng đợi trong giây lát...
-                  </Box>
-                </Box>
-              </Box>
-            </Box>
-          )}
         </Box>
       </Box>
     </Box>

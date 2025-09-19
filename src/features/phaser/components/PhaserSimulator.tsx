@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from "react";
-import { Box, Typography, CircularProgress, Alert } from "@mui/material";
+import { Box, Typography, Alert } from "@mui/material";
 import { usePhaserContext } from "../context/PhaserContext.js";
 import VictoryModal from "./VictoryModal.js";
 import DefeatModal from "./DefeatModal";
@@ -13,13 +13,13 @@ interface PhaserSimulatorProps {
 export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
   const {
     isConnected,
-    isReady,
     gameState,
     error,
     isLoading,
     config,
     connect,
     clearError,
+    restartScene, // Thêm restartScene để sử dụng logic giống TopBar
     // Victory state
     victoryData,
     isVictoryModalOpen,
@@ -35,42 +35,90 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Handle replay current map - disabled for now
+  // Handle replay using proper restart logic from PhaserContext
   const handleReplay = async () => {
+    console.log('🔄 [PhaserSimulator] Replay button clicked');
+    
     try {
+      // Sử dụng restartScene từ PhaserContext giống TopBar
+      console.log('⏳ [PhaserSimulator] Calling restartScene...');
+      await restartScene();
+      console.log('✅ [PhaserSimulator] Scene restarted successfully');
       
-      // Fallback: Reload iframe
+      // Đóng modal
+      hideVictoryModal();
+      hideDefeatModal();
+    } catch (error) {
+      console.error('❌ [PhaserSimulator] Error restarting scene:', error);
+      
+      // Fallback: Reload iframe nếu restart không thành công
       const iframe = iframeRef.current;
       if (iframe) {
-        iframe.src = iframe.src; // Force iframe reload
+        console.log('🔄 [PhaserSimulator] Fallback: Reloading iframe');
+        iframe.src = iframe.src;
       }
       
       hideVictoryModal();
-    } catch (error) {
-      hideVictoryModal();
+      hideDefeatModal();
     }
   };
 
-  // Handle iframe resize based on container size
+  // Debounced resize function to optimize performance
+  // Simple iframe scaling theo iframe-resizer approach - không dùng transform phức tạp
+  const sendResizeToPhaser = useCallback((containerWidth: number, containerHeight: number) => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+    
+    // Đơn giản hóa: sử dụng CSS thuần túy
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.position = 'relative';
+    iframe.style.transform = 'none';
+    iframe.style.left = 'auto';
+    iframe.style.top = 'auto';
+    iframe.style.marginLeft = '0';
+    iframe.style.marginTop = '0';
+    
+    // Gửi resize message đến Phaser để adjust game size
+    try {
+      iframe.contentWindow?.postMessage({
+        source: "parent-website",
+        type: "RESIZE",
+        data: {
+          width: Math.round(containerWidth),
+          height: Math.round(containerHeight)
+        }
+      }, "*");
+      
+      console.log('🎯 Simple resize sent to Phaser:', {
+        containerWidth, 
+        containerHeight
+      });
+    } catch (error) {
+      // Silently ignore errors if iframe is not ready
+    }
+    
+  }, []);
+
+  // Handle iframe resize based on container size (debounced)
   const handleContainerResize = useCallback((entries: ResizeObserverEntry[]) => {
     const entry = entries[0];
-    if (entry && iframeRef.current) {
+    if (entry) {
       const { width, height } = entry.contentRect;
-      const iframe = iframeRef.current;
       
-      // Notify Phaser about resize via postMessage
-      try {
-        iframe.contentWindow?.postMessage({
-          source: "parent-website",
-          type: "RESIZE",
-          data: { width, height }
-        }, "*");
-      } catch (error) {
-        // Silently ignore errors if iframe is not ready
+      // Clear existing timeout
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
       }
+      
+      // Debounce resize calls
+      resizeTimeoutRef.current = setTimeout(() => {
+        sendResizeToPhaser(width, height);
+      }, 150); // 150ms debounce
     }
-  }, []);
+  }, [sendResizeToPhaser]);
 
   // Setup ResizeObserver to monitor container size changes
   useEffect(() => {
@@ -87,6 +135,11 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     return () => {
       resizeObserver.disconnect();
       resizeObserverRef.current = null;
+      // Cleanup resize timeout
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+        resizeTimeoutRef.current = null;
+      }
     };
   }, [handleContainerResize]);
 
@@ -103,6 +156,20 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     }
   }, [isConnected, isLoading, connect]);
 
+  // Apply initial resize khi iframe đã kết nối
+  useEffect(() => {
+    if (isConnected && containerRef.current && iframeRef.current) {
+      const container = containerRef.current;
+      const { width, height } = container.getBoundingClientRect();
+      if (width > 0 && height > 0) {
+        // Small delay to ensure iframe is fully loaded
+        setTimeout(() => {
+          sendResizeToPhaser(width, height);
+        }, 300);
+      }
+    }
+  }, [isConnected, sendResizeToPhaser]);
+
   // DISABLED: Auto-load removed - manual control via StudioContent
   // useEffect(() => {
   //   if (isReady && !gameState?.mapKey) {
@@ -115,107 +182,10 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
   // REMOVED: Don't hide iframe on error - keep it available for message sending
   // This allows us to send mapJson/challengeJson even after initial Phaser errors
 
-  if (isLoading) {
-    return (
-      <Box
-        ref={containerRef}
-        className={className}
-        sx={{
-          width: "100%",
-          height: "100%",
-          flex: 1,
-          minHeight: 0,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 2,
-        }}
-      >
-        <CircularProgress />
-        <Typography variant="body2" color="text.secondary">
-          Đang kết nối đến Phaser simulator...
-        </Typography>
-      </Box>
-    );
-  }
+  // Initial loading state removed as we want to show iframe immediately to speed up loading process
 
-  // Always render iframe, but show loading state if not connected
-  if (!isConnected) {
-    return (
-      <Box
-        ref={containerRef}
-        className={className}
-        sx={{
-          width: "100%",
-          height: "100%",
-          flex: 1,
-          minHeight: 0,
-          position: "relative",
-          overflow: "hidden",
-          backgroundColor: "#f8f9fa", // Light background thay vì trong suốt
-        }}
-      >
-        <iframe
-          ref={iframeRef}
-          id="robot-game-iframe"
-          src={config.url}
-          width="100%"
-          height="100%"
-          allow="fullscreen"
-          style={{
-            border: "none",
-            width: "100%",
-            height: "100%",
-            display: "block",
-            margin: 0,
-            padding: 0,
-            backgroundColor: "transparent",
-            borderRadius: "inherit",
-          }}
-          title="Phaser Robot Simulator"
-        />
-
-        {/* Loading overlay with better styling */}
-        <Box
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "rgba(248, 249, 250, 0.95)", // Match container background
-            zIndex: 1,
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 2,
-              p: 3,
-              backgroundColor: "white",
-              borderRadius: 2,
-              boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-            }}
-          >
-            <CircularProgress size={48} sx={{ color: "#28a745" }} />
-            <Typography variant="h6" color="text.primary" fontWeight={600}>
-              🎮 Robot Simulator
-            </Typography>
-            <Typography variant="body2" color="text.secondary" textAlign="center">
-              Đang khởi tạo kết nối...
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
-    );
-  }
+  // Always render iframe directly without loading overlays
+  // Phaser will handle its own loading states internally
 
   return (
     <Box
@@ -228,14 +198,17 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
         minHeight: 0,
         position: "relative",
         overflow: "hidden",
-        backgroundColor: "#f8f9fa", // Match container background
-        // Add CSS to handle black bars in iframe
+        backgroundColor: "transparent",
+        // Force iframe content scale với object-fit
         "& iframe": {
-          backgroundColor: "#f8f9fa !important",
-        },
-        // Override any internal Phaser black background
-        "& iframe canvas": {
-          backgroundColor: "transparent !important",
+          width: "100%",
+          height: "100%",
+          border: "none",
+          display: "block",
+          backgroundColor: "transparent",
+          // Force scaling content to fit container
+          objectFit: "contain", // Giữ aspect ratio, fit trong container
+          objectPosition: "center", // Center content
         },
       }}
     >
@@ -247,14 +220,13 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
         height="100%"
         allow="fullscreen"
         style={{
-          border: "none",
           width: "100%",
           height: "100%",
+          border: "none",
           display: "block",
           margin: 0,
           padding: 0,
-          backgroundColor: "#f8f9fa", // Match container background
-          borderRadius: "inherit",
+          backgroundColor: "transparent",
         }}
         title="Phaser Robot Simulator"
       />
@@ -290,41 +262,7 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
         </Box>
       )}
 
-      {/* Status overlay */}
-      {!isReady && !error && (
-        <Box
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "rgba(248, 249, 250, 0.95)", // Match container background
-            zIndex: 1,
-          }}
-        >
-          <Box
-            sx={{
-              textAlign: "center",
-              p: 3,
-              backgroundColor: "white",
-              borderRadius: 2,
-              boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-            }}
-          >
-            <CircularProgress size={48} sx={{ mb: 2, color: "#28a745" }} />
-            <Typography variant="h6" color="text.primary" fontWeight={600}>
-              🎮 Robot Simulator
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Đang tải Phaser simulator...
-            </Typography>
-          </Box>
-        </Box>
-      )}
+      {/* Status overlay - Removed as Phaser handles loading states internally */}
 
       {/* Game state indicator */}
       {gameState && (

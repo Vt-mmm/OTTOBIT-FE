@@ -19,7 +19,6 @@ import {
 import {
   Close,
   SentimentVeryDissatisfied,
-  PlayArrow,
   HomeOutlined,
   ErrorOutline,
   RestartAlt,
@@ -333,7 +332,7 @@ export default function DefeatModal({
                 onClick={onReplay}
                 sx={{
                   py: 1.5,
-                  px: 3,
+                  px: 4,
                   background:
                     "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)",
                   borderRadius: "12px",
@@ -352,31 +351,6 @@ export default function DefeatModal({
                 Thử lại
               </Button>
             )}
-
-            <Button
-              variant="outlined"
-              size="large"
-              startIcon={<PlayArrow />}
-              onClick={onClose}
-              sx={{
-                py: 1.5,
-                px: 3,
-                borderRadius: "12px",
-                textTransform: "none",
-                fontWeight: 600,
-                fontSize: "1rem",
-                borderColor: "#dc2626",
-                color: "#dc2626",
-                "&:hover": {
-                  backgroundColor: "#dc2626",
-                  color: "white",
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 6px 20px rgba(220, 38, 38, 0.3)",
-                },
-              }}
-            >
-              Sửa code
-            </Button>
 
             {onGoHome && (
               <Button
