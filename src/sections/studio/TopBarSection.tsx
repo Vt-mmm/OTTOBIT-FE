@@ -115,7 +115,9 @@ function TopBarContent({
     console.log("📋 [TopBar] Workspace available:", {
       workspaceId: workspace.id,
       blockCount: workspace.getAllBlocks().length,
-      hasStartBlock: workspace.getAllBlocks().some((b: any) => b.type === "ottobit_start")
+      hasStartBlock: workspace
+        .getAllBlocks()
+        .some((b: any) => b.type === "ottobit_start"),
     });
 
     setIsRunning(true);
@@ -124,7 +126,7 @@ function TopBarContent({
       // Đảm bảo Phaser thực sự sẵn sàng
       console.log("🎮 [TopBar] Checking Phaser connection:", {
         phaserConnected,
-        phaserReady
+        phaserReady,
       });
 
       if (!phaserConnected || !phaserReady) {
@@ -179,12 +181,12 @@ function TopBarContent({
 
   const handleRestart = async () => {
     console.log("🔄 [TopBar] Restart button clicked");
-    
+
     try {
       console.log("⏳ [TopBar] Calling restartScene...");
       await restartScene();
       console.log("✅ [TopBar] Scene restarted successfully");
-      
+
       showNotification("Map đã được tải lại thành công!", "success");
     } catch (error) {
       console.error("❌ [TopBar] Error restarting scene:", error);
@@ -364,6 +366,19 @@ function TopBarContent({
 
       const result = await response.json();
       console.log("Detection result:", result);
+
+      // Render blocks in Blockly workspace immediately if available
+      try {
+        const detections = Array.isArray(result?.detections)
+          ? result.detections
+          : [];
+        if (
+          detections.length > 0 &&
+          (window as any).StudioBlocks?.loadDetections
+        ) {
+          (window as any).StudioBlocks.loadDetections(detections);
+        }
+      } catch {}
 
       // Close dialog first
       handleCloseCameraDialog();
