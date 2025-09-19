@@ -531,6 +531,9 @@ export default function WinConditionsSection({
         onClose={() => setOpenSolution(false)}
         fullWidth
         maxWidth="lg"
+        disableEnforceFocus
+        disableAutoFocus
+        keepMounted
       >
         <DialogTitle>Solution Editor</DialogTitle>
         <DialogContent dividers sx={{ p: 0 }}>
@@ -748,6 +751,48 @@ export default function WinConditionsSection({
             onClick={() => {
               try {
                 if (!solutionWorkspaceRef.current) return;
+                // Ensure IF/WHILE bodies are preserved by attaching TRUE condition if missing
+                try {
+                  const ws: any = solutionWorkspaceRef.current;
+                  const blocks = ws.getAllBlocks(false) || [];
+                  blocks.forEach((blk: any) => {
+                    if (
+                      blk?.type !== "ottobit_if_expandable" &&
+                      blk?.type !== "ottobit_while"
+                    )
+                      return;
+                    const hasBody = (blk.inputList || []).some((inp: any) => {
+                      try {
+                        const NEXT = 3; // Blockly.NEXT_STATEMENT
+                        return (
+                          inp &&
+                          inp.type === NEXT &&
+                          inp.connection &&
+                          inp.connection.targetBlock()
+                        );
+                      } catch {
+                        return false;
+                      }
+                    });
+                    const condInput =
+                      (blk.getInput && blk.getInput("CONDITION")) ||
+                      (blk.getInput && blk.getInput("COND")) ||
+                      (blk.getInput && blk.getInput("IF0"));
+                    const hasCond = !!condInput?.connection?.targetBlock();
+                    if (hasBody && condInput && !hasCond) {
+                      const boolBlock = ws.newBlock("ottobit_boolean");
+                      boolBlock.initSvg();
+                      boolBlock.render();
+                      try {
+                        boolBlock.setFieldValue &&
+                          boolBlock.setFieldValue("TRUE", "BOOL");
+                        boolBlock.setDeletable && boolBlock.setDeletable(false);
+                        boolBlock.setMovable && boolBlock.setMovable(false);
+                      } catch {}
+                      condInput.connection.connect(boolBlock.outputConnection);
+                    }
+                  });
+                } catch {}
                 const program = BlocklyToPhaserConverter.convertWorkspace(
                   solutionWorkspaceRef.current
                 );
@@ -1939,7 +1984,6 @@ export default function WinConditionsSection({
                 minCards,
                 maxCards,
               };
-              console.log("[Challenge Save] payload:", JSON.stringify(payload));
               // Pass to parent state
               onChallengeJsonChange?.(JSON.stringify(payload));
               try {
