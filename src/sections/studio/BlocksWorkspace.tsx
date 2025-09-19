@@ -13,11 +13,13 @@ import BlockToolbox from "../../components/block/BlockToolbox";
 interface BlocksWorkspaceProps {
   onWorkspaceChange?: (workspace: any) => void;
   initialProgramActionsJson?: any; // optional structured program to load
+  detectionsFromExecute?: any[]; // optional detections array to render blocks after Execute
 }
 
 export default function BlocksWorkspace({
   onWorkspaceChange,
   initialProgramActionsJson,
+  detectionsFromExecute,
 }: BlocksWorkspaceProps) {
   const workspaceRef = useRef<HTMLDivElement>(null);
   const [blocklyWorkspace, setBlocklyWorkspace] = useState<any>(null);
@@ -198,7 +200,7 @@ export default function BlocksWorkspace({
 
       window.addEventListener("resize", handleResize);
 
-      // If there is an initial program, try to render minimal equivalent blocks
+      // Helper: render program actions into workspace starting from a new start block
       setTimeout(() => {
         const moveDistance = isMobile ? 30 : 50;
         // Always ensure a start block exists
@@ -224,6 +226,10 @@ export default function BlocksWorkspace({
               blockType = "ottobit_rotate";
             else if (type === "if") blockType = "ottobit_if_expandable";
             else if (type === "while") blockType = "ottobit_while";
+            else if (type === "callfunction" || type === "call_function")
+              blockType = "ottobit_function_call";
+            else if (type === "callfunction" || type === "call_function")
+              blockType = "ottobit_function_call";
             else if (type === "takebox") blockType = "ottobit_take_bale";
             else if (type === "putbox") blockType = "ottobit_put_bale";
             else if (type === "collect") {
@@ -239,6 +245,75 @@ export default function BlocksWorkspace({
             block.initSvg();
             block.render();
             block.moveBy(moveDistance + 200, moveDistance + index * 70);
+            try {
+              block.setEditable && block.setEditable(true);
+              block.setDisabled && block.setDisabled(false);
+            } catch {}
+            // Function call: set function name field
+            try {
+              if (
+                (type === "callfunction" || type === "call_function") &&
+                act?.functionName
+              ) {
+                const nameFieldIds = [
+                  "NAME",
+                  "FUNCTION_NAME",
+                  "FUNC_NAME",
+                  "TITLE",
+                ];
+                for (const fid of nameFieldIds) {
+                  if (block.getField && block.getField(fid)) {
+                    block.setFieldValue(String(act.functionName), fid);
+                    break;
+                  }
+                }
+              }
+            } catch {}
+            // Function call name mapping
+            try {
+              if (
+                (type === "callfunction" || type === "call_function") &&
+                act?.functionName
+              ) {
+                const nameFieldIds = [
+                  "NAME",
+                  "FUNCTION_NAME",
+                  "FUNC_NAME",
+                  "TITLE",
+                ];
+                for (const fid of nameFieldIds) {
+                  if (block.getField && block.getField(fid)) {
+                    block.setFieldValue(String(act.functionName), fid);
+                    break;
+                  }
+                }
+              }
+            } catch {}
+            // Preserve bodies for IF/WHILE by ensuring a placeholder condition exists
+            try {
+              if (
+                blockType === "ottobit_while" ||
+                blockType === "ottobit_if_expandable"
+              ) {
+                const condInput =
+                  (block.getInput && block.getInput("CONDITION")) ||
+                  (block.getInput && block.getInput("COND")) ||
+                  (block.getInput && block.getInput("IF0"));
+                const hasCond = !!condInput?.connection?.targetBlock();
+                if (condInput && !hasCond) {
+                  const boolBlock = workspace.newBlock("ottobit_boolean");
+                  boolBlock.initSvg();
+                  boolBlock.render();
+                  try {
+                    boolBlock.setFieldValue &&
+                      boolBlock.setFieldValue("TRUE", "BOOL");
+                    boolBlock.setDeletable && boolBlock.setDeletable(false);
+                    boolBlock.setMovable && boolBlock.setMovable(false);
+                  } catch {}
+                  condInput.connection.connect(boolBlock.outputConnection);
+                }
+              }
+            } catch {}
 
             // Try set common fields if exist
             try {
@@ -254,6 +329,133 @@ export default function BlocksWorkspace({
                 if (countField)
                   block.setFieldValue(String(act.count), countField);
               }
+              if (typeof act.direction === "string" && block.setFieldValue) {
+                const dirField =
+                  block.getField &&
+                  (block.getField("DIRECTION")
+                    ? "DIRECTION"
+                    : block.getField("DIR")
+                    ? "DIR"
+                    : null);
+                if (dirField) block.setFieldValue(act.direction, dirField);
+              }
+              // Attach condition for IF/WHILE from JSON program if provided
+              const attachCondition = (targetBlock: any, cond: any) => {
+                try {
+                  if (!cond || !targetBlock) return;
+                  const makeNumber = (n: any) => {
+                    const num = workspace.newBlock("math_number");
+                    num.initSvg();
+                    num.render();
+                    try {
+                      num.setFieldValue(String(Number(n) || 0), "NUM");
+                    } catch {}
+                    return num;
+                  };
+                  const makeBoolean = (val: boolean) => {
+                    const b = workspace.newBlock("logic_boolean");
+                    b.initSvg();
+                    b.render();
+                    try {
+                      b.setFieldValue(val ? "TRUE" : "FALSE", "BOOL");
+                    } catch {}
+                    return b;
+                  };
+                  const makeSensor = (fn: string) => {
+                    const map: any = {
+                      isgreen: "ottobit_is_green",
+                      isred: "ottobit_is_red",
+                      isyellow: "ottobit_is_yellow",
+                    };
+                    const key = String(fn || "").toLowerCase();
+                    const t = map[key];
+                    if (!t) return null;
+                    const s = workspace.newBlock(t);
+                    s.initSvg();
+                    s.render();
+                    return s;
+                  };
+                  const connectTo = (
+                    inputNameGuess: string[],
+                    outBlock: any
+                  ) => {
+                    for (const nm of inputNameGuess) {
+                      const input =
+                        targetBlock.getInput && targetBlock.getInput(nm);
+                      if (
+                        input &&
+                        input.connection &&
+                        outBlock &&
+                        outBlock.outputConnection
+                      ) {
+                        input.connection.connect(outBlock.outputConnection);
+                        return true;
+                      }
+                    }
+                    return false;
+                  };
+
+                  const condType = String(
+                    cond?.type || cond?.Type || ""
+                  ).toLowerCase();
+                  if (condType === "condition") {
+                    const fn = cond.function || cond.functionName;
+                    const sensor = makeSensor(fn);
+                    if (sensor) {
+                      if (cond.check === false) {
+                        const eq = workspace.newBlock("ottobit_boolean_equals");
+                        eq.initSvg();
+                        eq.render();
+                        const left = eq.getInput && eq.getInput("LEFT");
+                        const right = eq.getInput && eq.getInput("RIGHT");
+                        if (left?.connection)
+                          left.connection.connect(sensor.outputConnection);
+                        if (right?.connection)
+                          right.connection.connect(
+                            makeBoolean(false).outputConnection
+                          );
+                        connectTo(["CONDITION", "COND", "IF0"], eq);
+                      } else {
+                        connectTo(["CONDITION", "COND", "IF0"], sensor);
+                      }
+                    }
+                  } else if (condType === "variablecomparison") {
+                    const cmp = workspace.newBlock("ottobit_logic_compare");
+                    cmp.initSvg();
+                    cmp.render();
+                    try {
+                      const opMap: any = {
+                        "==": "EQ",
+                        "!=": "NEQ",
+                        "<": "LT",
+                        "<=": "LTE",
+                        ">": "GT",
+                        ">=": "GTE",
+                      };
+                      const code = opMap[String(cond.operator) as string];
+                      if (code) cmp.setFieldValue(code, "OP");
+                    } catch {}
+                    const a = cmp.getInput && cmp.getInput("A");
+                    const b = cmp.getInput && cmp.getInput("B");
+                    if (a?.connection)
+                      a.connection.connect(
+                        makeNumber(cond.variable).outputConnection
+                      );
+                    if (b?.connection)
+                      b.connection.connect(
+                        makeNumber(cond.value).outputConnection
+                      );
+                    connectTo(["CONDITION", "COND", "IF0"], cmp);
+                  }
+                } catch {}
+              };
+              if (blockType === "ottobit_if_expandable" && act?.cond) {
+                attachCondition(block, act.cond);
+              }
+              if (blockType === "ottobit_while" && act?.cond) {
+                attachCondition(block, act.cond);
+              }
+
               if (blockType === "ottobit_repeat_range") {
                 const varField =
                   block.getField && (block.getField("VAR") ? "VAR" : null);
@@ -274,15 +476,40 @@ export default function BlocksWorkspace({
               }
             } catch {}
 
-            // Handle nested bodies: connect first body block to first statement input
+            // Handle nested bodies: connect first body/then block chain to first statement input
             try {
-              const body = Array.isArray(act.body) ? act.body : [];
+              const body = Array.isArray(act.body)
+                ? act.body
+                : Array.isArray(act.then)
+                ? act.then
+                : [];
               if (body.length > 0) {
-                // Find first statement input on this block
-                const stmtInput = (block.inputList || []).find(
-                  (inp: any) =>
-                    inp.type === 3 /*Blockly.NEXT_STATEMENT*/ || inp.connection
-                );
+                // Pick correct statement input per block type (with fallbacks)
+                let stmtInput: any = null;
+                const tryInputs = (names: string[]) => {
+                  for (const nm of names) {
+                    const inp = block.getInput && block.getInput(nm);
+                    if (inp && inp.connection) return inp;
+                  }
+                  return null;
+                };
+                if (blockType === "ottobit_if_expandable") {
+                  stmtInput =
+                    tryInputs(["DO0", "DO", "STACK"]) ||
+                    (block.inputList || []).find(
+                      (inp: any) => inp && inp.type === 3 && inp.connection
+                    );
+                } else if (blockType === "ottobit_while") {
+                  stmtInput =
+                    tryInputs(["DO", "STACK"]) ||
+                    (block.inputList || []).find(
+                      (inp: any) => inp && inp.type === 3 && inp.connection
+                    );
+                } else {
+                  stmtInput = (block.inputList || []).find(
+                    (inp: any) => inp && inp.type === 3 && inp.connection
+                  );
+                }
                 if (stmtInput && stmtInput.connection) {
                   // Recursively create body block chain
                   let prevInner: any = null;
@@ -308,6 +535,264 @@ export default function BlocksWorkspace({
                     }
                     prevInner = childBlock;
                   });
+                }
+              }
+
+              // Handle ELSE IF and ELSE for IF blocks
+              if (blockType === "ottobit_if_expandable") {
+                // Ensure mutator inputs exist by applying mutation from JSON counts
+                try {
+                  const elseIfLen = Array.isArray(act.elseIf)
+                    ? act.elseIf.length
+                    : 0;
+                  const hasElse =
+                    Array.isArray(act.else) && act.else.length > 0;
+                  if (elseIfLen > 0 || hasElse) {
+                    if (
+                      typeof (Blockly as any)?.utils?.xml?.textToDom ===
+                      "function"
+                    ) {
+                      const mutationXmlStr = `<mutation elseif="${elseIfLen}" else="${
+                        hasElse ? 1 : 0
+                      }"></mutation>`;
+                      const mutationDom = (Blockly as any).utils.xml.textToDom(
+                        mutationXmlStr
+                      );
+                      if (typeof (block as any).domToMutation === "function") {
+                        (block as any).domToMutation(mutationDom);
+                        try {
+                          block.initSvg();
+                          block.render(false);
+                        } catch {}
+                      }
+                    } else if (
+                      typeof (block as any).updateShape_ === "function"
+                    ) {
+                      // Fallback: set internal counts and trigger shape update
+                      try {
+                        (block as any).elseifCount_ = elseIfLen;
+                        (block as any).elseCount_ = hasElse ? 1 : 0;
+                        (block as any).updateShape_();
+                        block.initSvg();
+                        block.render(false);
+                      } catch {}
+                    }
+                  }
+                } catch {}
+                // Define tryInputs function for ELSE IF and ELSE
+                const tryInputs = (names: string[]) => {
+                  for (const nm of names) {
+                    const inp = block.getInput && block.getInput(nm);
+                    if (inp && inp.connection) return inp;
+                  }
+                  return null;
+                };
+
+                // Helper functions
+                const makeBoolean = (value: boolean) => {
+                  const boolBlock =
+                    blocklyWorkspace.newBlock("ottobit_boolean");
+                  boolBlock.initSvg();
+                  boolBlock.render();
+                  boolBlock.moveBy(0, 0);
+                  if (boolBlock.getField && boolBlock.getField("BOOL")) {
+                    boolBlock.setFieldValue(value ? "TRUE" : "FALSE", "BOOL");
+                  }
+                  return boolBlock;
+                };
+
+                const makeNumber = (value: number) => {
+                  const numBlock = blocklyWorkspace.newBlock(
+                    "ottobit_math_number"
+                  );
+                  numBlock.initSvg();
+                  numBlock.render();
+                  numBlock.moveBy(0, 0);
+                  if (numBlock.getField && numBlock.getField("NUM")) {
+                    numBlock.setFieldValue(String(value), "NUM");
+                  }
+                  return numBlock;
+                };
+
+                // Handle ELSE IF
+                if (Array.isArray(act.elseIf) && act.elseIf.length > 0) {
+                  act.elseIf.forEach((elseIfItem: any, elseIfIdx: number) => {
+                    try {
+                      // Find ELSE IF input
+                      const elseIfInput =
+                        tryInputs(["ELSEIF", "ELSE_IF", "IF1", "IF2"]) ||
+                        (block.inputList || []).find(
+                          (inp: any) => inp && inp.type === 3 && inp.connection
+                        );
+
+                      if (elseIfInput && elseIfInput.connection) {
+                        // Create condition for ELSE IF
+                        if (elseIfItem.cond) {
+                          const cond = elseIfItem.cond;
+                          let condBlock: any = null;
+
+                          if (cond.type === "condition") {
+                            // Create sensor block
+                            const sensorType = `ottobit_is_${cond.function
+                              ?.replace("is", "")
+                              .toLowerCase()}`;
+                            const sensor =
+                              blocklyWorkspace.newBlock(sensorType);
+                            sensor.initSvg();
+                            sensor.render();
+                            sensor.moveBy(0, 0);
+
+                            if (cond.check === false) {
+                              const eq = blocklyWorkspace.newBlock(
+                                "ottobit_boolean_equals"
+                              );
+                              eq.initSvg();
+                              eq.render();
+                              const left = eq.getInput && eq.getInput("LEFT");
+                              const right = eq.getInput && eq.getInput("RIGHT");
+                              if (left?.connection)
+                                left.connection.connect(
+                                  sensor.outputConnection
+                                );
+                              if (right?.connection)
+                                right.connection.connect(
+                                  makeBoolean(false).outputConnection
+                                );
+                              condBlock = eq;
+                            } else {
+                              condBlock = sensor;
+                            }
+                          } else if (cond.type === "variableComparison") {
+                            // Create logic compare block
+                            const compare = blocklyWorkspace.newBlock(
+                              "ottobit_logic_compare"
+                            );
+                            compare.initSvg();
+                            compare.render();
+                            compare.moveBy(0, 0);
+
+                            if (compare.getField && compare.getField("OP")) {
+                              compare.setFieldValue(cond.operator || "=", "OP");
+                            }
+
+                            const leftInput =
+                              compare.getInput && compare.getInput("A");
+                            const rightInput =
+                              compare.getInput && compare.getInput("B");
+
+                            if (
+                              leftInput?.connection &&
+                              cond.variable !== undefined
+                            ) {
+                              const varBlock = makeNumber(cond.variable);
+                              leftInput.connection.connect(
+                                varBlock.outputConnection
+                              );
+                            }
+                            if (
+                              rightInput?.connection &&
+                              cond.value !== undefined
+                            ) {
+                              const valBlock = makeNumber(cond.value);
+                              rightInput.connection.connect(
+                                valBlock.outputConnection
+                              );
+                            }
+
+                            condBlock = compare;
+                          }
+
+                          if (condBlock && condBlock.outputConnection) {
+                            // Connect condition to ELSE IF input
+                            elseIfInput.connection.connect(
+                              condBlock.outputConnection
+                            );
+                          }
+                        }
+
+                        // Create body for ELSE IF
+                        if (
+                          Array.isArray(elseIfItem.then) &&
+                          elseIfItem.then.length > 0
+                        ) {
+                          const elseIfBodyInput =
+                            tryInputs(["DO1", "DO2", "ELSE_DO"]) ||
+                            (block.inputList || []).find(
+                              (inp: any) =>
+                                inp && inp.type === 3 && inp.connection
+                            );
+
+                          if (elseIfBodyInput && elseIfBodyInput.connection) {
+                            let prevElseIf: any = null;
+                            elseIfItem.then.forEach(
+                              (childAct: any, childIdx: number) => {
+                                const childBlock = createBlockFromAction(
+                                  childAct,
+                                  index * 100 + elseIfIdx * 10 + childIdx + 1
+                                );
+                                if (!childBlock) return;
+                                if (
+                                  prevElseIf &&
+                                  prevElseIf.nextConnection &&
+                                  childBlock.previousConnection &&
+                                  !prevElseIf.nextConnection.isConnected()
+                                ) {
+                                  prevElseIf.nextConnection.connect(
+                                    childBlock.previousConnection
+                                  );
+                                } else if (
+                                  !prevElseIf &&
+                                  childBlock.previousConnection
+                                ) {
+                                  elseIfBodyInput.connection.connect(
+                                    childBlock.previousConnection
+                                  );
+                                }
+                                prevElseIf = childBlock;
+                              }
+                            );
+                          }
+                        }
+                      }
+                    } catch {}
+                  });
+                }
+
+                // Handle ELSE
+                if (Array.isArray(act.else) && act.else.length > 0) {
+                  try {
+                    const elseInput =
+                      tryInputs(["ELSE", "ELSE_DO", "DO2"]) ||
+                      (block.inputList || []).find(
+                        (inp: any) => inp && inp.type === 3 && inp.connection
+                      );
+
+                    if (elseInput && elseInput.connection) {
+                      let prevElse: any = null;
+                      act.else.forEach((childAct: any, childIdx: number) => {
+                        const childBlock = createBlockFromAction(
+                          childAct,
+                          index * 1000 + childIdx + 1
+                        );
+                        if (!childBlock) return;
+                        if (
+                          prevElse &&
+                          prevElse.nextConnection &&
+                          childBlock.previousConnection &&
+                          !prevElse.nextConnection.isConnected()
+                        ) {
+                          prevElse.nextConnection.connect(
+                            childBlock.previousConnection
+                          );
+                        } else if (!prevElse && childBlock.previousConnection) {
+                          elseInput.connection.connect(
+                            childBlock.previousConnection
+                          );
+                        }
+                        prevElse = childBlock;
+                      });
+                    }
+                  } catch {}
                 }
               }
             } catch {}
@@ -340,7 +825,553 @@ export default function BlocksWorkspace({
         refreshBlockColors();
       }, 80);
 
-      // Style workspace with pure white background và sửa lỗi tràn
+      // Expose global loader: window.StudioBlocks.loadDetections(detections)
+      // detections format example: [{class_name: 'start'}, {class_name:'repeat_start', value:2, actions:[...]}]
+      (window as any).StudioBlocks = (window as any).StudioBlocks || {};
+      (window as any).StudioBlocks.loadDetections = (detections: any[]) => {
+        try {
+          // Clear existing blocks
+          workspace.clear();
+          // Build actions array compatible with existing renderer
+          const mapDetectionToAction = (det: any): any | null => {
+            const name = String(det?.class_name || "").toLowerCase();
+            if (name === "start") return { type: "start" };
+            if (name === "move_forward") {
+              const count = Number(det?.value);
+              return Number.isFinite(count)
+                ? { type: "move_forward", count }
+                : { type: "move_forward" };
+            }
+            if (name === "collect") {
+              const count = Number(det?.value);
+              return Number.isFinite(count)
+                ? { type: "collect", count }
+                : { type: "collect" };
+            }
+            if (name === "repeat_start") {
+              const body = Array.isArray(det?.actions)
+                ? det.actions.map(mapDetectionToAction).filter(Boolean)
+                : [];
+              const count = Number(det?.value);
+              return Number.isFinite(count)
+                ? { type: "repeat", count, body }
+                : { type: "repeat", body };
+            }
+            if (name === "turn_right")
+              return { type: "turnRight", direction: "right" };
+            if (name === "turn_left")
+              return { type: "turnRight", direction: "left" };
+            if (name === "turn_back")
+              return { type: "turnRight", direction: "back" };
+            return null;
+          };
+
+          const actions = Array.isArray(detections)
+            ? detections.map(mapDetectionToAction).filter(Boolean)
+            : [];
+
+          // Always prepend a start block
+          const program = { actions };
+
+          // Reuse the same rendering path by setting initialProgramActionsJson temporarily
+          // Render program now
+          const moveDistance = 50;
+          const startBlock = workspace.newBlock("ottobit_start");
+          startBlock.initSvg();
+          startBlock.render();
+          startBlock.moveBy(moveDistance, moveDistance);
+
+          const createBlockFromAction = (act: any, index: number): any => {
+            let blockType: string | null = null;
+            const type = String(act?.type || "").toLowerCase();
+            if (type === "repeat") blockType = "ottobit_repeat";
+            else if (type === "repeatrange") blockType = "ottobit_repeat_range";
+            else if (type === "forward" || type === "move_forward")
+              blockType = "ottobit_move_forward";
+            else if (type === "turnright" || type === "rotate")
+              blockType = "ottobit_rotate";
+            else if (type === "if") blockType = "ottobit_if_expandable";
+            else if (type === "while") blockType = "ottobit_while";
+            else if (type === "callfunction" || type === "call_function")
+              blockType = "ottobit_function_call";
+            else if (type === "takebox") blockType = "ottobit_take_bale";
+            else if (type === "putbox") blockType = "ottobit_put_bale";
+            else if (type === "collect") blockType = "ottobit_collect_yellow";
+            if (!blockType) return null;
+            const block: any = workspace.newBlock(blockType);
+            block.initSvg();
+            block.render();
+            block.moveBy(moveDistance + 200, moveDistance + index * 70);
+            try {
+              block.setEditable && block.setEditable(true);
+              block.setDisabled && block.setDisabled(false);
+            } catch {}
+            // Preserve bodies for IF/WHILE by ensuring a placeholder condition exists
+            try {
+              if (
+                blockType === "ottobit_while" ||
+                blockType === "ottobit_if_expandable"
+              ) {
+                const condInput =
+                  (block.getInput && block.getInput("CONDITION")) ||
+                  (block.getInput && block.getInput("COND")) ||
+                  (block.getInput && block.getInput("IF0"));
+                const hasCond = !!condInput?.connection?.targetBlock();
+                if (condInput && !hasCond) {
+                  const boolBlock =
+                    blocklyWorkspace.newBlock("ottobit_boolean");
+                  boolBlock.initSvg();
+                  boolBlock.render();
+                  try {
+                    boolBlock.setFieldValue &&
+                      boolBlock.setFieldValue("TRUE", "BOOL");
+                    boolBlock.setDeletable && boolBlock.setDeletable(false);
+                    boolBlock.setMovable && boolBlock.setMovable(false);
+                  } catch {}
+                  condInput.connection.connect(boolBlock.outputConnection);
+                }
+              }
+            } catch {}
+            // Function call: set function name field
+            try {
+              if (
+                (type === "callfunction" || type === "call_function") &&
+                act?.functionName
+              ) {
+                const nameFieldIds = [
+                  "NAME",
+                  "FUNCTION_NAME",
+                  "FUNC_NAME",
+                  "TITLE",
+                ];
+                for (const fid of nameFieldIds) {
+                  if (block.getField && block.getField(fid)) {
+                    block.setFieldValue(String(act.functionName), fid);
+                    break;
+                  }
+                }
+              }
+            } catch {}
+            try {
+              if (typeof act.count === "number" && block.setFieldValue) {
+                const fieldIds = [
+                  "COUNT",
+                  "count",
+                  "TIMES",
+                  "VALUE",
+                  "N",
+                  "NUMBER",
+                  "STEP",
+                  "STEPS",
+                  "DIST",
+                  "DISTANCE",
+                ];
+                let applied = false;
+                for (const fid of fieldIds) {
+                  if (block.getField && block.getField(fid)) {
+                    block.setFieldValue(String(act.count), fid);
+                    applied = true;
+                    break;
+                  }
+                }
+                if (!applied && (block as any).setCount) {
+                  try {
+                    (block as any).setCount(act.count);
+                    applied = true;
+                  } catch {}
+                }
+              }
+              if (typeof act.direction === "string" && block.setFieldValue) {
+                const dirFieldIds = [
+                  "DIRECTION",
+                  "DIR",
+                  "ROTATE_DIRECTION",
+                  "ROTATION",
+                  "TURN",
+                  "TURN_DIR",
+                ];
+                const dirValue = act.direction;
+                const dirUpper = dirValue.toUpperCase();
+                let set = false;
+                for (const fid of dirFieldIds) {
+                  if (block.getField && block.getField(fid)) {
+                    const field: any = block.getField(fid);
+                    // If dropdown with options, try to match an option
+                    try {
+                      if (field && typeof field.getOptions === "function") {
+                        const options = field.getOptions();
+                        const findMatch = (needle: string) => {
+                          return (
+                            options.find((opt: any) =>
+                              String(opt?.[0] ?? opt?.text ?? "")
+                                .toLowerCase()
+                                .includes(needle)
+                            ) ||
+                            options.find((opt: any) =>
+                              String(opt?.[1] ?? opt?.value ?? "")
+                                .toLowerCase()
+                                .includes(needle)
+                            )
+                          );
+                        };
+                        const needle = dirValue.toLowerCase();
+                        const match =
+                          findMatch(needle) ||
+                          (needle === "back" ? findMatch("back") : null) ||
+                          (needle === "left" ? findMatch("left") : null) ||
+                          (needle === "right" ? findMatch("right") : null);
+                        if (match) {
+                          const optionValue = match[1] ?? match.value;
+                          field.setValue(String(optionValue));
+                          set = true;
+                          break;
+                        }
+                      }
+                    } catch {}
+                    if (!set) {
+                      // Try lowercase then uppercase direct set
+                      try {
+                        block.setFieldValue(dirValue, fid);
+                        set = true;
+                      } catch {}
+                      if (!set) {
+                        try {
+                          block.setFieldValue(dirUpper, fid);
+                          set = true;
+                        } catch {}
+                      }
+                    }
+                    if (set) break;
+                  }
+                }
+                if (!set) {
+                  const angleFieldIds = ["ANGLE", "DEG", "ROTATE"];
+                  const angle =
+                    dirValue === "right" ? 90 : dirValue === "left" ? -90 : 180;
+                  for (const fid of angleFieldIds) {
+                    if (block.getField && block.getField(fid)) {
+                      block.setFieldValue(String(angle), fid);
+                      set = true;
+                      break;
+                    }
+                  }
+                }
+              }
+            } catch {}
+            try {
+              const body = Array.isArray(act.body) ? act.body : [];
+              if (body.length > 0) {
+                const stmtInput = (block.inputList || []).find(
+                  (inp: any) => inp.type === 3 || inp.connection
+                );
+                if (stmtInput && stmtInput.connection) {
+                  let prevInner: any = null;
+                  body.forEach((childAct: any, childIdx: number) => {
+                    const childBlock = createBlockFromAction(
+                      childAct,
+                      index * 10 + childIdx + 1
+                    );
+                    if (!childBlock) return;
+                    if (
+                      prevInner &&
+                      prevInner.nextConnection &&
+                      childBlock.previousConnection &&
+                      !prevInner.nextConnection.isConnected()
+                    ) {
+                      prevInner.nextConnection.connect(
+                        childBlock.previousConnection
+                      );
+                    } else if (!prevInner && childBlock.previousConnection) {
+                      stmtInput.connection.connect(
+                        childBlock.previousConnection
+                      );
+                    }
+                    prevInner = childBlock;
+                  });
+                }
+              }
+            } catch {}
+
+            // Handle ELSE IF and ELSE for IF blocks
+            if (blockType === "ottobit_if_expandable") {
+              // Ensure mutator inputs exist by applying mutation from JSON counts
+              try {
+                const elseIfLen = Array.isArray(act.elseIf)
+                  ? act.elseIf.length
+                  : 0;
+                const hasElse = Array.isArray(act.else) && act.else.length > 0;
+                if (elseIfLen > 0 || hasElse) {
+                  if (
+                    typeof (Blockly as any)?.utils?.xml?.textToDom ===
+                    "function"
+                  ) {
+                    const mutationXmlStr = `<mutation elseif="${elseIfLen}" else="${
+                      hasElse ? 1 : 0
+                    }"></mutation>`;
+                    const mutationDom = (Blockly as any).utils.xml.textToDom(
+                      mutationXmlStr
+                    );
+                    if (typeof (block as any).domToMutation === "function") {
+                      (block as any).domToMutation(mutationDom);
+                      try {
+                        block.initSvg();
+                        block.render(false);
+                      } catch {}
+                    }
+                  } else if (
+                    typeof (block as any).updateShape_ === "function"
+                  ) {
+                    // Fallback: set internal counts and trigger shape update
+                    try {
+                      (block as any).elseifCount_ = elseIfLen;
+                      (block as any).elseCount_ = hasElse ? 1 : 0;
+                      (block as any).updateShape_();
+                      block.initSvg();
+                      block.render(false);
+                    } catch {}
+                  }
+                }
+              } catch {}
+              // Define tryInputs function for ELSE IF and ELSE
+              const tryInputs = (names: string[]) => {
+                for (const nm of names) {
+                  const inp = block.getInput && block.getInput(nm);
+                  if (inp && inp.connection) return inp;
+                }
+                return null;
+              };
+
+              // Helper functions
+              const makeBoolean = (value: boolean) => {
+                const boolBlock = blocklyWorkspace.newBlock("ottobit_boolean");
+                boolBlock.initSvg();
+                boolBlock.render();
+                boolBlock.moveBy(0, 0);
+                if (boolBlock.getField && boolBlock.getField("BOOL")) {
+                  boolBlock.setFieldValue(value ? "TRUE" : "FALSE", "BOOL");
+                }
+                return boolBlock;
+              };
+
+              const makeNumber = (value: number) => {
+                const numBlock = blocklyWorkspace.newBlock(
+                  "ottobit_math_number"
+                );
+                numBlock.initSvg();
+                numBlock.render();
+                numBlock.moveBy(0, 0);
+                if (numBlock.getField && numBlock.getField("NUM")) {
+                  numBlock.setFieldValue(String(value), "NUM");
+                }
+                return numBlock;
+              };
+
+              // Handle ELSE IF
+              if (Array.isArray(act.elseIf) && act.elseIf.length > 0) {
+                act.elseIf.forEach((elseIfItem: any, elseIfIdx: number) => {
+                  try {
+                    // Find ELSE IF input
+                    const elseIfInput =
+                      tryInputs(["ELSEIF", "ELSE_IF", "IF1", "IF2"]) ||
+                      (block.inputList || []).find(
+                        (inp: any) => inp && inp.type === 3 && inp.connection
+                      );
+
+                    if (elseIfInput && elseIfInput.connection) {
+                      // Create condition for ELSE IF
+                      if (elseIfItem.cond) {
+                        const cond = elseIfItem.cond;
+                        let condBlock: any = null;
+
+                        if (cond.type === "condition") {
+                          // Create sensor block
+                          const sensorType = `ottobit_is_${cond.function
+                            ?.replace("is", "")
+                            .toLowerCase()}`;
+                          const sensor = blocklyWorkspace.newBlock(sensorType);
+                          sensor.initSvg();
+                          sensor.render();
+                          sensor.moveBy(0, 0);
+
+                          if (cond.check === false) {
+                            const eq = blocklyWorkspace.newBlock(
+                              "ottobit_boolean_equals"
+                            );
+                            eq.initSvg();
+                            eq.render();
+                            const left = eq.getInput && eq.getInput("LEFT");
+                            const right = eq.getInput && eq.getInput("RIGHT");
+                            if (left?.connection)
+                              left.connection.connect(sensor.outputConnection);
+                            if (right?.connection)
+                              right.connection.connect(
+                                makeBoolean(false).outputConnection
+                              );
+                            condBlock = eq;
+                          } else {
+                            condBlock = sensor;
+                          }
+                        } else if (cond.type === "variableComparison") {
+                          // Create logic compare block
+                          const compare = blocklyWorkspace.newBlock(
+                            "ottobit_logic_compare"
+                          );
+                          compare.initSvg();
+                          compare.render();
+                          compare.moveBy(0, 0);
+
+                          if (compare.getField && compare.getField("OP")) {
+                            compare.setFieldValue(cond.operator || "=", "OP");
+                          }
+
+                          const leftInput =
+                            compare.getInput && compare.getInput("A");
+                          const rightInput =
+                            compare.getInput && compare.getInput("B");
+
+                          if (
+                            leftInput?.connection &&
+                            cond.variable !== undefined
+                          ) {
+                            const varBlock = makeNumber(cond.variable);
+                            leftInput.connection.connect(
+                              varBlock.outputConnection
+                            );
+                          }
+                          if (
+                            rightInput?.connection &&
+                            cond.value !== undefined
+                          ) {
+                            const valBlock = makeNumber(cond.value);
+                            rightInput.connection.connect(
+                              valBlock.outputConnection
+                            );
+                          }
+
+                          condBlock = compare;
+                        }
+
+                        if (condBlock && condBlock.outputConnection) {
+                          // Connect condition to ELSE IF input
+                          elseIfInput.connection.connect(
+                            condBlock.outputConnection
+                          );
+                        }
+                      }
+
+                      // Create body for ELSE IF
+                      if (
+                        Array.isArray(elseIfItem.then) &&
+                        elseIfItem.then.length > 0
+                      ) {
+                        const elseIfBodyInput =
+                          tryInputs(["DO1", "DO2", "ELSE_DO"]) ||
+                          (block.inputList || []).find(
+                            (inp: any) =>
+                              inp && inp.type === 3 && inp.connection
+                          );
+
+                        if (elseIfBodyInput && elseIfBodyInput.connection) {
+                          let prevElseIf: any = null;
+                          elseIfItem.then.forEach(
+                            (childAct: any, childIdx: number) => {
+                              const childBlock = createBlockFromAction(
+                                childAct,
+                                index * 100 + elseIfIdx * 10 + childIdx + 1
+                              );
+                              if (!childBlock) return;
+                              if (
+                                prevElseIf &&
+                                prevElseIf.nextConnection &&
+                                childBlock.previousConnection &&
+                                !prevElseIf.nextConnection.isConnected()
+                              ) {
+                                prevElseIf.nextConnection.connect(
+                                  childBlock.previousConnection
+                                );
+                              } else if (
+                                !prevElseIf &&
+                                childBlock.previousConnection
+                              ) {
+                                elseIfBodyInput.connection.connect(
+                                  childBlock.previousConnection
+                                );
+                              }
+                              prevElseIf = childBlock;
+                            }
+                          );
+                        }
+                      }
+                    }
+                  } catch {}
+                });
+              }
+
+              // Handle ELSE
+              if (Array.isArray(act.else) && act.else.length > 0) {
+                try {
+                  const elseInput =
+                    tryInputs(["ELSE", "ELSE_DO", "DO2"]) ||
+                    (block.inputList || []).find(
+                      (inp: any) => inp && inp.type === 3 && inp.connection
+                    );
+
+                  if (elseInput && elseInput.connection) {
+                    let prevElse: any = null;
+                    act.else.forEach((childAct: any, childIdx: number) => {
+                      const childBlock = createBlockFromAction(
+                        childAct,
+                        index * 1000 + childIdx + 1
+                      );
+                      if (!childBlock) return;
+                      if (
+                        prevElse &&
+                        prevElse.nextConnection &&
+                        childBlock.previousConnection &&
+                        !prevElse.nextConnection.isConnected()
+                      ) {
+                        prevElse.nextConnection.connect(
+                          childBlock.previousConnection
+                        );
+                      } else if (!prevElse && childBlock.previousConnection) {
+                        elseInput.connection.connect(
+                          childBlock.previousConnection
+                        );
+                      }
+                      prevElse = childBlock;
+                    });
+                  }
+                } catch {}
+              }
+            }
+
+            return block;
+          };
+
+          if (Array.isArray(program.actions) && program.actions.length > 0) {
+            let prev: any = startBlock as any;
+            program.actions.forEach((act: any, idx: number) => {
+              const b = createBlockFromAction(act, idx);
+              if (!b) return;
+              try {
+                if (
+                  prev &&
+                  prev.nextConnection &&
+                  b.previousConnection &&
+                  !prev.nextConnection.isConnected()
+                ) {
+                  prev.nextConnection.connect(b.previousConnection);
+                }
+              } catch {}
+              prev = b;
+            });
+          }
+
+          refreshBlockColors();
+        } catch {}
+      };
+
+      // Style workspace với nền trắng và sửa lỗi tràn + autosave, giữ thân IF/WHILE
       setTimeout(() => {
         const workspaceEl = document.querySelector(
           ".blocklyWorkspace"
@@ -395,6 +1426,59 @@ export default function BlocksWorkspace({
           }
         });
       }, 500);
+
+      // Autosave + bảo toàn phần thân IF/WHILE khi chưa có điều kiện
+      try {
+        const AUTOSAVE_KEY = "studio.solution.autosave";
+        let saveTimer: any = null;
+        const ensureIfWhileCondition = () => {
+          try {
+            const blocks = workspace.getAllBlocks(false) || [];
+            blocks.forEach((blk: any) => {
+              if (
+                blk?.type !== "ottobit_if_expandable" &&
+                blk?.type !== "ottobit_while"
+              )
+                return;
+              const hasBody = (blk.inputList || []).some(
+                (inp: any) =>
+                  inp &&
+                  inp.type === Blockly.NEXT_STATEMENT &&
+                  inp.connection &&
+                  inp.connection.targetBlock()
+              );
+              const condInput =
+                (blk.getInput && blk.getInput("CONDITION")) ||
+                (blk.getInput && blk.getInput("COND")) ||
+                (blk.getInput && blk.getInput("IF0"));
+              const hasCond = !!condInput?.connection?.targetBlock();
+              if (hasBody && condInput && !hasCond) {
+                const boolBlock = workspace.newBlock("ottobit_boolean");
+                boolBlock.initSvg();
+                boolBlock.render();
+                try {
+                  boolBlock.setFieldValue &&
+                    boolBlock.setFieldValue("TRUE", "BOOL");
+                } catch {}
+                condInput.connection.connect(boolBlock.outputConnection);
+              }
+            });
+          } catch {}
+        };
+        const saveXml = () => {
+          try {
+            ensureIfWhileCondition();
+            const xml = Blockly.Xml.workspaceToDom(workspace);
+            const text = Blockly.Xml.domToText(xml);
+            localStorage.setItem(AUTOSAVE_KEY, text);
+          } catch {}
+        };
+        const debouncedSave = () => {
+          if (saveTimer) clearTimeout(saveTimer);
+          saveTimer = setTimeout(saveXml, 250);
+        };
+        workspace.addChangeListener(debouncedSave);
+      } catch {}
     }
 
     return () => {
@@ -409,6 +1493,706 @@ export default function BlocksWorkspace({
       window.removeEventListener("resize", () => {});
     };
   }, []);
+
+  // Auto-render blocks when detections are provided by Execute flow
+  useEffect(() => {
+    if (!blocklyWorkspace) return;
+    if (!Array.isArray(detectionsFromExecute)) return;
+    try {
+      if ((window as any).StudioBlocks?.loadDetections) {
+        (window as any).StudioBlocks.loadDetections(detectionsFromExecute);
+      }
+    } catch {}
+  }, [detectionsFromExecute, blocklyWorkspace]);
+
+  // Render from provided program (solutionJson parsed) when it changes in edit mode
+  useEffect(() => {
+    if (!blocklyWorkspace) return;
+    if (!initialProgramActionsJson) return;
+    try {
+      const program = initialProgramActionsJson;
+      const actions = Array.isArray(program?.actions) ? program.actions : [];
+      if (actions.length === 0) return;
+
+      // Clear and rebuild
+      blocklyWorkspace.clear();
+
+      const moveDistance = 50;
+      const startBlock = blocklyWorkspace.newBlock("ottobit_start");
+      startBlock.initSvg();
+      startBlock.render();
+      startBlock.moveBy(moveDistance, moveDistance);
+
+      const createBlockFromAction = (act: any, index: number): any => {
+        let blockType: string | null = null;
+        const type = String(act?.type || "").toLowerCase();
+        if (type === "repeat") blockType = "ottobit_repeat";
+        else if (type === "repeatrange") blockType = "ottobit_repeat_range";
+        else if (type === "forward" || type === "move_forward")
+          blockType = "ottobit_move_forward";
+        else if (type === "turnright" || type === "rotate")
+          blockType = "ottobit_rotate";
+        else if (type === "if") blockType = "ottobit_if_expandable";
+        else if (type === "while") blockType = "ottobit_while";
+        else if (type === "callfunction" || type === "call_function")
+          blockType = "ottobit_function_call";
+        else if (type === "takebox") blockType = "ottobit_take_bale";
+        else if (type === "putbox") blockType = "ottobit_put_bale";
+        else if (type === "collect") {
+          const color = String(act?.color || "yellow").toLowerCase();
+          if (color === "red") blockType = "ottobit_collect_red";
+          else if (color === "green") blockType = "ottobit_collect_green";
+          else blockType = "ottobit_collect_yellow";
+        }
+        if (!blockType) return null;
+
+        const block: any = blocklyWorkspace.newBlock(blockType);
+        block.initSvg();
+        block.render();
+        block.moveBy(moveDistance + 200, moveDistance + index * 70);
+        try {
+          block.setEditable && block.setEditable(true);
+          block.setDisabled && block.setDisabled(false);
+        } catch {}
+        // Function call: set function name field
+        try {
+          if (
+            (type === "callfunction" || type === "call_function") &&
+            act?.functionName
+          ) {
+            const nameFieldIds = [
+              "NAME",
+              "FUNCTION_NAME",
+              "FUNC_NAME",
+              "TITLE",
+            ];
+            for (const fid of nameFieldIds) {
+              if (block.getField && block.getField(fid)) {
+                block.setFieldValue(String(act.functionName), fid);
+                break;
+              }
+            }
+          }
+        } catch {}
+        try {
+          if (typeof act.count === "number" && block.setFieldValue) {
+            const fieldIds = [
+              "COUNT",
+              "count",
+              "TIMES",
+              "VALUE",
+              "N",
+              "NUMBER",
+              "STEP",
+              "STEPS",
+              "DIST",
+              "DISTANCE",
+            ];
+            for (const fid of fieldIds) {
+              if (block.getField && block.getField(fid)) {
+                block.setFieldValue(String(act.count), fid);
+                break;
+              }
+            }
+          }
+          // Attach condition for IF/WHILE from JSON program if provided
+          const attachCondition = (targetBlock: any, cond: any) => {
+            try {
+              if (!cond || !targetBlock) return;
+              const makeNumber = (n: any) => {
+                const num = blocklyWorkspace.newBlock("math_number");
+                num.initSvg();
+                num.render();
+                try {
+                  num.setFieldValue(String(Number(n) || 0), "NUM");
+                } catch {}
+                return num;
+              };
+              const makeBoolean = (val: boolean) => {
+                const b = blocklyWorkspace.newBlock("logic_boolean");
+                b.initSvg();
+                b.render();
+                try {
+                  b.setFieldValue(val ? "TRUE" : "FALSE", "BOOL");
+                } catch {}
+                return b;
+              };
+              const makeSensor = (fn: string) => {
+                const map: any = {
+                  isgreen: "ottobit_is_green",
+                  isred: "ottobit_is_red",
+                  isyellow: "ottobit_is_yellow",
+                };
+                const key = String(fn || "").toLowerCase();
+                const t = map[key];
+                if (!t) return null;
+                const s = blocklyWorkspace.newBlock(t);
+                s.initSvg();
+                s.render();
+                return s;
+              };
+              const connectTo = (names: string[], out: any) => {
+                for (const nm of names) {
+                  const input =
+                    targetBlock.getInput && targetBlock.getInput(nm);
+                  if (
+                    input &&
+                    input.connection &&
+                    out &&
+                    out.outputConnection
+                  ) {
+                    input.connection.connect(out.outputConnection);
+                    return true;
+                  }
+                }
+                return false;
+              };
+              const condType = String(
+                cond?.type || cond?.Type || ""
+              ).toLowerCase();
+              if (condType === "condition") {
+                const fn = cond.function || cond.functionName;
+                const sensor = makeSensor(fn);
+                if (sensor) {
+                  if (cond.check === false) {
+                    const eq = blocklyWorkspace.newBlock(
+                      "ottobit_boolean_equals"
+                    );
+                    eq.initSvg();
+                    eq.render();
+                    const left = eq.getInput && eq.getInput("LEFT");
+                    const right = eq.getInput && eq.getInput("RIGHT");
+                    if (left?.connection)
+                      left.connection.connect(sensor.outputConnection);
+                    if (right?.connection)
+                      right.connection.connect(
+                        makeBoolean(false).outputConnection
+                      );
+                    connectTo(["CONDITION", "COND", "IF0"], eq);
+                  } else {
+                    connectTo(["CONDITION", "COND", "IF0"], sensor);
+                  }
+                }
+              } else if (condType === "variablecomparison") {
+                const cmp = blocklyWorkspace.newBlock("ottobit_logic_compare");
+                cmp.initSvg();
+                cmp.render();
+                try {
+                  const opMap: any = {
+                    "==": "EQ",
+                    "!=": "NEQ",
+                    "<": "LT",
+                    "<=": "LTE",
+                    ">": "GT",
+                    ">=": "GTE",
+                  };
+                  const code = opMap[String(cond.operator) as string];
+                  if (code) cmp.setFieldValue(code, "OP");
+                } catch {}
+                const a = cmp.getInput && cmp.getInput("A");
+                const b = cmp.getInput && cmp.getInput("B");
+                if (a?.connection)
+                  a.connection.connect(
+                    makeNumber(cond.variable).outputConnection
+                  );
+                if (b?.connection)
+                  b.connection.connect(makeNumber(cond.value).outputConnection);
+                connectTo(["CONDITION", "COND", "IF0"], cmp);
+              }
+            } catch {}
+          };
+          if (blockType === "ottobit_if_expandable" && act?.cond)
+            attachCondition(block, act.cond);
+          if (blockType === "ottobit_while" && act?.cond)
+            attachCondition(block, act.cond);
+          if (typeof act.direction === "string" && block.setFieldValue) {
+            const dirFieldIds = [
+              "DIRECTION",
+              "DIR",
+              "ROTATE_DIRECTION",
+              "ROTATION",
+              "TURN",
+              "TURN_DIR",
+            ];
+            const dirValue = act.direction;
+            const dirUpper = dirValue.toUpperCase();
+            let set = false;
+            for (const fid of dirFieldIds) {
+              if (block.getField && block.getField(fid)) {
+                const field: any = block.getField(fid);
+                try {
+                  if (field && typeof field.getOptions === "function") {
+                    const options = field.getOptions();
+                    const findMatch = (needle: string) =>
+                      options.find((opt: any) =>
+                        String(opt?.[0] ?? opt?.text ?? "")
+                          .toLowerCase()
+                          .includes(needle)
+                      ) ||
+                      options.find((opt: any) =>
+                        String(opt?.[1] ?? opt?.value ?? "")
+                          .toLowerCase()
+                          .includes(needle)
+                      );
+                    const needle = dirValue.toLowerCase();
+                    const match = findMatch(needle);
+                    if (match) {
+                      const optionValue = match[1] ?? match.value;
+                      field.setValue(String(optionValue));
+                      set = true;
+                      break;
+                    }
+                  }
+                } catch {}
+                if (!set) {
+                  try {
+                    block.setFieldValue(dirValue, fid);
+                    set = true;
+                  } catch {}
+                  if (!set) {
+                    try {
+                      block.setFieldValue(dirUpper, fid);
+                      set = true;
+                    } catch {}
+                  }
+                }
+                if (set) break;
+              }
+            }
+            if (!set) {
+              const angleFieldIds = ["ANGLE", "DEG", "ROTATE"];
+              const angle =
+                dirValue === "right" ? 90 : dirValue === "left" ? -90 : 180;
+              for (const fid of angleFieldIds) {
+                if (block.getField && block.getField(fid)) {
+                  block.setFieldValue(String(angle), fid);
+                  break;
+                }
+              }
+            }
+          }
+        } catch {}
+
+        try {
+          const body = Array.isArray(act.body)
+            ? act.body
+            : Array.isArray(act.then)
+            ? act.then
+            : [];
+          if (body.length > 0) {
+            // Pick correct statement input per block type (with fallbacks)
+            let stmtInput: any = null;
+            const tryInputs = (names: string[]) => {
+              for (const nm of names) {
+                const inp = block.getInput && block.getInput(nm);
+                if (inp && inp.connection) return inp;
+              }
+              return null;
+            };
+            if (blockType === "ottobit_if_expandable") {
+              stmtInput =
+                tryInputs(["DO0", "DO", "STACK"]) ||
+                (block.inputList || []).find(
+                  (inp: any) => inp && inp.type === 3 && inp.connection
+                );
+            } else if (blockType === "ottobit_while") {
+              stmtInput =
+                tryInputs(["DO", "STACK"]) ||
+                (block.inputList || []).find(
+                  (inp: any) => inp && inp.type === 3 && inp.connection
+                );
+            } else {
+              stmtInput = (block.inputList || []).find(
+                (inp: any) => inp && inp.type === 3 && inp.connection
+              );
+            }
+            if (stmtInput && stmtInput.connection) {
+              let prevInner: any = null;
+              body.forEach((childAct: any, childIdx: number) => {
+                const childBlock = createBlockFromAction(
+                  childAct,
+                  index * 10 + childIdx + 1
+                );
+                if (!childBlock) return;
+                if (
+                  prevInner &&
+                  prevInner.nextConnection &&
+                  childBlock.previousConnection &&
+                  !prevInner.nextConnection.isConnected()
+                ) {
+                  prevInner.nextConnection.connect(
+                    childBlock.previousConnection
+                  );
+                } else if (!prevInner && childBlock.previousConnection) {
+                  stmtInput.connection.connect(childBlock.previousConnection);
+                }
+                prevInner = childBlock;
+              });
+            }
+          }
+        } catch {}
+
+        // Handle ELSE IF and ELSE for IF blocks
+        if (blockType === "ottobit_if_expandable") {
+          // Ensure mutator inputs exist by applying mutation from JSON counts
+          try {
+            const elseIfLen = Array.isArray(act.elseIf) ? act.elseIf.length : 0;
+            const hasElse = Array.isArray(act.else) && act.else.length > 0;
+            if (elseIfLen > 0 || hasElse) {
+              if (
+                typeof (Blockly as any)?.utils?.xml?.textToDom === "function"
+              ) {
+                const mutationXmlStr = `<mutation elseif="${elseIfLen}" else="${
+                  hasElse ? 1 : 0
+                }"></mutation>`;
+                const mutationDom = (Blockly as any).utils.xml.textToDom(
+                  mutationXmlStr
+                );
+                if (typeof (block as any).domToMutation === "function") {
+                  (block as any).domToMutation(mutationDom);
+                  try {
+                    block.initSvg();
+                    block.render(false);
+                  } catch {}
+                }
+              } else if (typeof (block as any).updateShape_ === "function") {
+                // Fallback: set internal counts and trigger shape update
+                try {
+                  (block as any).elseifCount_ = elseIfLen;
+                  (block as any).elseCount_ = hasElse ? 1 : 0;
+                  (block as any).updateShape_();
+                  block.initSvg();
+                  block.render(false);
+                } catch {}
+              }
+            }
+          } catch {}
+          // Define tryInputs function for ELSE IF and ELSE
+          const tryInputs = (names: string[]) => {
+            for (const nm of names) {
+              const inp = block.getInput && block.getInput(nm);
+              if (inp && inp.connection) return inp;
+            }
+            return null;
+          };
+
+          // Helper functions
+          const makeBoolean = (value: boolean) => {
+            const boolBlock = blocklyWorkspace.newBlock("ottobit_boolean");
+            boolBlock.initSvg();
+            boolBlock.render();
+            boolBlock.moveBy(0, 0);
+            if (boolBlock.getField && boolBlock.getField("BOOL")) {
+              boolBlock.setFieldValue(value ? "TRUE" : "FALSE", "BOOL");
+            }
+            return boolBlock;
+          };
+
+          const makeNumber = (value: number) => {
+            const numBlock = blocklyWorkspace.newBlock("ottobit_math_number");
+            numBlock.initSvg();
+            numBlock.render();
+            numBlock.moveBy(0, 0);
+            if (numBlock.getField && numBlock.getField("NUM")) {
+              numBlock.setFieldValue(String(value), "NUM");
+            }
+            return numBlock;
+          };
+
+          // Handle ELSE IF
+          if (Array.isArray(act.elseIf) && act.elseIf.length > 0) {
+            act.elseIf.forEach((elseIfItem: any, elseIfIdx: number) => {
+              try {
+                // Find ELSE IF input
+                const elseIfInput =
+                  tryInputs(["ELSEIF", "ELSE_IF", "IF1", "IF2"]) ||
+                  (block.inputList || []).find(
+                    (inp: any) => inp && inp.type === 3 && inp.connection
+                  );
+
+                if (elseIfInput && elseIfInput.connection) {
+                  // Create condition for ELSE IF
+                  if (elseIfItem.cond) {
+                    const cond = elseIfItem.cond;
+                    let condBlock: any = null;
+
+                    if (cond.type === "condition") {
+                      // Create sensor block
+                      const sensorType = `ottobit_is_${cond.function
+                        ?.replace("is", "")
+                        .toLowerCase()}`;
+                      const sensor = blocklyWorkspace.newBlock(sensorType);
+                      sensor.initSvg();
+                      sensor.render();
+                      sensor.moveBy(0, 0);
+
+                      if (cond.check === false) {
+                        const eq = blocklyWorkspace.newBlock(
+                          "ottobit_boolean_equals"
+                        );
+                        eq.initSvg();
+                        eq.render();
+                        const left = eq.getInput && eq.getInput("LEFT");
+                        const right = eq.getInput && eq.getInput("RIGHT");
+                        if (left?.connection)
+                          left.connection.connect(sensor.outputConnection);
+                        if (right?.connection)
+                          right.connection.connect(
+                            makeBoolean(false).outputConnection
+                          );
+                        condBlock = eq;
+                      } else {
+                        condBlock = sensor;
+                      }
+                    } else if (cond.type === "variableComparison") {
+                      // Create logic compare block
+                      const compare = blocklyWorkspace.newBlock(
+                        "ottobit_logic_compare"
+                      );
+                      compare.initSvg();
+                      compare.render();
+                      compare.moveBy(0, 0);
+
+                      if (compare.getField && compare.getField("OP")) {
+                        compare.setFieldValue(cond.operator || "=", "OP");
+                      }
+
+                      const leftInput =
+                        compare.getInput && compare.getInput("A");
+                      const rightInput =
+                        compare.getInput && compare.getInput("B");
+
+                      if (
+                        leftInput?.connection &&
+                        cond.variable !== undefined
+                      ) {
+                        const varBlock = makeNumber(cond.variable);
+                        leftInput.connection.connect(varBlock.outputConnection);
+                      }
+                      if (rightInput?.connection && cond.value !== undefined) {
+                        const valBlock = makeNumber(cond.value);
+                        rightInput.connection.connect(
+                          valBlock.outputConnection
+                        );
+                      }
+
+                      condBlock = compare;
+                    }
+
+                    if (condBlock && condBlock.outputConnection) {
+                      // Connect condition to ELSE IF input
+                      elseIfInput.connection.connect(
+                        condBlock.outputConnection
+                      );
+                    }
+                  }
+
+                  // Create body for ELSE IF
+                  if (
+                    Array.isArray(elseIfItem.then) &&
+                    elseIfItem.then.length > 0
+                  ) {
+                    const elseIfBodyInput =
+                      tryInputs(["DO1", "DO2", "ELSE_DO"]) ||
+                      (block.inputList || []).find(
+                        (inp: any) => inp && inp.type === 3 && inp.connection
+                      );
+
+                    if (elseIfBodyInput && elseIfBodyInput.connection) {
+                      let prevElseIf: any = null;
+                      elseIfItem.then.forEach(
+                        (childAct: any, childIdx: number) => {
+                          const childBlock = createBlockFromAction(
+                            childAct,
+                            index * 100 + elseIfIdx * 10 + childIdx + 1
+                          );
+                          if (!childBlock) return;
+                          if (
+                            prevElseIf &&
+                            prevElseIf.nextConnection &&
+                            childBlock.previousConnection &&
+                            !prevElseIf.nextConnection.isConnected()
+                          ) {
+                            prevElseIf.nextConnection.connect(
+                              childBlock.previousConnection
+                            );
+                          } else if (
+                            !prevElseIf &&
+                            childBlock.previousConnection
+                          ) {
+                            elseIfBodyInput.connection.connect(
+                              childBlock.previousConnection
+                            );
+                          }
+                          prevElseIf = childBlock;
+                        }
+                      );
+                    }
+                  }
+                }
+              } catch {}
+            });
+          }
+
+          // Handle ELSE
+          if (Array.isArray(act.else) && act.else.length > 0) {
+            try {
+              const elseInput =
+                tryInputs(["ELSE", "ELSE_DO", "DO2"]) ||
+                (block.inputList || []).find(
+                  (inp: any) => inp && inp.type === 3 && inp.connection
+                );
+
+              if (elseInput && elseInput.connection) {
+                let prevElse: any = null;
+                act.else.forEach((childAct: any, childIdx: number) => {
+                  const childBlock = createBlockFromAction(
+                    childAct,
+                    index * 1000 + childIdx + 1
+                  );
+                  if (!childBlock) return;
+                  if (
+                    prevElse &&
+                    prevElse.nextConnection &&
+                    childBlock.previousConnection &&
+                    !prevElse.nextConnection.isConnected()
+                  ) {
+                    prevElse.nextConnection.connect(
+                      childBlock.previousConnection
+                    );
+                  } else if (!prevElse && childBlock.previousConnection) {
+                    elseInput.connection.connect(childBlock.previousConnection);
+                  }
+                  prevElse = childBlock;
+                });
+              }
+            } catch {}
+          }
+        }
+
+        return block;
+      };
+
+      let prev: any = startBlock as any;
+      actions.forEach((act: any, idx: number) => {
+        const b = createBlockFromAction(act, idx);
+        if (!b) return;
+        try {
+          if (
+            prev &&
+            prev.nextConnection &&
+            b.previousConnection &&
+            !prev.nextConnection.isConnected()
+          ) {
+            prev.nextConnection.connect(b.previousConnection);
+          }
+        } catch {}
+        prev = b;
+      });
+
+      // Render function definitions if provided in initial program JSON
+      try {
+        const programObj = (() => {
+          try {
+            return typeof initialProgramActionsJson === "string"
+              ? JSON.parse(initialProgramActionsJson)
+              : initialProgramActionsJson;
+          } catch {
+            return null;
+          }
+        })();
+        const functionsArr: any[] = Array.isArray(programObj?.functions)
+          ? programObj.functions
+          : [];
+
+        const createFunctionDef = (fn: any, fnIndex: number) => {
+          const name: string =
+            String(fn?.name || fn?.title || `func_${fnIndex + 1}`) ||
+            `func_${fnIndex + 1}`;
+
+          // Prefer custom function block if available, fallback to standard procedures
+          const typePref = ["ottobit_function_def", "procedures_defnoreturn"];
+          let defBlock: any = null;
+          for (const t of typePref) {
+            try {
+              defBlock = blocklyWorkspace.newBlock(t);
+              if (defBlock) break;
+            } catch {}
+          }
+          if (!defBlock) return null;
+
+          defBlock.initSvg();
+          defBlock.render();
+          // Set function name
+          try {
+            const nameFieldIds = ["NAME", "FUNC_NAME", "TITLE", "NAME_FIELD"];
+            for (const fid of nameFieldIds) {
+              if (defBlock.getField && defBlock.getField(fid)) {
+                defBlock.setFieldValue(name, fid);
+                break;
+              }
+            }
+          } catch {}
+
+          // Connect function body
+          try {
+            const body: any[] = Array.isArray(fn?.body) ? fn.body : [];
+            if (body.length > 0) {
+              // Find statement input for function body
+              const stmtInput =
+                (defBlock.getInput && defBlock.getInput("STACK")) ||
+                (defBlock.inputList || []).find(
+                  (inp: any) => inp && inp.type === 3 && inp.connection
+                );
+              if (stmtInput && stmtInput.connection) {
+                let prevInner: any = null;
+                body.forEach((childAct: any, childIdx: number) => {
+                  const childBlock = createBlockFromAction(
+                    childAct,
+                    10000 + fnIndex * 100 + childIdx + 1
+                  );
+                  if (!childBlock) return;
+                  if (
+                    prevInner &&
+                    prevInner.nextConnection &&
+                    childBlock.previousConnection &&
+                    !prevInner.nextConnection.isConnected()
+                  ) {
+                    prevInner.nextConnection.connect(
+                      childBlock.previousConnection
+                    );
+                  } else if (!prevInner && childBlock.previousConnection) {
+                    stmtInput.connection.connect(childBlock.previousConnection);
+                  }
+                  prevInner = childBlock;
+                });
+              }
+            }
+          } catch {}
+
+          // Place it nicely
+          try {
+            defBlock.moveBy(40 + fnIndex * 40, 220 + fnIndex * 30);
+          } catch {}
+
+          try {
+            defBlock.setEditable && defBlock.setEditable(true);
+            defBlock.setDisabled && defBlock.setDisabled(false);
+          } catch {}
+
+          return defBlock;
+        };
+
+        functionsArr.forEach((fn, idx) => {
+          try {
+            createFunctionDef(fn, idx);
+          } catch {}
+        });
+      } catch {}
+
+      refreshBlockColors();
+    } catch {}
+  }, [initialProgramActionsJson, blocklyWorkspace]);
 
   // Update toolbox when category changes
   useEffect(() => {

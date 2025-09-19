@@ -5,31 +5,20 @@ export class BlocklyToPhaserConverter {
    * Convert Blockly workspace to Phaser program
    */
   static convertWorkspace(workspace: any): ProgramData {
-    console.log("🔄 [BlocklyToPhaserConverter] Starting workspace conversion...");
-    
     if (!workspace) {
-      console.error("❌ [BlocklyToPhaserConverter] Workspace is required");
       throw new Error("Workspace is required");
     }
 
-    console.log("✅ [BlocklyToPhaserConverter] Workspace is valid");
-    
     const program: ProgramData = {
       version: "1.0.0",
       programName: "user_program",
       actions: [],
       functions: [], // Thêm functions array để hỗ trợ function definitions
     };
-    
-    console.log("📋 [BlocklyToPhaserConverter] Initial program structure created");
 
     try {
       // Get all blocks from workspace
       const blocks = workspace.getAllBlocks();
-      console.log("📊 [BlocklyToPhaserConverter] Found blocks:", {
-        totalBlocks: blocks.length,
-        blockTypes: blocks.map((b: any) => ({ type: b.type, id: b.id }))
-      });
 
       // Find function definition blocks first
       const functionBlocks = blocks.filter(
@@ -37,43 +26,23 @@ export class BlocklyToPhaserConverter {
           block.type === "procedures_defnoreturn" ||
           block.type === "ottobit_function_def"
       );
-      
-      console.log("🔍 [BlocklyToPhaserConverter] Function blocks found:", functionBlocks.length);
 
       if (functionBlocks.length > 0) {
-        console.log("⚡ [BlocklyToPhaserConverter] Parsing function definitions...");
         program.functions = this.parseFunctionDefinitions(functionBlocks);
-        console.log("✅ [BlocklyToPhaserConverter] Functions parsed:", program.functions);
       }
 
       // Find start block
       const startBlock = blocks.find(
         (block: any) => block.type === "ottobit_start"
       );
-      
-      console.log("🏁 [BlocklyToPhaserConverter] Start block:", {
-        found: !!startBlock,
-        id: startBlock?.id,
-        type: startBlock?.type
-      });
 
       if (startBlock) {
-        console.log("⚡ [BlocklyToPhaserConverter] Parsing actions from start block...");
         program.actions = this.parseBlocksToActions(startBlock);
-        console.log("✅ [BlocklyToPhaserConverter] Actions parsed:", {
-          actionsCount: program.actions.length,
-          actions: program.actions
-        });
       } else {
-        console.warn("⚠️ [BlocklyToPhaserConverter] No start block found, program will have no actions");
       }
 
-      console.log("✅ [BlocklyToPhaserConverter] Workspace conversion completed successfully");
-      console.log("📋 [BlocklyToPhaserConverter] Final program:", program);
-      
       return program;
     } catch (error) {
-      console.error("❌ [BlocklyToPhaserConverter] Error during conversion:", error);
       throw new Error(`Failed to convert workspace: ${error}`);
     }
   }
@@ -86,7 +55,11 @@ export class BlocklyToPhaserConverter {
 
     for (const block of functionBlocks) {
       const functionName =
-        block.getFieldValue("NAME") || `function_${functions.length}`;
+        block.getFieldValue("NAME") ||
+        block.getFieldValue("FUNC_NAME") ||
+        block.getFieldValue("TITLE") ||
+        `function_${functions.length}`;
+
       const bodyBlock = block.getInputTargetBlock("STACK");
 
       const functionDef = {
@@ -191,7 +164,7 @@ export class BlocklyToPhaserConverter {
         case "ottobit_if":
         case "ottobit_if_condition":
           return [this.convertIf(block)];
-        
+
         case "ottobit_if_expandable":
           return [this.convertIfExpandable(block)];
 
@@ -426,27 +399,27 @@ export class BlocklyToPhaserConverter {
 
     // Get số lượng ELSE IF từ block state
     const elseifCount = block.elseifCount_ || 0;
-    
+
     // Nếu có else if, tạo elseIf array
     if (elseifCount > 0) {
       result.elseIf = [];
-      
+
       for (let i = 1; i <= elseifCount; i++) {
         // Kiểm tra input tồn tại trước khi truy cập
         const hasIfInput = block.getInput(`IF${i}`) !== null;
         const hasDoInput = block.getInput(`DO${i}`) !== null;
-        
+
         if (hasIfInput && hasDoInput) {
           const elseifConditionInput = block.getInputTargetBlock(`IF${i}`);
           const elseifDoBlock = block.getInputTargetBlock(`DO${i}`);
-          
+
           const elseifCondition = elseifConditionInput
             ? this.parseCondition(elseifConditionInput)
             : null;
           const elseifThenActions = elseifDoBlock
             ? this.parseBlocksToActionsFromBlock(elseifDoBlock)
             : [];
-          
+
           result.elseIf.push({
             cond: elseifCondition,
             then: elseifThenActions,
@@ -494,6 +467,11 @@ export class BlocklyToPhaserConverter {
     const blockType = conditionBlock.type;
 
     switch (blockType) {
+      case "ottobit_boolean":
+      case "logic_boolean": {
+        const val = this.getBooleanValue(conditionBlock);
+        return { type: "boolean", value: val };
+      }
       case "ottobit_logic_compare":
       case "logic_compare": {
         const leftValue =
@@ -569,25 +547,43 @@ export class BlocklyToPhaserConverter {
         return { type: "condition", function: "isRed", check: true };
       case "ottobit_is_yellow":
         return { type: "condition", function: "isYellow", check: true };
-      
+
       // Boolean equals block - xử lý đặc biệt cho pin checks
       case "ottobit_boolean_equals": {
         const leftValue = conditionBlock.getInputTargetBlock("LEFT");
         const rightValue = conditionBlock.getInputTargetBlock("RIGHT");
-        
+
         // Kiểm tra nếu một trong hai là pin check block
-        if (leftValue && (leftValue.type === "ottobit_is_green" || leftValue.type === "ottobit_is_red" || leftValue.type === "ottobit_is_yellow")) {
+        if (
+          leftValue &&
+          (leftValue.type === "ottobit_is_green" ||
+            leftValue.type === "ottobit_is_red" ||
+            leftValue.type === "ottobit_is_yellow")
+        ) {
           const pinType = leftValue.type.replace("ottobit_is_", "");
           const checkValue = this.getBooleanValue(rightValue);
-          return { type: "condition", function: `is${pinType.charAt(0).toUpperCase() + pinType.slice(1)}`, check: checkValue };
+          return {
+            type: "condition",
+            function: `is${pinType.charAt(0).toUpperCase() + pinType.slice(1)}`,
+            check: checkValue,
+          };
         }
-        
-        if (rightValue && (rightValue.type === "ottobit_is_green" || rightValue.type === "ottobit_is_red" || rightValue.type === "ottobit_is_yellow")) {
+
+        if (
+          rightValue &&
+          (rightValue.type === "ottobit_is_green" ||
+            rightValue.type === "ottobit_is_red" ||
+            rightValue.type === "ottobit_is_yellow")
+        ) {
           const pinType = rightValue.type.replace("ottobit_is_", "");
           const checkValue = this.getBooleanValue(leftValue);
-          return { type: "condition", function: `is${pinType.charAt(0).toUpperCase() + pinType.slice(1)}`, check: checkValue };
+          return {
+            type: "condition",
+            function: `is${pinType.charAt(0).toUpperCase() + pinType.slice(1)}`,
+            check: checkValue,
+          };
         }
-        
+
         // Fallback to normal boolean comparison
         return {
           type: "variableComparison",
@@ -596,7 +592,7 @@ export class BlocklyToPhaserConverter {
           value: this.extractVariableOrValue(rightValue),
         };
       }
-      
+
       // Condition wrapper block
       case "ottobit_condition": {
         const conditionInput = conditionBlock.getInputTargetBlock("CONDITION");
@@ -644,7 +640,7 @@ export class BlocklyToPhaserConverter {
    */
   private static getBooleanValue(block: any): boolean {
     if (!block) return false;
-    
+
     switch (block.type) {
       case "ottobit_boolean":
         const boolValue = block.getFieldValue("BOOL");
@@ -666,12 +662,13 @@ export class BlocklyToPhaserConverter {
   } {
     const errors: string[] = [];
 
+    // Relax non-critical validations
     if (!program.version) {
-      errors.push("Program version is required");
+      program.version = "1.0.0";
     }
 
     if (!program.programName) {
-      errors.push("Program name is required");
+      program.programName = "user_program";
     }
 
     if (!Array.isArray(program.actions)) {
@@ -708,13 +705,7 @@ export class BlocklyToPhaserConverter {
         }
       }
 
-      if (
-        (action.type === "if" || action.type === "while") &&
-        !action.cond &&
-        !action.condition
-      ) {
-        errors.push(`Action ${index}: ${action.type} requires condition`);
-      }
+      // Allow saving IF/WHILE even if condition is currently null (placeholder will be added)
     });
 
     return {
