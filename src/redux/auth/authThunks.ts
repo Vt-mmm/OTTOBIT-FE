@@ -103,7 +103,12 @@ export const loginThunk = createAsyncThunk<
       data
     );
 
-    const response = apiResponse.data;
+    // Now we get full AxiosResponse, so we need to access apiResponse.data
+    const response = apiResponse.data as LoginApiResponse;
+    
+    console.log("[Login] Full axios response:", apiResponse);
+    console.log("[Login] Response body:", response);
+    console.log("[Login] Response type:", typeof response);
 
     if (
       !response ||
@@ -111,6 +116,7 @@ export const loginThunk = createAsyncThunk<
       !response.data.user ||
       !response.data.tokens
     ) {
+      console.error("[Login] Invalid response structure:", response);
       throw new Error("Invalid response format from API");
     }
 
@@ -335,7 +341,11 @@ export const googleLoginThunk = async (
       { GoogleIdToken: googleToken }
     );
 
-    const response = apiResponse.data;
+    // Now we get full AxiosResponse, so we need to access apiResponse.data
+    const response = apiResponse.data as LoginApiResponse;
+    
+    console.log("[Google Login] Full axios response:", apiResponse);
+    console.log("[Google Login] Response body:", response);
 
     if (
       !response ||
@@ -343,6 +353,7 @@ export const googleLoginThunk = async (
       !response.data.user ||
       !response.data.tokens
     ) {
+      console.error("[Google Login] Invalid response structure:", response);
       const message = handleResponseMessage(
         "Error: Backend did not return valid user information."
       );

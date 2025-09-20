@@ -19,23 +19,24 @@ const LoginPage: React.FC = () => {
         position: "relative",
       }}
     >
-      {/* Button về trang chủ - Đặt ra ngoài background */}
+      {/* Button về trang chủ - Responsive positioning */}
       <Button
         component={RouterLink}
         to="/"
         startIcon={<Home />}
         sx={{
           position: "absolute",
-          top: 32,
-          left: 32,
-          zIndex: 20, // Cao hơn để hiện ra ngoài
+          top: { xs: 16, md: 32 },
+          left: { xs: 16, md: 32 },
+          zIndex: 20,
           color: "#22c55e",
           backgroundColor: "rgba(255, 255, 255, 0.9)",
           textTransform: "none",
           fontWeight: 600,
-          px: 3,
-          py: 1,
+          px: { xs: 2, md: 3 },
+          py: { xs: 0.5, md: 1 },
           borderRadius: 2,
+          fontSize: { xs: "14px", md: "16px" },
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
           "&:hover": {
             backgroundColor: "white",
@@ -43,31 +44,42 @@ const LoginPage: React.FC = () => {
           },
         }}
       >
-        Về trang chủ
+        <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+          Về trang chủ
+        </Box>
+        <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
+          Home
+        </Box>
       </Button>
 
-      {/* Container trắng bọc toàn bộ */}
+      {/* Container trắng bọc toàn bộ - Improved responsive */}
       <Box
         sx={{
           background: "white",
-          borderRadius: 4,
-          boxShadow: "0 20px 60px rgba(0, 0, 0, 0.1)",
+          borderRadius: { xs: 0, sm: 2, md: 4 },
+          boxShadow: { 
+            xs: "none", 
+            sm: "0 10px 30px rgba(0, 0, 0, 0.08)", 
+            md: "0 20px 60px rgba(0, 0, 0, 0.1)" 
+          },
           overflow: "hidden",
           width: "100%",
-          maxWidth: "1000px",
-          minHeight: { xs: "600px", md: "700px" },
+          maxWidth: { xs: "100%", sm: "500px", md: "1000px" },
+          minHeight: { xs: "100vh", sm: "600px", md: "700px" },
+          height: { xs: "100vh", sm: "auto" },
           display: "flex",
+          flexDirection: { xs: "column", md: "row" },
           position: "relative",
         }}
       >
-        {/* Logo ở góc trên */}
+        {/* Logo ở góc trên - Responsive positioning */}
         <Box
           sx={{
             position: "absolute",
-            top: 32,
-            left: 32,
+            top: { xs: 20, sm: 24, md: 32 },
+            left: { xs: 20, sm: 24, md: 32 },
             zIndex: 10,
-            display: "flex",
+            display: { xs: "none", sm: "flex" }, // Ẩn trên mobile nhỏ
             alignItems: "center",
             gap: 1,
           }}
@@ -76,36 +88,39 @@ const LoginPage: React.FC = () => {
             src="/asset/OttobitLogoText.png"
             alt="OttoBit Logo"
             style={{
-              height: "30px",
+              height: "24px",
               width: "auto",
             }}
           />
         </Box>
 
-        {/* Left Side - Login Form - Giảm kích thước */}
+        {/* Login Form Section - Improved responsive */}
         <Box
           sx={{
-            flex: 0.8, // Giảm từ 1 xuống 0.8 để form nhỏ hơn
+            flex: { xs: 1, md: 0.8 },
             display: "flex",
-            alignItems: "center",
+            alignItems: { xs: "flex-start", sm: "center" },
             justifyContent: "center",
-            p: { xs: 3, md: 4 }, // Giảm padding
+            p: { xs: 2, sm: 3, md: 4 },
+            pt: { xs: 8, sm: 3, md: 4 }, // Extra top padding on mobile for logo space
+            minHeight: { xs: "auto", sm: "500px" },
           }}
         >
           <LoginForm />
         </Box>
 
-        {/* Right Side - Illustration - Tăng kích thước */}
+        {/* Illustration Section - Better responsive */}
         <Box
           sx={{
-            flex: 1.2, // Tăng từ 1 lên 1.2 để hình to hơn
-            display: { xs: "none", md: "flex" },
-            alignItems: "flex-end", // Căn dưới cùng
+            flex: { xs: 0, md: 1.2 },
+            display: { xs: "none", lg: "flex" }, // Chỉ hiện trên màn hình lớn
+            alignItems: "flex-end",
             justifyContent: "center",
-            p: 0, // Bỏ hoàn toàn padding
+            p: 0,
             background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)",
             position: "relative",
-            overflow: "hidden", // Đảm bảo không bị tràn
+            overflow: "hidden",
+            minHeight: { md: "500px", lg: "600px" },
           }}
         >
           {/* Decorative elements */}

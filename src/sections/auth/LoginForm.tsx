@@ -143,13 +143,13 @@ const LoginForm: React.FC = () => {
         transition={{ duration: 0.6 }}
         sx={{
           width: "100%",
-          maxWidth: 420,
-          p: 0, // Remove padding since we're inside the white container
+          maxWidth: { xs: "100%", sm: 400, md: 420 },
+          p: 0,
         }}
       >
         {/* Header với logo */}
         {/* Header */}
-        <Box sx={{ textAlign: "center", mb: 4 }}>
+        <Box sx={{ textAlign: "center", mb: { xs: 3, sm: 4 } }}>
           <Typography
             variant="h4"
             component="h1"
@@ -157,7 +157,7 @@ const LoginForm: React.FC = () => {
               fontWeight: 700,
               color: "#1a1a1a",
               mb: 1,
-              fontSize: "32px",
+              fontSize: { xs: "28px", sm: "32px" },
             }}
           >
             Login
@@ -166,12 +166,13 @@ const LoginForm: React.FC = () => {
             variant="body2"
             sx={{
               color: "#6b7280",
-              fontSize: "16px",
+              fontSize: { xs: "14px", sm: "16px" },
+              px: { xs: 1, sm: 0 }, // Add horizontal padding on mobile
             }}
           >
             Welcome back! Please login to your account
           </Typography>
-        </Box>{" "}
+        </Box>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2.5}>
             {(localErrorMessage || errorMessage) && (
@@ -322,9 +323,9 @@ const LoginForm: React.FC = () => {
               fullWidth
               disabled={isLoading}
               sx={{
-                py: 2,
+                py: { xs: 1.8, sm: 2 },
                 borderRadius: 2,
-                fontSize: "16px",
+                fontSize: { xs: "14px", sm: "16px" },
                 fontWeight: 600,
                 textTransform: "none",
                 background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
@@ -353,7 +354,15 @@ const LoginForm: React.FC = () => {
               </Typography>
             </Divider>
 
-            <Stack direction="row" spacing={2}>
+            <Stack 
+              direction={{ xs: "column", sm: "row" }} 
+              spacing={2}
+              sx={{ 
+                "& > *": {
+                  minHeight: { xs: "48px", sm: "44px" } // Consistent button height
+                }
+              }}
+            >
               {/* Google Login Button */}
               <Box
                 sx={{
@@ -365,6 +374,7 @@ const LoginForm: React.FC = () => {
                     width: "100% !important",
                     borderRadius: "8px !important",
                     border: "1px solid #e2e8f0 !important",
+                    minHeight: "48px !important", // Ensure consistent height
                     "&:hover": {
                       borderColor: "#22c55e !important",
                       backgroundColor: "rgba(34, 197, 94, 0.04) !important",
@@ -391,11 +401,12 @@ const LoginForm: React.FC = () => {
                 variant="outlined"
                 fullWidth
                 sx={{
-                  py: 1.5,
+                  py: { xs: 1.8, sm: 1.5 },
                   borderRadius: 2,
                   borderColor: "#e2e8f0",
                   color: "#374151",
                   textTransform: "none",
+                  fontSize: { xs: "14px", sm: "16px" },
                   "&:hover": {
                     borderColor: "#22c55e",
                     backgroundColor: "rgba(34, 197, 94, 0.04)",

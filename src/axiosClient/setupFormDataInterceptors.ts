@@ -34,7 +34,7 @@ const setupAxiosFormData = (store: Store) => {
 
   axiosFormData.interceptors.response.use(
     (response: AxiosResponse) => {
-      return response.data;
+      return response;
     },
     async (err) => {
       const originalConfig = err.config;
@@ -43,6 +43,7 @@ const setupAxiosFormData = (store: Store) => {
       if (
         !originalConfig ||
         originalConfig.url === ROUTES_API_AUTH.LOGIN ||
+        originalConfig.url === ROUTES_API_AUTH.REFRESH_TOKEN ||
         originalConfig.url === ROUTES_API_AUTH.FORGOT_PASSWORD ||
         originalConfig.url === ROUTES_API_AUTH.RESET_PASSWORD ||
         originalConfig._retry
@@ -64,8 +65,18 @@ const setupAxiosFormData = (store: Store) => {
             return Promise.reject(new Error("Missing tokens"));
           }
 
+          // Decode JWT to get userId (BE expects {userId, refreshToken})
+          let userId: string;
+          try {
+            const payload = JSON.parse(atob(accessToken.split('.')[1]));
+            userId = payload.sub; // 'sub' claim contains userId
+          } catch (decodeError) {
+            console.error("[Form Data Refresh Token] Failed to decode JWT:", decodeError);
+            throw new Error("Invalid access token format");
+          }
+
           const data = {
-            accessToken,
+            userId,
             refreshToken,
           };
 
@@ -75,17 +86,23 @@ const setupAxiosFormData = (store: Store) => {
             data
           );
 
-          // Validate response
+          // Validate response - now response is full AxiosResponse
           if (
             !response ||
             !response.data ||
-            !response.data.accessToken ||
-            !response.data.refreshToken
+            !response.data.data ||
+            !response.data.data.tokens ||
+            !response.data.data.tokens.accessToken ||
+            !response.data.data.tokens.refreshToken
           ) {
             throw new Error("Invalid token refresh response");
           }
 
-          const tokenResponse: TokenResponse = response.data;
+          // Extract tokens from full response
+          const tokenResponse: TokenResponse = {
+            accessToken: response.data.data.tokens.accessToken,
+            refreshToken: response.data.data.tokens.refreshToken,
+          };
 
           // Remove old tokens
           resetAuthHeaders();
