@@ -3,6 +3,7 @@ import * as Blockly from "blockly/core";
 // Function Definition Block - thay thế cho procedures_defnoreturn
 export const ottobit_function_def = {
   init: function (this: Blockly.Block) {
+    // Trở về simple field không validation để cho phép edit bình thường
     this.appendDummyInput()
       .appendField("⚙️")
       .appendField(new Blockly.FieldTextInput("myFunction"), "NAME");
@@ -16,6 +17,7 @@ export const ottobit_function_def = {
 // Function Call Block - thay thế cho procedures_callnoreturn
 export const ottobit_function_call = {
   init: function (this: Blockly.Block) {
+    // Trở về simple field không validation để cho phép edit bình thường
     this.appendDummyInput().appendField(
       new Blockly.FieldTextInput("myFunction"),
       "NAME"

@@ -9,6 +9,7 @@ import {
   refreshBlockColors,
 } from "../../theme/block/renderer-ottobit";
 import BlockToolbox from "../../components/block/BlockToolbox";
+import { fieldInputManager } from "../../components/block/services/FieldInputManager";
 
 interface BlocksWorkspaceProps {
   onWorkspaceChange?: (workspace: any) => void;
@@ -157,6 +158,9 @@ export default function BlocksWorkspace({
 
       setBlocklyWorkspace(workspace);
       onWorkspaceChange?.(workspace);
+
+      // Initialize FieldInputManager để giải quyết lỗi UI input bị ghim
+      fieldInputManager.initialize(workspace);
 
       // Force refresh block colors để đảm bảo hiển thị đúng
       refreshBlockColors();
@@ -1482,6 +1486,9 @@ export default function BlocksWorkspace({
     }
 
     return () => {
+      // Cleanup FieldInputManager trước khi dispose workspace
+      fieldInputManager.dispose();
+      
       if (blocklyWorkspace) {
         blocklyWorkspace.dispose();
       }
@@ -1498,6 +1505,10 @@ export default function BlocksWorkspace({
   useEffect(() => {
     if (!blocklyWorkspace) return;
     if (!Array.isArray(detectionsFromExecute)) return;
+    
+    // Force cleanup field inputs trước khi load detections từ Execute
+    fieldInputManager.forceCleanupAll();
+    
     try {
       if ((window as any).StudioBlocks?.loadDetections) {
         (window as any).StudioBlocks.loadDetections(detectionsFromExecute);
@@ -1509,6 +1520,10 @@ export default function BlocksWorkspace({
   useEffect(() => {
     if (!blocklyWorkspace) return;
     if (!initialProgramActionsJson) return;
+    
+    // Force cleanup field inputs trước khi render program
+    fieldInputManager.forceCleanupAll();
+    
     try {
       const program = initialProgramActionsJson;
       const actions = Array.isArray(program?.actions) ? program.actions : [];

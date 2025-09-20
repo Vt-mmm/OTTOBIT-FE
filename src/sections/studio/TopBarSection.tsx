@@ -43,6 +43,7 @@ import { MicrobitConnectionDialog } from "../../features/microbit/components/Mic
 import { usePhaserContext } from "../../features/phaser/context/PhaserContext";
 import { useNotification } from "hooks/useNotification";
 import { forceCleanupBeforeExecute } from "../../theme/block/renderer-ottobit";
+import { useFieldInputManager } from "../../components/block/hooks/useFieldInputManager";
 
 interface TopBarSectionProps {
   activeTab?: number;
@@ -89,6 +90,9 @@ function TopBarContent({
   const { isConnected } = useMicrobitContext();
   const { showNotification, NotificationComponent } = useNotification();
   const navigate = useNavigate();
+  
+  // Field input manager for cleanup
+  const { forceCleanupFields } = useFieldInputManager();
 
   // Phaser context for running programs
   const {
@@ -106,6 +110,10 @@ function TopBarContent({
     // CRITICAL: Emergency cleanup before execute to prevent field editor leaks
     console.log("🚨 [TopBar] Running emergency cleanup before execute...");
     forceCleanupBeforeExecute();
+    
+    // ENHANCED: Also cleanup field inputs specifically
+    console.log("🧡 [TopBar] Cleaning up field inputs...");
+    forceCleanupFields();
     
     if (!workspace) {
       console.error("❌ [TopBar] No workspace available");
@@ -152,6 +160,9 @@ function TopBarContent({
       
       // CRITICAL: Cleanup again on error to prevent leaks
       forceCleanupBeforeExecute();
+      
+      // ENHANCED: Also cleanup field inputs on error
+      forceCleanupFields();
       
       setIsRunning(false);
       return;
