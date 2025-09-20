@@ -53,7 +53,7 @@ export function usePhaserSimulator(
 
   // Default configuration - use larger dimensions for better map visibility
   const defaultConfig: PhaserConfig = {
-    url: import.meta.env.VITE_PHASER_URL || "http://localhost:5174",
+    url: import.meta.env.VITE_PHASER_URL || "https://phaser-map-three.vercel.app",
     width: 1200, // Larger width to ensure map is not scaled down
     height: 800, // Larger height to show full map
     allowFullscreen: true,

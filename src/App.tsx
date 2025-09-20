@@ -4,15 +4,20 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { HelmetProvider } from "react-helmet-async";
 import { ToastContainer } from "react-toastify";
 import { Provider } from "react-redux";
+import { useEffect } from "react";
 import "react-toastify/dist/ReactToastify.css";
 import AppRouter from "routes/router";
 import ThemeProvider from "theme";
 import { ottobit } from "store/config";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { setupAxiosInterceptors } from "axiosClient";
 
 // Create an internal AppContent component to use hooks
 const AppContent = () => {
   // Initialize axios interceptors
+  useEffect(() => {
+    setupAxiosInterceptors(ottobit);
+  }, []);
 
   // Your Google OAuth Client ID
   const googleClientId =

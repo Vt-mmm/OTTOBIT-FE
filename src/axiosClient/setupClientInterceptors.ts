@@ -72,18 +72,8 @@ const setupAxiosClient = (store: Store<RootState>) => {
   // Intercept responses to handle authentication errors
   axiosClient.interceptors.response.use(
     (response: AxiosResponse) => {
-      // Safe access of response data to prevent undefined errors
-      if (response && response.data !== undefined) {
-        return response.data;
-      }
-
-      // If response exists but data is undefined, return the response itself
-      if (response) {
-        return response;
-      }
-
-      // Last resort fallback to prevent undefined errors
-      return {};
+      // Return full response object - let individual API calls handle data extraction
+      return response;
     },
     async (err) => {
       const originalConfig = err.config;
@@ -92,6 +82,7 @@ const setupAxiosClient = (store: Store<RootState>) => {
       if (
         !originalConfig ||
         originalConfig.url === ROUTES_API_AUTH.LOGIN ||
+        originalConfig.url === ROUTES_API_AUTH.REFRESH_TOKEN ||
         originalConfig.url === ROUTES_API_AUTH.FORGOT_PASSWORD ||
         originalConfig.url === ROUTES_API_AUTH.RESET_PASSWORD ||
         originalConfig._retry
@@ -101,6 +92,12 @@ const setupAxiosClient = (store: Store<RootState>) => {
 
       // Handle 401 Unauthorized - token expired
       if (err.response?.status === 401) {
+        console.log("[Refresh Token] Received 401 error, starting token refresh", {
+          url: originalConfig?.url,
+          method: originalConfig?.method,
+          isRefreshing,
+        });
+        
         // If we're not already refreshing
         if (!isRefreshing) {
           isRefreshing = true;
@@ -110,14 +107,35 @@ const setupAxiosClient = (store: Store<RootState>) => {
             const accessToken = getAccessToken();
             const refreshToken = getRefreshToken();
 
+            console.log("[Refresh Token] Starting token refresh process...");
+            console.log("[Refresh Token] Has tokens:", {
+              hasAccessToken: !!accessToken,
+              hasRefreshToken: !!refreshToken,
+            });
+
             if (!accessToken || !refreshToken) {
+              console.error("[Refresh Token] Missing tokens");
               throw new Error("Missing tokens");
             }
 
+            // Decode JWT to get userId (BE expects {userId, refreshToken})
+            let userId: string;
+            try {
+              const payload = JSON.parse(atob(accessToken.split('.')[1]));
+              userId = payload.sub; // 'sub' claim contains userId
+              console.log("[Refresh Token] Decoded userId from JWT:", userId);
+            } catch (decodeError) {
+              console.error("[Refresh Token] Failed to decode JWT:", decodeError);
+              throw new Error("Invalid access token format");
+            }
+
             const data = {
-              accessToken,
+              userId,
               refreshToken,
             };
+
+            console.log("[Refresh Token] Making request to:", ROUTES_API_AUTH.REFRESH_TOKEN);
+            console.log("[Refresh Token] Request data:", { userId: !!userId, hasRefreshToken: !!refreshToken });
 
             // Make token refresh request
             const response = await axiosClient.post(
@@ -125,17 +143,54 @@ const setupAxiosClient = (store: Store<RootState>) => {
               data
             );
 
-            // Validate response
+            console.log("[Refresh Token] Full response received:", response);
+            console.log("[Refresh Token] Response status:", response?.status);
+            console.log("[Refresh Token] Response data:", response?.data);
+            
+            // Now response is full AxiosResponse, so we need to check response.data
+            const responseBody = response?.data;
+            
+            if (responseBody && responseBody.data) {
+              console.log("[Refresh Token] API response body:", responseBody);
+              console.log("[Refresh Token] User & tokens data:", responseBody.data);
+              
+              if (responseBody.data.tokens) {
+                console.log("[Refresh Token] Found tokens:", responseBody.data.tokens);
+              } else {
+                console.log("[Refresh Token] No tokens in response");
+              }
+            } else {
+              console.log("[Refresh Token] No data in response body");
+            }
+
+            // Validate response - now we have full AxiosResponse
             if (
               !response ||
               !response.data ||
-              !response.data.accessToken ||
-              !response.data.refreshToken
+              !response.data.data ||
+              !response.data.data.tokens ||
+              !response.data.data.tokens.accessToken ||
+              !response.data.data.tokens.refreshToken
             ) {
+              console.error("[Refresh Token] Validation failed:");
+              console.error("[Refresh Token] - Has response:", !!response);
+              console.error("[Refresh Token] - Has response.data:", !!(response && response.data));
+              console.error("[Refresh Token] - Has response.data.data:", !!(response && response.data && response.data.data));
+              console.error("[Refresh Token] - Has tokens:", !!(response && response.data && response.data.data && response.data.data.tokens));
+              console.error("[Refresh Token] Full response:", JSON.stringify(response?.data, null, 2));
               throw new Error("Invalid token refresh response");
             }
 
-            const tokenResponse: TokenResponse = response.data;
+            // Extract tokens from full response
+            const tokenResponse: TokenResponse = {
+              accessToken: response.data.data.tokens.accessToken,
+              refreshToken: response.data.data.tokens.refreshToken,
+            };
+            
+            console.log("[Refresh Token] Extracted tokens:", {
+              hasAccessToken: !!tokenResponse.accessToken,
+              hasRefreshToken: !!tokenResponse.refreshToken,
+            });
 
             // First remove old tokens from headers
             resetAuthHeaders();
@@ -159,6 +214,10 @@ const setupAxiosClient = (store: Store<RootState>) => {
             isRefreshing = false;
             return axiosClient(originalConfig);
           } catch (error) {
+            console.error("[Refresh Token] Token refresh failed:", {
+              error: error instanceof Error ? error.message : error,
+              stack: error instanceof Error ? error.stack : undefined,
+            });
             processQueue(error, null);
             dispatch(setIsLogout(true));
             isRefreshing = false;
