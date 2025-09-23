@@ -18,16 +18,24 @@ import {
   AccessTime as AccessTimeIcon,
   Lock as LockIcon,
 } from "@mui/icons-material";
-import { Lesson } from "common/@types/lesson";
+import { Lesson, LessonProgressResult } from "common/@types/lesson";
+import { 
+  isLessonAccessible, 
+  getLessonProgress, 
+  getLessonStatusText, 
+  getLessonButtonText 
+} from "../../../../utils/lessonUtils";
 
 interface CourseLessonsSectionProps {
   lessons: Lesson[];
+  lessonProgresses?: LessonProgressResult[];
   isUserEnrolled: boolean;
-  onLessonClick: (lessonId: string, lessonIndex: number) => void;
+  onLessonClick: (lessonId: string) => void;
 }
 
 export default function CourseLessonsSection({
   lessons,
+  lessonProgresses = [],
   isUserEnrolled,
   onLessonClick,
 }: CourseLessonsSectionProps) {
@@ -55,19 +63,22 @@ export default function CourseLessonsSection({
       ) : (
         <List sx={{ pt: 0 }}>
           {lessons.map((lesson, index) => {
-            const isLocked = !isUserEnrolled && index > 0; // First lesson free, others need enrollment
+            const isAccessible = isUserEnrolled ? isLessonAccessible(lesson, lessonProgresses) : index === 0;
+            const progress = getLessonProgress(lesson.id, lessonProgresses);
+            const statusText = getLessonStatusText(lesson, lessonProgresses);
+            const buttonText = getLessonButtonText(lesson, lessonProgresses);
             
             return (
               <React.Fragment key={lesson.id}>
                 <ListItem disablePadding>
                   <ListItemButton 
-                    onClick={() => !isLocked && onLessonClick(lesson.id, index)}
-                    disabled={isLocked}
+                    onClick={() => isAccessible && onLessonClick(lesson.id)}
+                    disabled={!isAccessible}
                     sx={{ 
                       py: 2.5,
-                      opacity: isLocked ? 0.6 : 1,
+                      opacity: !isAccessible ? 0.6 : 1,
                       "&:hover": {
-                        bgcolor: isLocked ? "transparent" : "action.hover",
+                        bgcolor: !isAccessible ? "transparent" : "action.hover",
                       }
                     }}
                   >
@@ -76,12 +87,20 @@ export default function CourseLessonsSection({
                         sx={{ 
                           width: 48, 
                           height: 48, 
-                          bgcolor: isLocked ? "grey.400" : index === 0 ? "#4caf50" : "primary.main",
+                          bgcolor: !isAccessible 
+                            ? "grey.400" 
+                            : progress.isCompleted 
+                              ? "#4caf50" 
+                              : progress.isInProgress
+                                ? "#ff9800"
+                                : index === 0 
+                                  ? "#4caf50" 
+                                  : "primary.main",
                           fontSize: "1rem",
                           fontWeight: 600
                         }}
                       >
-                        {isLocked ? <LockIcon /> : lesson.order + 1}
+                        {!isAccessible ? <LockIcon /> : progress.isCompleted ? "✓" : lesson.order}
                       </Avatar>
                     </ListItemIcon>
                     
@@ -91,28 +110,32 @@ export default function CourseLessonsSection({
                           <Typography variant="subtitle1" fontWeight={600}>
                             {lesson.title}
                           </Typography>
-                          {index === 0 && (
-                            <Chip 
-                              label="Miễn phí" 
-                              size="small" 
-                              sx={{ 
-                                bgcolor: "#e8f5e9",
-                                color: "#2e7d32",
-                                fontWeight: 600
-                              }} 
-                            />
-                          )}
-                          {isLocked && (
-                            <Chip 
-                              label="Cần tham gia" 
-                              size="small" 
-                              sx={{ 
-                                bgcolor: "#fff3e0",
-                                color: "#f57c00",
-                                fontWeight: 600
-                              }} 
-                            />
-                          )}
+                          {/* Status Chip */}
+                          <Chip 
+                            label={isUserEnrolled ? statusText : index === 0 ? "Miễn phí" : "Cần tham gia"}
+                            size="small" 
+                            sx={{ 
+                              bgcolor: !isAccessible
+                                ? "#fafafa"
+                                : progress.isCompleted
+                                  ? "#e8f5e9"
+                                  : progress.isInProgress
+                                    ? "#fff3e0"
+                                    : index === 0
+                                      ? "#e8f5e9"
+                                      : "#e3f2fd",
+                              color: !isAccessible
+                                ? "#757575"
+                                : progress.isCompleted
+                                  ? "#2e7d32"
+                                  : progress.isInProgress
+                                    ? "#f57c00"
+                                    : index === 0
+                                      ? "#2e7d32"
+                                      : "#1976d2",
+                              fontWeight: 600
+                            }} 
+                          />
                         </Box>
                       }
                       secondary={
@@ -139,26 +162,35 @@ export default function CourseLessonsSection({
                       }
                     />
                     
-                    {!isLocked && (
-                      <Button
-                        variant={index === 0 ? "contained" : "outlined"}
-                        startIcon={<PlayArrowIcon />}
-                        size="medium"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onLessonClick(lesson.id, index);
-                        }}
-                        sx={{
-                          minWidth: 100,
-                          ...(index === 0 && {
-                            bgcolor: "#4caf50",
-                            "&:hover": { bgcolor: "#43a047" }
-                          })
-                        }}
-                      >
-                        {index === 0 ? "Thử ngay" : "Bắt đầu"}
-                      </Button>
-                    )}
+                    <Button
+                      variant={isAccessible ? "contained" : "outlined"}
+                      startIcon={!isAccessible ? <LockIcon /> : <PlayArrowIcon />}
+                      size="medium"
+                      disabled={!isAccessible}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        isAccessible && onLessonClick(lesson.id);
+                      }}
+                      sx={{
+                        minWidth: 120,
+                        ...(isAccessible && {
+                          bgcolor: progress.isCompleted 
+                            ? "#ff9800"
+                            : progress.isInProgress
+                              ? "#2196f3"
+                              : "#4caf50",
+                          "&:hover": { 
+                            bgcolor: progress.isCompleted 
+                              ? "#f57c00"
+                              : progress.isInProgress
+                                ? "#1976d2" 
+                                : "#43a047"
+                          }
+                        })
+                      }}
+                    >
+                      {isUserEnrolled ? buttonText : index === 0 ? "Thử ngay" : "Tham gia"}
+                    </Button>
                   </ListItemButton>
                 </ListItem>
                 {index < lessons.length - 1 && <Divider />}

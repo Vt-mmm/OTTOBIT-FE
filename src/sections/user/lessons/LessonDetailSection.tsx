@@ -8,7 +8,7 @@ import {
   Alert,
 } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
-import { getLessonById } from "../../../redux/lesson/lessonSlice";
+import { getLessonByIdThunk } from "../../../redux/lesson/lessonThunks";
 import LessonMapSelectorSection from "./LessonMapSelectorSection";
 import { PATH_USER } from "../../../routes/paths";
 
@@ -25,9 +25,11 @@ export default function LessonDetailSection({ lessonId }: LessonDetailSectionPro
   );
 
   useEffect(() => {
-    // Fetch lesson details
-    dispatch(getLessonById(lessonId));
-  }, [dispatch, lessonId]);
+    // Only fetch if lesson not already loaded or lessonId changed
+    if (!lesson || lesson.id !== lessonId) {
+      dispatch(getLessonByIdThunk(lessonId));
+    }
+  }, [dispatch, lessonId, lesson?.id]);
 
   const handleChallengeSelect = (challengeId: string) => {
     // Navigate to studio with challenge ID

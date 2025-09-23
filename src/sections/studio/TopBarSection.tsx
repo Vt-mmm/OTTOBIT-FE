@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -44,6 +44,9 @@ import { usePhaserContext } from "../../features/phaser/context/PhaserContext";
 import { useNotification } from "hooks/useNotification";
 import { forceCleanupBeforeExecute } from "../../theme/block/renderer-ottobit";
 import { useFieldInputManager } from "../../components/block/hooks/useFieldInputManager";
+import { useAppDispatch } from "../../redux/config";
+import { createSubmissionThunk } from "../../redux/submission/submissionThunks";
+import { BlocklyToPhaserConverter } from "../../features/phaser/services/blocklyToPhaserConverter";
 
 interface TopBarSectionProps {
   activeTab?: number;
@@ -90,9 +93,13 @@ function TopBarContent({
   const { isConnected } = useMicrobitContext();
   const { showNotification, NotificationComponent } = useNotification();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   
   // Field input manager for cleanup
   const { forceCleanupFields } = useFieldInputManager();
+  
+  // Track submission to prevent duplicates
+  const submissionInProgress = useRef(false);
 
   // Phaser context for running programs
   const {
@@ -102,7 +109,116 @@ function TopBarContent({
     stopProgram,
     restartScene,
     gameState,
+    currentChallengeId,
+    onMessage,
+    offMessage,
   } = usePhaserContext();
+
+  // Function to submit solution after completing challenge - memoized to prevent recreations
+  const submitSolution = useCallback(async (stars: number) => {
+    // Prevent duplicate submissions
+    if (submissionInProgress.current) {
+      console.warn("🚫 Submission already in progress, skipping duplicate");
+      return;
+    }
+    
+    if (!currentChallengeId || !workspace) {
+      console.warn("Cannot submit: missing challenge ID or workspace");
+      return;
+    }
+    
+    submissionInProgress.current = true;
+    
+    try {
+      console.log("🎆 Submitting solution:", {
+        challengeId: currentChallengeId,
+        stars,
+        hasWorkspace: !!workspace
+      });
+      
+      // Convert workspace to program using existing converter
+      const programData = BlocklyToPhaserConverter.convertWorkspace(workspace);
+      const codeJson = JSON.stringify(programData);
+      
+      console.log("📝 Generated code JSON:", {
+        programData,
+        codeJsonLength: codeJson.length
+      });
+      
+      // Submit to backend
+      const result = await dispatch(createSubmissionThunk({
+        challengeId: currentChallengeId,
+        codeJson,
+        star: stars
+      })).unwrap();
+      
+      console.log("✅ Submission successful:", result);
+      
+      showNotification(
+        `Chúc mừng! Bạn đã hoàn thành challenge với ${stars} sao! ⭐️`,
+        "success"
+      );
+      
+    } catch (error: any) {
+      console.error("❌ Submission failed:", error);
+      
+      showNotification(
+        `Hoàn thành challenge nhưng không thể lưu kết quả: ${error}`,
+        "warning"
+      );
+    } finally {
+      // Reset submission flag after completion
+      submissionInProgress.current = false;
+    }
+  }, [currentChallengeId, workspace, dispatch, showNotification]);
+
+  // Create stable victory handler - memoized to prevent useEffect re-runs
+  const handleVictory = useCallback((victoryData: any) => {
+    console.log("🎆 Victory event received:", victoryData);
+    
+    // Use stars calculation logic from VictoryModal (same as UI)
+    const score = victoryData.starScore ?? victoryData.score ?? 0;
+    console.log("🎯 Final score used for stars calculation:", score);
+    
+    // Use the same calculateStarsFromScore logic as VictoryModal
+    const calculateStarsFromScore = (score: number): number => {
+      const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
+      const stars = clamp(Math.ceil(score * 3), 1, 3);
+      
+      console.log("🌟 Stars Calculation - Input score:", score);
+      console.log("🌟 Formula: stars = clamp(ceil(score * 3), 1, 3)");
+      console.log(`🌟 Step: ${score} * 3 = ${score * 3}, ceil = ${Math.ceil(score * 3)}, clamp = ${stars}`);
+      console.log("🌟 Final stars:", stars);
+      
+      return stars;
+    };
+    
+    // Calculate stars exactly like VictoryModal does
+    const calculatedStars = victoryData.stars ?? calculateStarsFromScore(score);
+    
+    console.log("🏆 Final stars for submission:", {
+      providedStars: victoryData.stars,
+      calculatedStars,
+      finalStars: calculatedStars
+    });
+    
+    // Submit solution with calculated stars
+    submitSolution(calculatedStars);
+  }, [submitSolution]); // Only depend on memoized submitSolution
+
+  // Listen for victory events from Phaser - optimized effect with minimal dependencies
+  useEffect(() => {
+    console.log("🎵 Registering VICTORY listener");
+    
+    // Register victory listener
+    onMessage("VICTORY", handleVictory);
+    
+    // Cleanup listener on unmount or effect re-run
+    return () => {
+      console.log("🧹 Cleaning up VICTORY listener");
+      offMessage("VICTORY", handleVictory);
+    };
+  }, [onMessage, offMessage, handleVictory]); // Minimal dependencies
 
   const handleRun = async () => {
     console.log("🚀 [TopBar] Execute button clicked");

@@ -9,6 +9,9 @@ const ROOTS_LESSON = "/api/v1/lessons";
 const ROOTS_CHALLENGE = "/api/v1/challenges";
 const ROOTS_ENROLLMENT = "/api/v1/enrollments";
 const ROOTS_SUBMISSION = "/api/v1/submissions";
+const ROOTS_MAP = "/api/v1/maps";
+const ROOTS_CHALLENGE_PROCESS = "/api/v1/challenge-process";
+const ROOTS_LESSON_PROGRESS = "/api/v1/lesson-process";
 
 export const ROUTES_API_AUTH = {
   // Authentication endpoints
@@ -46,8 +49,10 @@ export const ROUTES_API_COURSE = {
 
 export const ROUTES_API_LESSON = {
   // Lesson endpoints
-  GET_ALL: ROOTS_LESSON, // GET /api/v1/lessons (with pagination)
+  GET_ALL: path(ROOTS_LESSON, `/admin`), // GET /api/v1/lessons/admin (for Admin)
   GET_BY_ID: (id: string) => path(ROOTS_LESSON, `/${id}`), // GET /api/v1/lessons/{id}
+  BY_COURSE: (courseId: string) => path(ROOTS_LESSON, `/by-course/${courseId}`), // GET /api/v1/lessons/by-course/{courseId}
+  PREVIEW: path(ROOTS_LESSON, `/preview`), // GET /api/v1/lessons/preview
   CREATE: ROOTS_LESSON, // POST /api/v1/lessons
   UPDATE: (id: string) => path(ROOTS_LESSON, `/${id}`), // PUT /api/v1/lessons/{id}
   DELETE: (id: string) => path(ROOTS_LESSON, `/${id}`), // DELETE /api/v1/lessons/{id}
@@ -55,18 +60,22 @@ export const ROUTES_API_LESSON = {
 };
 
 export const ROUTES_API_CHALLENGE = {
-  // Challenge endpoints
-  GET_ALL: ROOTS_CHALLENGE, // GET /api/v1/challenges (with pagination)
-  GET_BY_ID: (id: string) => path(ROOTS_CHALLENGE, `/${id}`), // GET /api/v1/challenges/{id}
+  // Challenge endpoints for users
+  GET_BY_ID: (id: string) => path(ROOTS_CHALLENGE, `/${id}`), // GET /api/v1/challenges/{id} (for users)
+  BY_LESSON: (lessonId: string) => path(ROOTS_CHALLENGE, `/lesson/${lessonId}`), // GET /api/v1/challenges/lesson/{lessonId} (for users)
+  
+  // Challenge endpoints for admin
+  ADMIN_GET_ALL: path(ROOTS_CHALLENGE, `/admin`), // GET /api/v1/challenges/admin
+  ADMIN_GET_BY_ID: (id: string) => path(ROOTS_CHALLENGE, `/admin/${id}`), // GET /api/v1/challenges/admin/{id}
   CREATE: ROOTS_CHALLENGE, // POST /api/v1/challenges
-  UPDATE: (id: string) => path(ROOTS_CHALLENGE, `/${id}`), // PUT /api/v1/challenges/{id}
-  DELETE: (id: string) => path(ROOTS_CHALLENGE, `/${id}`), // DELETE /api/v1/challenges/{id}
-  RESTORE: (id: string) => path(ROOTS_CHALLENGE, `/${id}/restore`), // POST /api/v1/challenges/{id}/restore
+  ADMIN_UPDATE: (id: string) => path(ROOTS_CHALLENGE, `/admin/${id}`), // PUT /api/v1/challenges/admin/{id}
+  ADMIN_DELETE: (id: string) => path(ROOTS_CHALLENGE, `/admin/${id}`), // DELETE /api/v1/challenges/admin/{id}
+  ADMIN_RESTORE: (id: string) => path(ROOTS_CHALLENGE, `/admin/${id}/restore`), // POST /api/v1/challenges/admin/{id}/restore
 };
 
 export const ROUTES_API_ENROLLMENT = {
   // Enrollment endpoints
-  GET_ALL: ROOTS_ENROLLMENT, // GET /api/v1/enrollments (with pagination)
+  GET_ALL: path(ROOTS_ENROLLMENT, `/admin`), // GET /api/v1/enrollments/admin (for Admin)
   GET_BY_ID: (id: string) => path(ROOTS_ENROLLMENT, `/${id}`), // GET /api/v1/enrollments/{id}
   CREATE: ROOTS_ENROLLMENT, // POST /api/v1/enrollments
   COMPLETE: (id: string) => path(ROOTS_ENROLLMENT, `/${id}/complete`), // POST /api/v1/enrollments/{id}/complete
@@ -82,4 +91,25 @@ export const ROUTES_API_SUBMISSION = {
   DELETE: (id: string) => path(ROOTS_SUBMISSION, `/${id}`), // DELETE /api/v1/submissions/{id}
   MY_SUBMISSIONS: path(ROOTS_SUBMISSION, `/my-submissions`), // GET /api/v1/submissions/my-submissions
   BY_CHALLENGE: (challengeId: string) => path(ROOTS_SUBMISSION, `/by-challenge/${challengeId}`), // GET /api/v1/submissions/by-challenge/{challengeId}
+};
+
+export const ROUTES_API_MAP = {
+  // Map endpoints
+  GET_ALL: ROOTS_MAP, // GET /api/v1/maps (with pagination)
+  GET_BY_ID: (id: string) => path(ROOTS_MAP, `/${id}`), // GET /api/v1/maps/{id}
+  CREATE: ROOTS_MAP, // POST /api/v1/maps
+  UPDATE: (id: string) => path(ROOTS_MAP, `/${id}`), // PUT /api/v1/maps/{id}
+  DELETE: (id: string) => path(ROOTS_MAP, `/${id}`), // DELETE /api/v1/maps/{id}
+  RESTORE: (id: string) => path(ROOTS_MAP, `/${id}/restore`), // POST /api/v1/maps/{id}/restore
+};
+
+export const ROUTES_API_CHALLENGE_PROCESS = {
+  // Challenge Process endpoints
+  MY_CHALLENGES: path(ROOTS_CHALLENGE_PROCESS, `/my-challenges`), // GET /api/v1/challenge-process/my-challenges
+};
+
+export const ROUTES_API_LESSON_PROGRESS = {
+  // Lesson Progress endpoints
+  START_LESSON: (lessonId: string) => path(ROOTS_LESSON_PROGRESS, `/start-lesson/${lessonId}`), // POST /api/v1/lesson-process/start-lesson/{lessonId}
+  MY_PROGRESS: path(ROOTS_LESSON_PROGRESS, `/my-progress`), // GET /api/v1/lesson-process/my-progress
 };

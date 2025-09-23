@@ -1,13 +1,16 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { LessonResult, LessonsResponse } from "common/@types/lesson";
+import { LessonResult, LessonsResponse, LessonsPreviewResponse, LessonProgressResponse } from "common/@types/lesson";
 import {
   getLessonsThunk,
   getLessonByIdThunk,
   getLessonsByCourseThunk,
+  getLessonsPreviewThunk,
   createLessonThunk,
   updateLessonThunk,
   deleteLessonThunk,
   restoreLessonThunk,
+  getLessonProgressThunk,
+  startLessonThunk,
 } from "./lessonThunks";
 
 interface LessonState {
@@ -25,11 +28,25 @@ interface LessonState {
     error: string | null;
     courseId: string | null;
   };
+  // Lesson preview (for non-enrolled users)
+  lessonsPreview: {
+    data: LessonsPreviewResponse | null;
+    isLoading: boolean;
+    error: string | null;
+    courseId: string | null;
+  };
   // Current lesson
   currentLesson: {
     data: LessonResult | null;
     isLoading: boolean;
     error: string | null;
+  };
+  // Lesson progress (for enrolled users)
+  lessonProgress: {
+    data: LessonProgressResponse | null;
+    isLoading: boolean;
+    error: string | null;
+    courseId: string | null;
   };
   // Operations state
   operations: {
@@ -37,10 +54,12 @@ interface LessonState {
     isUpdating: boolean;
     isDeleting: boolean;
     isRestoring: boolean;
+    isStarting: boolean;
     createError: string | null;
     updateError: string | null;
     deleteError: string | null;
     restoreError: string | null;
+    startError: string | null;
   };
 }
 
@@ -57,20 +76,34 @@ const initialState: LessonState = {
     error: null,
     courseId: null,
   },
+  lessonsPreview: {
+    data: null,
+    isLoading: false,
+    error: null,
+    courseId: null,
+  },
   currentLesson: {
     data: null,
     isLoading: false,
     error: null,
+  },
+  lessonProgress: {
+    data: null,
+    isLoading: false,
+    error: null,
+    courseId: null,
   },
   operations: {
     isCreating: false,
     isUpdating: false,
     isDeleting: false,
     isRestoring: false,
+    isStarting: false,
     createError: null,
     updateError: null,
     deleteError: null,
     restoreError: null,
+    startError: null,
   },
 };
 
@@ -92,6 +125,20 @@ const lessonSlice = createSlice({
       state.courseLessons.courseId = null;
     },
 
+    // Clear lesson preview
+    clearLessonsPreview: (state) => {
+      state.lessonsPreview.data = null;
+      state.lessonsPreview.error = null;
+      state.lessonsPreview.courseId = null;
+    },
+
+    // Clear lesson progress
+    clearLessonProgress: (state) => {
+      state.lessonProgress.data = null;
+      state.lessonProgress.error = null;
+      state.lessonProgress.courseId = null;
+    },
+
     // Clear current lesson
     clearCurrentLesson: (state) => {
       state.currentLesson.data = null;
@@ -108,11 +155,14 @@ const lessonSlice = createSlice({
     clearLessonErrors: (state) => {
       state.lessons.error = null;
       state.courseLessons.error = null;
+      state.lessonsPreview.error = null;
       state.currentLesson.error = null;
+      state.lessonProgress.error = null;
       state.operations.createError = null;
       state.operations.updateError = null;
       state.operations.deleteError = null;
       state.operations.restoreError = null;
+      state.operations.startError = null;
     },
 
     // Reset entire state
@@ -207,6 +257,22 @@ const lessonSlice = createSlice({
       .addCase(getLessonsByCourseThunk.rejected, (state, action) => {
         state.courseLessons.isLoading = false;
         state.courseLessons.error = action.payload || "Failed to fetch course lessons";
+      })
+
+      // Get lessons preview
+      .addCase(getLessonsPreviewThunk.pending, (state, action) => {
+        state.lessonsPreview.isLoading = true;
+        state.lessonsPreview.error = null;
+        state.lessonsPreview.courseId = action.meta.arg.courseId || null;
+      })
+      .addCase(getLessonsPreviewThunk.fulfilled, (state, action) => {
+        state.lessonsPreview.isLoading = false;
+        state.lessonsPreview.error = null;
+        state.lessonsPreview.data = action.payload;
+      })
+      .addCase(getLessonsPreviewThunk.rejected, (state, action) => {
+        state.lessonsPreview.isLoading = false;
+        state.lessonsPreview.error = action.payload || "Failed to fetch lesson preview";
       })
 
       // Create lesson
@@ -352,6 +418,50 @@ const lessonSlice = createSlice({
       .addCase(restoreLessonThunk.rejected, (state, action) => {
         state.operations.isRestoring = false;
         state.operations.restoreError = action.payload || "Failed to restore lesson";
+      })
+
+      // Get lesson progress
+      .addCase(getLessonProgressThunk.pending, (state, action) => {
+        state.lessonProgress.isLoading = true;
+        state.lessonProgress.error = null;
+        state.lessonProgress.courseId = action.meta.arg.courseId || null;
+      })
+      .addCase(getLessonProgressThunk.fulfilled, (state, action) => {
+        state.lessonProgress.isLoading = false;
+        state.lessonProgress.error = null;
+        state.lessonProgress.data = action.payload;
+      })
+      .addCase(getLessonProgressThunk.rejected, (state, action) => {
+        state.lessonProgress.isLoading = false;
+        state.lessonProgress.error = action.payload || "Failed to fetch lesson progress";
+      })
+
+      // Start lesson
+      .addCase(startLessonThunk.pending, (state) => {
+        state.operations.isStarting = true;
+        state.operations.startError = null;
+      })
+      .addCase(startLessonThunk.fulfilled, (state, action) => {
+        state.operations.isStarting = false;
+        state.operations.startError = null;
+        
+        // Update lesson progress data if it exists
+        if (state.lessonProgress.data?.items) {
+          const existingIndex = state.lessonProgress.data.items.findIndex(
+            (progress) => progress.lessonId === action.payload.lessonId
+          );
+          
+          if (existingIndex !== -1) {
+            state.lessonProgress.data.items[existingIndex] = action.payload;
+          } else {
+            state.lessonProgress.data.items.unshift(action.payload);
+            state.lessonProgress.data.total += 1;
+          }
+        }
+      })
+      .addCase(startLessonThunk.rejected, (state, action) => {
+        state.operations.isStarting = false;
+        state.operations.startError = action.payload || "Failed to start lesson";
       });
   },
 });
@@ -359,6 +469,8 @@ const lessonSlice = createSlice({
 export const {
   clearLessons,
   clearCourseLessons,
+  clearLessonsPreview,
+  clearLessonProgress,
   clearCurrentLesson,
   setCurrentLesson,
   clearLessonErrors,
@@ -371,6 +483,9 @@ export {
   getLessonsThunk as getLessons,
   getLessonByIdThunk as getLessonById,
   getLessonsByCourseThunk as getLessonsByCourse,
+  getLessonsPreviewThunk as getLessonsPreview,
+  getLessonProgressThunk as getLessonProgress,
+  startLessonThunk as startLesson,
   createLessonThunk as createLesson,
   updateLessonThunk as updateLesson,
   deleteLessonThunk as deleteLesson,

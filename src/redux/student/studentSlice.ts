@@ -169,12 +169,12 @@ const studentSlice = createSlice({
           state.currentStudent.data = action.payload;
         }
         // Update in students list if exists
-        if (state.students.data?.data) {
-          const index = state.students.data.data.findIndex(
+        if (state.students.data?.items) {
+          const index = state.students.data.items.findIndex(
             (student) => student.id === action.payload.id
           );
           if (index !== -1) {
-            state.students.data.data[index] = action.payload;
+            state.students.data.items[index] = action.payload;
           }
         }
       })

@@ -14,10 +14,12 @@ import {
   CircularProgress,
   Container,
 } from "@mui/material";
-import { ChallengeResult } from "../../../common/@types/challenge";
+import { ChallengeResult, ChallengeProcessResult } from "../../../common/@types/challenge";
+import { isChallengeAccessible, getChallengeProgress } from "../../../utils/challengeUtils";
 
 interface LessonTabletSectionProps {
   challenges: ChallengeResult[];
+  challengeProcesses?: ChallengeProcessResult[];
   challengesLoading: boolean;
   challengesError: string | null;
   onChallengeSelect: (challengeId: string) => void;
@@ -26,6 +28,7 @@ interface LessonTabletSectionProps {
 
 const LessonTabletSection: React.FC<LessonTabletSectionProps> = ({
   challenges,
+  challengeProcesses = [],
   challengesLoading,
   challengesError,
   onChallengeSelect,
@@ -461,7 +464,11 @@ const LessonTabletSection: React.FC<LessonTabletSectionProps> = ({
                         },
                       }}
                     >
-                      {challenges.map((challenge) => (
+                      {challenges.map((challenge) => {
+                        const isAccessible = isChallengeAccessible(challenge, challengeProcesses);
+                        const progress = getChallengeProgress(challenge.id, challengeProcesses);
+                        
+                        return (
                         <Grid
                           item
                           xs={12}
@@ -480,18 +487,24 @@ const LessonTabletSection: React.FC<LessonTabletSectionProps> = ({
                               position: "relative",
                               borderRadius: "16px",
                               overflow: "hidden",
-                              cursor: "pointer",
+                              cursor: isAccessible ? "pointer" : "not-allowed",
                               transition:
                                 "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                              background:
-                                "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                              boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
-                              "&:hover": {
+                              background: isAccessible
+                                ? progress.isCompleted
+                                  ? "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)" // Green for completed
+                                  : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" // Blue for accessible
+                                : "linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)", // Gray for locked
+                              boxShadow: isAccessible 
+                                ? "0 8px 24px rgba(0,0,0,0.15)"
+                                : "0 4px 12px rgba(0,0,0,0.1)",
+                              opacity: isAccessible ? 1 : 0.6,
+                              "&:hover": isAccessible ? {
                                 transform: "translateY(-6px) scale(1.02)",
                                 boxShadow: "0 12px 32px rgba(0,0,0,0.25)",
-                              },
+                              } : {},
                             }}
-                            onClick={() => onChallengeSelect(challenge.id)}
+                            onClick={() => isAccessible && onChallengeSelect(challenge.id)}
                           >
                             {/* Challenge Thumbnail */}
                             <Box
@@ -509,35 +522,65 @@ const LessonTabletSection: React.FC<LessonTabletSectionProps> = ({
                                 p: 1.5,
                               }}
                             >
-                              {/* Traffic light dots */}
-                              <Box sx={{ display: "flex", gap: 0.5 }}>
-                                <Box
-                                  sx={{
-                                    width: 10,
-                                    height: 10,
-                                    borderRadius: "50%",
-                                    bgcolor: "#ff5f57",
-                                    border: "1px solid rgba(0,0,0,0.2)",
-                                  }}
-                                />
-                                <Box
-                                  sx={{
-                                    width: 10,
-                                    height: 10,
-                                    borderRadius: "50%",
-                                    bgcolor: "#ffbd2e",
-                                    border: "1px solid rgba(0,0,0,0.2)",
-                                  }}
-                                />
-                                <Box
-                                  sx={{
-                                    width: 10,
-                                    height: 10,
-                                    borderRadius: "50%",
-                                    bgcolor: "#28ca42",
-                                    border: "1px solid rgba(0,0,0,0.2)",
-                                  }}
-                                />
+                              {/* Status and Stars */}
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                {/* Progress Status */}
+                                {progress.isCompleted ? (
+                                  <Chip
+                                    label="✓ Hoàn thành"
+                                    size="small"
+                                    sx={{
+                                      bgcolor: "rgba(255,255,255,0.9)",
+                                      color: "#16a34a",
+                                      fontWeight: 600,
+                                      fontSize: "0.7rem"
+                                    }}
+                                  />
+                                ) : !isAccessible ? (
+                                  <Chip
+                                    label="🔒 Bị khóa"
+                                    size="small"
+                                    sx={{
+                                      bgcolor: "rgba(255,255,255,0.9)",
+                                      color: "#6b7280",
+                                      fontWeight: 600,
+                                      fontSize: "0.7rem"
+                                    }}
+                                  />
+                                ) : (
+                                  <Chip
+                                    label="📖 Sẵn sàng"
+                                    size="small"
+                                    sx={{
+                                      bgcolor: "rgba(255,255,255,0.9)",
+                                      color: "#667eea",
+                                      fontWeight: 600,
+                                      fontSize: "0.7rem"
+                                    }}
+                                  />
+                                )}
+                                
+                                {/* Star Rating */}
+                                {progress.stars > 0 && (
+                                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
+                                    {[1, 2, 3].map((star) => (
+                                      <Box
+                                        key={star}
+                                        sx={{
+                                          width: 12,
+                                          height: 12,
+                                          color: star <= progress.stars ? "#fbbf24" : "rgba(255,255,255,0.4)",
+                                          fontSize: "12px",
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "center"
+                                        }}
+                                      >
+                                        ⭐
+                                      </Box>
+                                    ))}
+                                  </Box>
+                                )}
                               </Box>
                             </Box>
 
@@ -597,45 +640,76 @@ const LessonTabletSection: React.FC<LessonTabletSectionProps> = ({
                                   sx={{ fontSize: "0.75rem" }}
                                 />
                                 <Chip
-                                  label="Robot Challenge"
+                                  label={`Độ khó: ${challenge.difficulty}/5`}
                                   size="small"
                                   variant="outlined"
-                                  color="secondary"
+                                  color="primary"
                                   sx={{ fontSize: "0.75rem" }}
                                 />
+                                {progress.isCompleted && (
+                                  <Chip
+                                    label={`${progress.stars}/3 ⭐`}
+                                    size="small"
+                                    variant="filled"
+                                    sx={{
+                                      bgcolor: "#fbbf24",
+                                      color: "white",
+                                      fontSize: "0.75rem",
+                                      fontWeight: 600
+                                    }}
+                                  />
+                                )}
                               </Box>
 
                               <Box sx={{ mt: "auto" }}>
                                 <Button
                                   fullWidth
                                   variant="contained"
+                                  disabled={!isAccessible}
                                   sx={{
                                     py: 1,
-                                    background:
-                                      "linear-gradient(45deg, #86efac 0%, #22c55e 100%)",
+                                    background: !isAccessible
+                                      ? "#9ca3af" // Gray for locked
+                                      : progress.isCompleted
+                                        ? "linear-gradient(45deg, #f97316 0%, #ea580c 100%)" // Orange for replay
+                                        : "linear-gradient(45deg, #86efac 0%, #22c55e 100%)", // Green for start
                                     color: "white",
                                     fontSize: "0.9rem",
                                     fontWeight: 600,
                                     textTransform: "none",
                                     borderRadius: "8px",
-                                    boxShadow:
-                                      "0 2px 8px rgba(34, 197, 94, 0.25)",
-                                    "&:hover": {
-                                      background:
-                                        "linear-gradient(45deg, #22c55e 0%, #86efac 100%)",
+                                    boxShadow: !isAccessible
+                                      ? "0 2px 8px rgba(156, 163, 175, 0.25)"
+                                      : progress.isCompleted
+                                        ? "0 2px 8px rgba(249, 115, 22, 0.25)"
+                                        : "0 2px 8px rgba(34, 197, 94, 0.25)",
+                                    "&:hover": !isAccessible ? {} : {
+                                      background: progress.isCompleted
+                                        ? "linear-gradient(45deg, #ea580c 0%, #f97316 100%)"
+                                        : "linear-gradient(45deg, #22c55e 0%, #86efac 100%)",
                                       transform: "translateY(-1px)",
-                                      boxShadow:
-                                        "0 4px 12px rgba(34, 197, 94, 0.35)",
+                                      boxShadow: progress.isCompleted
+                                        ? "0 4px 12px rgba(249, 115, 22, 0.35)"
+                                        : "0 4px 12px rgba(34, 197, 94, 0.35)",
+                                    },
+                                    "&:disabled": {
+                                      color: "rgba(255, 255, 255, 0.7)",
+                                      cursor: "not-allowed",
                                     },
                                   }}
                                 >
-                                  Bắt đầu học
+                                  {!isAccessible
+                                    ? "🔒 Chưa mở khóa"
+                                    : progress.isCompleted
+                                      ? "🔄 Chơi lại"
+                                      : "🚀 Bắt đầu"}
                                 </Button>
                               </Box>
                             </Box>
                           </Box>
                         </Grid>
-                      ))}
+                        );
+                      })}
                     </Grid>
                   </>
                 ) : (

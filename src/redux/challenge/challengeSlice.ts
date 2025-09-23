@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ChallengeResult, ChallengesResponse } from "common/@types/challenge";
+import { ChallengeResult, ChallengesResponse, ChallengeProcessesResponse } from "common/@types/challenge";
 import {
   getChallengesThunk,
   getChallengeByIdThunk,
@@ -8,6 +8,7 @@ import {
   updateChallengeThunk,
   deleteChallengeThunk,
   restoreChallengeThunk,
+  getChallengeProcessesThunk,
 } from "./challengeThunks";
 
 interface ChallengeState {
@@ -37,6 +38,13 @@ interface ChallengeState {
     updateError: string | null;
     deleteError: string | null;
     restoreError: string | null;
+  };
+  challengeProcesses: {
+    data: ChallengeProcessesResponse | null;
+    isLoading: boolean;
+    error: string | null;
+    lessonId: string | null;
+    courseId: string | null;
   };
   solving: {
     isActive: boolean;
@@ -74,6 +82,13 @@ const initialState: ChallengeState = {
     deleteError: null,
     restoreError: null,
   },
+  challengeProcesses: {
+    data: null,
+    isLoading: false,
+    error: null,
+    lessonId: null,
+    courseId: null,
+  },
   solving: {
     isActive: false,
     timeStarted: null,
@@ -90,6 +105,13 @@ const challengeSlice = createSlice({
       state.challenges.data = null;
       state.challenges.error = null;
       state.challenges.lastQuery = null;
+    },
+
+    clearChallengeProcesses: (state) => {
+      state.challengeProcesses.data = null;
+      state.challengeProcesses.error = null;
+      state.challengeProcesses.lessonId = null;
+      state.challengeProcesses.courseId = null;
     },
 
     setCurrentChallenge: (state, action: PayloadAction<ChallengeResult>) => {
@@ -118,6 +140,7 @@ const challengeSlice = createSlice({
       state.challenges.error = null;
       state.lessonChallenges.error = null;
       state.currentChallenge.error = null;
+      state.challengeProcesses.error = null;
       state.operations.createError = null;
       state.operations.updateError = null;
       state.operations.deleteError = null;
@@ -264,12 +287,30 @@ const challengeSlice = createSlice({
       .addCase(restoreChallengeThunk.rejected, (state, action) => {
         state.operations.isRestoring = false;
         state.operations.restoreError = action.payload || "Failed to restore challenge";
+      })
+
+      // Challenge Processes
+      .addCase(getChallengeProcessesThunk.pending, (state, action) => {
+        state.challengeProcesses.isLoading = true;
+        state.challengeProcesses.error = null;
+        state.challengeProcesses.lessonId = action.meta.arg.lessonId || null;
+        state.challengeProcesses.courseId = action.meta.arg.courseId || null;
+      })
+      .addCase(getChallengeProcessesThunk.fulfilled, (state, action) => {
+        state.challengeProcesses.isLoading = false;
+        state.challengeProcesses.error = null;
+        state.challengeProcesses.data = action.payload;
+      })
+      .addCase(getChallengeProcessesThunk.rejected, (state, action) => {
+        state.challengeProcesses.isLoading = false;
+        state.challengeProcesses.error = action.payload || "Failed to fetch challenge processes";
       });
   },
 });
 
 export const {
   clearChallenges,
+  clearChallengeProcesses,
   setCurrentChallenge,
   startSolving,
   stopSolving,
@@ -282,6 +323,7 @@ export {
   getChallengesThunk as getChallenges,
   getChallengeByIdThunk as getChallengeById,
   getChallengesByLessonThunk as getChallengesByLesson,
+  getChallengeProcessesThunk as getChallengeProcesses,
   createChallengeThunk as createChallenge,
   updateChallengeThunk as updateChallenge,
   deleteChallengeThunk as deleteChallenge,

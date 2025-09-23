@@ -49,7 +49,7 @@ export default function MapManagementPage() {
     (async () => {
       setLoading(true);
       try {
-        const res = await axiosClient.get(ROUTES_API_CHALLENGE.GET_ALL, {
+        const res = await axiosClient.get(ROUTES_API_CHALLENGE.ADMIN_GET_ALL, {
           params: { pageNumber: 1, pageSize: 50, IncludeDeleted: true },
         });
         const items: ChallengeItem[] = res?.data?.data?.items || [];
@@ -97,7 +97,7 @@ export default function MapManagementPage() {
     setDeleting(true);
     try {
       const res = await axiosClient.delete(
-        ROUTES_API_CHALLENGE.DELETE(selectedMap.id)
+        ROUTES_API_CHALLENGE.ADMIN_DELETE(selectedMap.id)
       );
       const ok = res && (res.status === 200 || res.status === 204);
       if (ok) {

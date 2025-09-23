@@ -52,9 +52,9 @@ export interface GetSubmissionsByChallengeRequest {
 export interface SubmissionResult extends Submission {}
 
 export interface SubmissionsResponse {
-  data: SubmissionResult[];
-  pageNumber: number;
-  pageSize: number;
-  totalCount: number;
-  totalPages: number;
+  items: SubmissionResult[];  // ✅ Changed from 'data' to match BE format
+  page: number;              // ✅ Changed from 'pageNumber' to match BE format
+  size: number;              // ✅ Changed from 'pageSize' to match BE format
+  total: number;             // ✅ Changed from 'totalCount' to match BE format
+  totalPages: number;        // ✅ Remains the same
 }

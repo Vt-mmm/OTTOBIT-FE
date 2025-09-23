@@ -1021,7 +1021,7 @@ const MapDesignerPage = () => {
                   solutionJson: solutionJson,
                 } as any;
                 const res = await axiosClient.put(
-                  ROUTES_API_CHALLENGE.UPDATE(editingId as string),
+                  ROUTES_API_CHALLENGE.ADMIN_UPDATE(editingId as string),
                   updateBody
                 );
                 const ok = res && (res.status === 200 || res.status === 201);

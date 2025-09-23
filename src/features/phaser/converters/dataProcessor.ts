@@ -5,7 +5,6 @@
 
 import { ChallengeResult } from "../../../common/@types/challenge";
 import { PhaserMessage } from "../types/phaser";
-import { getSafeMapData } from "./jsonConverter";
 import { convertChallengeToJson, validateChallengeJson, logChallengeJson } from "./challengeConverter";
 import { formatDataForPhaser } from "./dataFormatter";
 
@@ -30,14 +29,16 @@ export function processBackendDataForPhaser(
   // Process backend data for Phaser
 
   try {
-    // 1. Process Map JSON
-    if (challengeData.mapJson) {
-      mapJson = getSafeMapData(challengeData.mapJson);
+    // 1. Process Map JSON - Challenge now has mapId instead of mapJson
+    if (challengeData.mapId) {
+      // TODO: Implement map loading by mapId from Map service
+      // For now, use challengeJson as mapJson fallback
+      mapJson = challengeData.challengeJson ? JSON.parse(challengeData.challengeJson) : null;
       if (!mapJson) {
-        errors.push('Failed to parse map JSON');
+        errors.push('Failed to process map data from mapId');
       }
     } else {
-      errors.push('No map JSON provided');
+      errors.push('No mapId provided in challenge');
     }
 
     // 2. Process Challenge JSON

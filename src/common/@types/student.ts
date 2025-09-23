@@ -3,6 +3,7 @@ export interface Student {
   id: string;
   userId: string;
   fullname: string;
+  email: string;
   dateOfBirth: string; // ISO date string
   createdAt: string;
   updatedAt: string;
@@ -33,9 +34,9 @@ export interface GetStudentsRequest {
 export interface StudentResult extends Student {}
 
 export interface StudentsResponse {
-  data: StudentResult[];
-  pageNumber: number;
-  pageSize: number;
-  totalCount: number;
+  items: StudentResult[];  // Backend trả về 'items' thay vì 'data'
+  page: number;            // Backend trả về 'page' thay vì 'pageNumber'
+  size: number;            // Backend trả về 'size' thay vì 'pageSize'
+  total: number;           // Backend trả về 'total' thay vì 'totalCount'
   totalPages: number;
 }
