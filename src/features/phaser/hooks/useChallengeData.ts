@@ -140,11 +140,13 @@ export function useChallengeData() {
   );
 
   const getMapJsonFromChallenge = useCallback(
-    (challengeId: string): any | null => {
-      const challenge = findChallengeById(challengeId);
+    (challengeId: string, challengeData?: ChallengeResult): any | null => {
+      // ✅ Use provided challengeData first (fresh from API), then fallback to Redux store
+      const challenge = challengeData || findChallengeById(challengeId);
       
       console.log('🗺️ getMapJsonFromChallenge debug:', {
         challengeId,
+        hasProvidedData: !!challengeData,
         hasChallenge: !!challenge,
         challengeKeys: challenge ? Object.keys(challenge) : [],
         hasMapJson: !!(challenge as any)?.mapJson,
@@ -153,6 +155,7 @@ export function useChallengeData() {
       });
       
       if (!challenge) {
+        console.log('❌ No challenge data available from either source');
         return null;
       }
 
@@ -201,8 +204,9 @@ export function useChallengeData() {
   );
 
   const getAllJsonsFromChallenge = useCallback(
-    (challengeId: string) => {
-      const challenge = findChallengeById(challengeId);
+    (challengeId: string, challengeData?: ChallengeResult) => {
+      // ✅ Use provided challengeData first, then fallback to Redux store
+      const challenge = challengeData || findChallengeById(challengeId);
       if (!challenge) return null;
 
       return parseAllChallengeJsons({
@@ -242,22 +246,40 @@ export function useChallengeData() {
         console.log('💲 Fetching challenge by ID for complete data:', challengeId);
         const result = await fetchChallengeById(challengeId);
         
+        console.log('🔍 fetchChallengeById result debug:', {
+          resultType: result.type,
+          hasPayload: !!result.payload,
+          payloadKeys: result.payload ? Object.keys(result.payload) : []
+        });
+        
         if (result.type === "challenge/getById/fulfilled") {
           const challengeData = result.payload as ChallengeResult;
+          
+          console.log('✅ Challenge fetched successfully, setting current challenge:', {
+            challengeId: challengeData.id,
+            hasMapJson: !!challengeData.mapJson,
+            hasChallengeJson: !!challengeData.challengeJson
+          });
+          
+          // ✅ CRITICAL FIX: Set current challenge data immediately
           setCurrentChallengeData(challengeData);
           
-          // Wait a bit for Redux state to update
-          await new Promise(resolve => setTimeout(resolve, 50));
+          // Wait longer for Redux state to properly update
+          await new Promise(resolve => setTimeout(resolve, 200));
           
-          // Verify that the challenge is now findable
+          // Verify that the challenge is now findable in Redux store
           const verifyChallenge = findChallengeById(challengeId);
-          if (!verifyChallenge) {
-            return challengeData;
-          }
+          console.log('🔍 Verification after Redux update:', {
+            challengeFound: !!verifyChallenge,
+            currentChallengeInStore: verifyChallenge?.id === challengeId
+          });
           
+          // Return the challenge data regardless of verification
+          // because we have the fresh data from API
           return challengeData;
         }
         
+        console.error('❌ fetchChallengeById failed or was rejected:', result);
         return null;
       } catch (error) {
         return null;

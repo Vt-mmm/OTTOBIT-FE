@@ -43,8 +43,8 @@ export function useChallengeMapLoader(
         setMapLoadError(null);
 
         // Use provided mapJson or get from challenge
-        // Get map data from challenge if not provided
-        const mapData = mapJson || getMapJsonFromChallenge(challengeId);
+        // Get map data from challenge if not provided (pass challengeData if available)
+        const mapData = mapJson || getMapJsonFromChallenge(challengeId, challengeData);
         
         // 🔍 Debug: Log map data retrieval
         console.log('🗺 Map data retrieval debug:', {
@@ -213,14 +213,19 @@ export function useChallengeMapLoader(
           throw new Error(`Challenge ${challengeId} not found`);
         }
 
-        // Get parsed map JSON using safe parsing - use challengeData directly
-        let mapJson = getMapJsonFromChallenge(challengeId);
+        // ✅ CRITICAL FIX: Pass challengeData to getMapJsonFromChallenge
+        // This ensures we use fresh data from API even if Redux store isn't updated yet
+        let mapJson = getMapJsonFromChallenge(challengeId, challengeData);
         
         if (!mapJson && challengeData.mapId) {
           // TODO: Implement map loading by mapId from Map service
           // For now, use challengeJson as mapJson fallback
           if (challengeData.challengeJson) {
-            mapJson = JSON.parse(challengeData.challengeJson);
+            try {
+              mapJson = JSON.parse(challengeData.challengeJson);
+            } catch (error) {
+              console.error('❌ Failed to parse challengeJson as fallback mapJson:', error);
+            }
           }
         }
           
