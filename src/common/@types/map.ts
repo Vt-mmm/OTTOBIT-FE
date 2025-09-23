@@ -1,0 +1,65 @@
+// Map entity interfaces based on BE models
+export interface Map {
+  id: string;
+  title: string;
+  mapJson: string; // JSON string for map configuration
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+  challengesCount?: number; // Number of challenges using this map
+  coursesCount?: number; // Number of courses this map is assigned to
+}
+
+// Request types
+export interface CreateMapRequest {
+  title: string;
+  mapJson: string;
+  description?: string;
+}
+
+export interface UpdateMapRequest {
+  title: string;
+  mapJson: string;
+  description?: string;
+}
+
+export interface GetMapsRequest {
+  searchTerm?: string;
+  sortBy?: MapSortBy;
+  sortDirection?: SortDirection;
+  includeDeleted?: boolean;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
+// Enums for sorting
+export enum MapSortBy {
+  Title = "Title",
+  CreatedAt = "CreatedAt",
+  UpdatedAt = "UpdatedAt",
+  ChallengesCount = "ChallengesCount",
+  CoursesCount = "CoursesCount",
+}
+
+export enum SortDirection {
+  Ascending = "Ascending",
+  Descending = "Descending",
+}
+
+// Hook parameter types
+export interface GetMapsParams extends GetMapsRequest {}
+
+export interface CreateMapData extends CreateMapRequest {}
+
+export interface UpdateMapData extends UpdateMapRequest {}
+
+// Response types
+export interface MapResult extends Map {}
+
+export interface MapsResponse {
+  items: MapResult[];   // Backend returns 'items'
+  page: number;         // Backend returns 'page'
+  size: number;         // Backend returns 'size'
+  total: number;        // Backend returns 'total'
+  totalPages: number;   // Backend returns 'totalPages'
+}

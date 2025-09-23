@@ -187,24 +187,24 @@ const submissionSlice = createSlice({
       }
 
       // Update in my submissions
-      if (state.mySubmissions.data?.data) {
-        const submission = state.mySubmissions.data.data.find(s => s.id === id);
+      if (state.mySubmissions.data?.items) {
+        const submission = state.mySubmissions.data.items.find(s => s.id === id);
         if (submission) {
           submission.star = star;
         }
       }
 
       // Update in all submissions
-      if (state.submissions.data?.data) {
-        const submission = state.submissions.data.data.find(s => s.id === id);
+      if (state.submissions.data?.items) {
+        const submission = state.submissions.data.items.find(s => s.id === id);
         if (submission) {
           submission.star = star;
         }
       }
 
       // Update in challenge submissions
-      if (state.challengeSubmissions.data?.data) {
-        const submission = state.challengeSubmissions.data.data.find(s => s.id === id);
+      if (state.challengeSubmissions.data?.items) {
+        const submission = state.challengeSubmissions.data.items.find(s => s.id === id);
         if (submission) {
           submission.star = star;
         }
@@ -298,15 +298,15 @@ const submissionSlice = createSlice({
         }
 
         // Add to my submissions if exists
-        if (state.mySubmissions.data?.data) {
-          state.mySubmissions.data.data.unshift(action.payload);
-          state.mySubmissions.data.totalCount += 1;
+        if (state.mySubmissions.data?.items) {
+          state.mySubmissions.data.items.unshift(action.payload);
+          state.mySubmissions.data.total += 1;
         }
 
         // Add to challenge submissions if same challenge
-        if (state.challengeSubmissions.challengeId === action.payload.challengeId && state.challengeSubmissions.data?.data) {
-          state.challengeSubmissions.data.data.unshift(action.payload);
-          state.challengeSubmissions.data.totalCount += 1;
+        if (state.challengeSubmissions.challengeId === action.payload.challengeId && state.challengeSubmissions.data?.items) {
+          state.challengeSubmissions.data.items.unshift(action.payload);
+          state.challengeSubmissions.data.total += 1;
         }
       })
       .addCase(createSubmissionThunk.rejected, (state, action) => {
@@ -329,32 +329,32 @@ const submissionSlice = createSlice({
         }
 
         // Update in my submissions
-        if (state.mySubmissions.data?.data) {
-          const index = state.mySubmissions.data.data.findIndex(
+        if (state.mySubmissions.data?.items) {
+          const index = state.mySubmissions.data.items.findIndex(
             (submission) => submission.id === action.payload.id
           );
           if (index !== -1) {
-            state.mySubmissions.data.data[index] = action.payload;
+            state.mySubmissions.data.items[index] = action.payload;
           }
         }
 
         // Update in all submissions
-        if (state.submissions.data?.data) {
-          const index = state.submissions.data.data.findIndex(
+        if (state.submissions.data?.items) {
+          const index = state.submissions.data.items.findIndex(
             (submission) => submission.id === action.payload.id
           );
           if (index !== -1) {
-            state.submissions.data.data[index] = action.payload;
+            state.submissions.data.items[index] = action.payload;
           }
         }
 
         // Update in challenge submissions
-        if (state.challengeSubmissions.data?.data) {
-          const index = state.challengeSubmissions.data.data.findIndex(
+        if (state.challengeSubmissions.data?.items) {
+          const index = state.challengeSubmissions.data.items.findIndex(
             (submission) => submission.id === action.payload.id
           );
           if (index !== -1) {
-            state.challengeSubmissions.data.data[index] = action.payload;
+            state.challengeSubmissions.data.items[index] = action.payload;
           }
         }
       })
@@ -380,35 +380,35 @@ const submissionSlice = createSlice({
         }
 
         // Remove from my submissions
-        if (state.mySubmissions.data?.data) {
-          const index = state.mySubmissions.data.data.findIndex(
+        if (state.mySubmissions.data?.items) {
+          const index = state.mySubmissions.data.items.findIndex(
             (submission) => submission.id === submissionId
           );
           if (index !== -1) {
-            state.mySubmissions.data.data.splice(index, 1);
-            state.mySubmissions.data.totalCount -= 1;
+            state.mySubmissions.data.items.splice(index, 1);
+            state.mySubmissions.data.total -= 1;
           }
         }
 
         // Remove from all submissions
-        if (state.submissions.data?.data) {
-          const index = state.submissions.data.data.findIndex(
+        if (state.submissions.data?.items) {
+          const index = state.submissions.data.items.findIndex(
             (submission) => submission.id === submissionId
           );
           if (index !== -1) {
-            state.submissions.data.data.splice(index, 1);
-            state.submissions.data.totalCount -= 1;
+            state.submissions.data.items.splice(index, 1);
+            state.submissions.data.total -= 1;
           }
         }
 
         // Remove from challenge submissions
-        if (state.challengeSubmissions.data?.data) {
-          const index = state.challengeSubmissions.data.data.findIndex(
+        if (state.challengeSubmissions.data?.items) {
+          const index = state.challengeSubmissions.data.items.findIndex(
             (submission) => submission.id === submissionId
           );
           if (index !== -1) {
-            state.challengeSubmissions.data.data.splice(index, 1);
-            state.challengeSubmissions.data.totalCount -= 1;
+            state.challengeSubmissions.data.items.splice(index, 1);
+            state.challengeSubmissions.data.total -= 1;
           }
         }
       })

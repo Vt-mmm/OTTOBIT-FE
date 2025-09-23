@@ -8,7 +8,6 @@ import { useChallengeData } from "./useChallengeData";
 import { ChallengeResult } from "../../../common/@types/challenge";
 import { PhaserMessage } from "../types/phaser";
 import {
-  getSafeMapData,
   convertChallengeToJson,
   validateChallengeJson,
   formatDataForPhaser
@@ -46,6 +45,15 @@ export function useChallengeMapLoader(
         // Use provided mapJson or get from challenge
         // Get map data from challenge if not provided
         const mapData = mapJson || getMapJsonFromChallenge(challengeId);
+        
+        // 🔍 Debug: Log map data retrieval
+        console.log('🗺 Map data retrieval debug:', {
+          challengeId,
+          hasProvidedMapJson: !!mapJson,
+          hasRetrievedMapData: !!mapData,
+          mapDataKeys: mapData ? Object.keys(mapData) : [],
+          mapDataSample: mapData ? JSON.stringify(mapData).substring(0, 300) : 'N/A'
+        });
         
         if (!mapData) {
           throw new Error(`No map data found for challenge ${challengeId}`);
@@ -135,6 +143,18 @@ export function useChallengeMapLoader(
           },
         };
         
+        // 🔍 Debug: Log message being sent to Phaser
+        console.log('🎮 Sending message to Phaser:', {
+          challengeId,
+          messageType: message.type,
+          hasMapJson: !!fixedMapJson,
+          mapJsonKeys: fixedMapJson ? Object.keys(fixedMapJson) : [],
+          mapJsonSample: fixedMapJson ? JSON.stringify(fixedMapJson).substring(0, 200) : 'N/A',
+          hasChallengeJson: !!fixedChallengeJson,
+          challengeJsonKeys: fixedChallengeJson ? Object.keys(fixedChallengeJson) : [],
+          fullMessage: message
+        });
+        
         try {
           await sendMessageFn(message);
           
@@ -178,6 +198,17 @@ export function useChallengeMapLoader(
         // Ensure challenge data is loaded
         const challengeData = await ensureChallengeLoaded(challengeId);
         
+        // 🔍 Debug: Log challenge data loading
+        console.log('🎯 Challenge data loading debug:', {
+          challengeId,
+          hasChallengeData: !!challengeData,
+          challengeDataKeys: challengeData ? Object.keys(challengeData) : [],
+          hasMapJson: !!(challengeData as any)?.mapJson,
+          hasChallengeJson: !!(challengeData as any)?.challengeJson,
+          mapJsonLength: (challengeData as any)?.mapJson?.length || 0,
+          challengeJsonLength: (challengeData as any)?.challengeJson?.length || 0
+        });
+        
         if (!challengeData) {
           throw new Error(`Challenge ${challengeId} not found`);
         }
@@ -185,8 +216,12 @@ export function useChallengeMapLoader(
         // Get parsed map JSON using safe parsing - use challengeData directly
         let mapJson = getMapJsonFromChallenge(challengeId);
         
-        if (!mapJson && challengeData.mapJson) {
-          mapJson = getSafeMapData(challengeData.mapJson);
+        if (!mapJson && challengeData.mapId) {
+          // TODO: Implement map loading by mapId from Map service
+          // For now, use challengeJson as mapJson fallback
+          if (challengeData.challengeJson) {
+            mapJson = JSON.parse(challengeData.challengeJson);
+          }
         }
           
         if (!mapJson) {

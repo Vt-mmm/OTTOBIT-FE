@@ -1,13 +1,15 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { axiosClient } from "axiosClient/axiosClient";
-import { ROUTES_API_CHALLENGE } from "constants/routesApiKeys";
+import { ROUTES_API_CHALLENGE, ROUTES_API_CHALLENGE_PROCESS } from "constants/routesApiKeys";
 import {
   ChallengeResult,
   ChallengesResponse,
   CreateChallengeRequest,
   UpdateChallengeRequest,
   GetChallengesRequest,
+  ChallengeProcessesResponse,
+  GetChallengeProcessesRequest,
 } from "common/@types/challenge";
 
 // API Response wrapper interface
@@ -47,7 +49,7 @@ async function callApiWithRetry<T>(
   throw lastError;
 }
 
-// Get challenges with pagination
+// Get challenges with pagination (admin only)
 export const getChallengesThunk = createAsyncThunk<
   ChallengesResponse,
   GetChallengesRequest,
@@ -56,7 +58,7 @@ export const getChallengesThunk = createAsyncThunk<
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.get<ApiResponse<ChallengesResponse>>(
-        ROUTES_API_CHALLENGE.GET_ALL,
+        ROUTES_API_CHALLENGE.ADMIN_GET_ALL,
         {
           params: request,
         }
@@ -123,7 +125,7 @@ export const getChallengeByIdThunk = createAsyncThunk<
   }
 });
 
-// Get challenges by lesson ID
+// Get challenges by lesson ID (for enrolled users)
 export const getChallengesByLessonThunk = createAsyncThunk<
   ChallengesResponse,
   { lessonId: string; pageNumber?: number; pageSize?: number },
@@ -132,10 +134,9 @@ export const getChallengesByLessonThunk = createAsyncThunk<
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.get<ApiResponse<ChallengesResponse>>(
-        ROUTES_API_CHALLENGE.GET_ALL,
+        ROUTES_API_CHALLENGE.BY_LESSON(lessonId),
         {
           params: {
-            lessonId,
             pageNumber,
             pageSize,
           },
@@ -160,7 +161,7 @@ export const getChallengesByLessonThunk = createAsyncThunk<
   }
 });
 
-// Get challenges by course ID
+// Get challenges by course ID (admin only)
 export const getChallengesByCourseThunk = createAsyncThunk<
   ChallengesResponse,
   { courseId: string; pageNumber?: number; pageSize?: number },
@@ -169,7 +170,7 @@ export const getChallengesByCourseThunk = createAsyncThunk<
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.get<ApiResponse<ChallengesResponse>>(
-        ROUTES_API_CHALLENGE.GET_ALL,
+        ROUTES_API_CHALLENGE.ADMIN_GET_ALL,
         {
           params: {
             courseId,
@@ -237,7 +238,7 @@ export const updateChallengeThunk = createAsyncThunk<
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.put<ApiResponse<ChallengeResult>>(
-        ROUTES_API_CHALLENGE.UPDATE(id),
+        ROUTES_API_CHALLENGE.ADMIN_UPDATE(id),
         data
       )
     );
@@ -267,7 +268,7 @@ export const deleteChallengeThunk = createAsyncThunk<
 >("challenge/delete", async (id, { rejectWithValue }) => {
   try {
     const response = await callApiWithRetry(() =>
-      axiosClient.delete<ApiResponse<string>>(ROUTES_API_CHALLENGE.DELETE(id))
+      axiosClient.delete<ApiResponse<string>>(ROUTES_API_CHALLENGE.ADMIN_DELETE(id))
     );
 
     if (response.data.errors || response.data.errorCode) {
@@ -291,7 +292,7 @@ export const restoreChallengeThunk = createAsyncThunk<
 >("challenge/restore", async (id, { rejectWithValue }) => {
   try {
     const response = await callApiWithRetry(() =>
-      axiosClient.post<ApiResponse<ChallengeResult>>(ROUTES_API_CHALLENGE.RESTORE(id))
+      axiosClient.post<ApiResponse<ChallengeResult>>(ROUTES_API_CHALLENGE.ADMIN_RESTORE(id))
     );
 
     if (response.data.errors || response.data.errorCode) {
@@ -307,6 +308,39 @@ export const restoreChallengeThunk = createAsyncThunk<
     const err = error as AxiosError<ErrorResponse>;
     return rejectWithValue(
       err.response?.data?.message || "Failed to restore challenge"
+    );
+  }
+});
+
+// Get challenge processes (user progress)
+export const getChallengeProcessesThunk = createAsyncThunk<
+  ChallengeProcessesResponse,
+  GetChallengeProcessesRequest,
+  { rejectValue: string }
+>("challenge/getChallengeProcesses", async (request, { rejectWithValue }) => {
+  try {
+    const response = await callApiWithRetry(() =>
+      axiosClient.get<ApiResponse<ChallengeProcessesResponse>>(
+        ROUTES_API_CHALLENGE_PROCESS.MY_CHALLENGES,
+        {
+          params: request,
+        }
+      )
+    );
+
+    if (response.data.errors || response.data.errorCode) {
+      throw new Error(response.data.message || "Failed to fetch challenge processes");
+    }
+
+    if (!response.data.data) {
+      throw new Error("No challenge process data received");
+    }
+
+    return response.data.data;
+  } catch (error: any) {
+    const err = error as AxiosError<ErrorResponse>;
+    return rejectWithValue(
+      err.response?.data?.message || "Failed to fetch challenge processes"
     );
   }
 });

@@ -4,6 +4,9 @@ import EditLocationAltIcon from "@mui/icons-material/EditLocationAlt";
 import MapIcon from "@mui/icons-material/Map";
 import SchoolIcon from "@mui/icons-material/School";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
+import QuizIcon from "@mui/icons-material/Quiz";
+import PersonIcon from "@mui/icons-material/Person";
+import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
 import { PATH_ADMIN } from "routes/paths";
 
 function useConfigSidebar() {
@@ -45,6 +48,26 @@ function useConfigSidebar() {
           title: "Quản lý Bài học",
           path: PATH_ADMIN.lessonManagement,
           icon: <MenuBookIcon fontSize="medium" />,
+        },
+        {
+          title: "Quản lý Thử thách",
+          path: PATH_ADMIN.challengeManagement,
+          icon: <QuizIcon fontSize="medium" />,
+        },
+      ],
+    },
+    {
+      missions: "Quản lý người dùng",
+      listNav: [
+        {
+          title: "Quản lý Học viên",
+          path: PATH_ADMIN.studentManagement,
+          icon: <PersonIcon fontSize="medium" />,
+        },
+        {
+          title: "Quản lý Ghi danh",
+          path: PATH_ADMIN.enrollmentManagement,
+          icon: <LibraryBooksIcon fontSize="medium" />,
         },
       ],
     },

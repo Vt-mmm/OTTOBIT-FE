@@ -43,6 +43,12 @@ export interface GetLessonsRequest {
   pageSize?: number;
 }
 
+export interface GetLessonsPreviewRequest {
+  courseId?: string;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
 // Hook parameter types
 export interface GetLessonsParams extends GetLessonsRequest {}
 
@@ -59,4 +65,58 @@ export interface LessonsResponse {
   size: number;           // Backend trả về 'size' thay vì 'pageSize'
   total: number;          // Backend trả về 'total' thay vì 'totalCount'
   totalPages: number;
+}
+
+export interface LessonsPreviewResponse {
+  items: LessonResult[];  // Preview lessons for non-enrolled users
+  page: number;
+  size: number;
+  total: number;
+  totalPages: number;
+}
+
+// Lesson Progress types (for user progress tracking)
+export enum LessonStatus {
+  NotStarted = "NotStarted",
+  InProgress = "InProgress", 
+  Completed = "Completed",
+}
+
+export interface LessonProgress {
+  id: string;
+  enrollmentId: string;
+  lessonId: string;
+  status: LessonStatus;
+  startedAt?: string;
+  completedAt?: string;
+  currentChallengeOrder: number;
+  lessonTitle: string;
+  lessonOrder: number;
+  courseTitle: string;
+  studentName: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LessonProgressResult extends LessonProgress {}
+
+export interface LessonProgressResponse {
+  items: LessonProgressResult[];
+  page: number;
+  size: number;
+  total: number;
+  totalPages: number;
+}
+
+// Request types for lesson progress
+export interface GetLessonProgressRequest {
+  courseId?: string;
+  lessonId?: string;
+  status?: LessonStatus;
+  page?: number;
+  size?: number;
+}
+
+export interface StartLessonRequest {
+  lessonId: string;
 }

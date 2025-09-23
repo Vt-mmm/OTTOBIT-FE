@@ -44,4 +44,7 @@ export const PATH_ADMIN = {
   mapManagement: path(ROOTS_ADMIN_DASHBOARD, "/map-management"),
   courseManagement: path(ROOTS_ADMIN_DASHBOARD, "/course-management"),
   lessonManagement: path(ROOTS_ADMIN_DASHBOARD, "/lesson-management"),
+  challengeManagement: path(ROOTS_ADMIN_DASHBOARD, "/challenge-management"),
+  enrollmentManagement: path(ROOTS_ADMIN_DASHBOARD, "/enrollment-management"),
+  studentManagement: path(ROOTS_ADMIN_DASHBOARD, "/student-management"),
 };

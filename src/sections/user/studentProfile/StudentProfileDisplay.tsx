@@ -51,7 +51,7 @@ export default function StudentProfileDisplay() {
 
   // Real data tính toán từ API responses  
   const enrollmentsArray = myEnrollments?.data?.items || [];
-  const submissionsArray = mySubmissions?.data?.data || [];
+  const submissionsArray = mySubmissions?.data?.items || []; // ✅ Fixed: data -> items
   
   const realData = {
     totalEnrollments: enrollmentsArray.length || student.enrollmentsCount || 0,

@@ -7,9 +7,9 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Box, CircularProgress } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
-import { getLessonsByCourse } from "../../../redux/lesson/lessonSlice";
-import { getChallengesByLesson } from "../../../redux/challenge/challengeSlice";
-import { ChallengeResult } from "../../../common/@types/challenge";
+import { getChallengesByLesson, getChallengeProcesses } from "../../../redux/challenge/challengeSlice";
+import { startLesson } from "../../../redux/lessonProgress/lessonProgressSlice";
+import { ChallengeResult, ChallengeProcessResult } from "../../../common/@types/challenge";
 import { navigateToStudio } from "../../../utils/studioNavigation";
 import LessonHeroSection, { LessonInfo } from "./LessonHeroSection";
 import LessonTabletSection from "./LessonTabletSection";
@@ -22,7 +22,7 @@ interface LessonMapSelectorSectionProps {
 }
 
 const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
-  courseId,
+  // courseId, - unused parameter
   lessonId,
   onChallengeSelect,
   onBackToCourse,
@@ -30,39 +30,49 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   
-  const { data: lessonsData, isLoading } = useAppSelector(
-    (state) => state.lesson.courseLessons
+  const { data: currentLesson, isLoading } = useAppSelector(
+    (state) => state.lesson.currentLesson
   );
   
   const { data: challengesData, isLoading: challengesLoading, error: challengesError } = useAppSelector(
     (state) => state.challenge.lessonChallenges
   );
+  
+  const { data: challengeProcessesData, isLoading: processesLoading, error: processesError } = useAppSelector(
+    (state) => state.challenge.challengeProcesses
+  );
+  
+  // Lesson Progress state for tracking lesson start - operations not used
+  // const { operations: lessonProgressOps } = useAppSelector(
+  //   (state) => state.lessonProgress
+  // );
 
   const [challenges, setChallenges] = useState<ChallengeResult[]>([]);
+  const [challengeProcesses, setChallengeProcesses] = useState<ChallengeProcessResult[]>([]);
 
-  // Load data based on props
+  // Start lesson and load challenges data
   useEffect(() => {
     if (lessonId) {
+      // Start the lesson to create lesson progress
+      console.log('🚀 Starting lesson:', lessonId);
+      dispatch(startLesson(lessonId));
+      
       dispatch(getChallengesByLesson({ lessonId, pageSize: 50 }));
+      dispatch(getChallengeProcesses({ lessonId, page: 1, size: 50 }));
     }
-    if (courseId) {
-      dispatch(getLessonsByCourse({ courseId, pageSize: 50 }));
-    }
-  }, [courseId, lessonId, dispatch]);
+  }, [lessonId, dispatch]);
 
   // Get current lesson info for terminal display
   const currentLessonInfo: LessonInfo | null = useMemo(() => {
-    if (!lessonId || !lessonsData?.items) return null;
+    if (!lessonId || !currentLesson) return null;
     
-    const lesson = lessonsData.items.find(lesson => lesson.id === lessonId);
-    
-    return lesson ? {
-      id: lesson.id,
-      title: lesson.title,
-      content: lesson.content,
-      order: lesson.order
-    } : null;
-  }, [lessonId, lessonsData]);
+    return {
+      id: currentLesson.id,
+      title: currentLesson.title,
+      content: currentLesson.content,
+      order: currentLesson.order
+    };
+  }, [lessonId, currentLesson]);
 
   // Process challenges data
   useEffect(() => {
@@ -70,6 +80,13 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
       setChallenges(challengesData.items);
     }
   }, [challengesData]);
+
+  // Process challenge processes data
+  useEffect(() => {
+    if (challengeProcessesData?.items) {
+      setChallengeProcesses(challengeProcessesData.items);
+    }
+  }, [challengeProcessesData]);
 
   // Handle challenge selection and navigate to studio
   const handleChallengeSelect = (challengeId: string) => {
@@ -86,6 +103,7 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
   const handleRetry = () => {
     if (lessonId) {
       dispatch(getChallengesByLesson({ lessonId, pageSize: 50 }));
+      dispatch(getChallengeProcesses({ lessonId, page: 1, size: 50 }));
     }
   };
 
@@ -114,8 +132,9 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
       <div id="tablet-section">
         <LessonTabletSection
           challenges={challenges}
-          challengesLoading={challengesLoading}
-          challengesError={challengesError}
+          challengeProcesses={challengeProcesses}
+          challengesLoading={challengesLoading || processesLoading}
+          challengesError={challengesError || processesError}
           onChallengeSelect={handleChallengeSelect}
           onRetry={handleRetry}
         />

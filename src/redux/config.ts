@@ -8,6 +8,9 @@ import enrollmentReducer from "./enrollment/enrollmentSlice";
 import submissionReducer from "./submission/submissionSlice";
 import lessonReducer from "./lesson/lessonSlice";
 import challengeReducer from "./challenge/challengeSlice";
+import mapReducer from "./map/mapSlice";
+import challengeProcessReducer from "./challengeProcess/challengeProcessSlice";
+import lessonProgressReducer from "./lessonProgress/lessonProgressSlice";
 
 export const ottobit = configureStore({
   reducer: {
@@ -19,6 +22,9 @@ export const ottobit = configureStore({
     submission: submissionReducer,
     lesson: lessonReducer,
     challenge: challengeReducer,
+    map: mapReducer, // ⭐️ NEW: Map management
+    challengeProcess: challengeProcessReducer, // ⭐️ NEW: Challenge progress tracking
+    lessonProgress: lessonProgressReducer, // ⭐️ NEW: Lesson progress tracking
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

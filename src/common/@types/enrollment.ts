@@ -1,3 +1,10 @@
+// Enrollment Status enum
+export enum EnrollmentStatus {
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
+}
+
 // Enrollment entity interfaces based on BE models
 export interface Enrollment {
   id: string;
@@ -6,6 +13,10 @@ export interface Enrollment {
   progress: number; // 0.0 to 1.0 (0% to 100%)
   enrollmentDate: string;
   isCompleted: boolean;
+  status: EnrollmentStatus;
+  completedLessonsCount: number;
+  totalLessonsCount: number;
+  lastAccessedAt?: string;
   createdAt: string;
   updatedAt: string;
   studentName?: string;
@@ -23,6 +34,7 @@ export interface GetEnrollmentsRequest {
   searchTerm?: string;
   studentId?: string;
   courseId?: string;
+  status?: EnrollmentStatus;
   isCompleted?: boolean;
   includeDeleted?: boolean;
   pageNumber?: number;

@@ -11,7 +11,8 @@ import {
 } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getCourseById } from "../../../redux/course/courseSlice";
-import { getLessonsByCourse } from "../../../redux/lesson/lessonSlice";
+import { getLessonsPreview, getLessonProgress } from "../../../redux/lesson/lessonSlice";
+import { LessonStatus } from "../../../common/@types/lesson";
 import {
   createEnrollment,
   getMyEnrollments,
@@ -52,11 +53,16 @@ export default function CourseDetailSection({
     error: courseError,
   } = useAppSelector((state) => state.course.currentCourse);
 
+
   const {
-    data: lessonsData,
-    isLoading: lessonsLoading,
-    error: lessonsError,
-  } = useAppSelector((state) => state.lesson.courseLessons);
+    data: lessonsPreviewData,
+    isLoading: lessonsPreviewLoading,
+    error: lessonsPreviewError,
+  } = useAppSelector((state) => state.lesson.lessonsPreview);
+
+  const {
+    data: lessonProgressData,
+  } = useAppSelector((state) => state.lesson.lessonProgress);
 
   const { myEnrollments, operations } = useAppSelector(
     (state) => state.enrollment
@@ -66,22 +72,32 @@ export default function CourseDetailSection({
   }));
   const { isEnrolling } = operations;
 
-  useEffect(() => {
-    // Fetch course details
-    dispatch(getCourseById(courseId));
-
-    // Fetch lessons for this course
-    dispatch(getLessonsByCourse({ courseId, pageSize: 50 }));
-
-    // Fetch user's enrollments to check enrollment status
-    dispatch(getMyEnrollments({ pageSize: 100 }));
-  }, [dispatch, courseId]);
-
   // Check if user is enrolled in this course
   const isUserEnrolled =
     myEnrollments.data?.items?.some(
       (enrollment) => enrollment.courseId === courseId
     ) || false;
+
+  useEffect(() => {
+    // Fetch course details
+    dispatch(getCourseById(courseId));
+
+    // Fetch user's enrollments to check enrollment status
+    dispatch(getMyEnrollments({ pageSize: 100 }));
+  }, [dispatch, courseId]);
+
+  // Always use preview for course detail page - individual lessons will be fetched when clicked
+  useEffect(() => {
+    // Always fetch preview lessons for course detail view
+    dispatch(getLessonsPreview({ courseId, pageSize: 50 }));
+  }, [dispatch, courseId]);
+
+  // Fetch lesson progress for enrolled users
+  useEffect(() => {
+    if (isUserEnrolled) {
+      dispatch(getLessonProgress({ courseId, page: 1, size: 50 }));
+    }
+  }, [dispatch, courseId, isUserEnrolled]);
 
   // Check if user has student profile
   const checkStudentProfile = async (): Promise<boolean> => {
@@ -160,7 +176,7 @@ export default function CourseDetailSection({
     }
   };
 
-  const handleLessonClick = (lessonId: string, lessonIndex: number) => {
+  const handleLessonClick = (lessonId: string) => {
     // Check if user is enrolled before allowing lesson access
     if (!isUserEnrolled) {
       setSnackbar({
@@ -171,12 +187,41 @@ export default function CourseDetailSection({
       return;
     }
 
-    // For now, allow access to first lesson and any unlocked lessons
-    // In future, implement proper lesson progression logic
-    if (lessonIndex === 0 || true) {
-      // Always allow for now
-      navigate(PATH_USER.lessonDetail.replace(":id", lessonId));
+    // For enrolled users, check lesson accessibility based on lesson progress
+    const lessonProgresses = lessonProgressData?.items || [];
+    const currentLesson = lessons.find(l => l.id === lessonId);
+    
+    if (!currentLesson) {
+      setSnackbar({
+        open: true,
+        message: "Không tìm thấy bài học.",
+        severity: "error",
+      });
+      return;
     }
+
+    // Import lesson utils to check accessibility - we'll add this after checking if the lesson is accessible
+    // For now, check if it's the first lesson or if previous lessons are completed
+    if (currentLesson.order > 1) {
+      const hasCompletedPreviousLessons = lessons
+        .filter(lesson => lesson.order < currentLesson.order)
+        .every(prevLesson => {
+          const progress = lessonProgresses.find(p => p.lessonId === prevLesson.id);
+          return progress && progress.status === LessonStatus.Completed;
+        });
+
+      if (!hasCompletedPreviousLessons) {
+        setSnackbar({
+          open: true,
+          message: `Vui lòng hoàn thành bài học trước đó để mở khóa "${currentLesson.title}".`,
+          severity: "warning",
+        });
+        return;
+      }
+    }
+
+    // If accessible, navigate to lesson detail
+    navigate(PATH_USER.lessonDetail.replace(":id", lessonId));
   };
 
   const handleCloseSnackbar = () => {
@@ -192,8 +237,8 @@ export default function CourseDetailSection({
     handleCloseProfileDialog();
   };
 
-  const isLoading = courseLoading || lessonsLoading;
-  const error = courseError || lessonsError;
+  const isLoading = courseLoading || lessonsPreviewLoading;
+  const error = courseError || lessonsPreviewError;
 
   if (isLoading) {
     return (
@@ -237,7 +282,9 @@ export default function CourseDetailSection({
     );
   }
 
-  const lessons = lessonsData?.items || [];
+  // Always use preview data for course detail page
+  const lessons = lessonsPreviewData?.items || [];
+  const lessonProgresses = lessonProgressData?.items || [];
 
   // Mock ratings for now - in real app, get from API
   const courseRating = 4.2;
@@ -274,6 +321,7 @@ export default function CourseDetailSection({
                 {/* Lessons List */}
                 <CourseLessonsSection
                   lessons={lessons}
+                  lessonProgresses={lessonProgresses}
                   isUserEnrolled={isUserEnrolled}
                   onLessonClick={handleLessonClick}
                 />
