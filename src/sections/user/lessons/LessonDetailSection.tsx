@@ -32,8 +32,8 @@ export default function LessonDetailSection({ lessonId }: LessonDetailSectionPro
   }, [dispatch, lessonId, lesson?.id]);
 
   const handleChallengeSelect = (challengeId: string) => {
-    // Navigate to studio with challenge ID
-    navigate(`${PATH_USER.studio}/${challengeId}`);
+    // Navigate to studio with challenge ID and preserve lesson context
+    navigate(`${PATH_USER.studio}/${challengeId}?lesson=${lessonId}`);
   };
 
   const handleBackToCourse = () => {

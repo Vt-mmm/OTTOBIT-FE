@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Box,
   AppBar,
@@ -33,6 +33,7 @@ import {
   CameraAlt as CameraIcon,
   PhotoLibrary as PhotoLibraryIcon,
   Refresh as RestartIcon,
+  ArrowBack as BackIcon,
 } from "@mui/icons-material";
 import DownloadMenu from "../../features/microbit/components/DownloadMenu";
 import {
@@ -47,6 +48,8 @@ import { useFieldInputManager } from "../../components/block/hooks/useFieldInput
 import { useAppDispatch } from "../../redux/config";
 import { createSubmissionThunk } from "../../redux/submission/submissionThunks";
 import { BlocklyToPhaserConverter } from "../../features/phaser/services/blocklyToPhaserConverter";
+import { PATH_USER } from "../../routes/paths";
+import { generateStudioUrl, getStoredNavigationData } from "../../utils/studioNavigation";
 
 interface TopBarSectionProps {
   activeTab?: number;
@@ -93,7 +96,11 @@ function TopBarContent({
   const { isConnected } = useMicrobitContext();
   const { showNotification, NotificationComponent } = useNotification();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const dispatch = useAppDispatch();
+  
+  // Lesson context for map navigation
+  const [lessonId, setLessonId] = useState<string | null>(null);
   
   // Field input manager for cleanup
   const { forceCleanupFields } = useFieldInputManager();
@@ -112,7 +119,34 @@ function TopBarContent({
     currentChallengeId,
     onMessage,
     offMessage,
+    fetchChallengesByLesson,
+    lessonChallenges,
   } = usePhaserContext();
+
+  // Derive lessonId from query params or stored navigation data
+  useEffect(() => {
+    const idFromQuery = searchParams.get("lesson");
+    if (idFromQuery) {
+      setLessonId(idFromQuery);
+      return;
+    }
+    const stored = getStoredNavigationData();
+    if (stored?.lessonId) {
+      setLessonId(stored.lessonId);
+    }
+  }, [searchParams]);
+
+  // Fetch lesson challenges (up to 8) when lessonId is available
+  useEffect(() => {
+    if (!lessonId) return;
+    const items = (lessonChallenges as any)?.items || [];
+    if (items.length === 0) {
+      fetchChallengesByLesson(lessonId, 1, 8);
+    }
+  }, [lessonId, fetchChallengesByLesson, lessonChallenges]);
+
+  // Challenge list for lesson (max 8)
+  const lessonChallengeItems = (lessonChallenges as any)?.items || [];
 
   // Function to submit solution after completing challenge - memoized to prevent recreations
   const submitSolution = useCallback(async (stars: number) => {
@@ -319,6 +353,24 @@ function TopBarContent({
       console.error("❌ [TopBar] Error restarting scene:", error);
       showNotification("Không thể tải lại map. Vui lòng thử lại.", "error");
     }
+  };
+
+  // Navigate back to lesson or previous page
+  const handleBackToLesson = () => {
+    if (lessonId) {
+      navigate(PATH_USER.lessonDetail.replace(":id", lessonId));
+    } else {
+      navigate(-1);
+    }
+  };
+
+  // Navigate to a specific challenge within the lesson (1..8)
+  const handleSelectChallenge = (targetChallengeId: string) => {
+    if (!targetChallengeId || targetChallengeId === currentChallengeId) return;
+    const url = lessonId
+      ? generateStudioUrl(targetChallengeId, lessonId)
+      : generateStudioUrl(targetChallengeId);
+    navigate(url);
   };
 
   const handleValidate = () => {
@@ -587,6 +639,7 @@ function TopBarContent({
           px: { xs: 1, sm: 2 },
           gap: { xs: 1, sm: 2 },
           flexWrap: { xs: "wrap", md: "nowrap" }, // Allow wrapping on mobile
+          position: "relative", // Allow absolute centering for map selector
         }}
       >
         {/* Ottobit Logo - Mobile Responsive with Navigation */}
@@ -668,8 +721,22 @@ function TopBarContent({
           Ottobit
         </Typography>
 
-        {/* Spacer to center tabs */}
-        <Box sx={{ flexGrow: 1 }} />
+        {/* Back to Lesson */}
+        <Tooltip title={lessonId ? "Quay lại bài học" : "Quay lại"}>
+          <IconButton
+            onClick={handleBackToLesson}
+            sx={{
+              bgcolor: "#ffffff",
+              color: "#10b981",
+              width: { xs: 36, sm: 40, md: 44 },
+              height: { xs: 36, sm: 40, md: 44 },
+              mr: { xs: 0.5, sm: 1.5 },
+              "&:hover": { bgcolor: "#f0fdf4" },
+            }}
+          >
+            <BackIcon />
+          </IconButton>
+        </Tooltip>
 
         {/* Tabs for switching views - Hidden on mobile */}
         <Box
@@ -741,6 +808,56 @@ function TopBarContent({
             />
           </Tabs>
         </Box>
+
+        {/* Map selector 1–8 (lesson) - centered absolutely */}
+        {lessonChallengeItems && lessonChallengeItems.length > 0 && (
+          <Box
+            sx={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 1,
+              display: { xs: "none", sm: "flex" },
+              alignItems: "center",
+              gap: 1,
+              px: 1,
+              py: 0.5,
+              bgcolor: "#ffffff",
+              borderRadius: "9999px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            }}
+          >
+            {lessonChallengeItems.slice(0, 8).map((c: any, idx: number) => {
+              const selected = c.id === currentChallengeId;
+              return (
+                <Button
+                  key={c.id}
+                  onClick={() => handleSelectChallenge(c.id)}
+                  variant={selected ? "contained" : "outlined"}
+                  size="small"
+                  sx={{
+                    minWidth: 32,
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    p: 0,
+                    fontWeight: 700,
+                    color: selected ? "#ffffff" : "#10b981",
+                    bgcolor: selected ? "#10b981" : "transparent",
+                    borderColor: "#10b981",
+                    "&:hover": {
+                      bgcolor: selected ? "#059669" : "#f0fdf4",
+                      borderColor: "#059669",
+                    },
+                  }}
+                >
+                  {idx + 1}
+                </Button>
+              );
+            })}
+          </Box>
+        )}
 
         {/* Spacer to push buttons right */}
         <Box sx={{ flexGrow: 1 }} />
