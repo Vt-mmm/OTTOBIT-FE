@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -12,9 +12,7 @@ import {
   Stepper,
   Step,
   StepLabel,
-  StepContent,
   Card,
-  CardContent,
   CardMedia,
   Alert,
 } from "@mui/material";
@@ -163,7 +161,7 @@ export default function MicrobitConnectionGuide({
       <DialogContent dividers>
         <Box sx={{ mb: 3 }}>
           <Stepper activeStep={activeStep} alternativeLabel>
-            {steps.map((step, index) => (
+            {steps.map((step) => (
               <Step key={step.label}>
                 <StepLabel>{step.label}</StepLabel>
               </Step>

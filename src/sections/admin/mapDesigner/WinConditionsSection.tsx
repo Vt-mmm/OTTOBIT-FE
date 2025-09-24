@@ -78,7 +78,6 @@ export default function WinConditionsSection({
   onChallengeJsonChange,
   challengeJson,
   onSaveMap,
-  onOpenMapPicker,
   onSolutionDialogToggle,
 }: WinConditionsSectionProps) {
   const [openSolution, setOpenSolution] = useState(false);

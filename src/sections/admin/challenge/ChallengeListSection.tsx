@@ -52,7 +52,6 @@ interface ChallengeListSectionProps {
 export default function ChallengeListSection({
   onCreateNew,
   onEditChallenge,
-  onViewDetails,
 }: ChallengeListSectionProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();

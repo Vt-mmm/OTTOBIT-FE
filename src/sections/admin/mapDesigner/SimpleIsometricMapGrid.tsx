@@ -23,8 +23,6 @@ export default function SimpleIsometricMapGrid({
   mapGrid,
   selectedAsset,
   onCellClick,
-  onSaveMap,
-  onClearMap,
 }: SimpleIsometricMapGridProps) {
   const ENABLE_PAN = true;
   const MAP_VIEWPORT_HEIGHT = 700; // px - fixed map viewport height for 2.5D

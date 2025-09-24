@@ -57,8 +57,8 @@ export default function MapListSection() {
   const [committedSearch, setCommittedSearch] = useState<string>("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [mapToDelete, setMapToDelete] = useState<BackendMapResult | null>(null);
-  const [sortBy, setSortBy] = useState<MapSortBy>(MapSortBy.CreatedAt);
-  const [sortDirection, setSortDirection] = useState<SortDirection>(
+  const [sortBy] = useState<MapSortBy>(MapSortBy.CreatedAt);
+  const [sortDirection] = useState<SortDirection>(
     SortDirection.Descending
   );
   const [pageNumber, setPageNumber] = useState<number>(1);

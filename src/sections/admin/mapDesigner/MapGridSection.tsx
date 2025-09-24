@@ -19,8 +19,6 @@ export default function MapGridSection({
   mapGrid,
   selectedAsset,
   onCellClick,
-  onSaveMap,
-  onClearMap,
 }: MapGridSectionProps) {
   const ENABLE_PAN = true;
   const MAP_VIEWPORT_HEIGHT = 700; // px - fixed map viewport height

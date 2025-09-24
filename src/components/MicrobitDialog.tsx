@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -26,7 +26,6 @@ import {
 } from "@microbit/microbit-connection";
 import { microbitBoardId } from "@microbit/microbit-universal-hex";
 import { MicropythonFsHex } from "@microbit/microbit-fs";
-import { BlocklyToPhaserConverter } from "../features/phaser/services/blocklyToPhaserConverter";
 import MicrobitConnectionGuide from "./MicrobitConnectionGuide";
 
 interface MicrobitDialogProps {
@@ -41,7 +40,6 @@ const V2_URL = "/microbit-micropython-v2.hex";
 export default function MicrobitDialog({
   open,
   onClose,
-  workspace,
 }: MicrobitDialogProps) {
   const [isConnected, setIsConnected] = useState(false);
   const [isFlashing, setIsFlashing] = useState(false);
@@ -117,59 +115,6 @@ if __name__ == "__main__":
     requestAnimationFrame(animate);
   };
 
-  // Generate Python code from workspace (optional - not used in current implementation)
-  const generatePythonFromProgram = (programData: any): string => {
-    // This function is kept for future use when workspace conversion is implemented
-    let pythonCode = `from microbit import *
-import time
-
-# Generated from Blockly workspace
-def main():
-`;
-
-    const actions = programData?.actions || [];
-
-    for (const action of actions) {
-      switch (action.type) {
-        case "forward":
-          pythonCode += `    # Move forward ${action.count || 1} steps\n`;
-          pythonCode += `    for i in range(${action.count || 1}):\n`;
-          pythonCode += `        # Add your forward movement code here\n`;
-          pythonCode += `        pass\n`;
-          break;
-        case "turnRight":
-          pythonCode += `    # Turn right\n`;
-          pythonCode += `    # Add your turn right code here\n`;
-          break;
-        case "turnLeft":
-          pythonCode += `    # Turn left\n`;
-          pythonCode += `    # Add your turn left code here\n`;
-          break;
-        case "collect":
-          pythonCode += `    # Collect item\n`;
-          pythonCode += `    # Add your collect code here\n`;
-          break;
-        case "repeat":
-          pythonCode += `    # Repeat ${action.count || 1} times\n`;
-          pythonCode += `    for i in range(${action.count || 1}):\n`;
-          if (action.body && action.body.length > 0) {
-            // Add nested actions here
-            pythonCode += `        # Nested actions\n`;
-          }
-          break;
-        default:
-          pythonCode += `    # ${action.type} action\n`;
-      }
-    }
-
-    pythonCode += `
-# Run the main function
-if __name__ == "__main__":
-    main()
-`;
-
-    return pythonCode;
-  };
 
   // Build per-board HEX from Python
   const buildHexFromPython = async (code: string) => {
@@ -287,7 +232,7 @@ if __name__ == "__main__":
       }, 1000);
 
       try {
-        await deviceRef.current.flash(dataSource, (v) => {
+        await deviceRef.current.flash(dataSource, (v: number) => {
           // Real progress from device
           const realProgress = Math.max(0, Math.min(1, v || 0));
           lastRealProgress = realProgress;
