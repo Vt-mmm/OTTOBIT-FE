@@ -8,6 +8,8 @@ export interface Map {
   updatedAt: string;
   challengesCount?: number; // Number of challenges using this map
   coursesCount?: number; // Number of courses this map is assigned to
+  // Soft-delete flag from backend
+  isDeleted?: boolean;
 }
 
 // Request types
@@ -57,9 +59,9 @@ export interface UpdateMapData extends UpdateMapRequest {}
 export interface MapResult extends Map {}
 
 export interface MapsResponse {
-  items: MapResult[];   // Backend returns 'items'
-  page: number;         // Backend returns 'page'
-  size: number;         // Backend returns 'size'
-  total: number;        // Backend returns 'total'
-  totalPages: number;   // Backend returns 'totalPages'
+  items: MapResult[]; // Backend returns 'items'
+  page: number; // Backend returns 'page'
+  size: number; // Backend returns 'size'
+  total: number; // Backend returns 'total'
+  totalPages: number; // Backend returns 'totalPages'
 }

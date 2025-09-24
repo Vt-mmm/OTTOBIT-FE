@@ -1,10 +1,10 @@
 // @mui icons
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import EditLocationAltIcon from "@mui/icons-material/EditLocationAlt";
-import MapIcon from "@mui/icons-material/Map";
+// Removed Map-specific icons; using QuizIcon to represent Challenge
 import SchoolIcon from "@mui/icons-material/School";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import QuizIcon from "@mui/icons-material/Quiz";
+import MapIcon from "@mui/icons-material/Map";
 import PersonIcon from "@mui/icons-material/Person";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
 import SecurityIcon from "@mui/icons-material/Security";
@@ -13,27 +13,27 @@ import { PATH_ADMIN, PATH_USER } from "routes/paths";
 function useConfigSidebar() {
   const navAdmin = [
     {
-      missions: "Overview",
+      missions: "Tổng quan",
       listNav: [
         {
-          title: "Dashboard",
+          title: "Bảng điều khiển",
           path: PATH_ADMIN.dashboard,
           icon: <DashboardIcon fontSize="small" />,
         },
       ],
     },
     {
-      missions: "Tools",
+      missions: "Công cụ",
       listNav: [
         {
-          title: "Map Designer",
-          path: PATH_ADMIN.mapDesigner,
-          icon: <EditLocationAltIcon fontSize="small" />,
+          title: "Thiết kế Thử thách",
+          path: PATH_ADMIN.challengeDesigner,
+          icon: <QuizIcon fontSize="medium" />,
         },
         {
-          title: "Map Management",
-          path: PATH_ADMIN.mapManagement,
-          icon: <MapIcon fontSize="small" />,
+          title: "Thiết kế Bản đồ",
+          path: PATH_ADMIN.mapDesigner,
+          icon: <MapIcon fontSize="medium" />,
         },
       ],
     },
@@ -51,9 +51,15 @@ function useConfigSidebar() {
           icon: <MenuBookIcon fontSize="small" />,
         },
         {
-          title: "Quản lý Thử thách",
+          title: "Quản lý thử thách",
           path: PATH_ADMIN.challengeManagement,
           icon: <QuizIcon fontSize="small" />,
+        },
+
+        {
+          title: "Quản lý Bản đồ",
+          path: PATH_ADMIN.mapManagement,
+          icon: <MapIcon fontSize="medium" />,
         },
       ],
     },
@@ -85,7 +91,7 @@ function useConfigSidebar() {
         },
         {
           title: "Bảo mật",
-          path: PATH_USER.security, 
+          path: PATH_USER.security,
           icon: <SecurityIcon fontSize="small" />,
         },
       ],
@@ -94,11 +100,10 @@ function useConfigSidebar() {
       missions: "Học tập",
       listNav: [
         {
-        title: "Khóa học",
-        path: PATH_USER.myCourses,
-        icon: <SchoolIcon fontSize="small" />,
+          title: "Khóa học",
+          path: PATH_USER.myCourses,
+          icon: <SchoolIcon fontSize="small" />,
         },
-        
       ],
     },
   ];

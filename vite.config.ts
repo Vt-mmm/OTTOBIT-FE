@@ -42,8 +42,9 @@ export default defineConfig({
         rewrite: (path) => path,
       },
       "/detect": {
-        target: "http://127.0.0.1:8000",
+        target: "https://otto-detect.felixtien.dev",
         changeOrigin: true,
+        secure: true,
         rewrite: (path) => path,
       },
     },
@@ -83,10 +84,10 @@ export default defineConfig({
     terserOptions: {
       compress: {
         // Conditional console removal - keep debug logs in production for now
-        drop_console: process.env.NODE_ENV === 'production' ? false : false, // Keep console logs for debugging
+        drop_console: process.env.NODE_ENV === "production" ? false : false, // Keep console logs for debugging
         drop_debugger: true, // Remove debugger statements
         // Only remove console.log that don't have debug prefixes
-        pure_funcs: process.env.NODE_ENV === 'production' ? [] : [],
+        pure_funcs: process.env.NODE_ENV === "production" ? [] : [],
       },
     },
   },

@@ -2,7 +2,6 @@ import {
   Box,
   Paper,
   Typography,
-  Button,
   TextField,
   Tabs,
   Tab,
@@ -31,8 +30,8 @@ interface TabPanelProps {
 
 function TabPanel({ children, value, index }: TabPanelProps) {
   return (
-    <Box hidden={value !== index} sx={{ pt: 1 }}>
-      {value === index && children}
+    <Box hidden={value !== index} sx={{ pt: 0, mt: 0 }}>
+      {value === index && <Box sx={{ mt: 0 }}>{children}</Box>}
     </Box>
   );
 }
@@ -177,7 +176,7 @@ export default function WorkspaceSection({
         }}
       />
 
-      <Divider sx={{ mb: 1 }} />
+      <Divider sx={{ mb: 0.5 }} />
 
       {/* Asset Categories Tabs */}
       <Tabs
@@ -188,13 +187,13 @@ export default function WorkspaceSection({
         sx={{
           borderBottom: 1,
           borderColor: "divider",
-          mb: 1,
+          mb: 0.5,
           minHeight: 32,
           "& .MuiTab-root": {
             color: THEME_COLORS.text.secondary,
             fontSize: "0.75rem",
             minHeight: 32,
-            py: 0.5,
+            py: 0.25,
             px: 1,
             textTransform: "none",
             whiteSpace: "nowrap",
@@ -213,32 +212,15 @@ export default function WorkspaceSection({
           },
         }}
       >
-        <Tab label="Terrain" />
         <Tab label="Robot" />
         <Tab label="Items" />
-        <Tab label="Obstacles" />
         <Tab label="Tools" />
       </Tabs>
 
       {/* Scrollable content area */}
-      <Box sx={{ flexGrow: 1, overflow: "auto", pr: 1 }}>
-        {/* Terrain Tab */}
-        <TabPanel value={tabValue} index={0}>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
-              gap: 0.5,
-            }}
-          >
-            {filterAssets(getAssetsByCategory("terrain")).map(
-              renderAssetButton
-            )}
-          </Box>
-        </TabPanel>
-
+      <Box sx={{ flexGrow: 1, overflow: "auto", pr: 1, mt: 0 }}>
         {/* Robot Tab */}
-        <TabPanel value={tabValue} index={1}>
+        <TabPanel value={tabValue} index={0}>
           <Box
             sx={{
               display: "grid",
@@ -251,7 +233,7 @@ export default function WorkspaceSection({
         </TabPanel>
 
         {/* Items Tab */}
-        <TabPanel value={tabValue} index={2}>
+        <TabPanel value={tabValue} index={1}>
           <Box
             sx={{
               display: "grid",
@@ -263,21 +245,8 @@ export default function WorkspaceSection({
           </Box>
         </TabPanel>
 
-        {/* Objects Tab */}
-        <TabPanel value={tabValue} index={3}>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
-              gap: 0.5,
-            }}
-          >
-            {filterAssets(getAssetsByCategory("object")).map(renderAssetButton)}
-          </Box>
-        </TabPanel>
-
         {/* Tools Tab */}
-        <TabPanel value={tabValue} index={4}>
+        <TabPanel value={tabValue} index={2}>
           <Box
             sx={{
               display: "grid",
@@ -285,48 +254,11 @@ export default function WorkspaceSection({
               gap: 0.5,
             }}
           >
-            {filterAssets(getAssetsByCategory("tool")).map(renderAssetButton)}
+            {filterAssets(
+              getAssetsByCategory("tool").filter((a) => a.id !== "empty")
+            ).map(renderAssetButton)}
           </Box>
         </TabPanel>
-      </Box>
-
-      {/* Quick Templates */}
-      <Divider sx={{ mt: 2, mb: 2 }} />
-      <Box>
-        <Typography
-          variant="subtitle2"
-          sx={{ mb: 1, color: THEME_COLORS.text.primary, fontWeight: 600 }}
-        >
-          Quick Templates
-        </Typography>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-          <Button
-            size="small"
-            variant="outlined"
-            onClick={() => onAssetSelect("grass")}
-            sx={{
-              justifyContent: "flex-start",
-              borderColor: THEME_COLORS.primary,
-              color: THEME_COLORS.primary,
-              fontSize: "0.75rem",
-            }}
-          >
-            Fill All Grass
-          </Button>
-          <Button
-            size="small"
-            variant="outlined"
-            onClick={() => onAssetSelect("road_h")}
-            sx={{
-              justifyContent: "flex-start",
-              borderColor: THEME_COLORS.primary,
-              color: THEME_COLORS.primary,
-              fontSize: "0.75rem",
-            }}
-          >
-            Draw Horizontal Road
-          </Button>
-        </Box>
       </Box>
 
       {/* Instructions */}
@@ -344,29 +276,30 @@ export default function WorkspaceSection({
         >
           Guide
         </Typography>
+
         <Typography
           variant="caption"
           sx={{ display: "block", mb: 0.5, color: THEME_COLORS.text.secondary }}
         >
-          • Select asset from the list above
+          • Click to place robot or item; drag to paint items quickly
         </Typography>
         <Typography
           variant="caption"
           sx={{ display: "block", mb: 0.5, color: THEME_COLORS.text.secondary }}
         >
-          • Click to place asset, drag to draw continuously
-        </Typography>
-        <Typography
-          variant="caption"
-          sx={{ display: "block", mb: 0.5, color: THEME_COLORS.text.secondary }}
-        >
-          • Click placed asset again to delete
+          • Click a placed item to delete, or use Tools → Delete Object
         </Typography>
         <Typography
           variant="caption"
           sx={{ display: "block", mb: 0.5, color: THEME_COLORS.text.secondary }}
         >
           • Only 1 robot allowed per map
+        </Typography>
+        <Typography
+          variant="caption"
+          sx={{ display: "block", color: THEME_COLORS.text.secondary }}
+        >
+          • Terrain is fixed in Challenge Designer; tiles cannot be placed here
         </Typography>
         <Typography
           variant="caption"
