@@ -1,8 +1,6 @@
 import React from "react";
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   Avatar,
   Chip,
@@ -32,14 +30,13 @@ interface ProfileOverviewProps {
 const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
   const { userAuth, userInfo } = useAppSelector((state) => state.auth);
 
-  // Use auth data directly since we don't have getUserProfile endpoint
+  // Dữ liệu hiển thị (ưu tiên userInfo nếu có)
   const displayData = {
-    fullName: userInfo?.fullName || "Chưa có tên",
-    email: userAuth?.email || "Chưa có email",
-    phoneNumber: "",
-    avatarUrl: "",
-    emailConfirmed: userInfo?.emailConfirmed || false,
-    registrationDate: "",
+    fullName: userInfo?.fullName || userAuth?.username || "Chưa có tên",
+    email: userInfo?.email || userAuth?.email || "Chưa có email",
+    roleName: userInfo?.roleName || "",
+    status: userInfo?.status || "",
+    emailConfirmed: !!userInfo?.emailConfirmed,
   };
 
   return (
@@ -48,20 +45,14 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card
-        sx={{
-          borderRadius: 3,
-          boxShadow: "0 8px 32px rgba(139, 195, 74, 0.15)",
-          border: `1px solid ${alpha("#8BC34A", 0.2)}`,
-          overflow: "hidden",
-          position: "relative",
-        }}
-      >
+      <Box sx={{ maxWidth: 880 }}>
         {/* Header Background */}
         <Box
           sx={{
             height: 120,
-            background: "linear-gradient(135deg, #8BC34A 0%, #689F38 100%)",
+            borderRadius: 2,
+            background: (t) =>
+              `linear-gradient(135deg, ${t.palette.primary.main} 0%, ${t.palette.primary.dark} 100%)`,
             position: "relative",
           }}
         >
@@ -78,21 +69,22 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
           />
         </Box>
 
-        <CardContent sx={{ pt: 0, pb: 3 }}>
+        <Box sx={{ pt: 0, pb: 3, maxWidth: 1024, mx: "auto" }}>
           {/* Avatar and Edit Button */}
           <Box sx={{ display: "flex", alignItems: "flex-end", mb: 3 }}>
             <Avatar
-              src={displayData.avatarUrl}
               sx={{
                 width: 100,
                 height: 100,
-                border: "4px solid white",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-                mt: -6,
+                border: (t) => `4px solid ${t.palette.common.white}`,
+                boxShadow: (t) =>
+                  `0 4px 16px ${alpha(t.palette.common.black, 0.12)}`,
+                mt: -10,
                 mr: 2,
-                background: "linear-gradient(45deg, #8BC34A, #4CAF50)",
+                bgcolor: (t) => t.palette.primary.light,
                 fontSize: "2rem",
                 fontWeight: 600,
+                color: (t) => t.palette.primary.contrastText,
               }}
             >
               {displayData.fullName?.charAt(0)?.toUpperCase() || "U"}
@@ -107,13 +99,13 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                   bgcolor: "white",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                   "&:hover": {
-                    bgcolor: alpha("#8BC34A", 0.1),
+                    bgcolor: (t) => alpha(t.palette.text.primary, 0.06),
                     transform: "scale(1.05)",
                   },
                   transition: "all 0.2s ease",
                 }}
               >
-                <EditIcon sx={{ color: "#8BC34A" }} />
+                <EditIcon sx={{ color: (t) => t.palette.primary.main }} />
               </IconButton>
             </Tooltip>
           </Box>
@@ -124,12 +116,8 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
               variant="h4"
               sx={{
                 fontWeight: 700,
-                color: "#2E7D32",
+                color: (t) => t.palette.text.primary,
                 mb: 1,
-                background: "linear-gradient(45deg, #2E7D32, #388E3C)",
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
               }}
             >
               {displayData.fullName || "Người dùng"}
@@ -142,12 +130,13 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                   label={role === "OTTOBIT_USER" ? "Học viên" : role}
                   size="small"
                   sx={{
-                    bgcolor: alpha("#8BC34A", 0.15),
-                    color: "#2E7D32",
+                    bgcolor: (t) => alpha(t.palette.primary.main, 0.12),
+                    color: (t) => t.palette.primary.dark,
                     fontWeight: 600,
-                    border: `1px solid ${alpha("#8BC34A", 0.3)}`,
+                    border: (t) =>
+                      `1px solid ${alpha(t.palette.primary.main, 0.3)}`,
                     "& .MuiChip-icon": {
-                      color: "#2E7D32",
+                      color: (t) => t.palette.primary.dark,
                     },
                   }}
                   icon={<PersonOutlineIcon />}
@@ -158,35 +147,38 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                 label="Email đã xác thực"
                 size="small"
                 sx={{
-                  bgcolor: alpha("#4CAF50", 0.15),
-                  color: "#1B5E20",
+                  bgcolor: (t) => alpha(t.palette.success.main, 0.12),
+                  color: (t) => t.palette.success.dark,
                   fontWeight: 600,
-                  border: `1px solid ${alpha("#4CAF50", 0.3)}`,
+                  border: (t) =>
+                    `1px solid ${alpha(t.palette.success.main, 0.3)}`,
                 }}
                 icon={<VerifiedIcon />}
               />
             </Stack>
           </Box>
 
-          <Divider sx={{ mb: 3, bgcolor: alpha("#8BC34A", 0.2) }} />
+          <Divider sx={{ mb: 3 }} />
 
           {/* User Details Grid */}
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={12}>
               <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                 <Box
                   sx={{
-                    width: 40,
-                    height: 40,
+                    width: 36,
+                    height: 36,
                     borderRadius: 2,
-                    bgcolor: alpha("#8BC34A", 0.1),
+                    bgcolor: (t) => alpha(t.palette.text.primary, 0.06),
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     mr: 2,
                   }}
                 >
-                  <EmailIcon sx={{ color: "#2E7D32", fontSize: 20 }} />
+                  <EmailIcon
+                    sx={{ color: (t) => t.palette.primary.main, fontSize: 20 }}
+                  />
                 </Box>
                 <Box>
                   <Typography
@@ -198,7 +190,10 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                   </Typography>
                   <Typography
                     variant="body1"
-                    sx={{ fontWeight: 600, color: "#2E7D32" }}
+                    sx={{
+                      fontWeight: 600,
+                      color: (t) => t.palette.text.primary,
+                    }}
                   >
                     {displayData.email || "Chưa cập nhật"}
                   </Typography>
@@ -206,21 +201,26 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
               </Box>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={12}>
               <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                 <Box
                   sx={{
-                    width: 40,
-                    height: 40,
+                    width: 36,
+                    height: 36,
                     borderRadius: 2,
-                    bgcolor: alpha("#8BC34A", 0.1),
+                    bgcolor: (t) => alpha(t.palette.text.primary, 0.06),
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     mr: 2,
                   }}
                 >
-                  <PhoneIcon sx={{ color: "#2E7D32", fontSize: 20 }} />
+                  <PhoneIcon
+                    sx={{
+                      color: (t) => t.palette.text.secondary,
+                      fontSize: 20,
+                    }}
+                  />
                 </Box>
                 <Box>
                   <Typography
@@ -228,26 +228,29 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                     color="text.secondary"
                     sx={{ fontWeight: 500 }}
                   >
-                    Số điện thoại
+                    Vai trò
                   </Typography>
                   <Typography
                     variant="body1"
-                    sx={{ fontWeight: 600, color: "#2E7D32" }}
+                    sx={{
+                      fontWeight: 600,
+                      color: (t) => t.palette.text.primary,
+                    }}
                   >
-                    {displayData.phoneNumber || "Chưa cập nhật"}
+                    {displayData.roleName || "Chưa cập nhật"}
                   </Typography>
                 </Box>
               </Box>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={12}>
               <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                 <Box
                   sx={{
-                    width: 40,
-                    height: 40,
+                    width: 36,
+                    height: 36,
                     borderRadius: 2,
-                    bgcolor: alpha("#8BC34A", 0.1),
+                    bgcolor: (t) => alpha(t.palette.text.primary, 0.06),
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -266,7 +269,10 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                   </Typography>
                   <Typography
                     variant="body1"
-                    sx={{ fontWeight: 600, color: "#2E7D32" }}
+                    sx={{
+                      fontWeight: 600,
+                      color: (t) => t.palette.text.primary,
+                    }}
                   >
                     Chưa cập nhật
                   </Typography>
@@ -274,14 +280,14 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
               </Box>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={12}>
               <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                 <Box
                   sx={{
-                    width: 40,
-                    height: 40,
+                    width: 36,
+                    height: 36,
                     borderRadius: 2,
-                    bgcolor: alpha("#8BC34A", 0.1),
+                    bgcolor: (t) => alpha(t.palette.text.primary, 0.06),
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -300,7 +306,10 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                   </Typography>
                   <Typography
                     variant="body1"
-                    sx={{ fontWeight: 600, color: "#2E7D32" }}
+                    sx={{
+                      fontWeight: 600,
+                      color: (t) => t.palette.text.primary,
+                    }}
                   >
                     Chưa cập nhật
                   </Typography>
@@ -308,8 +317,8 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
               </Box>
             </Grid>
           </Grid>
-        </CardContent>
-      </Card>
+        </Box>
+      </Box>
     </motion.div>
   );
 };

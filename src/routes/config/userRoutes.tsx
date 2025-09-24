@@ -7,6 +7,7 @@ import CoursesPage from "pages/user/CoursesPage";
 import CourseDetailPage from "pages/user/CourseDetailPage";
 import LessonDetailPage from "pages/user/LessonDetailPage";
 import ChallengeDetailPage from "pages/user/ChallengeDetailPage";
+import MyCoursesPage from "pages/user/MyCoursesPage";
 
 // Public routes - accessible without authentication
 export const publicRoutes: Route[] = [
@@ -29,6 +30,12 @@ export const userRoutes: Route[] = [
     component: <CoursesPage />,
     index: false,
   },
+  {
+    path: PATH_USER.myCourses,
+    component: <MyCoursesPage />,
+    index: false,
+  },
+
   {
     path: PATH_USER.courseDetail,
     component: <CourseDetailPage />,

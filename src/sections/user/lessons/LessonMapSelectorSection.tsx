@@ -8,7 +8,7 @@ import { Box, CircularProgress } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getChallengesByLesson, getChallengeProcesses } from "../../../redux/challenge/challengeSlice";
-import { startLesson } from "../../../redux/lessonProgress/lessonProgressSlice";
+import { startLesson, getMyLessonProgress } from "../../../redux/lessonProgress/lessonProgressSlice";
 import { ChallengeResult, ChallengeProcessResult } from "../../../common/@types/challenge";
 import { navigateToStudio } from "../../../utils/studioNavigation";
 import LessonHeroSection, { LessonInfo } from "./LessonHeroSection";
@@ -22,7 +22,7 @@ interface LessonMapSelectorSectionProps {
 }
 
 const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
-  // courseId, - unused parameter
+  courseId,
   lessonId,
   onChallengeSelect,
   onBackToCourse,
@@ -50,17 +50,34 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
   const [challenges, setChallenges] = useState<ChallengeResult[]>([]);
   const [challengeProcesses, setChallengeProcesses] = useState<ChallengeProcessResult[]>([]);
 
-  // Start lesson and load challenges data
+  // Start lesson (only if not already started/completed) and load challenges data
   useEffect(() => {
-    if (lessonId) {
-      // Start the lesson to create lesson progress
-      console.log('🚀 Starting lesson:', lessonId);
+    if (!lessonId) return;
+
+    // Load challenges regardless
+    dispatch(getChallengesByLesson({ lessonId, pageSize: 50 }));
+    dispatch(getChallengeProcesses({ lessonId, page: 1, size: 50 }));
+
+    // Try to fetch my lesson progress for this course; only start if no record exists
+    if (courseId) {
+      dispatch(getMyLessonProgress({ courseId, pageNumber: 1, pageSize: 50 }))
+        .unwrap()
+        .then((res) => {
+          const exists = res.items?.some((p) => p.lessonId === lessonId);
+          if (!exists) {
+            // Create progress by starting the lesson
+            dispatch(startLesson(lessonId));
+          }
+        })
+        .catch(() => {
+          // If we fail to load progress, try starting (BE will reject if already completed)
+          dispatch(startLesson(lessonId));
+        });
+    } else {
+      // No courseId provided, fallback to start (BE will reject if already completed)
       dispatch(startLesson(lessonId));
-      
-      dispatch(getChallengesByLesson({ lessonId, pageSize: 50 }));
-      dispatch(getChallengeProcesses({ lessonId, page: 1, size: 50 }));
     }
-  }, [lessonId, dispatch]);
+  }, [lessonId, courseId, dispatch]);
 
   // Get current lesson info for terminal display
   const currentLessonInfo: LessonInfo | null = useMemo(() => {

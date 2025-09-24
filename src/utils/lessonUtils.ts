@@ -1,4 +1,26 @@
-import { LessonResult, LessonProgressResult, LessonStatus } from "common/@types/lesson";
+import {
+  LessonResult,
+  LessonProgressResult,
+  LessonStatus,
+} from "common/@types/lesson";
+
+// Normalize status from BE (number enum) or FE (string enum) to a unified shape
+function isCompletedStatus(status: number | string | undefined): boolean {
+  if (typeof status === "number") {
+    // BE enum: 3 is Completed
+    return status === 3;
+  }
+  // FE string enum
+  return status === (LessonStatus as any).Completed || status === "Completed";
+}
+
+function isInProgressStatus(status: number | string | undefined): boolean {
+  if (typeof status === "number") {
+    // BE enum: 2 is InProgress
+    return status === 2;
+  }
+  return status === (LessonStatus as any).InProgress || status === "InProgress";
+}
 
 /**
  * Check if a lesson is accessible based on sequential completion logic
@@ -17,21 +39,20 @@ export function isLessonAccessible(
 
   // Check if all previous lessons in the same course are completed
   const previousLessons = lessonProgresses.filter(
-    (progress) => 
-      progress.lessonOrder < lesson.order &&
-      progress.lessonId !== lesson.id // Exclude current lesson
+    (progress) =>
+      progress.lessonOrder < lesson.order && progress.lessonId !== lesson.id // Exclude current lesson
   );
 
   // For sequential access, we need all lessons from 1 to (current order - 1) to be completed
   for (let i = 1; i < lesson.order; i++) {
-    const requiredProgress = previousLessons.find(
-      (progress) => progress.lessonOrder === i
-    );
-    
-    // If any previous lesson is not completed, current lesson is locked
-    if (!requiredProgress || requiredProgress.status !== LessonStatus.Completed) {
-      return false;
-    }
+  const requiredProgress = previousLessons.find(
+  (progress) => progress.lessonOrder === i
+  );
+
+  // If any previous lesson is not completed, current lesson is locked
+  if (!requiredProgress || !isCompletedStatus(requiredProgress.status as any)) {
+  return false;
+  }
   }
 
   return true;
@@ -44,21 +65,20 @@ export function isLessonAccessible(
  * @returns object with progress info
  */
 export function getLessonProgress(
-  lessonId: string,
-  lessonProgresses: LessonProgressResult[] = []
+lessonId: string,
+lessonProgresses: LessonProgressResult[] = []
 ) {
-  const progress = lessonProgresses.find(
-    (p) => p.lessonId === lessonId
-  );
+const progress = lessonProgresses.find((p) => p.lessonId === lessonId);
 
-  return {
-    isCompleted: progress?.status === LessonStatus.Completed,
-    isInProgress: progress?.status === LessonStatus.InProgress,
-    isStarted: !!progress,
-    status: progress?.status || LessonStatus.NotStarted,
-    startedAt: progress?.startedAt,
-    completedAt: progress?.completedAt,
-    currentChallengeOrder: progress?.currentChallengeOrder || 0,
+return {
+isCompleted: isCompletedStatus(progress?.status as any),
+isInProgress: isInProgressStatus(progress?.status as any),
+isStarted: !!progress,
+status: progress?.status ?? (LessonStatus as any).NotStarted,
+startedAt: (progress as any)?.startedAt,
+completedAt: (progress as any)?.completedAt,
+currentChallengeOrder: (progress as any)?.currentChallengeOrder || 0,
+  totalChallenges: (progress as any)?.totalChallenges ?? undefined,
   };
 }
 
@@ -74,15 +94,15 @@ export function getCourseProgress(
 ) {
   const totalLessons = lessons.length;
   const completedLessons = lessonProgresses.filter(
-    (progress) => 
+    (progress) =>
       progress.status === LessonStatus.Completed &&
-      lessons.some(l => l.id === progress.lessonId)
+      lessons.some((l) => l.id === progress.lessonId)
   ).length;
 
   const inProgressLessons = lessonProgresses.filter(
-    (progress) => 
+    (progress) =>
       progress.status === LessonStatus.InProgress &&
-      lessons.some(l => l.id === progress.lessonId)
+      lessons.some((l) => l.id === progress.lessonId)
   ).length;
 
   return {
@@ -90,7 +110,8 @@ export function getCourseProgress(
     completedLessons,
     inProgressLessons,
     notStartedLessons: totalLessons - completedLessons - inProgressLessons,
-    progressPercentage: totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0,
+    progressPercentage:
+      totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0,
     isCompleted: totalLessons > 0 && completedLessons === totalLessons,
   };
 }
@@ -110,7 +131,7 @@ export function getNextAccessibleLesson(
 
   for (const lesson of sortedLessons) {
     const progress = getLessonProgress(lesson.id, lessonProgresses);
-    
+
     // If lesson is not completed and is accessible, return it
     if (!progress.isCompleted && isLessonAccessible(lesson, lessonProgresses)) {
       return lesson;
@@ -133,7 +154,7 @@ export function isCourseCompleted(
 ): boolean {
   if (lessons.length === 0) return false;
 
-  return lessons.every(lesson => {
+  return lessons.every((lesson) => {
     const progress = getLessonProgress(lesson.id, lessonProgresses);
     return progress.isCompleted;
   });
@@ -142,7 +163,7 @@ export function isCourseCompleted(
 /**
  * Get lesson status display text
  * @param lesson - The lesson
- * @param lessonProgresses - Array of lesson progress  
+ * @param lessonProgresses - Array of lesson progress
  * @returns display text for lesson status
  */
 export function getLessonStatusText(
@@ -153,17 +174,17 @@ export function getLessonStatusText(
   const isAccessible = isLessonAccessible(lesson, lessonProgresses);
 
   if (!isAccessible) {
-    return "🔒 Bị khóa";
+    return " Bị khóa";
   }
 
   switch (progress.status) {
     case LessonStatus.Completed:
-      return "✅ Hoàn thành";
+      return " Hoàn thành";
     case LessonStatus.InProgress:
-      return "📖 Đang học";
+      return " Đang học";
     case LessonStatus.NotStarted:
     default:
-      return "🚀 Sẵn sàng";
+      return " Sẵn sàng";
   }
 }
 
@@ -181,16 +202,16 @@ export function getLessonButtonText(
   const isAccessible = isLessonAccessible(lesson, lessonProgresses);
 
   if (!isAccessible) {
-    return "🔒 Chưa mở khóa";
+    return " Chưa mở khóa";
   }
 
   switch (progress.status) {
     case LessonStatus.Completed:
-      return "📝 Xem lại";
+      return " Xem lại";
     case LessonStatus.InProgress:
-      return "📖 Tiếp tục";
+      return " Tiếp tục";
     case LessonStatus.NotStarted:
     default:
-      return "🚀 Bắt đầu";
+      return " Bắt đầu";
   }
 }

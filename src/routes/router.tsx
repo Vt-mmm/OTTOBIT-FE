@@ -32,6 +32,7 @@ const ResendEmailConfirmationPage = lazy(
 // Define lazy-loaded components for user routes
 const SharedHomePage = lazy(() => import("pages/user/Homepage"));
 const CoursesPage = lazy(() => import("pages/user/CoursesPage"));
+const MyCoursesPage = lazy(() => import("pages/user/MyCoursesPage"));
 const CourseDetailPage = lazy(() => import("pages/user/CourseDetailPage"));
 const LessonDetailPage = lazy(() => import("pages/user/LessonDetailPage"));
 const ChallengeDetailPage = lazy(
@@ -40,6 +41,7 @@ const ChallengeDetailPage = lazy(
 const RobotStudioPage = lazy(() => import("pages/studio/RobotStudioPage"));
 const UserProfilePage = lazy(() => import("pages/user/UserProfilePage"));
 const StudentProfilePage = lazy(() => import("pages/user/StudentProfilePage"));
+const SecuritySettingsPage = lazy(() => import("pages/user/SecuritySettingsPage"));
 // Error pages
 const Page404 = lazy(() => import("pages/error/Page404"));
 const Page500 = lazy(() => import("pages/error/Page500"));
@@ -172,6 +174,8 @@ function AppRouter() {
           {/* Các trang dành riêng cho user */}
           <ReactRoute path={PATH_USER.homepage} element={<SharedHomePage />} />
           <ReactRoute path={PATH_USER.courses} element={<CoursesPage />} />
+          <ReactRoute path={PATH_USER.myCourses} element={<MyCoursesPage />} />
+
           <ReactRoute
             path={PATH_USER.courseDetail}
             element={<CourseDetailPage />}
@@ -185,6 +189,7 @@ function AppRouter() {
             element={<ChallengeDetailPage />}
           />
           <ReactRoute path={PATH_USER.profile} element={<UserProfilePage />} />
+          <ReactRoute path={PATH_USER.security} element={<SecuritySettingsPage />} />
           <ReactRoute
             path={PATH_USER.studentProfile}
             element={<StudentProfilePage />}
