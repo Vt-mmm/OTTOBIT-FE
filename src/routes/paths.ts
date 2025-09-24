@@ -41,6 +41,7 @@ export const PATH_USER = {
 export const PATH_ADMIN = {
   dashboard: path(ROOTS_ADMIN_DASHBOARD, "/dashboard"),
   mapDesigner: path(ROOTS_ADMIN_DASHBOARD, "/map-designer"),
+  challengeDesigner: path(ROOTS_ADMIN_DASHBOARD, "/challenge-designer"),
   mapManagement: path(ROOTS_ADMIN_DASHBOARD, "/map-management"),
   courseManagement: path(ROOTS_ADMIN_DASHBOARD, "/course-management"),
   lessonManagement: path(ROOTS_ADMIN_DASHBOARD, "/lesson-management"),

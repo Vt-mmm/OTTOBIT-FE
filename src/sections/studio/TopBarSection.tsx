@@ -28,18 +28,11 @@ import {
   ViewModule as WorkspaceIcon,
   Code as PythonIcon,
   Javascript as JavascriptIcon,
-  Bluetooth as BluetoothIcon,
-  Download as DownloadIcon,
   CameraAlt as CameraIcon,
   PhotoLibrary as PhotoLibraryIcon,
   Refresh as RestartIcon,
+  Usb as UsbIcon,
 } from "@mui/icons-material";
-import DownloadMenu from "../../features/microbit/components/DownloadMenu";
-import {
-  MicrobitProvider,
-  useMicrobitContext,
-} from "../../features/microbit/context/MicrobitContext";
-import { MicrobitConnectionDialog } from "../../features/microbit/components/MicrobitConnectionDialog";
 import { usePhaserContext } from "../../features/phaser/context/PhaserContext";
 import { useNotification } from "hooks/useNotification";
 import { forceCleanupBeforeExecute } from "../../theme/block/renderer-ottobit";
@@ -47,6 +40,7 @@ import { useFieldInputManager } from "../../components/block/hooks/useFieldInput
 import { useAppDispatch } from "../../redux/config";
 import { createSubmissionThunk } from "../../redux/submission/submissionThunks";
 import { BlocklyToPhaserConverter } from "../../features/phaser/services/blocklyToPhaserConverter";
+import MicrobitDialog from "../../components/MicrobitDialog";
 
 interface TopBarSectionProps {
   activeTab?: number;
@@ -60,13 +54,11 @@ export default function TopBarSection({
   workspace,
 }: TopBarSectionProps) {
   return (
-    <MicrobitProvider>
-      <TopBarContent
-        activeTab={activeTab}
-        onTabChange={onTabChange}
-        workspace={workspace}
-      />
-    </MicrobitProvider>
+    <TopBarContent
+      activeTab={activeTab}
+      onTabChange={onTabChange}
+      workspace={workspace}
+    />
   );
 }
 
@@ -76,8 +68,8 @@ function TopBarContent({
   workspace,
 }: TopBarSectionProps) {
   const [isRunning, setIsRunning] = useState(false);
-  const [showConnectionDialog, setShowConnectionDialog] = useState(false);
   const [showCameraDialog, setShowCameraDialog] = useState(false);
+  const [showMicrobitDialog, setShowMicrobitDialog] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [isCameraLoading, setIsCameraLoading] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -90,14 +82,13 @@ function TopBarContent({
     []
   );
   const [selectedCameraId, setSelectedCameraId] = useState<string>("");
-  const { isConnected } = useMicrobitContext();
   const { showNotification, NotificationComponent } = useNotification();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  
+
   // Field input manager for cleanup
   const { forceCleanupFields } = useFieldInputManager();
-  
+
   // Track submission to prevent duplicates
   const submissionInProgress = useRef(false);
 
@@ -115,104 +106,118 @@ function TopBarContent({
   } = usePhaserContext();
 
   // Function to submit solution after completing challenge - memoized to prevent recreations
-  const submitSolution = useCallback(async (stars: number) => {
-    // Prevent duplicate submissions
-    if (submissionInProgress.current) {
-      console.warn("🚫 Submission already in progress, skipping duplicate");
-      return;
-    }
-    
-    if (!currentChallengeId || !workspace) {
-      console.warn("Cannot submit: missing challenge ID or workspace");
-      return;
-    }
-    
-    submissionInProgress.current = true;
-    
-    try {
-      console.log("🎆 Submitting solution:", {
-        challengeId: currentChallengeId,
-        stars,
-        hasWorkspace: !!workspace
-      });
-      
-      // Convert workspace to program using existing converter
-      const programData = BlocklyToPhaserConverter.convertWorkspace(workspace);
-      const codeJson = JSON.stringify(programData);
-      
-      console.log("📝 Generated code JSON:", {
-        programData,
-        codeJsonLength: codeJson.length
-      });
-      
-      // Submit to backend
-      const result = await dispatch(createSubmissionThunk({
-        challengeId: currentChallengeId,
-        codeJson,
-        star: stars
-      })).unwrap();
-      
-      console.log("✅ Submission successful:", result);
-      
-      showNotification(
-        `Chúc mừng! Bạn đã hoàn thành challenge với ${stars} sao! ⭐️`,
-        "success"
-      );
-      
-    } catch (error: any) {
-      console.error("❌ Submission failed:", error);
-      
-      showNotification(
-        `Hoàn thành challenge nhưng không thể lưu kết quả: ${error}`,
-        "warning"
-      );
-    } finally {
-      // Reset submission flag after completion
-      submissionInProgress.current = false;
-    }
-  }, [currentChallengeId, workspace, dispatch, showNotification]);
+  const submitSolution = useCallback(
+    async (stars: number) => {
+      // Prevent duplicate submissions
+      if (submissionInProgress.current) {
+        console.warn("🚫 Submission already in progress, skipping duplicate");
+        return;
+      }
+
+      if (!currentChallengeId || !workspace) {
+        console.warn("Cannot submit: missing challenge ID or workspace");
+        return;
+      }
+
+      submissionInProgress.current = true;
+
+      try {
+        console.log("🎆 Submitting solution:", {
+          challengeId: currentChallengeId,
+          stars,
+          hasWorkspace: !!workspace,
+        });
+
+        // Convert workspace to program using existing converter
+        const programData =
+          BlocklyToPhaserConverter.convertWorkspace(workspace);
+        const codeJson = JSON.stringify(programData);
+
+        console.log("📝 Generated code JSON:", {
+          programData,
+          codeJsonLength: codeJson.length,
+        });
+
+        // Submit to backend
+        const result = await dispatch(
+          createSubmissionThunk({
+            challengeId: currentChallengeId,
+            codeJson,
+            star: stars,
+          })
+        ).unwrap();
+
+        console.log("✅ Submission successful:", result);
+
+        showNotification(
+          `Chúc mừng! Bạn đã hoàn thành challenge với ${stars} sao! ⭐️`,
+          "success"
+        );
+      } catch (error: any) {
+        console.error("❌ Submission failed:", error);
+
+        showNotification(
+          `Hoàn thành challenge nhưng không thể lưu kết quả: ${error}`,
+          "warning"
+        );
+      } finally {
+        // Reset submission flag after completion
+        submissionInProgress.current = false;
+      }
+    },
+    [currentChallengeId, workspace, dispatch, showNotification]
+  );
 
   // Create stable victory handler - memoized to prevent useEffect re-runs
-  const handleVictory = useCallback((victoryData: any) => {
-    console.log("🎆 Victory event received:", victoryData);
-    
-    // Use stars calculation logic from VictoryModal (same as UI)
-    const score = victoryData.starScore ?? victoryData.score ?? 0;
-    console.log("🎯 Final score used for stars calculation:", score);
-    
-    // Use the same calculateStarsFromScore logic as VictoryModal
-    const calculateStarsFromScore = (score: number): number => {
-      const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
-      const stars = clamp(Math.ceil(score * 3), 1, 3);
-      
-      console.log("🌟 Stars Calculation - Input score:", score);
-      console.log("🌟 Formula: stars = clamp(ceil(score * 3), 1, 3)");
-      console.log(`🌟 Step: ${score} * 3 = ${score * 3}, ceil = ${Math.ceil(score * 3)}, clamp = ${stars}`);
-      console.log("🌟 Final stars:", stars);
-      
-      return stars;
-    };
-    
-    // Calculate stars exactly like VictoryModal does
-    const calculatedStars = victoryData.stars ?? calculateStarsFromScore(score);
-    
-    console.log("🏆 Final stars for submission:", {
-      providedStars: victoryData.stars,
-      calculatedStars,
-      finalStars: calculatedStars
-    });
-    
-    // Submit solution with calculated stars
-    submitSolution(calculatedStars);
-  }, [submitSolution]); // Only depend on memoized submitSolution
+  const handleVictory = useCallback(
+    (victoryData: any) => {
+      console.log("🎆 Victory event received:", victoryData);
+
+      // Use stars calculation logic from VictoryModal (same as UI)
+      const score = victoryData.starScore ?? victoryData.score ?? 0;
+      console.log("🎯 Final score used for stars calculation:", score);
+
+      // Use the same calculateStarsFromScore logic as VictoryModal
+      const calculateStarsFromScore = (score: number): number => {
+        const clamp = (value: number, min: number, max: number) =>
+          Math.max(min, Math.min(max, value));
+        const stars = clamp(Math.ceil(score * 3), 1, 3);
+
+        console.log("🌟 Stars Calculation - Input score:", score);
+        console.log("🌟 Formula: stars = clamp(ceil(score * 3), 1, 3)");
+        console.log(
+          `🌟 Step: ${score} * 3 = ${score * 3}, ceil = ${Math.ceil(
+            score * 3
+          )}, clamp = ${stars}`
+        );
+        console.log("🌟 Final stars:", stars);
+
+        return stars;
+      };
+
+      // Calculate stars exactly like VictoryModal does
+      const calculatedStars =
+        victoryData.stars ?? calculateStarsFromScore(score);
+
+      console.log("🏆 Final stars for submission:", {
+        providedStars: victoryData.stars,
+        calculatedStars,
+        finalStars: calculatedStars,
+      });
+
+      // Submit solution with calculated stars
+      submitSolution(calculatedStars);
+    },
+    [submitSolution]
+  ); // Only depend on memoized submitSolution
 
   // Listen for victory events from Phaser - optimized effect with minimal dependencies
   useEffect(() => {
     console.log("🎵 Registering VICTORY listener");
-    
+
     // Register victory listener
     onMessage("VICTORY", handleVictory);
-    
+
     // Cleanup listener on unmount or effect re-run
     return () => {
       console.log("🧹 Cleaning up VICTORY listener");
@@ -222,15 +227,15 @@ function TopBarContent({
 
   const handleRun = async () => {
     console.log("🚀 [TopBar] Execute button clicked");
-    
+
     // CRITICAL: Emergency cleanup before execute to prevent field editor leaks
     console.log("🚨 [TopBar] Running emergency cleanup before execute...");
     forceCleanupBeforeExecute();
-    
+
     // ENHANCED: Also cleanup field inputs specifically
     console.log("🧡 [TopBar] Cleaning up field inputs...");
     forceCleanupFields();
-    
+
     if (!workspace) {
       console.error("❌ [TopBar] No workspace available");
       return;
@@ -273,13 +278,13 @@ function TopBarContent({
       await runProgramFromWorkspace(workspace);
     } catch (error) {
       console.error("❌ [TopBar] Error during execution:", error);
-      
+
       // CRITICAL: Cleanup again on error to prevent leaks
       forceCleanupBeforeExecute();
-      
+
       // ENHANCED: Also cleanup field inputs on error
       forceCleanupFields();
-      
+
       setIsRunning(false);
       return;
     }
@@ -325,8 +330,8 @@ function TopBarContent({
     // TODO: Implement validation logic
   };
 
-  const handleBluetooth = async () => {
-    setShowConnectionDialog(true);
+  const handleSendToMicrobit = () => {
+    setShowMicrobitDialog(true);
   };
 
   const handleCamera = async () => {
@@ -591,7 +596,7 @@ function TopBarContent({
       >
         {/* Ottobit Logo - Mobile Responsive with Navigation */}
         <Box
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/")}
           sx={{
             width: { xs: 40, sm: 45, md: 50 },
             height: { xs: 40, sm: 45, md: 50 },
@@ -629,7 +634,7 @@ function TopBarContent({
         {/* Project Title - Responsive with Navigation */}
         <Typography
           variant="h5"
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/")}
           sx={{
             fontWeight: 700,
             color: "#ffffff",
@@ -650,7 +655,7 @@ function TopBarContent({
         {/* Short title for mobile with Navigation */}
         <Typography
           variant="h6"
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/")}
           sx={{
             fontWeight: 700,
             color: "#ffffff",
@@ -759,46 +764,24 @@ function TopBarContent({
             flexWrap: { xs: "wrap", sm: "nowrap" },
           }}
         >
-          <Tooltip title={isConnected ? "Disconnect" : "Connect Bluetooth"}>
+          <Tooltip title="Send to micro:bit">
             <IconButton
-              onClick={handleBluetooth}
+              onClick={handleSendToMicrobit}
               sx={{
-                bgcolor: isConnected ? "#3b82f6" : "#e3f2fd",
-                color: isConnected ? "white" : "#1976d2",
+                bgcolor: "#eef2ff",
+                color: "#4338ca",
                 width: { xs: 36, sm: 42, md: 48 },
                 height: { xs: 36, sm: 42, md: 48 },
                 "&:hover": {
-                  bgcolor: isConnected ? "#2563eb" : "#bbdefb",
+                  bgcolor: "#e0e7ff",
                   transform: "translateY(-1px)",
-                  boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
+                  boxShadow: "0 4px 12px rgba(67, 56, 202, 0.25)",
                 },
               }}
             >
-              <BluetoothIcon sx={{ fontSize: 24 }} />
+              <UsbIcon sx={{ fontSize: 22 }} />
             </IconButton>
           </Tooltip>
-
-          <DownloadMenu
-            trigger={
-              <Tooltip title="Upload to micro:bit">
-                <IconButton
-                  sx={{
-                    bgcolor: "#f3e5f5",
-                    color: "#7b1fa2",
-                    width: { xs: 36, sm: 42, md: 48 },
-                    height: { xs: 36, sm: 42, md: 48 },
-                    "&:hover": {
-                      bgcolor: "#e1bee7",
-                      transform: "translateY(-1px)",
-                      boxShadow: "0 4px 12px rgba(123, 31, 162, 0.3)",
-                    },
-                  }}
-                >
-                  <DownloadIcon sx={{ fontSize: 24 }} />
-                </IconButton>
-              </Tooltip>
-            }
-          />
 
           <Tooltip title="Open Camera">
             <IconButton
@@ -912,10 +895,11 @@ function TopBarContent({
         </Box>
       </Toolbar>
 
-      {/* Microbit Connection Dialog */}
-      <MicrobitConnectionDialog
-        open={showConnectionDialog}
-        onClose={() => setShowConnectionDialog(false)}
+      {/* Microbit Dialog */}
+      <MicrobitDialog
+        open={showMicrobitDialog}
+        onClose={() => setShowMicrobitDialog(false)}
+        workspace={workspace}
       />
 
       {/* Camera Dialog */}

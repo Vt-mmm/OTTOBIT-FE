@@ -47,11 +47,16 @@ interface WinConditionsSectionProps {
   onOrderChange: (value: number) => void;
   difficulty: number;
   onDifficultyChange: (value: number) => void;
+  challengeMode: number;
+  onChallengeModeChange: (value: number) => void;
   mapGrid: MapCell[][];
   onSolutionJsonChange?: (json: string) => void;
   solutionJson?: string | null;
   onChallengeJsonChange?: (json: string) => void;
   challengeJson?: string | null;
+  onSaveMap?: () => void;
+  onOpenMapPicker?: () => void;
+  onSolutionDialogToggle?: (open: boolean) => void;
 }
 
 export default function WinConditionsSection({
@@ -65,15 +70,41 @@ export default function WinConditionsSection({
   onOrderChange,
   difficulty,
   onDifficultyChange,
+  challengeMode,
+  onChallengeModeChange,
   mapGrid,
   onSolutionJsonChange,
   solutionJson,
   onChallengeJsonChange,
   challengeJson,
+  onSaveMap,
+  onOpenMapPicker,
+  onSolutionDialogToggle,
 }: WinConditionsSectionProps) {
   const [openSolution, setOpenSolution] = useState(false);
+  // Notify parent when Solution dialog open/close toggles (to stabilize isometric grid)
+  useEffect(() => {
+    try {
+      onSolutionDialogToggle?.(openSolution);
+    } catch {}
+    // Intentionally only depend on openSolution to avoid parent inline-callback
+    // causing unnecessary re-invocations and render loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openSolution]);
   const [openChallenge, setOpenChallenge] = useState(false);
   const solutionWorkspaceRef = useRef<any>(null);
+  const [miniStable, setMiniStable] = useState(false);
+  // Debounce mini map render while solution dialog opens or during save
+  useEffect(() => {
+    let t: any;
+    if (openSolution) {
+      t = setTimeout(() => setMiniStable(true), 220);
+    } else {
+      setMiniStable(false);
+    }
+    return () => t && clearTimeout(t);
+  }, [openSolution]);
+  // duplicate declarations removed
   const [lessonOptions, setLessonOptions] = useState<
     { id: string; title: string }[]
   >([]);
@@ -389,13 +420,15 @@ export default function WinConditionsSection({
           color: THEME_COLORS.text.primary,
         }}
       >
-        Map Information
+        Challenge Information
       </Typography>
 
-      {/* Map Name Input */}
+      {/* Map picker trigger moved to header in ChallengeDesignerPage */}
+
+      {/* Title Input */}
       <TextField
         fullWidth
-        label="Map Name"
+        label="Title"
         value={mapName}
         onChange={(e) => onMapNameChange(e.target.value)}
         size="small"
@@ -412,10 +445,10 @@ export default function WinConditionsSection({
         }}
       />
 
-      {/* Map Description Input */}
+      {/* Description Input */}
       <TextField
         fullWidth
-        label="Map Description"
+        label="Description"
         value={mapDescription}
         onChange={(e) => onMapDescriptionChange(e.target.value)}
         size="small"
@@ -457,13 +490,13 @@ export default function WinConditionsSection({
         </FormControl>
 
         <FormControl fullWidth size="small">
-          <InputLabel>Order (1-5)</InputLabel>
+          <InputLabel>Order (1-8)</InputLabel>
           <Select
-            label="Order (1-5)"
+            label="Order (1-8)"
             value={order}
             onChange={(e) => onOrderChange(Number(e.target.value))}
           >
-            {[1, 2, 3, 4, 5].map((n) => (
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
               <MenuItem key={n} value={n}>
                 {n}
               </MenuItem>
@@ -483,6 +516,19 @@ export default function WinConditionsSection({
                 {n}
               </MenuItem>
             ))}
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth size="small">
+          <InputLabel>Challenge Mode</InputLabel>
+          <Select
+            label="Challenge Mode"
+            value={challengeMode}
+            onChange={(e) => onChallengeModeChange(Number(e.target.value))}
+          >
+            <MenuItem value={0}>Simulation</MenuItem>
+            <MenuItem value={1}>PhysicalFirst</MenuItem>
+            <MenuItem value={2}>SimulationPhysical</MenuItem>
           </Select>
         </FormControl>
       </Box>
@@ -522,6 +568,13 @@ export default function WinConditionsSection({
           {challengeJson
             ? "Challenge (configured)"
             : "Challenge (not configured)"}
+        </Button>
+      </Box>
+
+      {/* Save Challenge under Map Info */}
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+        <Button variant="contained" onClick={onSaveMap} disabled={!onSaveMap}>
+          Save Challenge
         </Button>
       </Box>
 
@@ -571,176 +624,178 @@ export default function WinConditionsSection({
                 justifyContent: "center",
               }}
             >
-              {(() => {
-                const MINI = {
-                  ...ISOMETRIC_CONFIG,
-                  // Scale tiles bigger for mini preview
-                  tileWidth: Math.max(
-                    32,
-                    Math.floor(ISOMETRIC_CONFIG.tileWidth * 0.75)
-                  ),
-                  tileHeight: Math.max(
-                    16,
-                    Math.floor(ISOMETRIC_CONFIG.tileHeight * 0.75)
-                  ),
-                  tileDepth: Math.max(
-                    10,
-                    Math.floor((ISOMETRIC_CONFIG.tileDepth || 16) * 0.75)
-                  ),
-                } as typeof ISOMETRIC_CONFIG;
-                const dims = getIsometricGridDimensions(
-                  GRID_CONFIG.rows,
-                  GRID_CONFIG.cols,
-                  MINI
-                );
-                const w = dims.width + dims.offsetX;
-                const h = dims.height + dims.offsetY;
-                return (
-                  <Box
-                    sx={{
-                      position: "relative",
-                      width: w,
-                      height: h,
-                      border: `1px solid ${THEME_COLORS.border}`,
-                      bgcolor: THEME_COLORS.background,
-                    }}
-                  >
-                    <Typography
-                      variant="subtitle2"
+              {miniStable &&
+                (() => {
+                  const MINI = {
+                    ...ISOMETRIC_CONFIG,
+                    // Scale tiles bigger for mini preview
+                    tileWidth: Math.max(
+                      32,
+                      Math.floor(ISOMETRIC_CONFIG.tileWidth * 0.75)
+                    ),
+                    tileHeight: Math.max(
+                      16,
+                      Math.floor(ISOMETRIC_CONFIG.tileHeight * 0.75)
+                    ),
+                    tileDepth: Math.max(
+                      10,
+                      Math.floor((ISOMETRIC_CONFIG.tileDepth || 16) * 0.75)
+                    ),
+                  } as typeof ISOMETRIC_CONFIG;
+                  const dims = getIsometricGridDimensions(
+                    GRID_CONFIG.rows,
+                    GRID_CONFIG.cols,
+                    MINI
+                  );
+                  const w = dims.width + dims.offsetX;
+                  const h = dims.height + dims.offsetY;
+                  return (
+                    <Box
                       sx={{
-                        position: "absolute",
-                        top: 6,
-                        left: 8,
-                        zIndex: 2,
-                        m: 0,
-                        px: 0.5,
-                        py: 0.25,
-                        fontWeight: 600,
-                        bgcolor: "#00000066",
-                        color: "#fff",
-                        borderRadius: 1,
-                        pointerEvents: "none",
+                        position: "relative",
+                        width: w,
+                        height: h,
+                        border: `1px solid ${THEME_COLORS.border}`,
+                        bgcolor: THEME_COLORS.background,
                       }}
                     >
-                      Map Preview (Isometric Mini)
-                    </Typography>
-                    {mapGrid.flat().map((cell) => {
-                      const terrain = cell.terrain
-                        ? MAP_ASSETS.find((a) => a.id === cell.terrain)
-                        : null;
-                      const object = cell.object
-                        ? MAP_ASSETS.find((a) => a.id === cell.object)
-                        : null;
-                      if (!terrain && !object) return null;
-                      const pos = gridToIsometric(cell.row, cell.col, MINI);
-                      const left = pos.x + dims.offsetX;
-                      // Apply diagonal lift and spacing similar to main isometric map
-                      const MINI_LIFT_PER_DIAGONAL = Math.round(
-                        MINI.tileHeight * 0.7
-                      );
-                      const MINI_DIAGONAL_SPACING = Math.round(
-                        MINI.tileHeight * 0.51
-                      );
-                      const diagonalIndex = cell.row + cell.col;
-                      const top =
-                        pos.y +
-                        dims.offsetY -
-                        diagonalIndex * MINI_LIFT_PER_DIAGONAL +
-                        diagonalIndex * MINI_DIAGONAL_SPACING;
-                      const tw = MINI.tileWidth;
-                      const th = MINI.tileHeight;
-                      return (
-                        <svg
-                          key={`mini-${cell.row}-${cell.col}`}
-                          style={{
-                            position: "absolute",
-                            left,
-                            top,
-                            width: tw,
-                            height: th,
-                            overflow: "visible",
-                          }}
-                        >
-                          <polygon
-                            points={`${tw / 2},0 ${tw},${th / 2} ${
-                              tw / 2
-                            },${th} 0,${th / 2}`}
-                            fill="#ffffff"
-                            stroke="#e5e5e5"
-                            strokeWidth="0.5"
-                            opacity="0.5"
-                          />
-                          {terrain?.imagePath && (
-                            <image
-                              href={terrain.imagePath}
-                              x={0}
-                              y={0}
-                              width={tw}
-                              height={th}
-                              preserveAspectRatio="none"
+                      <Typography
+                        variant="subtitle2"
+                        sx={{
+                          position: "absolute",
+                          top: 6,
+                          left: 8,
+                          zIndex: 2,
+                          m: 0,
+                          px: 0.5,
+                          py: 0.25,
+                          fontWeight: 600,
+                          bgcolor: "#00000066",
+                          color: "#fff",
+                          borderRadius: 1,
+                          pointerEvents: "none",
+                        }}
+                      >
+                        Map Preview (Isometric Mini)
+                      </Typography>
+                      {mapGrid.flat().map((cell) => {
+                        const terrain = cell.terrain
+                          ? MAP_ASSETS.find((a) => a.id === cell.terrain)
+                          : null;
+                        const object = cell.object
+                          ? MAP_ASSETS.find((a) => a.id === cell.object)
+                          : null;
+                        if (!terrain && !object) return null;
+                        const pos = gridToIsometric(cell.row, cell.col, MINI);
+                        const left = pos.x + dims.offsetX;
+                        // Apply diagonal lift and spacing similar to main isometric map
+                        const MINI_LIFT_PER_DIAGONAL = Math.round(
+                          MINI.tileHeight * 0.7
+                        );
+                        const MINI_DIAGONAL_SPACING = Math.round(
+                          MINI.tileHeight * 0.51
+                        );
+                        const diagonalIndex = cell.row + cell.col;
+                        const top =
+                          pos.y +
+                          dims.offsetY -
+                          diagonalIndex * MINI_LIFT_PER_DIAGONAL +
+                          diagonalIndex * MINI_DIAGONAL_SPACING;
+                        const tw = MINI.tileWidth;
+                        const th = MINI.tileHeight;
+                        return (
+                          <svg
+                            key={`mini-${cell.row}-${cell.col}`}
+                            style={{
+                              position: "absolute",
+                              left,
+                              top,
+                              width: tw,
+                              height: th,
+                              overflow: "visible",
+                            }}
+                          >
+                            <polygon
+                              points={`${tw / 2},0 ${tw},${th / 2} ${
+                                tw / 2
+                              },${th} 0,${th / 2}`}
+                              fill="#ffffff"
+                              stroke="#e5e5e5"
+                              strokeWidth="0.5"
+                              opacity="0.5"
                             />
-                          )}
-                          {object?.imagePath &&
-                            (() => {
-                              const scaleY = ISOMETRIC_CONFIG.tileHeight
-                                ? MINI.tileHeight / ISOMETRIC_CONFIG.tileHeight
-                                : 1;
-                              const ROBOT_BASE_LIFT = Math.round(20 * scaleY);
-                              // Adjustable base lift height for items in Solution mini-map (no stacking)
-                              const ITEM_BASE_LIFT = Math.round(15 * scaleY);
-                              const isRobot =
-                                (object as any)?.category === "robot" ||
-                                (object?.id?.startsWith &&
-                                  object.id.startsWith("robot_"));
+                            {terrain?.imagePath && (
+                              <image
+                                href={terrain.imagePath}
+                                x={0}
+                                y={0}
+                                width={tw}
+                                height={th}
+                                preserveAspectRatio="none"
+                              />
+                            )}
+                            {object?.imagePath &&
+                              (() => {
+                                const scaleY = ISOMETRIC_CONFIG.tileHeight
+                                  ? MINI.tileHeight /
+                                    ISOMETRIC_CONFIG.tileHeight
+                                  : 1;
+                                const ROBOT_BASE_LIFT = Math.round(20 * scaleY);
+                                // Adjustable base lift height for items in Solution mini-map (no stacking)
+                                const ITEM_BASE_LIFT = Math.round(15 * scaleY);
+                                const isRobot =
+                                  (object as any)?.category === "robot" ||
+                                  (object?.id?.startsWith &&
+                                    object.id.startsWith("robot_"));
 
-                              // Elevation: robots have base lift; items have constant adjustable lift
-                              let stackShift = 0;
-                              if (isRobot) {
-                                stackShift = ROBOT_BASE_LIFT;
-                              } else {
-                                stackShift = ITEM_BASE_LIFT; // tweak ITEM_BASE_LIFT to adjust item height
-                              }
-                              // Scale object similar to main map: robot ~0.85, item ~0.5
-                              const SCALE = isRobot ? 0.85 : 0.5;
-                              const ow = tw * SCALE;
-                              const oh = th * SCALE;
-                              const ox = (tw - ow) / 2;
-                              const oy = (th - oh) / 2 - stackShift;
-                              return (
-                                <>
-                                  <image
-                                    href={object.imagePath}
-                                    x={ox}
-                                    y={oy}
-                                    width={ow}
-                                    height={oh}
-                                    preserveAspectRatio="xMidYMid meet"
-                                  />
-                                  {/* Visible count badge for items > 1 */}
-                                  {!isRobot && (cell.itemCount ?? 0) > 1 && (
-                                    <text
-                                      x={ox + ow - 2}
-                                      y={oy + 12}
-                                      textAnchor="end"
-                                      fontSize="11"
-                                      fontWeight="700"
-                                      fill="#ffffff"
-                                      stroke="#000000"
-                                      strokeWidth="0.8"
-                                      style={{ pointerEvents: "none" }}
-                                    >
-                                      {`x${cell.itemCount ?? 0}`}
-                                    </text>
-                                  )}
-                                </>
-                              );
-                            })()}
-                        </svg>
-                      );
-                    })}
-                  </Box>
-                );
-              })()}
+                                // Elevation: robots have base lift; items have constant adjustable lift
+                                let stackShift = 0;
+                                if (isRobot) {
+                                  stackShift = ROBOT_BASE_LIFT;
+                                } else {
+                                  stackShift = ITEM_BASE_LIFT; // tweak ITEM_BASE_LIFT to adjust item height
+                                }
+                                // Scale object similar to main map: robot ~0.85, item ~0.5
+                                const SCALE = isRobot ? 0.85 : 0.5;
+                                const ow = tw * SCALE;
+                                const oh = th * SCALE;
+                                const ox = (tw - ow) / 2;
+                                const oy = (th - oh) / 2 - stackShift;
+                                return (
+                                  <>
+                                    <image
+                                      href={object.imagePath}
+                                      x={ox}
+                                      y={oy}
+                                      width={ow}
+                                      height={oh}
+                                      preserveAspectRatio="xMidYMid meet"
+                                    />
+                                    {/* Visible count badge for items > 1 */}
+                                    {!isRobot && (cell.itemCount ?? 0) > 1 && (
+                                      <text
+                                        x={ox + ow - 2}
+                                        y={oy + 12}
+                                        textAnchor="end"
+                                        fontSize="11"
+                                        fontWeight="700"
+                                        fill="#ffffff"
+                                        stroke="#000000"
+                                        strokeWidth="0.8"
+                                        style={{ pointerEvents: "none" }}
+                                      >
+                                        {`x${cell.itemCount ?? 0}`}
+                                      </text>
+                                    )}
+                                  </>
+                                );
+                              })()}
+                          </svg>
+                        );
+                      })}
+                    </Box>
+                  );
+                })()}
             </Box>
           </Box>
         </DialogContent>
@@ -751,6 +806,10 @@ export default function WinConditionsSection({
             onClick={() => {
               try {
                 if (!solutionWorkspaceRef.current) return;
+                // Freeze mini preview during save to avoid flicker
+                try {
+                  setMiniStable(false);
+                } catch {}
                 // Ensure IF/WHILE bodies are preserved by attaching TRUE condition if missing
                 try {
                   const ws: any = solutionWorkspaceRef.current;

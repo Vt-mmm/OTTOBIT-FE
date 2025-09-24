@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { Box, Paper, Typography, IconButton, Chip } from "@mui/material";
-import { useNotification } from "hooks/useNotification";
 import { MapCell } from "common/models";
 import { MAP_ASSETS } from "./mapAssets.config";
 import { THEME_COLORS, GRID_CONFIG } from "./theme.config";
@@ -9,42 +8,34 @@ import {
   getIsometricGridDimensions,
   ISOMETRIC_CONFIG,
 } from "./isometricHelpers";
-// Save/Clear controls moved out of this component
+// Bottom action buttons removed per request; keep only zoom controls
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 
-interface SimpleIsometricMapGridProps {
+interface SimpleIsometricMapGridLiteProps {
   mapGrid: MapCell[][];
   selectedAsset: string;
   onCellClick: (row: number, col: number) => void;
 }
 
-export default function SimpleIsometricMapGrid({
+// This "Lite" version is isolated for Map Designer only to avoid any shared state/styles side-effects
+export default function SimpleIsometricMapGridLite({
   mapGrid,
   selectedAsset,
   onCellClick,
-  onSaveMap,
-  onClearMap,
-}: SimpleIsometricMapGridProps) {
+}: SimpleIsometricMapGridLiteProps) {
   const ENABLE_PAN = true;
-  const MAP_VIEWPORT_HEIGHT = 700; // px - fixed map viewport height for 2.5D
-  // Elevation per isometric diagonal (row+col). Positive lifts tiles up (smaller Y)
-  const LIFT_PER_DIAGONAL = 15.5; // px per diagonal step (lift up)
-  const DIAGONAL_SPACING = 4.5; // px per diagonal step (extra spacing between diagonal bands)
-  // Placement interactions (2D-style)
+  const MAP_VIEWPORT_HEIGHT = 700;
+  const LIFT_PER_DIAGONAL = 15.5;
+  const DIAGONAL_SPACING = 4.5;
   const [isDrawing, setIsDrawing] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [hoveredCell, setHoveredCell] = useState<{
     row: number;
     col: number;
   } | null>(null);
-  // Per-cell frame corner offsets for empty cell diamonds (visual-only)
-  const [cornerOffsetsByCell] = useState<
-    Record<string, { top: number; right: number; bottom: number; left: number }>
-  >({});
   const gridRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  // Drag-to-pan state
   const [isPanning, setIsPanning] = useState(false);
   const panStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({
@@ -52,26 +43,18 @@ export default function SimpleIsometricMapGrid({
     y: 0,
   });
   const panStartOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const { showNotification, NotificationComponent } = useNotification({
-    anchorOrigin: { vertical: "top", horizontal: "right" },
-    autoHideDurationMs: 3000,
-  });
 
-  // Global frame-corner offsets (apply to all empty-cell diamonds). Adjust here in code.
   const FRAME_OFFSET_DEFAULT = { top: 10, right: 0, bottom: -10, left: 0 };
 
   const handleMouseDown = (row: number, col: number) => {
-    // Prevent placing non-terrain assets on cells without a terrain tile
     const selected = MAP_ASSETS.find((a) => a.id === selectedAsset);
     const targetCell = mapGrid[row]?.[col];
     if (selected && selected.category !== "terrain") {
       if (!targetCell || !targetCell.terrain) {
-        showNotification("Place on a terrain tile first.", "warning");
         setHoveredCell({ row, col });
         return;
       }
     }
-
     setIsDrawing(true);
     onCellClick(row, col);
     setHoveredCell({ row, col });
@@ -84,7 +67,6 @@ export default function SimpleIsometricMapGrid({
       const targetCell = mapGrid[row]?.[col];
       if (selected && selected.category !== "terrain") {
         if (!targetCell || !targetCell.terrain) {
-          showNotification("Place on a terrain tile first.", "warning");
           return;
         }
       }
@@ -93,17 +75,13 @@ export default function SimpleIsometricMapGrid({
   };
 
   const handleMouseLeave = () => {
-    if (!isDrawing) {
-      setHoveredCell(null);
-    }
+    if (!isDrawing) setHoveredCell(null);
   };
 
   const handleMouseUp = () => {
     setIsDrawing(false);
     setTimeout(() => {
-      if (!isDrawing) {
-        setHoveredCell(null);
-      }
+      if (!isDrawing) setHoveredCell(null);
     }, 100);
   };
 
@@ -112,11 +90,23 @@ export default function SimpleIsometricMapGrid({
     return () => window.removeEventListener("mouseup", handleMouseUp);
   }, []);
 
-  // Calculate grid dimensions
+  // Nudge zoom slightly on mount to force a stable layout without requiring manual resize/toggle
+  useEffect(() => {
+    const t1 = setTimeout(() => setZoom((z) => z + 0.0001), 0);
+    const t2 = setTimeout(() => setZoom((z) => Math.max(0.5, z - 0.0001)), 40);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, []);
+
+  // Use local immutable copy of isometric config to avoid any shared mutation from other pages
+  const ISO = useRef({ ...ISOMETRIC_CONFIG });
+
   const gridDimensions = getIsometricGridDimensions(
     GRID_CONFIG.rows,
     GRID_CONFIG.cols,
-    ISOMETRIC_CONFIG
+    ISO.current
   );
 
   return (
@@ -131,9 +121,6 @@ export default function SimpleIsometricMapGrid({
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       }}
     >
-      {/* Toast notifications */}
-      <NotificationComponent />
-      {/* Header with title and controls */}
       <Box sx={{ mb: 2 }}>
         <Box
           sx={{
@@ -149,9 +136,7 @@ export default function SimpleIsometricMapGrid({
           >
             Isometric Map ({GRID_CONFIG.rows}x{GRID_CONFIG.cols})
           </Typography>
-
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-            {/* Zoom controls */}
             <IconButton
               size="small"
               onClick={() => setZoom(Math.max(0.5, zoom - 0.1))}
@@ -173,11 +158,8 @@ export default function SimpleIsometricMapGrid({
             </IconButton>
           </Box>
         </Box>
-
-        {/* Cell info hidden to avoid layout jump (moved to overlay badge) */}
       </Box>
 
-      {/* Isometric grid viewport wrapper (non-scrolling) */}
       <Box
         sx={{
           flexGrow: 0,
@@ -187,7 +169,6 @@ export default function SimpleIsometricMapGrid({
           overflow: "hidden",
         }}
       >
-        {/* Pretty coordinate badge - fixed inside map area */}
         <Box
           sx={{
             position: "absolute",
@@ -208,7 +189,6 @@ export default function SimpleIsometricMapGrid({
         >
           Cell [{hoveredCell?.row ?? "-"}, {hoveredCell?.col ?? "-"}]
         </Box>
-        {/* Scrollable/pannable map container */}
         <Box
           ref={containerRef}
           sx={{
@@ -232,8 +212,7 @@ export default function SimpleIsometricMapGrid({
             panStartOffsetRef.current = { x: panOffset.x, y: panOffset.y };
           }}
           onMouseMove={(e) => {
-            if (!ENABLE_PAN) return;
-            if (!isPanning) return;
+            if (!ENABLE_PAN || !isPanning) return;
             const dx = e.clientX - panStartRef.current.x;
             const dy = e.clientY - panStartRef.current.y;
             setPanOffset({
@@ -262,7 +241,6 @@ export default function SimpleIsometricMapGrid({
               userSelect: "none",
             }}
           >
-            {/* 2D map placement UX, projected to isometric */}
             {mapGrid.map((row) =>
               row.map((cell) => {
                 const terrainAsset = cell.terrain
@@ -271,54 +249,21 @@ export default function SimpleIsometricMapGrid({
                 const objectAsset = cell.object
                   ? MAP_ASSETS.find((a) => a.id === cell.object)
                   : null;
-
-                const pos = gridToIsometric(
-                  cell.row,
-                  cell.col,
-                  ISOMETRIC_CONFIG
-                );
+                const pos = gridToIsometric(cell.row, cell.col, ISO.current);
                 const left = pos.x + gridDimensions.offsetX;
                 const top =
                   pos.y +
                   gridDimensions.offsetY -
                   (cell.row + cell.col) * LIFT_PER_DIAGONAL +
                   (cell.row + cell.col) * DIAGONAL_SPACING;
-                const w = ISOMETRIC_CONFIG.tileWidth;
-                const h = ISOMETRIC_CONFIG.tileHeight;
+                const w = ISO.current.tileWidth;
+                const h = ISO.current.tileHeight;
                 const halfW = w / 2;
                 const halfH = h / 2;
-
                 const isEmpty = !terrainAsset && !objectAsset;
-                const key = `${cell.row}-${cell.col}`;
-                const saved = cornerOffsetsByCell[key] || {
-                  top: 0,
-                  right: 0,
-                  bottom: 0,
-                  left: 0,
-                };
-                const co = {
-                  top: FRAME_OFFSET_DEFAULT.top + saved.top,
-                  right: FRAME_OFFSET_DEFAULT.right + saved.right,
-                  bottom: FRAME_OFFSET_DEFAULT.bottom + saved.bottom,
-                  left: FRAME_OFFSET_DEFAULT.left + saved.left,
-                };
-                // Stack shift: lift object/robot when there are items stacked in this cell
-                const isRobot =
-                  (objectAsset as any)?.category === "robot" ||
-                  (objectAsset?.id?.startsWith &&
-                    objectAsset.id.startsWith("robot_"));
-
-                // Elevation: robots have a base lift; items do NOT stack vertically by count
-                let stackShiftY = 0;
-                if (isRobot) {
-                  stackShiftY = 20; // ROBOT_BASE_LIFT
-                } else {
-                  stackShiftY = 20; // keep constant height for items regardless of itemCount
-                }
                 const isHovered =
                   hoveredCell?.row === cell.row &&
                   hoveredCell?.col === cell.col;
-
                 return (
                   <svg
                     key={`${cell.row}-${cell.col}`}
@@ -337,24 +282,21 @@ export default function SimpleIsometricMapGrid({
                       setHoveredCell({ row: cell.row, col: cell.col });
                       handleMouseEnter(cell.row, cell.col);
                     }}
-                    onMouseLeave={() => {
-                      handleMouseLeave();
-                    }}
+                    onMouseLeave={handleMouseLeave}
                   >
-                    {/* Empty cell: subtle diamond background like 2D grid pattern */}
                     {isEmpty && (
                       <polygon
-                        points={`${halfW},${0 + co.top} ${w},${
-                          halfH + co.right
-                        } ${halfW},${h + co.bottom} 0,${halfH + co.left}`}
+                        points={`${halfW},${
+                          0 + FRAME_OFFSET_DEFAULT.top
+                        } ${w},${halfH + FRAME_OFFSET_DEFAULT.right} ${halfW},${
+                          h + FRAME_OFFSET_DEFAULT.bottom
+                        } 0,${halfH + FRAME_OFFSET_DEFAULT.left}`}
                         fill="#ffffff"
                         stroke="#e5e5e5"
                         strokeWidth="1"
                         opacity="0.6"
                       />
                     )}
-
-                    {/* Terrain image (2D style) */}
                     {terrainAsset?.imagePath && (
                       <image
                         href={terrainAsset.imagePath}
@@ -365,112 +307,64 @@ export default function SimpleIsometricMapGrid({
                         preserveAspectRatio="none"
                       />
                     )}
-
-                    {/* Object image centered */}
-                    {objectAsset?.imagePath &&
-                      (() => {
-                        const isRobot =
-                          (objectAsset as any)?.category === "robot" ||
-                          (objectAsset?.id?.startsWith &&
-                            objectAsset.id.startsWith("robot_"));
-                        const SCALE = isRobot ? 0.85 : 0.5; // items smaller than robots
-                        const ow = w * SCALE;
-                        const oh = h * SCALE;
-                        const ox = (w - ow) / 2;
-                        const oy = (h - oh) / 2 - stackShiftY;
-                        return (
-                          <g>
-                            {objectAsset.category === "item" && (
-                              <title>
-                                {`${objectAsset.name}${
-                                  (cell.itemCount ?? 0) > 1
-                                    ? ` ×${cell.itemCount}`
-                                    : ""
-                                }`}
-                              </title>
-                            )}
-                            <image
-                              href={objectAsset.imagePath}
-                              x={ox}
-                              y={oy}
-                              width={ow}
-                              height={oh}
-                              preserveAspectRatio="xMidYMid meet"
-                              style={{
-                                filter:
-                                  !isRobot && (cell.itemCount ?? 0) > 0
-                                    ? "drop-shadow(0 2px 4px rgba(0,0,0,0.35))"
-                                    : undefined,
-                              }}
-                            />
-                            {/* Visible count badge next to item */}
-                            {objectAsset.category === "item" &&
-                              (cell.itemCount || 0) > 1 && (
-                                <text
-                                  x={ox + ow - 2}
-                                  y={oy + 12}
-                                  textAnchor="end"
-                                  fontSize="11"
-                                  fontWeight="700"
-                                  fill="#ffffff"
-                                  stroke="#000000"
-                                  strokeWidth="0.8"
-                                  style={{ pointerEvents: "none" }}
-                                >
-                                  {`x${cell.itemCount}`}
-                                </text>
-                              )}
-                          </g>
-                        );
-                      })()}
-
-                    {/* Hover preview of selected asset on empty cells */}
-                    {isEmpty &&
-                      isHovered &&
-                      selectedAsset &&
-                      selectedAsset !== "eraser" &&
-                      selectedAsset !== "empty" &&
-                      (() => {
-                        const ghost = MAP_ASSETS.find(
-                          (a) => a.id === selectedAsset
-                        );
-                        if (!ghost || !ghost.imagePath) return null;
-                        if (ghost.category === "terrain") {
+                    {objectAsset?.imagePath && (
+                      <image
+                        href={objectAsset.imagePath}
+                        x={w * 0.075}
+                        y={h * 0.075}
+                        width={w * 0.85}
+                        height={h * 0.85}
+                        preserveAspectRatio="xMidYMid meet"
+                      />
+                    )}
+                    {isHovered && (
+                      <>
+                        <polygon
+                          points={`${halfW},${
+                            0 + FRAME_OFFSET_DEFAULT.top
+                          } ${w},${
+                            halfH + FRAME_OFFSET_DEFAULT.right
+                          } ${halfW},${h + FRAME_OFFSET_DEFAULT.bottom} 0,${
+                            halfH + FRAME_OFFSET_DEFAULT.left
+                          }`}
+                          fill="none"
+                          stroke={THEME_COLORS.primary}
+                          strokeWidth="2"
+                        />
+                        {(() => {
+                          const asset = MAP_ASSETS.find(
+                            (a) => a.id === selectedAsset
+                          );
+                          if (!asset || !asset.imagePath) return null;
+                          if (asset.id === "eraser" || asset.id === "empty")
+                            return null;
+                          if (asset.category === "terrain") {
+                            return (
+                              <image
+                                href={asset.imagePath}
+                                x={0}
+                                y={0}
+                                width={w}
+                                height={h}
+                                preserveAspectRatio="none"
+                                opacity={0.6}
+                              />
+                            );
+                          }
+                          // object preview centered
                           return (
                             <image
-                              href={ghost.imagePath}
-                              x={0}
-                              y={0}
-                              width={w}
-                              height={h}
-                              preserveAspectRatio="none"
-                              opacity={0.55}
+                              href={asset.imagePath}
+                              x={w * 0.075}
+                              y={h * 0.075}
+                              width={w * 0.85}
+                              height={h * 0.85}
+                              preserveAspectRatio="xMidYMid meet"
+                              opacity={0.8}
                             />
                           );
-                        }
-                        return (
-                          <image
-                            href={ghost.imagePath}
-                            x={w * 0.075}
-                            y={h * 0.075}
-                            width={w * 0.85}
-                            height={h * 0.85}
-                            preserveAspectRatio="xMidYMid meet"
-                            opacity={0.7}
-                          />
-                        );
-                      })()}
-
-                    {/* Hover outline like 2D */}
-                    {isHovered && (
-                      <polygon
-                        points={`${halfW},${0 + co.top} ${w},${
-                          halfH + co.right
-                        } ${halfW},${h + co.bottom} 0,${halfH + co.left}`}
-                        fill="none"
-                        stroke={THEME_COLORS.primary}
-                        strokeWidth="2"
-                      />
+                        })()}
+                      </>
                     )}
                   </svg>
                 );
@@ -480,7 +374,7 @@ export default function SimpleIsometricMapGrid({
         </Box>
       </Box>
 
-      {/* Save button removed here; use global Save under Map Info */}
+      {/* Action buttons removed under map for Map Designer */}
     </Paper>
   );
 }

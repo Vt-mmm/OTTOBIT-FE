@@ -1,10 +1,10 @@
 // @mui icons
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import EditLocationAltIcon from "@mui/icons-material/EditLocationAlt";
-import MapIcon from "@mui/icons-material/Map";
+// Removed Map-specific icons; using QuizIcon to represent Challenge
 import SchoolIcon from "@mui/icons-material/School";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import QuizIcon from "@mui/icons-material/Quiz";
+import MapIcon from "@mui/icons-material/Map";
 import PersonIcon from "@mui/icons-material/Person";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
 import { PATH_ADMIN } from "routes/paths";
@@ -25,13 +25,13 @@ function useConfigSidebar() {
       missions: "Tools",
       listNav: [
         {
-          title: "Map Designer",
-          path: PATH_ADMIN.mapDesigner,
-          icon: <EditLocationAltIcon fontSize="medium" />,
+          title: "Challenge Designer",
+          path: PATH_ADMIN.challengeDesigner,
+          icon: <QuizIcon fontSize="medium" />,
         },
         {
-          title: "Map Management",
-          path: PATH_ADMIN.mapManagement,
+          title: "Map Designer",
+          path: PATH_ADMIN.mapDesigner,
           icon: <MapIcon fontSize="medium" />,
         },
       ],
@@ -50,9 +50,15 @@ function useConfigSidebar() {
           icon: <MenuBookIcon fontSize="medium" />,
         },
         {
-          title: "Quản lý Thử thách",
+          title: "Quản lý thử thách",
           path: PATH_ADMIN.challengeManagement,
           icon: <QuizIcon fontSize="medium" />,
+        },
+
+        {
+          title: "Quản lý Bản đồ",
+          path: PATH_ADMIN.mapManagement,
+          icon: <MapIcon fontSize="medium" />,
         },
       ],
     },

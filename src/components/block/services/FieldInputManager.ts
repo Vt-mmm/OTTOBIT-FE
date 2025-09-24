@@ -23,13 +23,13 @@ class FieldInputManager {
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     this.cleanupCallbacks.push(() => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     });
 
     this.isInitialized = true;
-    console.log('[FieldInputManager] Initialized (minimal mode)');
+    console.log("[FieldInputManager] Initialized (minimal mode)");
   }
 
   /**
@@ -37,10 +37,10 @@ class FieldInputManager {
    * CHỈ cleanup DOM overlays bị stuck, KHÔNG touch active fields
    */
   public forceCleanupAll(): void {
-    console.log('[FieldInputManager] Cleaning up persistent overlays');
-    
+    console.log("[FieldInputManager] Cleaning up persistent overlays");
+
     this.cleanupFieldOverlays();
-    
+
     // Additional cleanup sau một chút
     setTimeout(() => {
       this.cleanupFieldOverlays();
@@ -53,22 +53,28 @@ class FieldInputManager {
   private cleanupFieldOverlays(): void {
     // Remove các overlay elements bị stuck
     const overlaySelectors = [
-      '.blocklyHtmlInput',
-      '.blocklyDropdownMenu', 
-      '.blocklyDropDownDiv',
-      '.blocklyFieldTextInput',
-      '.blocklyWidgetDiv > *'
+      ".blocklyHtmlInput",
+      ".blocklyDropdownMenu",
+      ".blocklyDropDownDiv",
+      ".blocklyFieldTextInput",
+      ".blocklyWidgetDiv > *",
     ];
-    
-    overlaySelectors.forEach(selector => {
+
+    overlaySelectors.forEach((selector) => {
       const overlays = document.querySelectorAll(selector);
-      overlays.forEach(overlay => {
+      overlays.forEach((overlay) => {
         // Chỉ remove nếu overlay bị stuck (không có parent workspace)
-        const workspaceParent = overlay.closest('.blocklyWorkspace');
-        if (!workspaceParent && overlay.parentNode && overlay !== document.body) {
+        const workspaceParent = overlay.closest(".blocklyWorkspace");
+        if (
+          !workspaceParent &&
+          overlay.parentNode &&
+          overlay !== document.body
+        ) {
           try {
             overlay.parentNode.removeChild(overlay);
-            console.log(`[FieldInputManager] Removed stuck overlay: ${selector}`);
+            console.log(
+              `[FieldInputManager] Removed stuck overlay: ${selector}`
+            );
           } catch (error) {
             // Element đã bị remove rồi, bỏ qua
           }
@@ -94,19 +100,31 @@ class FieldInputManager {
     }
 
     // Clear lingering position styles trên elements bị stuck
-    const stuckElements = document.querySelectorAll('[style*="position: absolute"], [style*="z-index"]');
-    stuckElements.forEach(el => {
+    const stuckElements = document.querySelectorAll(
+      '[style*="position: absolute"], [style*="z-index"]'
+    );
+    stuckElements.forEach((el) => {
       const htmlEl = el as HTMLElement;
       // Chỉ clear style nếu element không thuộc workspace
-      const workspaceParent = htmlEl.closest('.blocklyWorkspace');
+      const workspaceParent = htmlEl.closest(".blocklyWorkspace");
       if (!workspaceParent && htmlEl.style) {
         if (htmlEl.style.zIndex && parseInt(htmlEl.style.zIndex) > 1000) {
-          htmlEl.style.zIndex = '';
+          htmlEl.style.zIndex = "";
         }
-        if (htmlEl.style.position === 'absolute' && !htmlEl.className.includes('blockly')) {
-          htmlEl.style.position = '';
-          htmlEl.style.left = '';
-          htmlEl.style.top = '';
+        // htmlEl.className có thể là SVGAnimatedString hoặc object khác -> normalize thành string
+        const classNameStr =
+          typeof htmlEl.className === "string"
+            ? htmlEl.className
+            : htmlEl.className && (htmlEl.className as any).baseVal
+            ? String((htmlEl.className as any).baseVal)
+            : "";
+        if (
+          htmlEl.style.position === "absolute" &&
+          !classNameStr.includes("blockly")
+        ) {
+          htmlEl.style.position = "";
+          htmlEl.style.left = "";
+          htmlEl.style.top = "";
         }
       }
     });
@@ -118,7 +136,7 @@ class FieldInputManager {
   public getDebugInfo(): any {
     return {
       isInitialized: this.isInitialized,
-      cleanupCallbacksCount: this.cleanupCallbacks.length
+      cleanupCallbacksCount: this.cleanupCallbacks.length,
     };
   }
 
@@ -126,20 +144,20 @@ class FieldInputManager {
    * Dispose of all resources
    */
   public dispose(): void {
-    console.log('[FieldInputManager] Disposing');
-    
+    console.log("[FieldInputManager] Disposing");
+
     // Force cleanup
     this.forceCleanupAll();
-    
+
     // Remove event listeners
-    this.cleanupCallbacks.forEach(callback => {
+    this.cleanupCallbacks.forEach((callback) => {
       try {
         callback();
       } catch (error) {
-        console.warn('[FieldInputManager] Error in cleanup callback:', error);
+        console.warn("[FieldInputManager] Error in cleanup callback:", error);
       }
     });
-    
+
     this.cleanupCallbacks = [];
     this.isInitialized = false;
   }

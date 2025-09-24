@@ -1,17 +1,9 @@
-import {
-  Box,
-  Paper,
-  Typography,
-  Button,
-  IconButton,
-  Chip,
-} from "@mui/material";
+import { Box, Paper, Typography, IconButton, Chip } from "@mui/material";
 import { useState, useRef, useEffect } from "react";
 import { MapCell } from "common/models";
 import { MAP_ASSETS } from "./mapAssets.config";
 import { THEME_COLORS, GRID_CONFIG } from "./theme.config";
-import SaveIcon from "@mui/icons-material/Save";
-import RefreshIcon from "@mui/icons-material/Refresh";
+// Action buttons removed per request
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 
@@ -19,8 +11,8 @@ interface MapGridSectionProps {
   mapGrid: MapCell[][];
   selectedAsset: string;
   onCellClick: (row: number, col: number) => void;
-  onSaveMap: () => void;
-  onClearMap: () => void;
+  onSaveMap?: () => void;
+  onClearMap?: () => void;
 }
 
 export default function MapGridSection({
@@ -56,6 +48,8 @@ export default function MapGridSection({
   };
 
   const handleMouseEnter = (row: number, col: number) => {
+    setHoveredCell({ row, col });
+    setPreviewAsset(selectedAsset);
     if (isDrawing) {
       onCellClick(row, col);
     }
@@ -334,67 +328,33 @@ export default function MapGridSection({
                         height: "100%",
                         imageRendering: "auto",
                         objectFit: "fill",
-                        opacity: 0.7,
-                        filter: "brightness(1.2) saturate(1.3)",
+                        opacity: 0.6,
                         transition: "all 0.2s ease-in-out",
                         border: `2px solid ${THEME_COLORS.primary}`,
                         borderRadius: 1,
                       }}
                     />
                   );
-                } else {
-                  return (
-                    <Box
-                      sx={{
-                        position: "relative",
-                        width: "85%",
-                        height: "85%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {/* Preview shadow */}
-                      <Box
-                        component="img"
-                        src={asset.imagePath}
-                        alt={asset.name}
-                        sx={{
-                          position: "absolute",
-                          top: 2,
-                          left: 2,
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "contain",
-                          filter: "blur(1px) brightness(0.3)",
-                          opacity: 0.3,
-                          zIndex: 0,
-                        }}
-                      />
-
-                      {/* Preview asset */}
-                      <Box
-                        component="img"
-                        src={asset.imagePath}
-                        alt={asset.name}
-                        sx={{
-                          position: "relative",
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "contain",
-                          imageRendering: "auto",
-                          opacity: 0.8,
-                          filter:
-                            "brightness(1.1) saturate(1.2) drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
-                          transition: "all 0.2s ease-in-out",
-                          border: `2px solid ${THEME_COLORS.primary}`,
-                          borderRadius: 1,
-                          zIndex: 1,
-                        }}
-                      />
-                    </Box>
-                  );
                 }
+                return (
+                  <Box
+                    component="img"
+                    src={asset.imagePath}
+                    alt={asset.name}
+                    sx={{
+                      position: "relative",
+                      width: "85%",
+                      height: "85%",
+                      objectFit: "contain",
+                      imageRendering: "auto",
+                      opacity: 0.8,
+                      transition: "all 0.2s ease-in-out",
+                      border: `2px solid ${THEME_COLORS.primary}`,
+                      borderRadius: 1,
+                      zIndex: 1,
+                    }}
+                  />
+                );
               })()}
             </Box>
           )}
@@ -564,38 +524,7 @@ export default function MapGridSection({
         </Box>
       </Box>
 
-      {/* Action buttons */}
-      <Box sx={{ display: "flex", gap: 2, justifyContent: "center", mt: 2 }}>
-        <Button
-          variant="outlined"
-          startIcon={<RefreshIcon />}
-          onClick={onClearMap}
-          sx={{
-            borderColor: THEME_COLORS.error,
-            color: THEME_COLORS.error,
-            "&:hover": {
-              borderColor: THEME_COLORS.error,
-              bgcolor: `${THEME_COLORS.error}10`,
-            },
-          }}
-        >
-          Clear All
-        </Button>
-
-        <Button
-          variant="contained"
-          startIcon={<SaveIcon />}
-          onClick={onSaveMap}
-          sx={{
-            bgcolor: THEME_COLORS.primary,
-            "&:hover": {
-              bgcolor: THEME_COLORS.primaryDark,
-            },
-          }}
-        >
-          Save Map
-        </Button>
-      </Box>
+      {/* Action buttons removed per request */}
     </Paper>
   );
 }
