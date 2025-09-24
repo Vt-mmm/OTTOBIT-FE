@@ -12,7 +12,7 @@ import {
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getCourseById } from "../../../redux/course/courseSlice";
 import { getLessonsPreview, getLessonProgress } from "../../../redux/lesson/lessonSlice";
-import { LessonStatus } from "../../../common/@types/lesson";
+import { isLessonAccessible } from "../../../utils/lessonUtils";
 import {
   createEnrollment,
   getMyEnrollments,
@@ -95,7 +95,8 @@ export default function CourseDetailSection({
   // Fetch lesson progress for enrolled users
   useEffect(() => {
     if (isUserEnrolled) {
-      dispatch(getLessonProgress({ courseId, page: 1, size: 50 }));
+      // Ensure backend receives correct paging params (PageNumber/PageSize)
+      dispatch(getLessonProgress({ courseId, pageNumber: 1, pageSize: 50 } as any));
     }
   }, [dispatch, courseId, isUserEnrolled]);
 
@@ -201,23 +202,15 @@ export default function CourseDetailSection({
     }
 
     // Import lesson utils to check accessibility - we'll add this after checking if the lesson is accessible
-    // For now, check if it's the first lesson or if previous lessons are completed
-    if (currentLesson.order > 1) {
-      const hasCompletedPreviousLessons = lessons
-        .filter(lesson => lesson.order < currentLesson.order)
-        .every(prevLesson => {
-          const progress = lessonProgresses.find(p => p.lessonId === prevLesson.id);
-          return progress && progress.status === LessonStatus.Completed;
-        });
-
-      if (!hasCompletedPreviousLessons) {
-        setSnackbar({
-          open: true,
-          message: `Vui lòng hoàn thành bài học trước đó để mở khóa "${currentLesson.title}".`,
-          severity: "warning",
-        });
-        return;
-      }
+    // Kiểm tra khả năng truy cập lesson dựa trên lessonProgress
+    const accessible = isLessonAccessible(currentLesson as any, lessonProgresses as any);
+    if (!accessible) {
+    setSnackbar({
+    open: true,
+    message: `Vui lòng hoàn thành bài học trước đó để mở khóa "${currentLesson.title}".`,
+    severity: "warning",
+    });
+    return;
     }
 
     // If accessible, navigate to lesson detail

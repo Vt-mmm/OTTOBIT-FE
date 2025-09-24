@@ -60,7 +60,7 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
   const [workspace, setWorkspace] = useState<any>(null);
   const [loadingChallengeId, setLoadingChallengeId] = useState<string | null>(null);
   const [loadedChallengeId, setLoadedChallengeId] = useState<string | null>(null);
-  const { loadChallenge, onMessage, offMessage } = usePhaserContext();
+  const { loadChallenge, onMessage, offMessage, isReady } = usePhaserContext();
 
   // Reset states when challenge changes
   useEffect(() => {
@@ -69,21 +69,13 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
     }
   }, [challengeId, loadedChallengeId]);
 
-  // Load challenge when Phaser is ready and challengeId is available
+  // Load challenge (immediately if ready; otherwise wait for READY)
   useEffect(() => {
-    if (!challengeId) {
-      return;
-    }
+    if (!challengeId) return;
 
     // Prevent duplicate loading of same challenge
-    if (loadingChallengeId === challengeId) {
-      return;
-    }
-
-    // Skip if challenge already loaded
-    if (loadedChallengeId === challengeId) {
-      return;
-    }
+    if (loadingChallengeId === challengeId) return;
+    if (loadedChallengeId === challengeId) return;
 
     const doLoadChallenge = () => {
       setLoadingChallengeId(challengeId);
@@ -101,6 +93,12 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
         });
     };
 
+    if (isReady) {
+      // Phaser already ready -> load now
+      doLoadChallenge();
+      return; // still register cleanup below
+    }
+
     // Wait for READY message to ensure Phaser is fully initialized
     const handleReady = () => {
       setTimeout(() => {
@@ -114,7 +112,7 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
     return () => {
       offMessage("READY", handleReady);
     };
-  }, [challengeId, loadChallenge, onMessage, offMessage]);
+  }, [challengeId, loadChallenge, onMessage, offMessage, isReady, loadingChallengeId, loadedChallengeId]);
 
   return (
     <Box

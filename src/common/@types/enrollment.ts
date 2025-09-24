@@ -44,6 +44,7 @@ export interface GetEnrollmentsRequest {
 export interface GetMyEnrollmentsRequest {
   pageNumber?: number;
   pageSize?: number;
+  isCompleted?: boolean; // filter per BE: default false
 }
 
 export interface CompleteEnrollmentRequest {

@@ -26,16 +26,20 @@ export const PATH_PUBLIC = {
 
 export const PATH_USER = {
   homepage: path(ROOTS_USER, "/homepage"),
+  // Public listing pages
   courses: path(ROOTS_USER, "/courses"),
   courseDetail: path(ROOTS_USER, "/courses/:id"),
   lessons: path(ROOTS_USER, "/lessons"),
   lessonDetail: path(ROOTS_USER, "/lessons/:id"),
+  // User management pages
+  myCourses: path(ROOTS_USER, "/my-courses"),
   challenges: path(ROOTS_USER, "/challenges"),
   challengeDetail: path(ROOTS_USER, "/challenges/:id"),
   studio: "/studio",
   studioWithChallenge: "/studio/:challengeId",
   profile: path(ROOTS_USER, "/profile"),
   studentProfile: path(ROOTS_USER, "/student-profile"),
+  security: path(ROOTS_USER, "/security"),
 };
 
 export const PATH_ADMIN = {

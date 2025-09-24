@@ -1,128 +1,138 @@
 import React, { useState } from "react";
-import { Container, Box, Typography, Tab, Tabs, Card } from "@mui/material";
-import { Lock as LockIcon } from "@mui/icons-material";
+import { Container, Box, Typography, Paper } from "@mui/material";
+
 import { motion } from "framer-motion";
-import { Header } from "layout/components/header";
+
+import { Sidebar } from "layout/sidebar";
+import { UserProfileHeader } from "layout/components/header";
 import {
   ProfileOverview,
   SecuritySettings,
   EditProfileDialog,
 } from "sections/user/profile";
 import { UpdateProfileForm } from "common/@types";
-import { alpha } from "@mui/material/styles";
+
+// Simple placeholders for future sections
+function CoursesSection() {
+  return (
+    <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+        Khóa học đã tham gia
+      </Typography>
+      <Typography variant="body2" color="text.secondary">
+        Sẽ hiển thị danh sách khóa học của bạn tại đây.
+      </Typography>
+    </Paper>
+  );
+}
+function LessonsSection() {
+  return (
+    <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+        Bài học gần đây
+      </Typography>
+      <Typography variant="body2" color="text.secondary">
+        Sẽ hiển thị danh sách bài học bạn đã tham gia tại đây.
+      </Typography>
+    </Paper>
+  );
+}
 
 const UserProfilePage: React.FC = () => {
-  const [currentTab, setCurrentTab] = useState(0);
+  const [section] = useState<"overview" | "courses" | "lessons" | "security">(
+    "overview"
+  );
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  const handleEditProfile = () => {
-    setEditDialogOpen(true);
-  };
-
-  const handleCloseEditDialog = () => {
+  const handleEditProfile = () => setEditDialogOpen(true);
+  const handleCloseEditDialog = () => setEditDialogOpen(false);
+  const handleSaveProfile = (_data: UpdateProfileForm) =>
     setEditDialogOpen(false);
-  };
 
-  const handleSaveProfile = (_data: UpdateProfileForm) => {
-    // TODO: Implement profile update logic
-    setEditDialogOpen(false);
+  const renderContent = () => {
+    switch (section) {
+      case "overview":
+        return (
+          <Box
+            sx={{
+              display: "block",
+            }}
+          >
+            <ProfileOverview onEditProfile={handleEditProfile} />
+          </Box>
+        );
+      case "courses":
+        return <CoursesSection />;
+      case "lessons":
+        return <LessonsSection />;
+      case "security":
+        return <SecuritySettings />;
+      default:
+        return null;
+    }
   };
 
   return (
     <>
-      <Header />
-      <Box
-        sx={{
-          minHeight: "100vh",
-          background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-          pt: { xs: 10, md: 12 },
-          pb: 6,
-        }}
-      >
-        <Container maxWidth="md">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+      <Box sx={{ minHeight: "100vh", bgcolor: "common.white" }}>
+        <UserProfileHeader
+          title={
+            section === "overview"
+              ? "Hồ sơ cá nhân"
+              : section === "courses"
+              ? "Khóa học của tôi"
+              : section === "lessons"
+              ? "Bài học của tôi"
+              : "Bảo mật tài khoản"
+          }
+        />
+        <Box sx={{ display: "flex", minHeight: "calc(100vh - 64px)" }}>
+          {/* Shared Sidebar */}
+          <Sidebar openNav={false} onCloseNav={() => {}} />
+
+          {/* Main content area */}
+          <Box
+            component="main"
+            sx={{
+              flexGrow: 1,
+              width: { lg: `calc(100% - 280px)` },
+              bgcolor: "common.white",
+              pl: { xs: 3, md: 4 },
+            }}
           >
-            {/* Page Header */}
-            <Box sx={{ mb: 4, textAlign: "center" }}>
-              <Typography
-                variant="h3"
-                sx={{
-                  fontWeight: "bold",
-                  background: "linear-gradient(45deg, #22c55e, #16a34a)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  mb: 2,
-                }}
-              >
-                Hồ sơ cá nhân
-              </Typography>
-              <Typography
-                variant="h6"
-                sx={{
-                  color: "text.secondary",
-                  maxWidth: 600,
-                  mx: "auto",
-                }}
-              >
-                Quản lý thông tin tài khoản và bảo mật
-              </Typography>
-            </Box>
-
-            {/* Profile Overview - Always visible */}
-            <Box sx={{ mb: 4 }}>
-              <ProfileOverview onEditProfile={handleEditProfile} />
-            </Box>
-
-            {/* Tabs for different sections */}
-            <Card
-              sx={{
-                borderRadius: 3,
-                boxShadow: "0 8px 32px rgba(34, 197, 94, 0.15)",
-                border: `1px solid ${alpha("#22c55e", 0.2)}`,
-                overflow: "hidden",
-              }}
+            <Container
+              maxWidth={false}
+              disableGutters
+              sx={{ pt: { xs: 3, md: 4 }, pb: 6, px: 0 }}
             >
-              <Tabs
-                value={currentTab}
-                onChange={(_, newValue) => setCurrentTab(newValue)}
-                sx={{
-                  borderBottom: 1,
-                  borderColor: "divider",
-                  "& .MuiTab-root": {
-                    color: "#6b7280",
-                    "&.Mui-selected": {
-                      color: "#22c55e",
-                    },
-                  },
-                  "& .MuiTabs-indicator": {
-                    backgroundColor: "#22c55e",
-                  },
-                }}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
               >
-                <Tab
-                  icon={<LockIcon />}
-                  label="Bảo mật"
-                  iconPosition="start"
-                  sx={{ textTransform: "none", fontWeight: 500 }}
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 3,
+                    maxWidth: 1080,
+                    mx: "auto",
+                    px: { xs: 2, md: 4 },
+                  }}
+                >
+                  {renderContent()}
+                </Box>
+
+                {/* Edit Profile Dialog */}
+                <EditProfileDialog
+                  open={editDialogOpen}
+                  onClose={handleCloseEditDialog}
+                  onSave={handleSaveProfile}
                 />
-              </Tabs>
-
-              <Box sx={{ p: 0 }}>
-                {currentTab === 0 && <SecuritySettings />}
-              </Box>
-            </Card>
-
-            {/* Edit Profile Dialog */}
-            <EditProfileDialog
-              open={editDialogOpen}
-              onClose={handleCloseEditDialog}
-              onSave={handleSaveProfile}
-            />
-          </motion.div>
-        </Container>
+              </motion.div>
+            </Container>
+          </Box>
+        </Box>
       </Box>
     </>
   );

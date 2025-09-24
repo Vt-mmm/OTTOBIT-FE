@@ -14,8 +14,14 @@ import {
   CircularProgress,
   Container,
 } from "@mui/material";
-import { ChallengeResult, ChallengeProcessResult } from "../../../common/@types/challenge";
-import { isChallengeAccessible, getChallengeProgress } from "../../../utils/challengeUtils";
+import {
+  ChallengeResult,
+  ChallengeProcessResult,
+} from "../../../common/@types/challenge";
+import {
+  isChallengeAccessible,
+  getChallengeProgress,
+} from "../../../utils/challengeUtils";
 
 interface LessonTabletSectionProps {
   challenges: ChallengeResult[];
@@ -465,249 +471,278 @@ const LessonTabletSection: React.FC<LessonTabletSectionProps> = ({
                       }}
                     >
                       {challenges.map((challenge) => {
-                        const isAccessible = isChallengeAccessible(challenge, challengeProcesses);
-                        const progress = getChallengeProgress(challenge.id, challengeProcesses);
-                        
-                        return (
-                        <Grid
-                          item
-                          xs={12}
-                          sm={6}
-                          md={4}
-                          lg={3}
-                          key={challenge.id}
-                          sx={{ display: "flex" }}
-                        >
-                          <Box
-                            sx={{
-                              width: "100%",
-                              height: "auto",
-                              display: "flex",
-                              flexDirection: "column",
-                              position: "relative",
-                              borderRadius: "16px",
-                              overflow: "hidden",
-                              cursor: isAccessible ? "pointer" : "not-allowed",
-                              transition:
-                                "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                              background: isAccessible
-                                ? progress.isCompleted
-                                  ? "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)" // Green for completed
-                                  : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" // Blue for accessible
-                                : "linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)", // Gray for locked
-                              boxShadow: isAccessible 
-                                ? "0 8px 24px rgba(0,0,0,0.15)"
-                                : "0 4px 12px rgba(0,0,0,0.1)",
-                              opacity: isAccessible ? 1 : 0.6,
-                              "&:hover": isAccessible ? {
-                                transform: "translateY(-6px) scale(1.02)",
-                                boxShadow: "0 12px 32px rgba(0,0,0,0.25)",
-                              } : {},
-                            }}
-                            onClick={() => isAccessible && onChallengeSelect(challenge.id)}
-                          >
-                            {/* Challenge Thumbnail */}
-                            <Box
-                              sx={{
-                                position: "relative",
-                                height: { xs: 100, sm: 120, md: 140 },
-                                flex: "0 0 auto",
-                                background: `linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%)`,
-                                backgroundImage: `url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="140" viewBox="0 0 200 140"%3E%3Cdefs%3E%3ClinearGradient id="bg" x1="0%25" y1="0%25" x2="100%25" y2="100%25"%3E%3Cstop offset="0%25" style="stop-color:%23667eea"/%3E%3Cstop offset="100%25" style="stop-color:%23764ba2"/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width="200" height="140" fill="url(%23bg)"/%3E%3Ctext x="100" y="75" text-anchor="middle" fill="white" font-family="Arial" font-size="16" font-weight="bold"%3EThử thách%3C/text%3E%3C/svg%3E')`,
-                                backgroundSize: "cover",
-                                backgroundPosition: "center",
-                                display: "flex",
-                                alignItems: "flex-start",
-                                justifyContent: "space-between",
-                                p: 1.5,
-                              }}
-                            >
-                              {/* Status and Stars */}
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                {/* Progress Status */}
-                                {progress.isCompleted ? (
-                                  <Chip
-                                    label="✓ Hoàn thành"
-                                    size="small"
-                                    sx={{
-                                      bgcolor: "rgba(255,255,255,0.9)",
-                                      color: "#16a34a",
-                                      fontWeight: 600,
-                                      fontSize: "0.7rem"
-                                    }}
-                                  />
-                                ) : !isAccessible ? (
-                                  <Chip
-                                    label="🔒 Bị khóa"
-                                    size="small"
-                                    sx={{
-                                      bgcolor: "rgba(255,255,255,0.9)",
-                                      color: "#6b7280",
-                                      fontWeight: 600,
-                                      fontSize: "0.7rem"
-                                    }}
-                                  />
-                                ) : (
-                                  <Chip
-                                    label="📖 Sẵn sàng"
-                                    size="small"
-                                    sx={{
-                                      bgcolor: "rgba(255,255,255,0.9)",
-                                      color: "#667eea",
-                                      fontWeight: 600,
-                                      fontSize: "0.7rem"
-                                    }}
-                                  />
-                                )}
-                                
-                                {/* Star Rating */}
-                                {progress.stars > 0 && (
-                                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
-                                    {[1, 2, 3].map((star) => (
-                                      <Box
-                                        key={star}
-                                        sx={{
-                                          width: 12,
-                                          height: 12,
-                                          color: star <= progress.stars ? "#fbbf24" : "rgba(255,255,255,0.4)",
-                                          fontSize: "12px",
-                                          display: "flex",
-                                          alignItems: "center",
-                                          justifyContent: "center"
-                                        }}
-                                      >
-                                        ⭐
-                                      </Box>
-                                    ))}
-                                  </Box>
-                                )}
-                              </Box>
-                            </Box>
+                        const isAccessible = isChallengeAccessible(
+                          challenge,
+                          challengeProcesses
+                        );
+                        const progress = getChallengeProgress(
+                          challenge.id,
+                          challengeProcesses
+                        );
 
-                            {/* Challenge Content */}
+                        return (
+                          <Grid
+                            item
+                            xs={12}
+                            sm={6}
+                            md={4}
+                            lg={3}
+                            key={challenge.id}
+                            sx={{ display: "flex" }}
+                          >
                             <Box
                               sx={{
-                                p: 1.5,
-                                background: "white",
+                                width: "100%",
+                                height: "auto",
                                 display: "flex",
                                 flexDirection: "column",
-                                gap: 1,
-                                flex: 1,
-                                minHeight: 160,
+                                position: "relative",
+                                borderRadius: "16px",
+                                overflow: "hidden",
+                                cursor: isAccessible
+                                  ? "pointer"
+                                  : "not-allowed",
+                                transition:
+                                  "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                background: isAccessible
+                                  ? progress.isCompleted
+                                    ? "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)" // Green for completed
+                                    : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" // Blue for accessible
+                                  : "linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)", // Gray for locked
+                                boxShadow: isAccessible
+                                  ? "0 8px 24px rgba(0,0,0,0.15)"
+                                  : "0 4px 12px rgba(0,0,0,0.1)",
+                                opacity: isAccessible ? 1 : 0.6,
+                                "&:hover": isAccessible
+                                  ? {
+                                      transform: "translateY(-6px) scale(1.02)",
+                                      boxShadow: "0 12px 32px rgba(0,0,0,0.25)",
+                                    }
+                                  : {},
                               }}
+                              onClick={() =>
+                                isAccessible && onChallengeSelect(challenge.id)
+                              }
                             >
-                              <Typography
-                                variant="h6"
-                                sx={{
-                                  fontWeight: 600,
-                                  color: "#2e3440",
-                                  mb: 0.5,
-                                  fontSize: "1rem",
-                                }}
-                              >
-                                {challenge.title ||
-                                  `Thử thách ${challenge.order}`}
-                              </Typography>
-                              <Typography
-                                variant="body2"
-                                sx={{
-                                  color: "#6b7280",
-                                  fontSize: "0.85rem",
-                                  lineHeight: 1.4,
-                                  display: "-webkit-box",
-                                  WebkitLineClamp: 2,
-                                  WebkitBoxOrient: "vertical",
-                                  overflow: "hidden",
-                                }}
-                              >
-                                {challenge.description ||
-                                  "Hoàn thành thử thách để tiến bộ"}
-                              </Typography>
-
-                              {/* Challenge Stats */}
+                              {/* Challenge Thumbnail */}
                               <Box
                                 sx={{
+                                  position: "relative",
+                                  height: { xs: 100, sm: 120, md: 140 },
+                                  flex: "0 0 auto",
+                                  background: `linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%)`,
+                                  backgroundImage: `url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="140" viewBox="0 0 200 140"%3E%3Cdefs%3E%3ClinearGradient id="bg" x1="0%25" y1="0%25" x2="100%25" y2="100%25"%3E%3Cstop offset="0%25" style="stop-color:%23667eea"/%3E%3Cstop offset="100%25" style="stop-color:%23764ba2"/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width="200" height="140" fill="url(%23bg)"/%3E%3Ctext x="100" y="75" text-anchor="middle" fill="white" font-family="Arial" font-size="16" font-weight="bold"%3EThử thách%3C/text%3E%3C/svg%3E')`,
+                                  backgroundSize: "cover",
+                                  backgroundPosition: "center",
                                   display: "flex",
-                                  gap: 0.5,
-                                  mt: 1,
-                                  flexWrap: "wrap",
+                                  alignItems: "flex-start",
+                                  justifyContent: "space-between",
+                                  p: 1.5,
                                 }}
                               >
-                                <Chip
-                                  label={`Thứ tự ${challenge.order}`}
-                                  size="small"
-                                  variant="outlined"
-                                  sx={{ fontSize: "0.75rem" }}
-                                />
-                                <Chip
-                                  label={`Độ khó: ${challenge.difficulty}/5`}
-                                  size="small"
-                                  variant="outlined"
-                                  color="primary"
-                                  sx={{ fontSize: "0.75rem" }}
-                                />
-                                {progress.isCompleted && (
-                                  <Chip
-                                    label={`${progress.stars}/3 ⭐`}
-                                    size="small"
-                                    variant="filled"
-                                    sx={{
-                                      bgcolor: "#fbbf24",
-                                      color: "white",
-                                      fontSize: "0.75rem",
-                                      fontWeight: 600
-                                    }}
-                                  />
-                                )}
-                              </Box>
-
-                              <Box sx={{ mt: "auto" }}>
-                                <Button
-                                  fullWidth
-                                  variant="contained"
-                                  disabled={!isAccessible}
+                                {/* Status and Stars */}
+                                <Box
                                   sx={{
-                                    py: 1,
-                                    background: !isAccessible
-                                      ? "#9ca3af" // Gray for locked
-                                      : progress.isCompleted
-                                        ? "linear-gradient(45deg, #f97316 0%, #ea580c 100%)" // Orange for replay
-                                        : "linear-gradient(45deg, #86efac 0%, #22c55e 100%)", // Green for start
-                                    color: "white",
-                                    fontSize: "0.9rem",
-                                    fontWeight: 600,
-                                    textTransform: "none",
-                                    borderRadius: "8px",
-                                    boxShadow: !isAccessible
-                                      ? "0 2px 8px rgba(156, 163, 175, 0.25)"
-                                      : progress.isCompleted
-                                        ? "0 2px 8px rgba(249, 115, 22, 0.25)"
-                                        : "0 2px 8px rgba(34, 197, 94, 0.25)",
-                                    "&:hover": !isAccessible ? {} : {
-                                      background: progress.isCompleted
-                                        ? "linear-gradient(45deg, #ea580c 0%, #f97316 100%)"
-                                        : "linear-gradient(45deg, #22c55e 0%, #86efac 100%)",
-                                      transform: "translateY(-1px)",
-                                      boxShadow: progress.isCompleted
-                                        ? "0 4px 12px rgba(249, 115, 22, 0.35)"
-                                        : "0 4px 12px rgba(34, 197, 94, 0.35)",
-                                    },
-                                    "&:disabled": {
-                                      color: "rgba(255, 255, 255, 0.7)",
-                                      cursor: "not-allowed",
-                                    },
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 1,
                                   }}
                                 >
-                                  {!isAccessible
-                                    ? "🔒 Chưa mở khóa"
-                                    : progress.isCompleted
-                                      ? "🔄 Chơi lại"
-                                      : "🚀 Bắt đầu"}
-                                </Button>
+                                  {/* Progress Status */}
+                                  {progress.isCompleted ? (
+                                    <Chip
+                                      label="✓ Hoàn thành"
+                                      size="small"
+                                      sx={{
+                                        bgcolor: "rgba(255,255,255,0.9)",
+                                        color: "#16a34a",
+                                        fontWeight: 600,
+                                        fontSize: "0.7rem",
+                                      }}
+                                    />
+                                  ) : !isAccessible ? (
+                                    <Chip
+                                      label="🔒 Bị khóa"
+                                      size="small"
+                                      sx={{
+                                        bgcolor: "rgba(255,255,255,0.9)",
+                                        color: "#6b7280",
+                                        fontWeight: 600,
+                                        fontSize: "0.7rem",
+                                      }}
+                                    />
+                                  ) : (
+                                    <Chip
+                                      label="📖 Sẵn sàng"
+                                      size="small"
+                                      sx={{
+                                        bgcolor: "rgba(255,255,255,0.9)",
+                                        color: "#667eea",
+                                        fontWeight: 600,
+                                        fontSize: "0.7rem",
+                                      }}
+                                    />
+                                  )}
+
+                                  {/* Star Rating */}
+                                  {progress.stars > 0 && (
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 0.25,
+                                      }}
+                                    >
+                                      {[1, 2, 3].map((star) => (
+                                        <Box
+                                          key={star}
+                                          sx={{
+                                            width: 12,
+                                            height: 12,
+                                            color:
+                                              star <= progress.stars
+                                                ? "#fbbf24"
+                                                : "rgba(255,255,255,0.4)",
+                                            fontSize: "12px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                          }}
+                                        >
+                                          ⭐
+                                        </Box>
+                                      ))}
+                                    </Box>
+                                  )}
+                                </Box>
+                              </Box>
+
+                              {/* Challenge Content */}
+                              <Box
+                                sx={{
+                                  p: 1.5,
+                                  background: "white",
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  gap: 1,
+                                  flex: 1,
+                                  minHeight: 160,
+                                }}
+                              >
+                                <Typography
+                                  variant="h6"
+                                  sx={{
+                                    fontWeight: 600,
+                                    color: "#2e3440",
+                                    mb: 0.5,
+                                    fontSize: "1rem",
+                                  }}
+                                >
+                                  {challenge.title ||
+                                    `Thử thách ${challenge.order}`}
+                                </Typography>
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    color: "#6b7280",
+                                    fontSize: "0.85rem",
+                                    lineHeight: 1.4,
+                                    display: "-webkit-box",
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: "vertical",
+                                    overflow: "hidden",
+                                  }}
+                                >
+                                  {challenge.description ||
+                                    "Hoàn thành thử thách để tiến bộ"}
+                                </Typography>
+
+                                {/* Challenge Stats */}
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    gap: 0.5,
+                                    mt: 1,
+                                    flexWrap: "wrap",
+                                  }}
+                                >
+                                  <Chip
+                                    label={`Thứ tự ${challenge.order}`}
+                                    size="small"
+                                    variant="outlined"
+                                    sx={{ fontSize: "0.75rem" }}
+                                  />
+                                  <Chip
+                                    label={`Độ khó: ${challenge.difficulty}/5`}
+                                    size="small"
+                                    variant="outlined"
+                                    color="primary"
+                                    sx={{ fontSize: "0.75rem" }}
+                                  />
+                                  {progress.isCompleted && (
+                                    <Chip
+                                      label={`${progress.stars}/3 ⭐`}
+                                      size="small"
+                                      variant="filled"
+                                      sx={{
+                                        bgcolor: "#fbbf24",
+                                        color: "white",
+                                        fontSize: "0.75rem",
+                                        fontWeight: 600,
+                                      }}
+                                    />
+                                  )}
+                                </Box>
+
+                                <Box sx={{ mt: "auto" }}>
+                                  <Button
+                                    fullWidth
+                                    variant="contained"
+                                    disabled={!isAccessible}
+                                    sx={{
+                                      py: 1,
+                                      background: !isAccessible
+                                        ? "#9ca3af" // Gray for locked
+                                        : progress.isCompleted
+                                        ? "linear-gradient(45deg, #f97316 0%, #ea580c 100%)" // Orange for replay
+                                        : "linear-gradient(45deg, #86efac 0%, #22c55e 100%)", // Green for start
+                                      color: "white",
+                                      fontSize: "0.9rem",
+                                      fontWeight: 600,
+                                      textTransform: "none",
+                                      borderRadius: "8px",
+                                      boxShadow: !isAccessible
+                                        ? "0 2px 8px rgba(156, 163, 175, 0.25)"
+                                        : progress.isCompleted
+                                        ? "0 2px 8px rgba(249, 115, 22, 0.25)"
+                                        : "0 2px 8px rgba(34, 197, 94, 0.25)",
+                                      "&:hover": !isAccessible
+                                        ? {}
+                                        : {
+                                            background: progress.isCompleted
+                                              ? "linear-gradient(45deg, #ea580c 0%, #f97316 100%)"
+                                              : "linear-gradient(45deg, #22c55e 0%, #86efac 100%)",
+                                            transform: "translateY(-1px)",
+                                            boxShadow: progress.isCompleted
+                                              ? "0 4px 12px rgba(249, 115, 22, 0.35)"
+                                              : "0 4px 12px rgba(34, 197, 94, 0.35)",
+                                          },
+                                      "&:disabled": {
+                                        color: "rgba(255, 255, 255, 0.7)",
+                                        cursor: "not-allowed",
+                                      },
+                                    }}
+                                  >
+                                    {!isAccessible
+                                      ? " Chưa mở khóa"
+                                      : progress.isCompleted
+                                      ? " Chơi lại"
+                                      : " Bắt đầu"}
+                                  </Button>
+                                </Box>
                               </Box>
                             </Box>
-                          </Box>
-                        </Grid>
+                          </Grid>
                         );
                       })}
                     </Grid>

@@ -207,41 +207,21 @@ const SecuritySettings: React.FC = () => {
       >
         <Card
           sx={{
-            borderRadius: 3,
-            boxShadow: "0 8px 32px rgba(139, 195, 74, 0.15)",
-            border: `1px solid ${alpha("#22c55e", 0.2)}`,
+            borderRadius: 2,
+            boxShadow: 'none',
+            border: (t) => `1px solid ${t.palette.divider}`,
+            bgcolor: 'background.paper'
           }}
         >
-          <CardContent sx={{ p: 3 }}>
-            {/* Header */}
-            <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-              <Box
-                sx={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 2,
-                  bgcolor: alpha("#22c55e", 0.1),
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  mr: 2,
-                }}
-              >
-                <SecurityIcon sx={{ color: "#22c55e", fontSize: 24 }} />
+          <CardContent sx={{ p: 2 }}>
+            {/* Header (compact/neutral) */}
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+              <Box sx={{ width: 36, height: 36, borderRadius: 1, bgcolor: (t) => alpha(t.palette.text.primary, 0.06), display: 'flex', alignItems: 'center', justifyContent: 'center', mr: 1.5 }}>
+                <SecurityIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
               </Box>
               <Box>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    fontWeight: 700,
-                    color: "#22c55e",
-                    mb: 0.5,
-                  }}
-                >
-                  Bảo mật tài khoản
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Quản lý cài đặt bảo mật cho tài khoản của bạn
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                  Cài đặt bảo mật
                 </Typography>
               </Box>
             </Box>
@@ -253,36 +233,33 @@ const SecuritySettings: React.FC = () => {
                   <ListItem
                     sx={{
                       borderRadius: 2,
-                      mb: 1,
-                      "&:hover": {
-                        bgcolor: alpha("#22c55e", 0.05),
+                      mb: 0.5,
+                      '&:hover': {
+                        bgcolor: (t) => t.palette.action.hover,
                       },
-                      transition: "all 0.2s ease",
+                      transition: 'background-color 0.2s ease',
                     }}
                   >
                     <ListItemIcon>
                       <Box
                         sx={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 2,
-                          bgcolor: alpha("#22c55e", 0.1),
+                          width: 36,
+                          height: 36,
+                          borderRadius: 1,
+                          bgcolor: (t) => alpha(t.palette.text.primary, 0.06),
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
                         }}
                       >
                         {React.cloneElement(feature.icon, {
-                          sx: { color: "#22c55e", fontSize: 20 },
+                          sx: { color: 'text.secondary', fontSize: 18 },
                         })}
                       </Box>
                     </ListItemIcon>
                     <ListItemText
                       primary={
-                        <Typography
-                          variant="body1"
-                          sx={{ fontWeight: 600, color: "#22c55e" }}
-                        >
+                        <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.primary' }}>
                           {feature.title}
                         </Typography>
                       }
@@ -295,15 +272,8 @@ const SecuritySettings: React.FC = () => {
                     <Button
                       variant="outlined"
                       onClick={feature.onClick}
-                      sx={{
-                        borderColor: "#22c55e",
-                        color: "#22c55e",
-                        fontWeight: 600,
-                        "&:hover": {
-                          borderColor: "#16a34a",
-                          bgcolor: alpha("#22c55e", 0.1),
-                        },
-                      }}
+                      color="primary"
+                      sx={{ fontWeight: 600 }}
                     >
                       {feature.action}
                     </Button>

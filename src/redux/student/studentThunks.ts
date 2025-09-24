@@ -39,7 +39,8 @@ async function callApiWithRetry<T>(
     } catch (error) {
       lastError = error;
       const axiosError = error as AxiosError;
-      if (axiosError.response?.status === 401) {
+      const status = axiosError.response?.status;
+      if (status === 401 || status === 404) {
         break;
       }
     }
@@ -71,6 +72,9 @@ export const getStudentByUserThunk = createAsyncThunk<
     return response.data.data;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
+    if (err.response?.status === 404) {
+      return rejectWithValue("NO_STUDENT_PROFILE");
+    }
     return rejectWithValue(
       err.response?.data?.message || "Failed to fetch student profile"
     );

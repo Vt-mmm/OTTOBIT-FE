@@ -12,7 +12,6 @@ import {
   Divider,
 } from "@mui/material";
 import {
-  Edit as EditIcon,
   Save as SaveIcon,
   Close as CloseIcon,
 } from "@mui/icons-material";
@@ -156,9 +155,9 @@ export default function StudentProfileEdit({
         <Card 
           sx={{ 
             borderRadius: { xs: 3, md: 4 },
-            boxShadow: "0 8px 32px rgba(249, 115, 22, 0.15)",
-            border: "1px solid rgba(249, 115, 22, 0.1)",
-            bgcolor: "rgba(255,255,255,0.95)",
+            boxShadow: (theme) => `0 8px 32px ${theme.palette.primary.main}20`,
+            border: (theme) => `1px solid ${theme.palette.divider}`,
+            bgcolor: 'background.paper',
             backdropFilter: "blur(16px)",
             maxWidth: 600,
             mx: "auto"
@@ -168,36 +167,38 @@ export default function StudentProfileEdit({
           <Box sx={{ textAlign: "center", mb: 4 }}>
             <Avatar
               sx={{
-                width: { xs: 64, md: 80 },
-                height: { xs: 64, md: 80 },
-                bgcolor: "#f97316",
+                width: { xs: 72, md: 96 },
+                height: { xs: 72, md: 96 },
+                bgcolor: (theme) => theme.palette.primary.light,
                 mx: "auto",
                 mb: 2,
-                boxShadow: "0 4px 20px rgba(249, 115, 22, 0.25)",
-                background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)"
+                p: 1.25,
+                boxShadow: (theme) => `0 8px 24px ${theme.palette.primary.main}40`
               }}
             >
-              <EditIcon sx={{ fontSize: { xs: 28, md: 40 }, color: "white" }} />
+              <Box component="img" src="/asset/IconEdit3D.png" alt="Edit profile"
+                sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              />
             </Avatar>
-            <Typography variant="h5" sx={{ fontWeight: "bold", mb: 1, color: "#1e293b" }}>
-              Chỉnh sửa hồ sơ học viên
+            <Typography variant="h5" sx={{ fontWeight: "bold", mb: 1, color: 'text.primary' }}>
+            Chỉnh sửa hồ sơ học viên
             </Typography>
             <Typography variant="body1" color="text.secondary">
               Cập nhật thông tin cá nhân của bạn
             </Typography>
             {hasChanges && (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="caption" color="#f97316" sx={{ 
-                  fontWeight: "bold",
-                  px: 2,
-                  py: 0.5,
-                  bgcolor: "rgba(249, 115, 22, 0.1)",
-                  borderRadius: 1,
-                  border: "1px solid rgba(249, 115, 22, 0.2)"
-                }}>
-                  Có thay đổi chưa lưu
-                </Typography>
-              </Box>
+            <Box sx={{ mt: 2 }}>
+            <Typography variant="caption" color="primary.main" sx={{ 
+            fontWeight: "bold",
+            px: 2,
+            py: 0.5,
+            bgcolor: (theme) => theme.palette.action.hover,
+            borderRadius: 1,
+            border: (theme) => `1px solid ${theme.palette.divider}`
+            }}>
+            Có thay đổi chưa lưu
+            </Typography>
+            </Box>
             )}
           </Box>
 
@@ -288,6 +289,7 @@ export default function StudentProfileEdit({
             <Box sx={{ display: "flex", gap: 2, mt: 4, justifyContent: "flex-end" }}>
               <Button
                 variant="outlined"
+                color="secondary"
                 onClick={handleReset}
                 disabled={isUpdating}
                 startIcon={<CloseIcon />}
@@ -295,7 +297,7 @@ export default function StudentProfileEdit({
                 Đặt lại
               </Button>
               <Button
-                variant="outlined"
+                variant="text"
                 onClick={onCancel}
                 disabled={isUpdating}
               >
@@ -303,6 +305,7 @@ export default function StudentProfileEdit({
               </Button>
               <Button
                 variant="contained"
+                color="primary"
                 onClick={handleSubmit}
                 disabled={!hasChanges || isUpdating}
                 startIcon={isUpdating ? <CircularProgress size={20} /> : <SaveIcon />}

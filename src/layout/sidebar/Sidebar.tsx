@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Box,
   Drawer,
@@ -14,7 +14,8 @@ import NavSection from "components/nav-section/NavSection";
 import { Role } from "common/enums";
 import { useAppSelector } from "store/config";
 import { useConfigSidebar } from "./useConfigSidebar";
-import { Close } from "@mui/icons-material";
+import { Close, ArrowBack } from "@mui/icons-material";
+import { PATH_USER } from "routes/paths";
 // Logo placeholder sẽ thay thế sau
 
 // ----------------------------------------------------------------------
@@ -34,40 +35,15 @@ const slideInLeft = {
   },
 };
 
-const floatAnimation = {
-  "@keyframes float": {
-    "0%": { transform: "translateY(0px)" },
-    "50%": { transform: "translateY(-8px)" },
-    "100%": { transform: "translateY(0px)" },
-  },
-};
-
 export function Sidebar({ openNav, onCloseNav }: SidebarProps) {
   const { pathname } = useLocation();
-  const { navAdmin } = useConfigSidebar();
+  const navigate = useNavigate();
+  const { navAdmin, navUser } = useConfigSidebar();
   const { userAuth } = useAppSelector((state) => state.auth);
   const isDesktop = useResponsive("up", "lg");
   const [hoveredSection, setHoveredSection] = useState<number | null>(null);
 
-  // Để track vị trí chuột cho hiệu ứng 3D
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const sidebarRef = useRef<HTMLDivElement>(null);
-
-  // Xử lý di chuyển chuột để tạo hiệu ứng 3D
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!sidebarRef.current) return;
-
-    const rect = sidebarRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5; // -0.5 to 0.5
-    const y = (e.clientY - rect.top) / rect.height - 0.5; // -0.5 to 0.5
-
-    setMousePosition({ x, y });
-  };
-
-  // Reset vị trí khi chuột ra khỏi sidebar
-  const handleMouseLeave = () => {
-    setMousePosition({ x: 0, y: 0 });
-  };
 
   useEffect(() => {
     if (openNav) onCloseNav();
@@ -76,207 +52,167 @@ export function Sidebar({ openNav, onCloseNav }: SidebarProps) {
   const renderContent = (
     <Stack
       ref={sidebarRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
       sx={() => ({
-        height: "100vh",
+        height: "100%",
         overflowY: "auto",
         overflowX: "hidden",
-        background:
-          "linear-gradient(180deg, rgba(224, 242, 245, 0.95) 0%, rgba(204, 230, 233, 0.95) 100%)",
-        backdropFilter: "blur(10px)",
-        boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)",
+        backgroundColor: "#fff",
+        borderRight: "1px solid rgba(0,0,0,0.06)",
+        boxShadow: "none",
         p: 2,
-        borderRadius: "16px",
-        border: "1px solid rgba(255, 255, 255, 0.18)",
-        transform: `perspective(1000px) rotateY(${
-          mousePosition.x * 5
-        }deg) rotateX(${-mousePosition.y * 5}deg)`,
-        transition: "transform 0.2s ease-out",
-        transformStyle: "preserve-3d",
-        maxWidth: NAV_WIDTH - 2,
+        borderRadius: 0,
+        border: "none",
+        transform: "none",
+        transition: "none",
+        transformStyle: "flat",
+        maxWidth: NAV_WIDTH,
         "&::-webkit-scrollbar": {
           width: "6px",
           background: "transparent",
         },
         "&::-webkit-scrollbar-thumb": {
-          backgroundColor: alpha("#70c8d2", 0.0),
+          backgroundColor: alpha("#9e9e9e", 0.2),
           borderRadius: "10px",
           transition: "background-color 0.3s ease",
         },
         "&:hover::-webkit-scrollbar-thumb": {
-          backgroundColor: alpha("#70c8d2", 0.25),
+          backgroundColor: alpha("#9e9e9e", 0.35),
         },
         "& > *": {
           maxWidth: "100%",
         },
       })}
     >
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          mb: 3,
-          transform: "perspective(1000px) rotateY(5deg) translateZ(20px)",
-          transition: "transform 0.3s ease",
-          animation: `float 6s ease-in-out infinite`,
-          ...floatAnimation,
-          maxWidth: "100%",
-          "&:hover": {
-            transform:
-              "perspective(1000px) rotateY(0deg) scale(1.03) translateZ(30px)",
-          },
-        }}
-      >
-        <Box
-          sx={{
-            textAlign: "center",
-            padding: 1,
-            borderRadius: 2,
-            background: "linear-gradient(135deg, #e5f9f4 0%, #e5f0f1 100%)",
-            boxShadow: "0 8px 32px 0 rgba(112, 200, 210, 0.3)",
-            border: "1.5px solid #70c8d2",
-            transition: "all 0.3s ease",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: 60,
-            width: 60,
-            fontSize: "1.8rem",
-            fontWeight: 700,
-            color: "#70c8d2",
-            "&:hover": {
-              boxShadow: "0 10px 30px rgba(110, 204, 217, 0.5)",
-            },
-          }}
-        >
-          O
+      {/* Top bar: show Back for user; show Logo for admin */}
+      {userAuth?.roles?.includes(Role.OTTOBIT_ADMIN) ? (
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2, px: 0.5 }}>
+          <Box
+            component="img"
+            src="/asset/OttobitLogoText.png"
+            alt="Ottobit Logo"
+            sx={{ height: 28, width: "auto" }}
+          />
         </Box>
-      </Box>
+      ) : (
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+          <IconButton
+            size="small"
+            onClick={() => navigate(PATH_USER.homepage)}
+            aria-label="back"
+          >
+            <ArrowBack />
+          </IconButton>
+          <Typography variant="subtitle2" sx={{ ml: 1 }}>
+            Quay lại
+          </Typography>
+        </Box>
+      )}
 
-      {userAuth?.roles?.includes(Role.OTTOBIT_ADMIN) && (
-        <Box sx={{ maxWidth: "100%" }}>
-          {navAdmin.map((navItem, index) =>
-            navItem.missions && navItem.listNav ? (
-              <Box
-                key={index}
-                sx={{
-                  mb: 3,
-                  animation: `slideInLeft 0.3s ease forwards ${index * 0.1}s`,
-                  opacity: 0,
-                  ...slideInLeft,
-                  transform:
-                    hoveredSection === index
-                      ? "perspective(1000px) translateZ(15px)"
-                      : "perspective(1000px) translateZ(0px)",
-                  transition: "transform 0.3s ease",
-                  maxWidth: "100%",
-                }}
-                onMouseEnter={() => setHoveredSection(index)}
-                onMouseLeave={() => setHoveredSection(null)}
+      {(userAuth?.roles?.includes(Role.OTTOBIT_ADMIN) ? navAdmin : navUser).map(
+        (navItem, index) =>
+          navItem.missions && navItem.listNav ? (
+            <Box
+              key={index}
+              sx={{
+                mb: 3,
+                animation: `slideInLeft 0.3s ease forwards ${index * 0.1}s`,
+                opacity: 0,
+                ...slideInLeft,
+                transform:
+                  hoveredSection === index
+                    ? "perspective(1000px) translateZ(15px)"
+                    : "perspective(1000px) translateZ(0px)",
+                transition: "transform 0.3s ease",
+                maxWidth: "100%",
+              }}
+              onMouseEnter={() => setHoveredSection(index)}
+              onMouseLeave={() => setHoveredSection(null)}
+            >
+              <Typography
+                variant="subtitle2"
+                sx={() => ({
+                  ml: 1,
+                  fontWeight: 600,
+                  textTransform: "none",
+                  color: "text.secondary",
+                  letterSpacing: 0.2,
+                  mb: 1,
+                  display: "block",
+                  whiteSpace: "nowrap",
+                })}
               >
-                <Typography
-                  variant="caption"
-                  sx={() => ({
-                    ml: 1,
-                    fontWeight: "bold",
-                    textTransform: "uppercase",
-                    background:
-                      "linear-gradient(90deg, #70c8d2 0%, #5ab9c3 100%)",
-                    backgroundClip: "text",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    letterSpacing: 1.2,
-                    mb: 1,
-                    textShadow: "0 1px 2px rgba(0,0,0,0.05)",
-                    display: "block",
-                    whiteSpace: "nowrap",
-                  })}
-                >
-                  {navItem.missions}
-                </Typography>
-                <Box
-                  sx={{
+                {navItem.missions}
+              </Typography>
+              <Box
+                sx={{
+                  position: "relative",
+                  maxWidth: "100%",
+                  "& .MuiListItemButton-root": {
+                    transition: "background-color 0.2s, color 0.2s",
+                    borderRadius: "8px",
+                    mb: 0.25,
+                    color: (theme: any) => theme.palette.text.primary,
                     position: "relative",
-                    maxWidth: "100%",
-                    "& .MuiListItemButton-root": {
-                      transition: "all 0.3s",
-                      borderRadius: "12px",
-                      mb: 1,
-                      color: "#4A7C82",
-                      position: "relative",
-                      overflow: "hidden",
-                      "&::before": {
-                        content: '""',
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        background:
-                          "linear-gradient(45deg, rgba(112, 200, 210, 0.02), rgba(112, 200, 210, 0.05))",
-                        opacity: 0,
-                        transition: "opacity 0.3s ease",
-                        zIndex: -1,
-                      },
-                    },
-                    "& .MuiListItemButton-root:hover": {
-                      backgroundColor: "rgba(112, 200, 210, 0.08)",
-                      color: "#5ab9c3",
-                      boxShadow: "0 4px 20px rgba(112, 200, 210, 0.15)",
-                      transform: "translateY(-2px) translateZ(10px)",
-                      "&::before": {
-                        opacity: 1,
-                      },
-                    },
-                    "& .Mui-selected": {
-                      background: "linear-gradient(45deg, #70c8d2, #5ab9c3)",
-                      color: "#FFFFFF",
-                      boxShadow: "0 4px 15px rgba(112, 200, 210, 0.25)",
-                    },
-                    "& .Mui-selected:hover": {
-                      background: "linear-gradient(45deg, #65bcc6, #51a8b0)",
-                      color: "#FFFFFF",
-                      transform: "translateY(-2px) translateZ(10px)",
-                    },
-                    "& .MuiListItemIcon-root": {
-                      color: "inherit",
-                      minWidth: 40,
-                      filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
-                    },
+                    overflow: "hidden",
+                    paddingTop: 2,
+                    paddingBottom: 1,
+                    paddingLeft: 1,
+                    paddingRight: 2,
+                    minHeight: 30,
+                  },
+                  "& .MuiListItemButton-root:hover": {
+                    backgroundColor: (theme: any) => theme.palette.action.hover,
+                    color: (theme: any) => theme.palette.text.primary,
+                  },
+                  "& .Mui-selected": {
+                    backgroundColor: (theme: any) =>
+                      theme.palette.action.selected,
+                    color: (theme: any) => theme.palette.text.primary,
                     "& .MuiListItemText-primary": {
-                      fontSize: "0.95rem",
-                      fontWeight: "500",
-                      color: "inherit",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
+                      fontWeight: 700,
                     },
-                    "& .MuiListItemButton-root .MuiListItemIcon-root": {
-                      transition: "transform 0.2s ease",
-                    },
-                    "& .MuiListItemButton-root:hover .MuiListItemIcon-root": {
-                      transform: "scale(1.1)",
-                    },
-                  }}
-                >
-                  <NavSection data={navItem.listNav} />
-                </Box>
-                {index < navAdmin.length - 1 && (
-                  <Divider
-                    sx={{
-                      mt: 2,
-                      mb: 2,
-                      opacity: 0.5,
-                      borderColor: alpha("#70c8d2", 0.2),
-                    }}
-                  />
-                )}
+                  },
+                  "& .Mui-selected:hover": {
+                    backgroundColor: (theme: any) =>
+                      theme.palette.action.selected,
+                    color: (theme: any) => theme.palette.text.primary,
+                  },
+                  "& .MuiListItemIcon-root": {
+                    color: (theme: any) => theme.palette.text.secondary,
+                    minWidth: 36,
+                  },
+                  "& .MuiListItemText-primary": {
+                    fontSize: "0.9rem",
+                    fontWeight: 500,
+                    color: (theme: any) => theme.palette.text.primary,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  },
+                  "& .MuiListItemIcon-root svg": {
+                    fontSize: 18,
+                  },
+                }}
+              >
+                <NavSection data={navItem.listNav} />
               </Box>
-            ) : null
-          )}
-        </Box>
+              {(userAuth?.roles?.includes(Role.OTTOBIT_ADMIN)
+                ? navAdmin
+                : navUser
+              ).length -
+                1 >
+                index && (
+                <Divider
+                  sx={{
+                    mt: 2,
+                    mb: 2,
+                    opacity: 0.5,
+                    borderColor: alpha("#70c8d2", 0.2),
+                  }}
+                />
+              )}
+            </Box>
+          ) : null
       )}
 
       {/* Version badge */}
@@ -307,7 +243,7 @@ export function Sidebar({ openNav, onCloseNav }: SidebarProps) {
             boxShadow: "0 2px 8px rgba(112, 200, 210, 0.1)",
           }}
         >
-          Tell Me v1.0
+          Ottobit v1.0
         </Typography>
       </Box>
     </Stack>
@@ -328,10 +264,10 @@ export function Sidebar({ openNav, onCloseNav }: SidebarProps) {
           PaperProps={{
             sx: {
               width: NAV_WIDTH,
-              bgcolor: "transparent",
+              bgcolor: "background.paper",
               boxShadow: "none",
-              overflow: "visible",
-              borderRight: "none",
+              overflow: "hidden",
+              borderRight: "1px solid rgba(0,0,0,0.06)",
               "&::-webkit-scrollbar": {
                 display: "none",
               },
@@ -350,9 +286,9 @@ export function Sidebar({ openNav, onCloseNav }: SidebarProps) {
           PaperProps={{
             sx: {
               width: NAV_WIDTH,
-              bgcolor: "transparent",
+              bgcolor: "background.paper",
               boxShadow: "none",
-              overflow: "visible",
+              overflow: "hidden",
             },
           }}
         >
