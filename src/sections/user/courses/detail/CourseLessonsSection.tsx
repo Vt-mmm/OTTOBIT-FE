@@ -19,11 +19,11 @@ import {
   Lock as LockIcon,
 } from "@mui/icons-material";
 import { Lesson, LessonProgressResult } from "common/@types/lesson";
-import { 
-  isLessonAccessible, 
-  getLessonProgress, 
-  getLessonStatusText, 
-  getLessonButtonText 
+import {
+  isLessonAccessible,
+  getLessonProgress,
+  getLessonStatusText,
+  getLessonButtonText,
 } from "../../../../utils/lessonUtils";
 
 interface CourseLessonsSectionProps {
@@ -40,9 +40,21 @@ export default function CourseLessonsSection({
   onLessonClick,
 }: CourseLessonsSectionProps) {
   return (
-    <Box sx={{ bgcolor: "white", border: "1px solid #e0e0e0", borderRadius: 1, mb: 4 }}>
+    <Box
+      sx={{
+        bgcolor: "white",
+        border: "1px solid #e0e0e0",
+        borderRadius: 1,
+        mb: 4,
+      }}
+    >
       <Box sx={{ p: 3, pb: 0 }}>
-        <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600 }}>
+        <Typography
+          variant="h5"
+          component="h2"
+          gutterBottom
+          sx={{ fontWeight: 600 }}
+        >
           Nội dung khóa học
         </Typography>
         <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -63,93 +75,124 @@ export default function CourseLessonsSection({
       ) : (
         <List sx={{ pt: 0 }}>
           {lessons.map((lesson, index) => {
-            const isAccessible = isUserEnrolled ? isLessonAccessible(lesson, lessonProgresses) : index === 0;
+            const isAccessible = isUserEnrolled
+              ? isLessonAccessible(lesson, lessonProgresses)
+              : index === 0;
             const progress = getLessonProgress(lesson.id, lessonProgresses);
             const statusText = getLessonStatusText(lesson, lessonProgresses);
             const buttonText = getLessonButtonText(lesson, lessonProgresses);
-            
+            const challengeCount = (progress as any).totalChallenges ?? (lesson as any).challengesCount ?? 0;
+
             return (
               <React.Fragment key={lesson.id}>
                 <ListItem disablePadding>
-                  <ListItemButton 
+                  <ListItemButton
                     onClick={() => isAccessible && onLessonClick(lesson.id)}
                     disabled={!isAccessible}
-                    sx={{ 
+                    sx={{
                       py: 2.5,
                       opacity: !isAccessible ? 0.6 : 1,
                       "&:hover": {
                         bgcolor: !isAccessible ? "transparent" : "action.hover",
-                      }
+                      },
                     }}
                   >
                     <ListItemIcon>
-                      <Avatar 
-                        sx={{ 
-                          width: 48, 
-                          height: 48, 
-                          bgcolor: !isAccessible 
-                            ? "grey.400" 
-                            : progress.isCompleted 
-                              ? "#4caf50" 
-                              : progress.isInProgress
-                                ? "#ff9800"
-                                : index === 0 
-                                  ? "#4caf50" 
-                                  : "primary.main",
+                      <Avatar
+                        sx={{
+                          width: 48,
+                          height: 48,
+                          bgcolor: !isAccessible
+                            ? "grey.400"
+                            : progress.isCompleted
+                            ? "#4caf50"
+                            : progress.isInProgress
+                            ? "#ff9800"
+                            : index === 0
+                            ? "#4caf50"
+                            : "primary.main",
                           fontSize: "1rem",
-                          fontWeight: 600
+                          fontWeight: 600,
                         }}
                       >
-                        {!isAccessible ? <LockIcon /> : progress.isCompleted ? "✓" : lesson.order}
+                        {!isAccessible ? (
+                          <LockIcon />
+                        ) : progress.isCompleted ? (
+                          "✓"
+                        ) : (
+                          lesson.order
+                        )}
                       </Avatar>
                     </ListItemIcon>
-                    
+
                     <ListItemText
                       primary={
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            mb: 0.5,
+                          }}
+                        >
                           <Typography variant="subtitle1" fontWeight={600}>
                             {lesson.title}
                           </Typography>
                           {/* Status Chip */}
-                          <Chip 
-                            label={isUserEnrolled ? statusText : index === 0 ? "Miễn phí" : "Cần tham gia"}
-                            size="small" 
-                            sx={{ 
+                          <Chip
+                            label={
+                              isUserEnrolled
+                                ? statusText
+                                : index === 0
+                                ? "Miễn phí"
+                                : "Cần tham gia"
+                            }
+                            size="small"
+                            sx={{
                               bgcolor: !isAccessible
                                 ? "#fafafa"
                                 : progress.isCompleted
-                                  ? "#e8f5e9"
-                                  : progress.isInProgress
-                                    ? "#fff3e0"
-                                    : index === 0
-                                      ? "#e8f5e9"
-                                      : "#e3f2fd",
+                                ? "#e8f5e9"
+                                : progress.isInProgress
+                                ? "#fff3e0"
+                                : index === 0
+                                ? "#e8f5e9"
+                                : "#e3f2fd",
                               color: !isAccessible
                                 ? "#757575"
                                 : progress.isCompleted
-                                  ? "#2e7d32"
-                                  : progress.isInProgress
-                                    ? "#f57c00"
-                                    : index === 0
-                                      ? "#2e7d32"
-                                      : "#1976d2",
-                              fontWeight: 600
-                            }} 
+                                ? "#2e7d32"
+                                : progress.isInProgress
+                                ? "#f57c00"
+                                : index === 0
+                                ? "#2e7d32"
+                                : "#1976d2",
+                              fontWeight: 600,
+                            }}
                           />
                         </Box>
                       }
                       secondary={
                         <Box>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mb: 1 }}
+                          >
                             {lesson.content}
                           </Typography>
-                          
-                          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+
+                          <Box
+                            sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}
+                          >
                             <Chip
-                              label={`${lesson.challengesCount || 0} thử thách`}
+                              label={`${challengeCount} thử thách`}
                               size="small"
                               variant="outlined"
-                              sx={{ borderColor: "primary.main", color: "primary.main" }}
+                              sx={{
+                                borderColor: "primary.main",
+                                color: "primary.main",
+                              }}
                             />
                             <Chip
                               label={`${lesson.durationInMinutes} phút`}
@@ -161,10 +204,12 @@ export default function CourseLessonsSection({
                         </Box>
                       }
                     />
-                    
+
                     <Button
                       variant={isAccessible ? "contained" : "outlined"}
-                      startIcon={!isAccessible ? <LockIcon /> : <PlayArrowIcon />}
+                      startIcon={
+                        !isAccessible ? <LockIcon /> : <PlayArrowIcon />
+                      }
                       size="medium"
                       disabled={!isAccessible}
                       onClick={(e) => {
@@ -174,22 +219,26 @@ export default function CourseLessonsSection({
                       sx={{
                         minWidth: 120,
                         ...(isAccessible && {
-                          bgcolor: progress.isCompleted 
+                          bgcolor: progress.isCompleted
                             ? "#ff9800"
                             : progress.isInProgress
-                              ? "#2196f3"
-                              : "#4caf50",
-                          "&:hover": { 
-                            bgcolor: progress.isCompleted 
+                            ? "#2196f3"
+                            : "#4caf50",
+                          "&:hover": {
+                            bgcolor: progress.isCompleted
                               ? "#f57c00"
                               : progress.isInProgress
-                                ? "#1976d2" 
-                                : "#43a047"
-                          }
-                        })
+                              ? "#1976d2"
+                              : "#43a047",
+                          },
+                        }),
                       }}
                     >
-                      {isUserEnrolled ? buttonText : index === 0 ? "Thử ngay" : "Tham gia"}
+                      {isUserEnrolled
+                        ? buttonText
+                        : index === 0
+                        ? "Thử ngay"
+                        : "Tham gia"}
                     </Button>
                   </ListItemButton>
                 </ListItem>
