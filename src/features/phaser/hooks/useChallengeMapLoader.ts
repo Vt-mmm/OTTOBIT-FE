@@ -13,6 +13,8 @@ import {
   formatDataForPhaser
 } from "../converters";
 
+const STUDIO_DEBUG = false;
+
 export function useChallengeMapLoader(
   sendMessageFn?: (message: PhaserMessage) => Promise<void>,
   clearErrorFn?: () => void
@@ -46,14 +48,15 @@ export function useChallengeMapLoader(
         // Get map data from challenge if not provided (pass challengeData if available)
         const mapData = mapJson || getMapJsonFromChallenge(challengeId, challengeData);
         
-        // 🔍 Debug: Log map data retrieval
-        console.log('🗺 Map data retrieval debug:', {
-          challengeId,
-          hasProvidedMapJson: !!mapJson,
-          hasRetrievedMapData: !!mapData,
-          mapDataKeys: mapData ? Object.keys(mapData) : [],
-          mapDataSample: mapData ? JSON.stringify(mapData).substring(0, 300) : 'N/A'
-        });
+        // Debug: Log a compact summary only when enabled
+        if (STUDIO_DEBUG) {
+          console.debug('🗺 Map data ready', {
+            challengeId,
+            hasProvidedMapJson: !!mapJson,
+            hasRetrievedMapData: !!mapData,
+            mapDataKeys: mapData ? Object.keys(mapData) : [],
+          });
+        }
         
         if (!mapData) {
           throw new Error(`No map data found for challenge ${challengeId}`);
@@ -143,17 +146,15 @@ export function useChallengeMapLoader(
           },
         };
         
-        // 🔍 Debug: Log message being sent to Phaser
-        console.log('🎮 Sending message to Phaser:', {
-          challengeId,
-          messageType: message.type,
-          hasMapJson: !!fixedMapJson,
-          mapJsonKeys: fixedMapJson ? Object.keys(fixedMapJson) : [],
-          mapJsonSample: fixedMapJson ? JSON.stringify(fixedMapJson).substring(0, 200) : 'N/A',
-          hasChallengeJson: !!fixedChallengeJson,
-          challengeJsonKeys: fixedChallengeJson ? Object.keys(fixedChallengeJson) : [],
-          fullMessage: message
-        });
+        // Debug: Compact message summary (avoid dumping full data)
+        if (STUDIO_DEBUG) {
+          console.debug('🎮 Send START_MAP to Phaser', {
+            challengeId,
+            type: message.type,
+            hasMapJson: !!fixedMapJson,
+            hasChallengeJson: !!fixedChallengeJson,
+          });
+        }
         
         try {
           await sendMessageFn(message);
@@ -198,16 +199,14 @@ export function useChallengeMapLoader(
         // Ensure challenge data is loaded
         const challengeData = await ensureChallengeLoaded(challengeId);
         
-        // 🔍 Debug: Log challenge data loading
-        console.log('🎯 Challenge data loading debug:', {
-          challengeId,
-          hasChallengeData: !!challengeData,
-          challengeDataKeys: challengeData ? Object.keys(challengeData) : [],
-          hasMapJson: !!(challengeData as any)?.mapJson,
-          hasChallengeJson: !!(challengeData as any)?.challengeJson,
-          mapJsonLength: (challengeData as any)?.mapJson?.length || 0,
-          challengeJsonLength: (challengeData as any)?.challengeJson?.length || 0
-        });
+        if (STUDIO_DEBUG) {
+          console.debug('🎯 Challenge data loaded', {
+            challengeId,
+            hasChallengeData: !!challengeData,
+            hasMapJson: !!(challengeData as any)?.mapJson,
+            hasChallengeJson: !!(challengeData as any)?.challengeJson,
+          });
+        }
         
         if (!challengeData) {
           throw new Error(`Challenge ${challengeId} not found`);

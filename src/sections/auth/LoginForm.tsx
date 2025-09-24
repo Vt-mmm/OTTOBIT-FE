@@ -237,6 +237,14 @@ const LoginForm: React.FC = () => {
                       "& .MuiInputBase-input": {
                         padding: "14px 16px",
                       },
+                      // Fix Chrome autofill background not full-width vs adornment
+                      "& input:-webkit-autofill": {
+                        WebkitBoxShadow: "0 0 0 1000px #ffffff inset",
+                        boxShadow: "0 0 0 1000px #ffffff inset",
+                        WebkitTextFillColor: "#1a1a1a",
+                        caretColor: "#1a1a1a",
+                        transition: "background-color 9999s ease-out 0s",
+                      },
                     }}
                   />
                 )}
@@ -275,6 +283,14 @@ const LoginForm: React.FC = () => {
                       },
                       "& .MuiInputBase-input": {
                         padding: "14px 16px",
+                      },
+                      // Fix Chrome autofill background not full-width vs adornment
+                      "& input:-webkit-autofill": {
+                        WebkitBoxShadow: "0 0 0 1000px #ffffff inset",
+                        boxShadow: "0 0 0 1000px #ffffff inset",
+                        WebkitTextFillColor: "#1a1a1a",
+                        caretColor: "#1a1a1a",
+                        transition: "background-color 9999s ease-out 0s",
                       },
                     }}
                     InputProps={{
@@ -354,31 +370,31 @@ const LoginForm: React.FC = () => {
               </Typography>
             </Divider>
 
-            <Stack 
-              direction={{ xs: "column", sm: "row" }} 
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
               spacing={2}
-              sx={{ 
+              sx={{
+                alignItems: { xs: "stretch", sm: "center" },
                 "& > *": {
-                  minHeight: { xs: "48px", sm: "44px" } // Consistent button height
-                }
+                  minHeight: { xs: "48px", sm: "48px" },
+                },
               }}
             >
               {/* Google Login Button */}
               <Box
                 sx={{
                   flex: 1,
+                  overflow: "hidden",
                   "& > div": {
                     width: "100% !important",
+                    margin: "0 !important",
                   },
                   "& > div > div": {
                     width: "100% !important",
+                    margin: "0 !important",
                     borderRadius: "8px !important",
-                    border: "1px solid #e2e8f0 !important",
-                    minHeight: "48px !important", // Ensure consistent height
-                    "&:hover": {
-                      borderColor: "#22c55e !important",
-                      backgroundColor: "rgba(34, 197, 94, 0.04) !important",
-                    },
+                    boxSizing: "border-box !important",
+                    minHeight: "40px !important",
                   },
                 }}
               >
@@ -396,43 +412,6 @@ const LoginForm: React.FC = () => {
                   shape="rectangular"
                 />
               </Box>
-
-              <Button
-                variant="outlined"
-                fullWidth
-                sx={{
-                  py: { xs: 1.8, sm: 1.5 },
-                  borderRadius: 2,
-                  borderColor: "#e2e8f0",
-                  color: "#374151",
-                  textTransform: "none",
-                  fontSize: { xs: "14px", sm: "16px" },
-                  "&:hover": {
-                    borderColor: "#22c55e",
-                    backgroundColor: "rgba(34, 197, 94, 0.04)",
-                  },
-                }}
-                startIcon={
-                  <Box
-                    sx={{
-                      width: "18px",
-                      height: "18px",
-                      backgroundColor: "#1877f2",
-                      borderRadius: "4px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "white",
-                      fontSize: "12px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    f
-                  </Box>
-                }
-              >
-                Facebook
-              </Button>
             </Stack>
 
             <Box sx={{ textAlign: "center", mt: 2 }}>

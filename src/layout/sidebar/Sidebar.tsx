@@ -83,15 +83,30 @@ export function Sidebar({ openNav, onCloseNav }: SidebarProps) {
         },
       })}
     >
-      {/* Top bar with Back button for user sidebar */}
-      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-        <IconButton size="small" onClick={() => navigate(PATH_USER.homepage)} aria-label="back">
-          <ArrowBack />
-        </IconButton>
-        <Typography variant="subtitle2" sx={{ ml: 1 }}>
-          Quay lại
-        </Typography>
-      </Box>
+      {/* Top bar: show Back for user; show Logo for admin */}
+      {userAuth?.roles?.includes(Role.OTTOBIT_ADMIN) ? (
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2, px: 0.5 }}>
+          <Box
+            component="img"
+            src="/asset/OttobitLogoText.png"
+            alt="Ottobit Logo"
+            sx={{ height: 28, width: "auto" }}
+          />
+        </Box>
+      ) : (
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+          <IconButton
+            size="small"
+            onClick={() => navigate(PATH_USER.homepage)}
+            aria-label="back"
+          >
+            <ArrowBack />
+          </IconButton>
+          <Typography variant="subtitle2" sx={{ ml: 1 }}>
+            Quay lại
+          </Typography>
+        </Box>
+      )}
 
       {(userAuth?.roles?.includes(Role.OTTOBIT_ADMIN) ? navAdmin : navUser).map(
         (navItem, index) =>
@@ -228,7 +243,7 @@ export function Sidebar({ openNav, onCloseNav }: SidebarProps) {
             boxShadow: "0 2px 8px rgba(112, 200, 210, 0.1)",
           }}
         >
-          Tell Me v1.0
+          Ottobit v1.0
         </Typography>
       </Box>
     </Stack>
