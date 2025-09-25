@@ -37,10 +37,7 @@ interface MicrobitDialogProps {
 const V1_URL = "/microbit-micropython-v1.hex";
 const V2_URL = "/microbit-micropython-v2.hex";
 
-export default function MicrobitDialog({
-  open,
-  onClose,
-}: MicrobitDialogProps) {
+export default function MicrobitDialog({ open, onClose }: MicrobitDialogProps) {
   const [isConnected, setIsConnected] = useState(false);
   const [isFlashing, setIsFlashing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -114,7 +111,6 @@ if __name__ == "__main__":
 
     requestAnimationFrame(animate);
   };
-
 
   // Build per-board HEX from Python
   const buildHexFromPython = async (code: string) => {
