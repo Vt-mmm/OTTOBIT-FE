@@ -17,19 +17,21 @@ interface StudentProfileEmptyProps {
   onCreateProfile: () => void;
 }
 
-export default function StudentProfileEmpty({ onCreateProfile }: StudentProfileEmptyProps) {
+export default function StudentProfileEmpty({
+  onCreateProfile,
+}: StudentProfileEmptyProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card 
-        sx={{ 
+      <Card
+        sx={{
           borderRadius: 3,
           boxShadow: "0 8px 32px rgba(59, 130, 246, 0.15)",
           border: `1px solid ${alpha("#3b82f6", 0.2)}`,
-          textAlign: "center"
+          textAlign: "center",
         }}
       >
         <CardContent sx={{ p: 6 }}>
@@ -46,37 +48,37 @@ export default function StudentProfileEmpty({ onCreateProfile }: StudentProfileE
             <SchoolIcon sx={{ fontSize: 60 }} />
           </Avatar>
 
-          <Typography 
-            variant="h4" 
-            sx={{ 
-              fontWeight: "bold", 
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: "bold",
               mb: 2,
               color: "#1e293b",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: 1
+              gap: 1,
             }}
           >
-            👤 Không có hồ sơ
+            Không có hồ sơ
           </Typography>
 
-          <Typography 
-            variant="body1" 
-            color="text.secondary" 
+          <Typography
+            variant="body1"
+            color="text.secondary"
             sx={{ mb: 4, maxWidth: 400, mx: "auto" }}
           >
             Tạo hồ sơ để bắt đầu hành trình học tập cùng OttoBit!
           </Typography>
 
-          <Box 
-            sx={{ 
-              display: "flex", 
+          <Box
+            sx={{
+              display: "flex",
               flexDirection: { xs: "column", sm: "row" },
               gap: { xs: 2, sm: 4 },
               mb: 4,
               justifyContent: "center",
-              alignItems: "center"
+              alignItems: "center",
             }}
           >
             <Box sx={{ textAlign: "center" }}>
@@ -126,12 +128,12 @@ export default function StudentProfileEmpty({ onCreateProfile }: StudentProfileE
               transition: "all 0.3s ease-in-out",
             }}
           >
-            ✨ Tạo hồ sơ ngay
+            Tạo hồ sơ ngay
           </Button>
 
-          <Typography 
-            variant="caption" 
-            color="text.secondary" 
+          <Typography
+            variant="caption"
+            color="text.secondary"
             sx={{ display: "block", mt: 2, opacity: 0.7 }}
           >
             Chỉ mất vài giây để thiết lập
