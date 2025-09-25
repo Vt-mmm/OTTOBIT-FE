@@ -212,12 +212,19 @@ const LoginForm: React.FC = () => {
                 render={({ field }) => (
                   <TextField
                     {...field}
+                    type="email"
                     variant="outlined"
                     fullWidth
                     placeholder="Email address"
                     size="medium"
                     error={!!errors.email}
                     helperText={errors.email?.message}
+                    inputProps={{
+                      maxLength: 254,
+                      autoComplete: "email",
+                      autoCapitalize: "none",
+                      spellCheck: "false",
+                    }}
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         borderRadius: 2,
@@ -236,6 +243,8 @@ const LoginForm: React.FC = () => {
                       },
                       "& .MuiInputBase-input": {
                         padding: "14px 16px",
+                        whiteSpace: "nowrap",
+                        textOverflow: "clip",
                       },
                       // Fix Chrome autofill background not full-width vs adornment
                       "& input:-webkit-autofill": {
@@ -265,6 +274,10 @@ const LoginForm: React.FC = () => {
                     size="medium"
                     error={!!errors.password}
                     helperText={errors.password?.message}
+                    inputProps={{
+                      maxLength: 128,
+                      autoComplete: "current-password",
+                    }}
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         borderRadius: 2,
@@ -283,6 +296,8 @@ const LoginForm: React.FC = () => {
                       },
                       "& .MuiInputBase-input": {
                         padding: "14px 16px",
+                        whiteSpace: "nowrap",
+                        textOverflow: "clip",
                       },
                       // Fix Chrome autofill background not full-width vs adornment
                       "& input:-webkit-autofill": {

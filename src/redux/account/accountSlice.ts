@@ -1,9 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'react-toastify';
+import { UserProfileData } from 'common/@types/account';
 import {
   changePasswordThunk,
   forgotPasswordThunk,
-  resetPasswordThunk
+  resetPasswordThunk,
+  getMyProfileThunk,
 } from './accountThunks';
 
 // Account state interface
@@ -13,6 +15,11 @@ export interface AccountState {
   isSuccess: boolean;
   message: string;
   errorMessage: string | null;
+  profile: {
+    data: UserProfileData | null;
+    isLoading: boolean;
+    error: string | null;
+  };
 }
 
 // Initial state
@@ -22,6 +29,11 @@ const initialState: AccountState = {
   isSuccess: false,
   message: '',
   errorMessage: null,
+  profile: {
+    data: null,
+    isLoading: false,
+    error: null,
+  },
 };
 
 // Create slice
@@ -44,8 +56,23 @@ const accountSlice = createSlice({
     resetAccountState: () => initialState,
   },
   extraReducers: (builder) => {
-    // Change password cases
+    // Get my profile cases
     builder
+      .addCase(getMyProfileThunk.pending, (state) => {
+        state.profile.isLoading = true;
+        state.profile.error = null;
+      })
+      .addCase(getMyProfileThunk.fulfilled, (state, action) => {
+        state.profile.isLoading = false;
+        state.profile.data = action.payload;
+      })
+      .addCase(getMyProfileThunk.rejected, (state, action) => {
+        state.profile.isLoading = false;
+        state.profile.error = (action.payload as string) || 'Lỗi tải hồ sơ';
+        state.profile.data = null;
+      })
+
+      // Change password cases
       .addCase(changePasswordThunk.pending, (state) => {
         state.isLoading = true;
         state.isError = false;
@@ -105,7 +132,8 @@ const accountSlice = createSlice({
 export {
   changePasswordThunk,
   forgotPasswordThunk,
-  resetPasswordThunk
+  resetPasswordThunk,
+  getMyProfileThunk,
 } from './accountThunks';
 
 // Export actions

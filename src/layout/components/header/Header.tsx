@@ -536,7 +536,7 @@ const Header: React.FC = () => {
                   <SchoolIcon
                     sx={{ mr: 1.5, color: "#2E7D32", fontSize: 20 }}
                   />
-                  Hồ sơ học viên
+                  Hồ sơ học sinh
                 </MenuItem>
 
                 <MenuItem

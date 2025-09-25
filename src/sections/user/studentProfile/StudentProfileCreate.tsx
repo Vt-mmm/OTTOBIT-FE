@@ -15,7 +15,6 @@ import {
   School as SchoolIcon,
   Person as PersonIcon,
   Add as AddIcon,
-  Close as CloseIcon,
 } from "@mui/icons-material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -65,9 +64,9 @@ export default function StudentProfileCreate({
 
     if (!formData.dateOfBirth) {
       newErrors.dateOfBirth = "Vui lòng chọn ngày sinh";
-    } else if (dayjs().diff(formData.dateOfBirth, 'year') < 5) {
+    } else if (dayjs().diff(formData.dateOfBirth, "year") < 5) {
       newErrors.dateOfBirth = "Tuổi phải từ 5 tuổi trở lên";
-    } else if (dayjs().diff(formData.dateOfBirth, 'year') > 100) {
+    } else if (dayjs().diff(formData.dateOfBirth, "year") > 100) {
       newErrors.dateOfBirth = "Tuổi không hợp lệ";
     }
 
@@ -93,25 +92,14 @@ export default function StudentProfileCreate({
     }
   };
 
-  const handleReset = () => {
-    setFormData({
-      fullname: "",
-      dateOfBirth: null,
-    });
-    setErrors({
-      fullname: "",
-      dateOfBirth: "",
-    });
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <Card 
-        sx={{ 
+      <Card
+        sx={{
           borderRadius: 3,
           boxShadow: "0 8px 32px rgba(34, 197, 94, 0.15)",
           border: `1px solid ${alpha("#22c55e", 0.2)}`,
@@ -130,8 +118,18 @@ export default function StudentProfileCreate({
             >
               <SchoolIcon sx={{ fontSize: 40 }} />
             </Avatar>
-            <Typography variant="h5" sx={{ fontWeight: "bold", mb: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 1 }}>
-              🎆 Tạo hồ sơ mới
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: "bold",
+                mb: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 1,
+              }}
+            >
+              Tạo hồ sơ mới
             </Typography>
             <Typography variant="body1" color="text.secondary">
               Điền thông tin cơ bản để bắt đầu hành trình học tập
@@ -146,12 +144,12 @@ export default function StudentProfileCreate({
               label="Họ và tên"
               value={formData.fullname}
               onChange={(e) => {
-                setFormData(prev => ({ 
-                  ...prev, 
-                  fullname: e.target.value 
+                setFormData((prev) => ({
+                  ...prev,
+                  fullname: e.target.value,
                 }));
                 if (errors.fullname) {
-                  setErrors(prev => ({ ...prev, fullname: "" }));
+                  setErrors((prev) => ({ ...prev, fullname: "" }));
                 }
               }}
               margin="normal"
@@ -159,7 +157,9 @@ export default function StudentProfileCreate({
               error={!!errors.fullname}
               helperText={errors.fullname}
               InputProps={{
-                startAdornment: <PersonIcon sx={{ mr: 1, color: "text.secondary" }} />,
+                startAdornment: (
+                  <PersonIcon sx={{ mr: 1, color: "text.secondary" }} />
+                ),
               }}
               placeholder="Nhập họ và tên đầy đủ"
             />
@@ -169,12 +169,12 @@ export default function StudentProfileCreate({
                 label="Ngày sinh"
                 value={formData.dateOfBirth}
                 onChange={(newValue) => {
-                  setFormData(prev => ({ 
-                    ...prev, 
-                    dateOfBirth: newValue 
+                  setFormData((prev) => ({
+                    ...prev,
+                    dateOfBirth: newValue,
                   }));
                   if (errors.dateOfBirth) {
-                    setErrors(prev => ({ ...prev, dateOfBirth: "" }));
+                    setErrors((prev) => ({ ...prev, dateOfBirth: "" }));
                   }
                 }}
                 slotProps={{
@@ -186,8 +186,8 @@ export default function StudentProfileCreate({
                     helperText: errors.dateOfBirth,
                   },
                 }}
-                maxDate={dayjs().subtract(5, 'year')}
-                minDate={dayjs().subtract(100, 'year')}
+                maxDate={dayjs().subtract(5, "year")}
+                minDate={dayjs().subtract(100, "year")}
               />
             </LocalizationProvider>
 
@@ -197,16 +197,9 @@ export default function StudentProfileCreate({
               </Alert>
             )}
 
-            <Box sx={{ display: "flex", gap: 2, mt: 4, justifyContent: "center" }}>
-              <Button
-                variant="outlined"
-                onClick={handleReset}
-                disabled={isCreating}
-                startIcon={<CloseIcon />}
-                sx={{ minWidth: 120 }}
-              >
-                Làm mới
-              </Button>
+            <Box
+              sx={{ display: "flex", gap: 2, mt: 4, justifyContent: "center" }}
+            >
               <Button
                 variant="outlined"
                 onClick={onCancel}
@@ -219,27 +212,14 @@ export default function StudentProfileCreate({
                 variant="contained"
                 onClick={handleSubmit}
                 disabled={isCreating}
-                startIcon={isCreating ? <CircularProgress size={20} /> : <AddIcon />}
+                startIcon={
+                  isCreating ? <CircularProgress size={20} /> : <AddIcon />
+                }
                 sx={{ minWidth: 120 }}
               >
-                {isCreating ? "Đang tạo..." : "✨ Tạo hồ sơ"}
+                {isCreating ? "Đang tạo..." : " Tạo hồ sơ"}
               </Button>
             </Box>
-          </Box>
-
-          <Box 
-            sx={{ 
-              mt: 4, 
-              p: 2.5, 
-              bgcolor: alpha("#22c55e", 0.05),
-              borderRadius: 2,
-              border: `1px solid ${alpha("#22c55e", 0.2)}`,
-              textAlign: "center"
-            }}
-          >
-            <Typography variant="body2" color="text.secondary">
-              🔒 Thông tin của bạn được bảo mật an toàn
-            </Typography>
           </Box>
         </CardContent>
       </Card>

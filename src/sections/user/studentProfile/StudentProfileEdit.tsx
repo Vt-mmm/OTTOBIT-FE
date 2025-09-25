@@ -181,7 +181,7 @@ export default function StudentProfileEdit({
               />
             </Avatar>
             <Typography variant="h5" sx={{ fontWeight: "bold", mb: 1, color: 'text.primary' }}>
-            Chỉnh sửa hồ sơ học viên
+            Chỉnh sửa hồ sơ học sinh
             </Typography>
             <Typography variant="body1" color="text.secondary">
               Cập nhật thông tin cá nhân của bạn
