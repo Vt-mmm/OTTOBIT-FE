@@ -44,6 +44,7 @@ export interface UserProfileData {
   registrationDate: string;
   emailConfirmed: boolean;
   lastLoginDate?: string;
+  roles?: string[]; // optional - provided by BE UserProfileResult
 }
 
 export interface UpdateProfileForm {
