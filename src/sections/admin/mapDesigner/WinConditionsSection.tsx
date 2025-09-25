@@ -467,11 +467,66 @@ export default function WinConditionsSection({
 
       {/* Lesson, Order, Difficulty */}
       <Box sx={{ mt: 5, display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            Note
+          </Typography>
+          <Tooltip
+            title={
+              <Box sx={{ p: 1, maxWidth: 300 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+                  Order Rules in Lesson:
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 0.5 }}>
+                  • Each challenge can only be assigned to one lesson
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 0.5 }}>
+                  • Example: If there's already a challenge for order 1 in
+                  "String" lesson, you cannot add another challenge for order 1
+                  in "String"
+                </Typography>
+                <Typography variant="body2">
+                  • Must use different order (2, 3, 4...)
+                </Typography>
+              </Box>
+            }
+            arrow
+            placement="top-start"
+            PopperProps={{
+              modifiers: [
+                {
+                  name: "preventOverflow",
+                  enabled: true,
+                  options: {
+                    altBoundary: true,
+                    rootBoundary: "viewport",
+                    padding: 8,
+                  },
+                },
+                {
+                  name: "flip",
+                  enabled: true,
+                  options: {
+                    fallbackPlacements: [
+                      "top-end",
+                      "bottom-start",
+                      "bottom-end",
+                    ],
+                  },
+                },
+              ],
+            }}
+          >
+            <IconButton size="small" sx={{ color: "warning.main" }}>
+              <InfoOutlinedIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
         <FormControl fullWidth size="small" error={!lessonId}>
           <InputLabel>Lesson</InputLabel>
           <Select
             label="Lesson"
-            value={lessonId}
+            value={lessonOptions.length > 0 ? lessonId : ""}
             onChange={(e) => onLessonIdChange(e.target.value as string)}
           >
             {lessonOptions.length === 0 ? (
@@ -2272,7 +2327,7 @@ export default function WinConditionsSection({
                                       ISOMETRIC_CONFIG.tileHeight
                                     : 1;
                                   const ROBOT_BASE_LIFT = Math.round(
-                                    20 * scaleY
+                                    25 * scaleY
                                   );
                                   const isRobot =
                                     (objectAsset as any)?.category ===
@@ -2283,7 +2338,7 @@ export default function WinConditionsSection({
                                   if (isRobot) {
                                     stackShift = ROBOT_BASE_LIFT;
                                   } else {
-                                    stackShift = 0;
+                                    stackShift = 25;
                                   }
                                   const SCALE = isRobot ? 0.85 : 0.5;
                                   const ow = tw * SCALE;

@@ -34,6 +34,7 @@ import {
   Map as MapIcon,
   PlayArrow as PlayIcon,
   Restore as RestoreIcon,
+  Visibility as ViewIcon,
 } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getChallenges } from "../../../redux/challenge/challengeSlice";
@@ -61,6 +62,10 @@ export default function ChallengeListSection({
   const [totalPages, setTotalPages] = useState(1);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [restoreConfirmOpen, setRestoreConfirmOpen] = useState(false);
+  const [pendingRestoreId, setPendingRestoreId] = useState<string | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [selectedChallenge, setSelectedChallenge] = useState<any>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [committedSearch, setCommittedSearch] = useState<string>("");
@@ -116,6 +121,16 @@ export default function ChallengeListSection({
       await (axiosClient as any).post(`/api/v1/challenges/admin/${id}/restore`);
       refresh();
     } catch {}
+  };
+
+  const handleRestoreConfirm = (id: string) => {
+    setPendingRestoreId(id);
+    setRestoreConfirmOpen(true);
+  };
+
+  const handleViewChallenge = (challenge: any) => {
+    setSelectedChallenge(challenge);
+    setViewDialogOpen(true);
   };
 
   const getModeColor = (mode: ChallengeMode) => {
@@ -293,36 +308,11 @@ export default function ChallengeListSection({
                 <TableCell align="center">
                   <IconButton
                     size="small"
-                    title="Edit Challenge"
-                    onClick={() => onEditChallenge?.(challenge)}
+                    title="View Challenge"
+                    onClick={() => handleViewChallenge(challenge)}
                   >
-                    <EditIcon />
+                    <ViewIcon />
                   </IconButton>
-                  <IconButton size="small" title="Test Challenge">
-                    <PlayIcon />
-                  </IconButton>
-                  {challenge.isDeleted ? (
-                    <IconButton
-                      size="small"
-                      color="success"
-                      title="Restore Challenge"
-                      onClick={() => handleRestore(challenge.id)}
-                    >
-                      <RestoreIcon />
-                    </IconButton>
-                  ) : (
-                    <IconButton
-                      size="small"
-                      color="error"
-                      title="Delete Challenge"
-                      onClick={() => {
-                        setPendingDeleteId(challenge.id);
-                        setConfirmOpen(true);
-                      }}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  )}
                 </TableCell>
               </TableRow>
             ))}
@@ -404,6 +394,219 @@ export default function ChallengeListSection({
           >
             Delete
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Restore Confirmation Dialog */}
+      <Dialog
+        open={restoreConfirmOpen}
+        onClose={() => setRestoreConfirmOpen(false)}
+      >
+        <DialogTitle>Confirm Restore</DialogTitle>
+        <DialogContent>
+          Are you sure you want to restore this challenge?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRestoreConfirmOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              if (pendingRestoreId) {
+                handleRestore(pendingRestoreId);
+                setRestoreConfirmOpen(false);
+                setPendingRestoreId(null);
+              }
+            }}
+          >
+            Restore
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* View Challenge Dialog */}
+      <Dialog
+        open={viewDialogOpen}
+        onClose={() => setViewDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Challenge Details</DialogTitle>
+        <DialogContent dividers>
+          {selectedChallenge && (
+            <Box sx={{ p: 2 }}>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" gutterBottom>
+                  {selectedChallenge.title}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 2 }}
+                >
+                  {selectedChallenge.description}
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 2,
+                  mb: 3,
+                }}
+              >
+                <Box>
+                  <Typography variant="subtitle2" color="primary" gutterBottom>
+                    Basic Information
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Order:</strong> {selectedChallenge.order}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Difficulty:</strong> {selectedChallenge.difficulty}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Mode:</strong>{" "}
+                    {selectedChallenge.challengeMode === 0
+                      ? "Simulation"
+                      : selectedChallenge.challengeMode === 1
+                      ? "Physical First"
+                      : "Simulation Physical"}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Created:</strong>{" "}
+                    {dayjs(selectedChallenge.createdAt).format(
+                      "DD/MM/YYYY HH:mm"
+                    )}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Updated:</strong>{" "}
+                    {dayjs(selectedChallenge.updatedAt).format(
+                      "DD/MM/YYYY HH:mm"
+                    )}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="subtitle2" color="primary" gutterBottom>
+                    Statistics
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Submissions:</strong>{" "}
+                    {selectedChallenge.submissionsCount || 0}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Lesson:</strong>{" "}
+                    {selectedChallenge.lessonTitle || "N/A"}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Course:</strong>{" "}
+                    {selectedChallenge.courseTitle || "N/A"}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Status:</strong>{" "}
+                    {selectedChallenge.isDeleted ? "Deleted" : "Active"}
+                  </Typography>
+                </Box>
+              </Box>
+
+              {selectedChallenge.challengeJson && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" color="primary" gutterBottom>
+                    Challenge Configuration
+                  </Typography>
+                  <Box
+                    sx={{
+                      p: 2,
+                      bgcolor: "grey.100",
+                      borderRadius: 1,
+                      maxHeight: 200,
+                      overflow: "auto",
+                    }}
+                  >
+                    <pre style={{ margin: 0, fontSize: "0.75rem" }}>
+                      {JSON.stringify(
+                        JSON.parse(selectedChallenge.challengeJson),
+                        null,
+                        2
+                      )}
+                    </pre>
+                  </Box>
+                </Box>
+              )}
+
+              {selectedChallenge.solutionJson && (
+                <Box>
+                  <Typography variant="subtitle2" color="primary" gutterBottom>
+                    Solution Configuration
+                  </Typography>
+                  <Box
+                    sx={{
+                      p: 2,
+                      bgcolor: "grey.100",
+                      borderRadius: 1,
+                      maxHeight: 200,
+                      overflow: "auto",
+                    }}
+                  >
+                    <pre style={{ margin: 0, fontSize: "0.75rem" }}>
+                      {JSON.stringify(
+                        JSON.parse(selectedChallenge.solutionJson),
+                        null,
+                        2
+                      )}
+                    </pre>
+                  </Box>
+                </Box>
+              )}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "space-between", p: 2 }}>
+          <Box>
+            <Button
+              variant="outlined"
+              startIcon={<EditIcon />}
+              onClick={() => {
+                setViewDialogOpen(false);
+                onEditChallenge?.(selectedChallenge);
+              }}
+            >
+              Edit
+            </Button>
+            <Button variant="outlined" startIcon={<PlayIcon />} sx={{ ml: 1 }}>
+              Test
+            </Button>
+          </Box>
+          <Box>
+            {selectedChallenge?.isDeleted ? (
+              <Button
+                variant="contained"
+                color="success"
+                startIcon={<RestoreIcon />}
+                onClick={() => {
+                  handleRestoreConfirm(selectedChallenge.id);
+                  setViewDialogOpen(false);
+                }}
+              >
+                Restore
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={() => {
+                  setPendingDeleteId(selectedChallenge.id);
+                  setConfirmOpen(true);
+                  setViewDialogOpen(false);
+                }}
+              >
+                Delete
+              </Button>
+            )}
+          </Box>
         </DialogActions>
       </Dialog>
     </Box>

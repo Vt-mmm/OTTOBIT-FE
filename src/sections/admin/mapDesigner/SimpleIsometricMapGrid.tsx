@@ -361,7 +361,24 @@ export default function SimpleIsometricMapGrid({
                         width={w}
                         height={h}
                         preserveAspectRatio="none"
+                        onError={() =>
+                          console.log(
+                            "Terrain image failed to load:",
+                            terrainAsset.imagePath
+                          )
+                        }
                       />
+                    )}
+                    {cell.terrain && !terrainAsset?.imagePath && (
+                      <text
+                        x={halfW}
+                        y={halfH}
+                        textAnchor="middle"
+                        fontSize="10"
+                        fill="red"
+                      >
+                        {cell.terrain}
+                      </text>
                     )}
 
                     {/* Object image centered */}

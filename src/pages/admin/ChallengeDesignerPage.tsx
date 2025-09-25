@@ -45,6 +45,8 @@ const MapDesignerPage = () => {
   const [isoRemountId, setIsoRemountId] = useState(0);
   const [isoReady, setIsoReady] = useState(false);
   const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
+  const [selectedMapTitle, setSelectedMapTitle] =
+    useState<string>("No map selected");
   const [viewMode, setViewMode] = useState<"orthogonal" | "isometric">(
     "isometric"
   );
@@ -103,15 +105,18 @@ const MapDesignerPage = () => {
           if (item?.solutionJson) setSolutionJson(item.solutionJson);
           if (item?.challengeJson) setChallengeJson(item.challengeJson);
           // Prefer load map by mapId when available (admin detail)
+          let newGrid: (MapCell & { itemCount?: number })[][] | null = null;
           if (item?.mapId) {
             try {
               const mapRes = await axiosClient.get(
                 `/api/v1/maps/${item.mapId}`
               );
               const map = (mapRes as any)?.data?.data || (mapRes as any)?.data;
-              if (map?.id) setSelectedMapId(map.id);
+              if (map?.id) {
+                setSelectedMapId(map.id);
+                setSelectedMapTitle(map.title || "Unknown Map");
+              }
               const mapJsonStr = map?.mapJson as string | undefined;
-              let newGrid: (MapCell & { itemCount?: number })[][] | null = null;
               if (mapJsonStr) {
                 try {
                   const parsed = JSON.parse(mapJsonStr);
@@ -133,13 +138,14 @@ const MapDesignerPage = () => {
                       5: "grass",
                       6: "crossroad",
                     };
-                    newGrid = Array(GRID_CONFIG.rows)
+                    // Use actual map dimensions instead of GRID_CONFIG
+                    newGrid = Array(height)
                       .fill(null)
                       .map((_, row) =>
-                        Array(GRID_CONFIG.cols)
+                        Array(width)
                           .fill(null)
                           .map((_, col) => {
-                            const idx = row * GRID_CONFIG.cols + col;
+                            const idx = row * width + col;
                             const tileId = data[idx] || 0;
                             const terrain = idToTerrain[tileId] ?? null;
                             return {
@@ -156,81 +162,19 @@ const MapDesignerPage = () => {
                   // ignore
                 }
               }
-              if (newGrid) setMapGrid(newGrid);
-            } catch (e) {
-              // ignore map fetch errors
-            }
-          }
-
-          const mapJsonStr: string | undefined = item?.mapJson;
-          let newGrid: (MapCell & { itemCount?: number })[][] | null = null;
-          if (mapJsonStr) {
-            try {
-              const parsed = JSON.parse(mapJsonStr);
-              const width: number = parsed?.width ?? GRID_CONFIG.cols;
-              const height: number = parsed?.height ?? GRID_CONFIG.rows;
-              const layer = Array.isArray(parsed?.layers)
-                ? parsed.layers[0]
-                : null;
-              const data: number[] = Array.isArray(layer?.data)
-                ? layer.data
-                : [];
-
-              if (data.length >= width * height) {
-                const idToTerrain: Record<number, string | null> = {
-                  0: null,
-                  1: "road_v",
-                  2: "road_h",
-                  3: "wood",
-                  4: "water",
-                  5: "grass",
-                  6: "crossroad",
-                };
-
-                newGrid = Array(GRID_CONFIG.rows)
-                  .fill(null)
-                  .map((_, row) =>
-                    Array(GRID_CONFIG.cols)
-                      .fill(null)
-                      .map((_, col) => {
-                        const idx = row * GRID_CONFIG.cols + col;
-                        const tileId = data[idx] || 0;
-                        const terrain = idToTerrain[tileId] ?? null;
-                        return {
-                          row,
-                          col,
-                          terrain: terrain as any,
-                          object: null,
-                          itemCount: 0,
-                        } as any;
-                      })
-                  );
+              if (newGrid) {
+                setMapGrid(newGrid);
               }
             } catch (e) {
-              // ignore parse errors
+              // ignore map fetch errors
             }
           }
 
           // Overlay challengeJson robot/items
           try {
             const chStr: string | null | undefined = item?.challengeJson;
-            if (chStr) {
+            if (chStr && newGrid) {
               const ch = JSON.parse(chStr);
-              if (!newGrid) {
-                newGrid = Array(GRID_CONFIG.rows)
-                  .fill(null)
-                  .map((_, row) =>
-                    Array(GRID_CONFIG.cols)
-                      .fill(null)
-                      .map((_, col) => ({
-                        row,
-                        col,
-                        terrain: null,
-                        object: null,
-                        itemCount: 0,
-                      }))
-                  );
-              }
 
               // Robot
               const robot = ch?.robot;
@@ -243,9 +187,9 @@ const MapDesignerPage = () => {
                 const c = robot.tile.x;
                 if (
                   r >= 0 &&
-                  r < GRID_CONFIG.rows &&
+                  r < newGrid!.length &&
                   c >= 0 &&
-                  c < GRID_CONFIG.cols
+                  c < newGrid![0].length
                 ) {
                   const dir = String(robot.direction || "east").toLowerCase();
                   const dirToAsset: Record<string, string> = {
@@ -254,6 +198,7 @@ const MapDesignerPage = () => {
                     south: "robot_south",
                     west: "robot_west",
                   };
+                  // Don't overwrite terrain, just add object
                   newGrid[r][c].object = dirToAsset[dir] || "robot_east";
                   newGrid[r][c].itemCount = 1;
                 }
@@ -271,10 +216,11 @@ const MapDesignerPage = () => {
                     typeof r === "number" &&
                     typeof c === "number" &&
                     r >= 0 &&
-                    r < GRID_CONFIG.rows &&
+                    r < newGrid!.length &&
                     c >= 0 &&
-                    c < GRID_CONFIG.cols
+                    c < newGrid![0].length
                   ) {
+                    // Don't overwrite terrain, just add object
                     newGrid![r][c].object = "box";
                     newGrid![r][c].itemCount = count;
                   }
@@ -302,10 +248,11 @@ const MapDesignerPage = () => {
                     typeof r === "number" &&
                     typeof c === "number" &&
                     r >= 0 &&
-                    r < GRID_CONFIG.rows &&
+                    r < newGrid!.length &&
                     c >= 0 &&
-                    c < GRID_CONFIG.cols
+                    c < newGrid![0].length
                   ) {
+                    // Don't overwrite terrain, just add object
                     newGrid![r][c].object = assetId as any;
                     newGrid![r][c].itemCount = count;
                   }
@@ -314,7 +261,9 @@ const MapDesignerPage = () => {
             }
           } catch {}
 
-          if (newGrid) setMapGrid(newGrid);
+          if (newGrid) {
+            setMapGrid(newGrid);
+          }
         } catch (e) {
           // ignore fetch errors
         }
@@ -449,11 +398,16 @@ const MapDesignerPage = () => {
   };
 
   const handleCellClick = (row: number, col: number) => {
+    console.log("Cell clicked:", row, col, "selectedAsset:", selectedAsset);
+    console.log("Grid dimensions:", mapGrid.length, "x", mapGrid[0]?.length);
     const newGrid = [...mapGrid];
     const asset = MAP_ASSETS.find((a) => a.id === selectedAsset);
     const currentCell = newGrid[row][col];
 
-    if (!asset) return;
+    if (!asset) {
+      console.log("No asset found for:", selectedAsset);
+      return;
+    }
 
     // Tool actions
     if (selectedAsset === "eraser") {
@@ -472,7 +426,7 @@ const MapDesignerPage = () => {
     }
     // Asset placement
     else if (asset.category === "terrain") {
-      // Terrain placement disabled in Challenge Designer
+      // Terrain placement disabled in Challenge Designer (read-only display only)
       return;
     } else if (asset.category === "robot") {
       // Only one robot allowed per map
@@ -768,9 +722,9 @@ const MapDesignerPage = () => {
             Number.isFinite(x) &&
             Number.isFinite(y) &&
             y >= 0 &&
-            y < GRID_CONFIG.rows &&
+            y < mapGrid.length &&
             x >= 0 &&
-            x < GRID_CONFIG.cols
+            x < mapGrid[0].length
           ) {
             next[y][x].object = "box";
             (next[y][x] as any).itemCount = count;
@@ -812,6 +766,19 @@ const MapDesignerPage = () => {
                 justifyContent: "flex-end",
               }}
             >
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "text.secondary",
+                  fontStyle: "italic",
+                  maxWidth: 200,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {selectedMapTitle}
+              </Typography>
               <Button variant="outlined" onClick={() => setMapPickerOpen(true)}>
                 Select / Change Map
               </Button>
@@ -948,6 +915,7 @@ const MapDesignerPage = () => {
             // do not copy title/description from selected map; only apply mapJson to preview
             // Persist selected map id into local state used for saving challenge
             setSelectedMapId(map.id);
+            setSelectedMapTitle(map.title || "Unknown Map");
             // parse mapJson to apply into grid preview
             if (map?.mapJson) {
               try {
@@ -973,13 +941,14 @@ const MapDesignerPage = () => {
                     5: "grass",
                     6: "crossroad",
                   };
-                  const newGrid = Array(GRID_CONFIG.rows)
+                  // Use actual map dimensions instead of GRID_CONFIG
+                  const newGrid = Array(height)
                     .fill(null)
                     .map((_, row) =>
-                      Array(GRID_CONFIG.cols)
+                      Array(width)
                         .fill(null)
                         .map((_, col) => {
-                          const idx = row * GRID_CONFIG.cols + col;
+                          const idx = row * width + col;
                           const tileId = data[idx] || 0;
                           return {
                             row,
@@ -989,6 +958,61 @@ const MapDesignerPage = () => {
                           } as any;
                         })
                     );
+                  // Debug: Check final grid state
+                  console.log("Final grid state before setMapGrid:");
+                  for (let r = 0; r < newGrid.length; r++) {
+                    for (let c = 0; c < newGrid[r].length; c++) {
+                      if (newGrid[r][c].terrain || newGrid[r][c].object) {
+                        console.log(
+                          `Grid[${r}][${c}]: terrain=${newGrid[r][c].terrain}, object=${newGrid[r][c].object}`
+                        );
+                      }
+                    }
+                  }
+                  // Debug: Check final grid state
+                  console.log("Final grid state before setMapGrid:");
+                  for (let r = 0; r < newGrid.length; r++) {
+                    for (let c = 0; c < newGrid[r].length; c++) {
+                      if (newGrid[r][c].terrain || newGrid[r][c].object) {
+                        console.log(
+                          `Grid[${r}][${c}]: terrain=${newGrid[r][c].terrain}, object=${newGrid[r][c].object}`
+                        );
+                      }
+                    }
+                  }
+                  // Debug: Check final grid state
+                  console.log("Final grid state before setMapGrid:");
+                  for (let r = 0; r < newGrid.length; r++) {
+                    for (let c = 0; c < newGrid[r].length; c++) {
+                      if (newGrid[r][c].terrain || newGrid[r][c].object) {
+                        console.log(
+                          `Grid[${r}][${c}]: terrain=${newGrid[r][c].terrain}, object=${newGrid[r][c].object}`
+                        );
+                      }
+                    }
+                  }
+                  // Debug: Check final grid state
+                  console.log("Final grid state before setMapGrid:");
+                  for (let r = 0; r < newGrid.length; r++) {
+                    for (let c = 0; c < newGrid[r].length; c++) {
+                      if (newGrid[r][c].terrain || newGrid[r][c].object) {
+                        console.log(
+                          `Grid[${r}][${c}]: terrain=${newGrid[r][c].terrain}, object=${newGrid[r][c].object}`
+                        );
+                      }
+                    }
+                  }
+                  // Debug: Check final grid state
+                  console.log("Final grid state before setMapGrid:");
+                  for (let r = 0; r < newGrid.length; r++) {
+                    for (let c = 0; c < newGrid[r].length; c++) {
+                      if (newGrid[r][c].terrain || newGrid[r][c].object) {
+                        console.log(
+                          `Grid[${r}][${c}]: terrain=${newGrid[r][c].terrain}, object=${newGrid[r][c].object}`
+                        );
+                      }
+                    }
+                  }
                   setMapGrid(newGrid);
                 }
               } catch {}

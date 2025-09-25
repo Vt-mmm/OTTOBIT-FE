@@ -57,10 +57,12 @@ export default function MapListSection() {
   const [committedSearch, setCommittedSearch] = useState<string>("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [mapToDelete, setMapToDelete] = useState<BackendMapResult | null>(null);
-  const [sortBy] = useState<MapSortBy>(MapSortBy.CreatedAt);
-  const [sortDirection] = useState<SortDirection>(
-    SortDirection.Descending
+  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
+  const [mapToRestore, setMapToRestore] = useState<BackendMapResult | null>(
+    null
   );
+  const [sortBy] = useState<MapSortBy>(MapSortBy.CreatedAt);
+  const [sortDirection] = useState<SortDirection>(SortDirection.Descending);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(12);
 
@@ -158,6 +160,11 @@ export default function MapListSection() {
       console.error("Restore map failed", e);
       showToast("Failed to restore map.", "error");
     }
+  };
+
+  const handleRestoreConfirm = (map: BackendMapResult) => {
+    setMapToRestore(map);
+    setRestoreDialogOpen(true);
   };
 
   if (maps.isLoading && !maps.data) {
@@ -353,7 +360,7 @@ export default function MapListSection() {
                 {map.isDeleted ? (
                   <IconButton
                     size="small"
-                    onClick={() => handleRestore(map.id)}
+                    onClick={() => handleRestoreConfirm(map)}
                     color="success"
                     title="Restore Map"
                   >
@@ -650,6 +657,33 @@ export default function MapListSection() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setViewDialogOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Restore Confirmation Dialog */}
+      <Dialog
+        open={restoreDialogOpen}
+        onClose={() => setRestoreDialogOpen(false)}
+      >
+        <DialogTitle>Confirm Restore</DialogTitle>
+        <DialogContent>
+          Are you sure you want to restore this map?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRestoreDialogOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              if (mapToRestore) {
+                handleRestore(mapToRestore.id);
+                setRestoreDialogOpen(false);
+                setMapToRestore(null);
+              }
+            }}
+          >
+            Restore
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>
