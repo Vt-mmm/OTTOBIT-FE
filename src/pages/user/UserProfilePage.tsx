@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Container, Box, Typography, Paper } from "@mui/material";
 
 import { motion } from "framer-motion";
@@ -11,6 +11,8 @@ import {
   EditProfileDialog,
 } from "sections/user/profile";
 import { UpdateProfileForm } from "common/@types";
+import { useAppDispatch } from "store/config";
+import { getMyProfileThunk } from "store/account/accountSlice";
 
 // Simple placeholders for future sections
 function CoursesSection() {
@@ -39,10 +41,16 @@ function LessonsSection() {
 }
 
 const UserProfilePage: React.FC = () => {
+  const dispatch = useAppDispatch();
   const [section] = useState<"overview" | "courses" | "lessons" | "security">(
     "overview"
   );
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+  useEffect(() => {
+    // Fetch account profile on mount
+    dispatch(getMyProfileThunk());
+  }, [dispatch]);
 
   const handleEditProfile = () => setEditDialogOpen(true);
   const handleCloseEditDialog = () => setEditDialogOpen(false);

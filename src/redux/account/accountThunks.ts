@@ -1,12 +1,13 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { axiosClient } from "axiosClient/axiosClient";
-import { ROUTES_API_AUTH } from "constants/routesApiKeys";
+import { ROUTES_API_AUTH, ROUTES_API_ACCOUNT } from "constants/routesApiKeys";
 import {
   AccountChangePasswordForm,
   ForgotPasswordForm,
   ResetPasswordForm,
   Params,
 } from "common/@types";
+import { UserProfileData } from "common/@types/account";
 
 // Define local action creator functions to avoid circular dependency
 const setMessageSuccess = (message: string) => ({
@@ -27,6 +28,29 @@ interface ApiResponse<T = any> {
   errorCode: string | null;
   timestamp: string;
 }
+
+// Get my account profile
+export const getMyProfileThunk = createAsyncThunk<
+  UserProfileData,
+  void,
+  { rejectValue: string }
+>("account/getMyProfile", async (_, thunkAPI) => {
+  try {
+    const response = await axiosClient.get<ApiResponse<UserProfileData>>(
+      ROUTES_API_ACCOUNT.PROFILE
+    );
+
+    if (!response.data || !response.data.data) {
+      return thunkAPI.rejectWithValue("Không nhận được dữ liệu hồ sơ");
+    }
+
+    return response.data.data;
+  } catch (error: any) {
+    const errorMessage =
+      error.response?.data?.message || error.message || "Lấy hồ sơ thất bại";
+    return thunkAPI.rejectWithValue(errorMessage);
+  }
+});
 
 // Change password thunk
 export const changePasswordThunk = createAsyncThunk<

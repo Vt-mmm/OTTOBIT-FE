@@ -15,29 +15,36 @@ import {
   Email as EmailIcon,
   Phone as PhoneIcon,
   CalendarToday as CalendarIcon,
-  Person as PersonIcon,
   Verified as VerifiedIcon,
   PersonOutline as PersonOutlineIcon,
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import { useAppSelector } from "store/config";
 import { alpha } from "@mui/material/styles";
+import dayjs from "dayjs";
 
 interface ProfileOverviewProps {
   onEditProfile: () => void;
 }
 
 const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
-  const { userAuth, userInfo } = useAppSelector((state) => state.auth);
+  const { userAuth } = useAppSelector((state) => state.auth);
+  const { profile } = useAppSelector((state) => state.account);
 
-  // Dữ liệu hiển thị (ưu tiên userInfo nếu có)
+  // Ưu tiên dữ liệu từ account.profile (BE), fallback sang auth
   const displayData = {
-    fullName: userInfo?.fullName || userAuth?.username || "Chưa có tên",
-    email: userInfo?.email || userAuth?.email || "Chưa có email",
-    roleName: userInfo?.roleName || "",
-    status: userInfo?.status || "",
-    emailConfirmed: !!userInfo?.emailConfirmed,
+    fullName: profile.data?.fullName || userAuth?.username || "Chưa có tên",
+    email: profile.data?.email || userAuth?.email || "Chưa có email",
+    roles: (profile.data?.roles as string[] | undefined) || userAuth?.roles || [],
+    phoneNumber: profile.data?.phoneNumber || "",
+    avatarUrl: profile.data?.avatarUrl || "",
+    registrationDate: profile.data?.registrationDate || "",
+    emailConfirmed: true,
   };
+
+  const formattedRegistrationDate = displayData.registrationDate && dayjs(displayData.registrationDate).isValid()
+    ? dayjs(displayData.registrationDate).format("DD/MM/YYYY")
+    : "Chưa cập nhật";
 
   return (
     <motion.div
@@ -73,6 +80,7 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
           {/* Avatar and Edit Button */}
           <Box sx={{ display: "flex", alignItems: "flex-end", mb: 3 }}>
             <Avatar
+              src={displayData.avatarUrl || undefined}
               sx={{
                 width: 100,
                 height: 100,
@@ -87,7 +95,7 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                 color: (t) => t.palette.primary.contrastText,
               }}
             >
-              {displayData.fullName?.charAt(0)?.toUpperCase() || "U"}
+              {!displayData.avatarUrl && (displayData.fullName?.charAt(0)?.toUpperCase() || "U")}
             </Avatar>
 
             <Box sx={{ flexGrow: 1 }} />
@@ -124,7 +132,7 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
             </Typography>
 
             <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-              {userAuth?.roles?.map((role) => (
+              {(displayData.roles || []).map((role: string) => (
                 <Chip
                   key={role}
                   label={role === "OTTOBIT_USER" ? "Học viên" : role}
@@ -228,7 +236,7 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                     color="text.secondary"
                     sx={{ fontWeight: 500 }}
                   >
-                    Vai trò
+                    Số điện thoại
                   </Typography>
                   <Typography
                     variant="body1"
@@ -237,7 +245,7 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                       color: (t) => t.palette.text.primary,
                     }}
                   >
-                    {displayData.roleName || "Chưa cập nhật"}
+                    {displayData.phoneNumber || "Chưa cập nhật"}
                   </Typography>
                 </Box>
               </Box>
@@ -265,7 +273,7 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                     color="text.secondary"
                     sx={{ fontWeight: 500 }}
                   >
-                    Ngày sinh
+                    Ngày tham gia
                   </Typography>
                   <Typography
                     variant="body1"
@@ -274,48 +282,13 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                       color: (t) => t.palette.text.primary,
                     }}
                   >
-                    Chưa cập nhật
+                    {formattedRegistrationDate}
                   </Typography>
                 </Box>
               </Box>
             </Grid>
 
-            <Grid item xs={12} md={12}>
-              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                <Box
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 2,
-                    bgcolor: (t) => alpha(t.palette.text.primary, 0.06),
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    mr: 2,
-                  }}
-                >
-                  <PersonIcon sx={{ color: "#2E7D32", fontSize: 20 }} />
-                </Box>
-                <Box>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ fontWeight: 500 }}
-                  >
-                    Giới tính
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      fontWeight: 600,
-                      color: (t) => t.palette.text.primary,
-                    }}
-                  >
-                    Chưa cập nhật
-                  </Typography>
-                </Box>
-              </Box>
-            </Grid>
+
           </Grid>
         </Box>
       </Box>

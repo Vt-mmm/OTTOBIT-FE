@@ -28,6 +28,11 @@ export const ROUTES_API_AUTH = {
   CHANGE_PASSWORD: path(ROOTS_ACCOUNT, `/change-password`),
 };
 
+// Account profile endpoints
+export const ROUTES_API_ACCOUNT = {
+  PROFILE: path(ROOTS_ACCOUNT, `/profile`), // GET /api/v1/accounts/profile
+};
+
 
 export const ROUTES_API_STUDENT = {
   // Student endpoints
