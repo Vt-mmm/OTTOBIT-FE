@@ -3,7 +3,7 @@ import { Box, Grid } from "@mui/material";
 
 import ProfileHeaderCard from "sections/user/studentProfile/parts/ProfileHeaderCard";
 import StatsRow from "sections/user/studentProfile/parts/StatsRow";
-import BadgeCard from "sections/user/studentProfile/parts/BadgeCard";
+// import BadgeCard from "sections/user/studentProfile/parts/BadgeCard";
 import LearningProgressCard from "sections/user/studentProfile/parts/LearningProgressCard";
 import RecentChallengesCard from "sections/user/studentProfile/parts/RecentChallengesCard";
 
@@ -144,9 +144,7 @@ export default function StudentProfileDisplay() {
       />
 
       <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <BadgeCard totalPoints={realData.totalPoints} loading={isLoading} />
-        </Grid>
+        {/* Removed Excellent Badge section */}
         <Grid item xs={12}>
           <LearningProgressCard items={realData.learningProgress} loading={isLoading} activityCount={submissionsArray.length} />
         </Grid>

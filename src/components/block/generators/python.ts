@@ -19,7 +19,8 @@ pythonGenerator.forBlock["ottobit_start"] = function (_block: any): string {
 pythonGenerator.forBlock["ottobit_move_forward"] = function (
   block: any
 ): string {
-  const steps = block.getFieldValue("STEPS") || "1";
+  // Lấy giá trị từ input value (có thể là số hoặc biến)
+  const steps = pythonGenerator.valueToCode(block, "STEPS", Order.ATOMIC) || "1";
   return `motor.Move(${steps}, 1, 2)\n`;
 };
 
@@ -349,21 +350,24 @@ pythonGenerator.forBlock["ottobit_number"] = function (
 pythonGenerator.forBlock["ottobit_collect_green"] = function (
   block: any
 ): string {
-  const count = block.getFieldValue("COUNT") || "1";
+  // Lấy giá trị từ input value (có thể là số hoặc biến)
+  const count = pythonGenerator.valueToCode(block, "COUNT", Order.ATOMIC) || "1";
   return `robot.collect(${count}, 'green')\n`;
 };
 
 pythonGenerator.forBlock["ottobit_collect_red"] = function (
   block: any
 ): string {
-  const count = block.getFieldValue("COUNT") || "1";
+  // Lấy giá trị từ input value (có thể là số hoặc biến)
+  const count = pythonGenerator.valueToCode(block, "COUNT", Order.ATOMIC) || "1";
   return `robot.collect(${count}, 'red')\n`;
 };
 
 pythonGenerator.forBlock["ottobit_collect_yellow"] = function (
   block: any
 ): string {
-  const count = block.getFieldValue("COUNT") || "1";
+  // Lấy giá trị từ input value (có thể là số hoặc biến)
+  const count = pythonGenerator.valueToCode(block, "COUNT", Order.ATOMIC) || "1";
   return `robot.collect(${count}, 'yellow')\n`;
 };
 

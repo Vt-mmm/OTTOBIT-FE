@@ -18,7 +18,7 @@ const PIN_YELLOW_IMAGE = "/pin/pin_yellow.png";
 export const actionBlocks = createBlockDefinitionsFromJsonArray([
   {
     type: "ottobit_collect_green",
-    message0: "%1 collect %2 green batteries",
+    message0: "%1 collect %2 ",
     args0: [
       {
         type: "field_image",
@@ -28,13 +28,12 @@ export const actionBlocks = createBlockDefinitionsFromJsonArray([
         alt: "collect green",
       },
       {
-        type: "field_number",
+        type: "input_value",
         name: "COUNT",
-        value: 1,
-        min: 1,
-        max: 10,
+        check: "Number",
       },
     ],
+    inputsInline: true,
     previousStatement: null,
     nextStatement: null,
     deletable: true,
@@ -46,7 +45,7 @@ export const actionBlocks = createBlockDefinitionsFromJsonArray([
   },
   {
     type: "ottobit_collect_red",
-    message0: "%1 collect %2 red batteries",
+    message0: "%1 collect %2 ",
     args0: [
       {
         type: "field_image",
@@ -56,13 +55,12 @@ export const actionBlocks = createBlockDefinitionsFromJsonArray([
         alt: "collect red",
       },
       {
-        type: "field_number",
+        type: "input_value",
         name: "COUNT",
-        value: 1,
-        min: 1,
-        max: 10,
+        check: "Number",
       },
     ],
+    inputsInline: true,
     previousStatement: null,
     nextStatement: null,
     deletable: true,
@@ -74,7 +72,7 @@ export const actionBlocks = createBlockDefinitionsFromJsonArray([
   },
   {
     type: "ottobit_collect_yellow",
-    message0: "%1 collect %2 yellow batteries",
+    message0: "%1 collect %2",
     args0: [
       {
         type: "field_image",
@@ -84,13 +82,12 @@ export const actionBlocks = createBlockDefinitionsFromJsonArray([
         alt: "collect yellow",
       },
       {
-        type: "field_number",
+        type: "input_value",
         name: "COUNT",
-        value: 1,
-        min: 1,
-        max: 10,
+        check: "Number",
       },
     ],
+    inputsInline: true,
     previousStatement: null,
     nextStatement: null,
     deletable: true,
