@@ -125,7 +125,7 @@ export const sensorBlocks = createBlockDefinitionsFromJsonArray([
     deletable: true,
     movable: true,
     editable: true,
-    colour: "#795548",
+    style: "ottobit_sensor",
     tooltip: "Lấy số lượng kiện hàng hiện tại",
     helpUrl: "",
   },
