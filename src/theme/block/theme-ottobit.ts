@@ -26,24 +26,53 @@ export const ThemeOttobit = Blockly.Theme.defineTheme("ottobit-theme", {
       colourTertiary: "#357ABD",
     },
     ottobit_movement: {
-      colourPrimary: "#4A90E2", // Xanh dương tươi cho movement
-      colourSecondary: "#6BA3E8",
-      colourTertiary: "#357ABD",
+      // HP Robots movement blue (darker, more saturated)
+      colourPrimary: "#3B96EA",
+      colourSecondary: "#5565EE",
+      colourTertiary: "#2E6BD2",
     },
     ottobit_action: {
       colourPrimary: "#4A90E2", // Xanh dương tươi cho action
       colourSecondary: "#6BA3E8",
       colourTertiary: "#357ABD",
     },
+    // Action variants to match collect/take/put blocks
+    ottobit_action_green: {
+      colourPrimary: "#4CAF50",
+      colourSecondary: "#6EC170",
+      colourTertiary: "#3C8E40",
+    },
+    ottobit_action_red: {
+      colourPrimary: "#F44336",
+      colourSecondary: "#F77066",
+      colourTertiary: "#D32F2F",
+    },
+    ottobit_action_yellow: {
+      colourPrimary: "#FFC107",
+      colourSecondary: "#FFD54F",
+      colourTertiary: "#FFA000",
+    },
+    ottobit_action_orange: {
+      colourPrimary: "#FF9800",
+      colourSecondary: "#FFB74D",
+      colourTertiary: "#F57C00",
+    },
+    ottobit_action_salmon: {
+      colourPrimary: "#FF7043",
+      colourSecondary: "#FF8A65",
+      colourTertiary: "#F4511E",
+    },
     ottobit_control: {
-      colourPrimary: "#FF6B35", // Cam đỏ cho variable i
-      colourSecondary: "#FF8C60",
-      colourTertiary: "#E55A2B",
+      // HP Robots loop/control yellow
+      colourPrimary: "#FFBD3B",
+      colourSecondary: "#FFD166",
+      colourTertiary: "#E6A700",
     },
     ottobit_control_blue: {
-      colourPrimary: "#8E44AD", // Tím cho if/else để phân biệt với movement
-      colourSecondary: "#A569BD",
-      colourTertiary: "#6C3483",
+      // Align IF/ELSE to HP control yellow for consistency
+      colourPrimary: "#FFBD3B",
+      colourSecondary: "#FFD166",
+      colourTertiary: "#E6A700",
     },
     ottobit_logic: {
       colourPrimary: "#9C27B0", // Tím đậm cho logic blocks (TRUE/FALSE/AND/OR/NOT)
@@ -59,6 +88,17 @@ export const ThemeOttobit = Blockly.Theme.defineTheme("ottobit-theme", {
       colourPrimary: "#8E44AD", // Tím đậm cho variables
       colourSecondary: "#A569BD",
       colourTertiary: "#6C3483",
+    },
+    // Variable and field styles used by custom blocks
+    ottobit_variable: {
+      colourPrimary: "#FF8C1A",
+      colourSecondary: "#FFA04D",
+      colourTertiary: "#E67600",
+    },
+    field_blocks: {
+      colourPrimary: "#FFFFFF",
+      colourSecondary: "#E0E0E0",
+      colourTertiary: "#BDBDBD",
     },
     // Thêm styles cho sensor blocks
     ottobit_sensor: {

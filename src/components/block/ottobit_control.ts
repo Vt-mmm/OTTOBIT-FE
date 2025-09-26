@@ -107,7 +107,7 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     deletable: true,
     movable: true,
     editable: true,
-    style: "ottobit_event",
+    style: "ottobit_control",
     tooltip: "Lặp lại các lệnh khi điều kiện còn đúng",
     helpUrl: "",
   },
@@ -241,7 +241,7 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     type: "ottobit_variable_i",
     message0: "i",
     output: "Number",
-    colour: "#FF8C00",  // Màu cam như HP Robots
+    style: "ottobit_variable",
     tooltip: "Biến i",
     helpUrl: "",
     // Thêm custom CSS class để style nhỏ gọn
@@ -298,7 +298,7 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     deletable: true,
     movable: true,
     editable: true,
-    colour: "#FFFFFF",  // Màu trắng với viền
+    style: "field_blocks",
     tooltip: "Một số",
     helpUrl: "",
     customContextMenu: false,
