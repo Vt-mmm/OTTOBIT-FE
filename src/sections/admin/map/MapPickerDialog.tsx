@@ -88,8 +88,25 @@ export default function MapPickerDialog({
     setPage(1);
   };
 
+  useEffect(() => {
+    try {
+      window.dispatchEvent(
+        new CustomEvent("map-picker-open", { detail: !!open })
+      );
+    } catch {}
+  }, [open]);
+
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="md"
+      disableScrollLock
+      keepMounted
+      disableEnforceFocus
+      disableAutoFocus
+    >
       <DialogTitle>Select a Map</DialogTitle>
       <DialogContent dividers>
         <TextField

@@ -1488,7 +1488,7 @@ export default function BlocksWorkspace({
     return () => {
       // Cleanup FieldInputManager trước khi dispose workspace
       fieldInputManager.dispose();
-      
+
       if (blocklyWorkspace) {
         blocklyWorkspace.dispose();
       }
@@ -1505,10 +1505,10 @@ export default function BlocksWorkspace({
   useEffect(() => {
     if (!blocklyWorkspace) return;
     if (!Array.isArray(detectionsFromExecute)) return;
-    
+
     // Force cleanup field inputs trước khi load detections từ Execute
     fieldInputManager.forceCleanupAll();
-    
+
     try {
       if ((window as any).StudioBlocks?.loadDetections) {
         (window as any).StudioBlocks.loadDetections(detectionsFromExecute);
@@ -1520,10 +1520,10 @@ export default function BlocksWorkspace({
   useEffect(() => {
     if (!blocklyWorkspace) return;
     if (!initialProgramActionsJson) return;
-    
+
     // Force cleanup field inputs trước khi render program
     fieldInputManager.forceCleanupAll();
-    
+
     try {
       const program = initialProgramActionsJson;
       const actions = Array.isArray(program?.actions) ? program.actions : [];
@@ -2261,6 +2261,7 @@ export default function BlocksWorkspace({
       sx={{
         width: "100%",
         height: "100%",
+        minHeight: "450px",
         position: "relative",
         display: "flex",
         backgroundColor: "#ffffff",

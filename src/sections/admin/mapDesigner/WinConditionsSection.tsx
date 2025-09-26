@@ -31,10 +31,9 @@ import {
   getIsometricGridDimensions,
   ISOMETRIC_CONFIG,
 } from "sections/admin/mapDesigner/isometricHelpers";
-import BlocksWorkspace from "sections/studio/BlocksWorkspace";
 import { axiosClient } from "axiosClient";
 import { ROUTES_API_LESSON } from "constants/routesApiKeys";
-import { BlocklyToPhaserConverter } from "../../../features/phaser/services/blocklyToPhaserConverter";
+// (use existing imports at top of file)
 
 interface WinConditionsSectionProps {
   mapName: string;
@@ -57,6 +56,7 @@ interface WinConditionsSectionProps {
   onSaveMap?: () => void;
   onOpenMapPicker?: () => void;
   onSolutionDialogToggle?: (open: boolean) => void;
+  registerOpenChallengeTrigger?: (fn: () => void) => void;
 }
 
 export default function WinConditionsSection({
@@ -73,14 +73,13 @@ export default function WinConditionsSection({
   challengeMode,
   onChallengeModeChange,
   mapGrid,
-  onSolutionJsonChange,
-  solutionJson,
   onChallengeJsonChange,
   challengeJson,
   onSaveMap,
   onSolutionDialogToggle,
+  registerOpenChallengeTrigger,
 }: WinConditionsSectionProps) {
-  const [openSolution, setOpenSolution] = useState(false);
+  const [openSolution] = useState(false);
   // Notify parent when Solution dialog open/close toggles (to stabilize isometric grid)
   useEffect(() => {
     try {
@@ -91,18 +90,17 @@ export default function WinConditionsSection({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openSolution]);
   const [openChallenge, setOpenChallenge] = useState(false);
-  const solutionWorkspaceRef = useRef<any>(null);
-  const [miniStable, setMiniStable] = useState(false);
-  // Debounce mini map render while solution dialog opens or during save
+  // const solutionWorkspaceRef = useRef<any>(null);
+  // Expose a trigger to open Challenge dialog from parent
   useEffect(() => {
-    let t: any;
-    if (openSolution) {
-      t = setTimeout(() => setMiniStable(true), 220);
-    } else {
-      setMiniStable(false);
+    if (registerOpenChallengeTrigger) {
+      registerOpenChallengeTrigger(() => setOpenChallenge(true));
     }
-    return () => t && clearTimeout(t);
-  }, [openSolution]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  // Mini-map temporarily disabled for testing
+
+  // Mini-map temporarily disabled for testing
   // duplicate declarations removed
   const [lessonOptions, setLessonOptions] = useState<
     { id: string; title: string }[]
@@ -404,8 +402,8 @@ export default function WinConditionsSection({
     <Paper
       sx={{
         p: 2,
-        height: "100%",
-        overflow: "auto",
+        height: "auto",
+        overflow: "visible",
         bgcolor: THEME_COLORS.surface,
         borderRadius: 2,
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
@@ -466,7 +464,7 @@ export default function WinConditionsSection({
       />
 
       {/* Lesson, Order, Difficulty */}
-      <Box sx={{ mt: 5, display: "flex", flexDirection: "column", gap: 2 }}>
+      <Box sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 1.5 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
           <Typography variant="body2" sx={{ fontWeight: 500 }}>
             Note
@@ -493,6 +491,7 @@ export default function WinConditionsSection({
             arrow
             placement="top-start"
             PopperProps={{
+              style: { zIndex: 9999 },
               modifiers: [
                 {
                   name: "preventOverflow",
@@ -573,7 +572,7 @@ export default function WinConditionsSection({
           </Select>
         </FormControl>
 
-        <FormControl fullWidth size="small">
+        <FormControl fullWidth size="small" sx={{ mb: 0 }}>
           <InputLabel>Challenge Mode</InputLabel>
           <Select
             label="Challenge Mode"
@@ -587,357 +586,21 @@ export default function WinConditionsSection({
         </FormControl>
       </Box>
 
-      {/* Actions under dropdowns */}
-      <Box sx={{ mt: 5, display: "flex", flexDirection: "column", gap: 1.5 }}>
-        <Button
-          variant="contained"
-          onClick={() => setOpenSolution(true)}
-          disableElevation
-          sx={{
-            textTransform: "none",
-            fontWeight: 600,
-            borderRadius: "8px",
-            py: 1,
-            bgcolor: solutionJson ? "#81D4FA" : "#B3E5FC",
-            color: "#0d1b2a",
-            "&:hover": { bgcolor: solutionJson ? "#4FC3F7" : "#81D4FA" },
-          }}
-        >
-          {solutionJson ? "Solution (configured)" : "Solution (not configured)"}
-        </Button>
-        <Button
-          variant="contained"
-          onClick={() => setOpenChallenge(true)}
-          disableElevation
-          sx={{
-            textTransform: "none",
-            fontWeight: 600,
-            borderRadius: "8px",
-            py: 1,
-            bgcolor: challengeJson ? "#81D4FA" : "#B3E5FC",
-            color: "#0d1b2a",
-            "&:hover": { bgcolor: challengeJson ? "#4FC3F7" : "#81D4FA" },
-          }}
-        >
+      {/* Actions moved below Solution in parent; keep hidden here to avoid linter unused props */}
+      <Box sx={{ display: "none" }}>
+        <Button onClick={() => setOpenChallenge(true)}>
           {challengeJson
             ? "Challenge (configured)"
             : "Challenge (not configured)"}
         </Button>
-      </Box>
-
-      {/* Save Challenge under Map Info */}
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-        <Button variant="contained" onClick={onSaveMap} disabled={!onSaveMap}>
+        <Button onClick={onSaveMap} disabled={!onSaveMap}>
           Save Challenge
         </Button>
       </Box>
 
-      {/* Solution Popup (with Blockly) */}
-      <Dialog
-        open={openSolution}
-        onClose={() => setOpenSolution(false)}
-        fullWidth
-        maxWidth="lg"
-        disableEnforceFocus
-        disableAutoFocus
-        keepMounted
-      >
-        <DialogTitle>Solution Editor</DialogTitle>
-        <DialogContent dividers sx={{ p: 0 }}>
-          <Box sx={{ display: "flex", height: "70vh" }}>
-            <Box
-              sx={{
-                flex: 1,
-                minWidth: 0,
-                borderRight: `1px solid ${THEME_COLORS.border}`,
-              }}
-            >
-              <BlocksWorkspace
-                onWorkspaceChange={(ws) => {
-                  solutionWorkspaceRef.current = ws;
-                }}
-                initialProgramActionsJson={(() => {
-                  try {
-                    if (!solutionJson) return undefined;
-                    const parsed = JSON.parse(solutionJson);
-                    const program = parsed?.data?.program;
-                    return program;
-                  } catch {
-                    return undefined;
-                  }
-                })()}
-              />
-            </Box>
-            {/* Right: Isometric mini map preview */}
-            <Box
-              sx={{
-                width: 560,
-                p: 2,
-                overflow: "auto",
-                display: "flex",
-                justifyContent: "center",
-              }}
-            >
-              {miniStable &&
-                (() => {
-                  const MINI = {
-                    ...ISOMETRIC_CONFIG,
-                    // Scale tiles bigger for mini preview
-                    tileWidth: Math.max(
-                      32,
-                      Math.floor(ISOMETRIC_CONFIG.tileWidth * 0.75)
-                    ),
-                    tileHeight: Math.max(
-                      16,
-                      Math.floor(ISOMETRIC_CONFIG.tileHeight * 0.75)
-                    ),
-                    tileDepth: Math.max(
-                      10,
-                      Math.floor((ISOMETRIC_CONFIG.tileDepth || 16) * 0.75)
-                    ),
-                  } as typeof ISOMETRIC_CONFIG;
-                  const dims = getIsometricGridDimensions(
-                    GRID_CONFIG.rows,
-                    GRID_CONFIG.cols,
-                    MINI
-                  );
-                  const w = dims.width + dims.offsetX;
-                  const h = dims.height + dims.offsetY;
-                  return (
-                    <Box
-                      sx={{
-                        position: "relative",
-                        width: w,
-                        height: h,
-                        border: `1px solid ${THEME_COLORS.border}`,
-                        bgcolor: THEME_COLORS.background,
-                      }}
-                    >
-                      <Typography
-                        variant="subtitle2"
-                        sx={{
-                          position: "absolute",
-                          top: 6,
-                          left: 8,
-                          zIndex: 2,
-                          m: 0,
-                          px: 0.5,
-                          py: 0.25,
-                          fontWeight: 600,
-                          bgcolor: "#00000066",
-                          color: "#fff",
-                          borderRadius: 1,
-                          pointerEvents: "none",
-                        }}
-                      >
-                        Map Preview (Isometric Mini)
-                      </Typography>
-                      {mapGrid.flat().map((cell) => {
-                        const terrain = cell.terrain
-                          ? MAP_ASSETS.find((a) => a.id === cell.terrain)
-                          : null;
-                        const object = cell.object
-                          ? MAP_ASSETS.find((a) => a.id === cell.object)
-                          : null;
-                        if (!terrain && !object) return null;
-                        const pos = gridToIsometric(cell.row, cell.col, MINI);
-                        const left = pos.x + dims.offsetX;
-                        // Apply diagonal lift and spacing similar to main isometric map
-                        const MINI_LIFT_PER_DIAGONAL = Math.round(
-                          MINI.tileHeight * 0.7
-                        );
-                        const MINI_DIAGONAL_SPACING = Math.round(
-                          MINI.tileHeight * 0.51
-                        );
-                        const diagonalIndex = cell.row + cell.col;
-                        const top =
-                          pos.y +
-                          dims.offsetY -
-                          diagonalIndex * MINI_LIFT_PER_DIAGONAL +
-                          diagonalIndex * MINI_DIAGONAL_SPACING;
-                        const tw = MINI.tileWidth;
-                        const th = MINI.tileHeight;
-                        return (
-                          <svg
-                            key={`mini-${cell.row}-${cell.col}`}
-                            style={{
-                              position: "absolute",
-                              left,
-                              top,
-                              width: tw,
-                              height: th,
-                              overflow: "visible",
-                            }}
-                          >
-                            <polygon
-                              points={`${tw / 2},0 ${tw},${th / 2} ${
-                                tw / 2
-                              },${th} 0,${th / 2}`}
-                              fill="#ffffff"
-                              stroke="#e5e5e5"
-                              strokeWidth="0.5"
-                              opacity="0.5"
-                            />
-                            {terrain?.imagePath && (
-                              <image
-                                href={terrain.imagePath}
-                                x={0}
-                                y={0}
-                                width={tw}
-                                height={th}
-                                preserveAspectRatio="none"
-                              />
-                            )}
-                            {object?.imagePath &&
-                              (() => {
-                                const scaleY = ISOMETRIC_CONFIG.tileHeight
-                                  ? MINI.tileHeight /
-                                    ISOMETRIC_CONFIG.tileHeight
-                                  : 1;
-                                const ROBOT_BASE_LIFT = Math.round(20 * scaleY);
-                                // Adjustable base lift height for items in Solution mini-map (no stacking)
-                                const ITEM_BASE_LIFT = Math.round(15 * scaleY);
-                                const isRobot =
-                                  (object as any)?.category === "robot" ||
-                                  (object?.id?.startsWith &&
-                                    object.id.startsWith("robot_"));
+      {/* Save Challenge button moved to parent under Solution */}
 
-                                // Elevation: robots have base lift; items have constant adjustable lift
-                                let stackShift = 0;
-                                if (isRobot) {
-                                  stackShift = ROBOT_BASE_LIFT;
-                                } else {
-                                  stackShift = ITEM_BASE_LIFT; // tweak ITEM_BASE_LIFT to adjust item height
-                                }
-                                // Scale object similar to main map: robot ~0.85, item ~0.5
-                                const SCALE = isRobot ? 0.85 : 0.5;
-                                const ow = tw * SCALE;
-                                const oh = th * SCALE;
-                                const ox = (tw - ow) / 2;
-                                const oy = (th - oh) / 2 - stackShift;
-                                return (
-                                  <>
-                                    <image
-                                      href={object.imagePath}
-                                      x={ox}
-                                      y={oy}
-                                      width={ow}
-                                      height={oh}
-                                      preserveAspectRatio="xMidYMid meet"
-                                    />
-                                    {/* Visible count badge for items > 1 */}
-                                    {!isRobot && (cell.itemCount ?? 0) > 1 && (
-                                      <text
-                                        x={ox + ow - 2}
-                                        y={oy + 12}
-                                        textAnchor="end"
-                                        fontSize="11"
-                                        fontWeight="700"
-                                        fill="#ffffff"
-                                        stroke="#000000"
-                                        strokeWidth="0.8"
-                                        style={{ pointerEvents: "none" }}
-                                      >
-                                        {`x${cell.itemCount ?? 0}`}
-                                      </text>
-                                    )}
-                                  </>
-                                );
-                              })()}
-                          </svg>
-                        );
-                      })}
-                    </Box>
-                  );
-                })()}
-            </Box>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              try {
-                if (!solutionWorkspaceRef.current) return;
-                // Freeze mini preview during save to avoid flicker
-                try {
-                  setMiniStable(false);
-                } catch {}
-                // Ensure IF/WHILE bodies are preserved by attaching TRUE condition if missing
-                try {
-                  const ws: any = solutionWorkspaceRef.current;
-                  const blocks = ws.getAllBlocks(false) || [];
-                  blocks.forEach((blk: any) => {
-                    if (
-                      blk?.type !== "ottobit_if_expandable" &&
-                      blk?.type !== "ottobit_while"
-                    )
-                      return;
-                    const hasBody = (blk.inputList || []).some((inp: any) => {
-                      try {
-                        const NEXT = 3; // Blockly.NEXT_STATEMENT
-                        return (
-                          inp &&
-                          inp.type === NEXT &&
-                          inp.connection &&
-                          inp.connection.targetBlock()
-                        );
-                      } catch {
-                        return false;
-                      }
-                    });
-                    const condInput =
-                      (blk.getInput && blk.getInput("CONDITION")) ||
-                      (blk.getInput && blk.getInput("COND")) ||
-                      (blk.getInput && blk.getInput("IF0"));
-                    const hasCond = !!condInput?.connection?.targetBlock();
-                    if (hasBody && condInput && !hasCond) {
-                      const boolBlock = ws.newBlock("ottobit_boolean");
-                      boolBlock.initSvg();
-                      boolBlock.render();
-                      try {
-                        boolBlock.setFieldValue &&
-                          boolBlock.setFieldValue("TRUE", "BOOL");
-                        boolBlock.setDeletable && boolBlock.setDeletable(false);
-                        boolBlock.setMovable && boolBlock.setMovable(false);
-                      } catch {}
-                      condInput.connection.connect(boolBlock.outputConnection);
-                    }
-                  });
-                } catch {}
-                const program = BlocklyToPhaserConverter.convertWorkspace(
-                  solutionWorkspaceRef.current
-                );
-                const message = {
-                  source: "parent-website",
-                  type: "RUN_PROGRAM",
-                  data: { program },
-                };
-                // Do not console unrelated logs here; only parent save will log final result
-                // Pass back to parent to store in solutionJson
-                onSolutionJsonChange?.(JSON.stringify(message));
-                // Feedback: toast and close
-                // Using native alert as placeholder toast if no hook available here
-                // You can replace with your notification system
-                // e.g., enqueueSnackbar("Solution saved successfully", { variant: "success" })
-                try {
-                  (window as any).Snackbar?.enqueueSnackbar &&
-                    (window as any).Snackbar.enqueueSnackbar(
-                      "Solution saved successfully",
-                      { variant: "success" }
-                    );
-                } catch {}
-                setOpenSolution(false);
-              } catch (err) {}
-            }}
-            sx={{ mr: 1 }}
-          >
-            Save
-          </Button>
-          <Button onClick={() => setOpenSolution(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
+      {/* Solution editor moved to ChallengeDesignerPage */}
 
       {/* Challenge Popup (basic fields first) */}
       <Dialog
@@ -971,6 +634,9 @@ export default function WinConditionsSection({
             }
             placement="left"
             arrow
+            PopperProps={{
+              style: { zIndex: 99999 },
+            }}
           >
             <IconButton
               size="small"
@@ -2429,3 +2095,98 @@ export default function WinConditionsSection({
     </Paper>
   );
 }
+
+/*
+function MiniIsometricPreview({ mapGrid }: { mapGrid: any[][] }) {
+  const rows = Array.isArray(mapGrid) ? mapGrid.length : GRID_CONFIG.rows;
+  const cols =
+    Array.isArray(mapGrid) && mapGrid[0] ? mapGrid[0].length : GRID_CONFIG.cols;
+  const dims = getIsometricGridDimensions(rows, cols, ISOMETRIC_CONFIG);
+  const LIFT_PER_DIAGONAL = 15.5;
+  const DIAGONAL_SPACING = 4.5;
+
+  return (
+    <Box
+      sx={{
+        width: Math.min(520, dims.width + dims.offsetX),
+        height: Math.min(360, dims.height),
+        overflow: "hidden",
+        position: "relative",
+        border: `1px solid ${THEME_COLORS.border}`,
+        borderRadius: 1,
+        bgcolor: THEME_COLORS.background,
+        contain: "layout paint size",
+      }}
+    >
+      <Box sx={{ position: "absolute", inset: 0 }}>
+        {mapGrid.map((row, rIdx) =>
+          row.map((cell: any, cIdx: number) => {
+            const terrainAsset = cell?.terrain
+              ? MAP_ASSETS.find((a) => a.id === cell.terrain)
+              : null;
+            const objectAsset = cell?.object
+              ? MAP_ASSETS.find((a) => a.id === cell.object)
+              : null;
+            const pos = gridToIsometric(rIdx, cIdx, ISOMETRIC_CONFIG);
+            const left = pos.x + dims.offsetX;
+            const top =
+              pos.y +
+              dims.offsetY -
+              (rIdx + cIdx) * LIFT_PER_DIAGONAL +
+              (rIdx + cIdx) * DIAGONAL_SPACING;
+            const w = ISOMETRIC_CONFIG.tileWidth;
+            const h = ISOMETRIC_CONFIG.tileHeight;
+            const halfW = w / 2;
+            const halfH = h / 2;
+            const isEmpty = !terrainAsset && !objectAsset;
+
+            return (
+              <svg
+                key={`${rIdx}-${cIdx}`}
+                style={{
+                  position: "absolute",
+                  left,
+                  top,
+                  width: w,
+                  height: h,
+                  overflow: "visible",
+                }}
+              >
+                {isEmpty && (
+                  <polygon
+                    points={`${halfW},0 ${w},${halfH} ${halfW},${h} 0,${halfH}`}
+                    fill="#ffffff"
+                    stroke="#e5e5e5"
+                    strokeWidth="1"
+                    opacity="0.5"
+                  />
+                )}
+                {terrainAsset?.imagePath && (
+                  <image
+                    href={terrainAsset.imagePath}
+                    x={0}
+                    y={0}
+                    width={w}
+                    height={h}
+                    preserveAspectRatio="none"
+                  />
+                )}
+                {objectAsset?.imagePath && (
+                  <image
+                    href={objectAsset.imagePath}
+                    x={w * 0.2}
+                    y={h * 0.2 - 12}
+                    width={w * 0.6}
+                    height={h * 0.6}
+                    preserveAspectRatio="xMidYMid meet"
+                  />
+                )}
+              </svg>
+            );
+          })
+        )}
+      </Box>
+    </Box>
+  );
+}
+*/

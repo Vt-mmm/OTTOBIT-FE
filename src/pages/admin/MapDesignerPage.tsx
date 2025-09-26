@@ -22,7 +22,10 @@ import { MapCell } from "common/models";
 import { MapGridSection } from "sections/admin/mapDesigner";
 import WorkspaceSectionLite from "sections/admin/mapDesigner/WorkspaceSectionLite";
 import SimpleIsometricMapGridLite from "sections/admin/mapDesigner/SimpleIsometricMapGridLite";
-import { GRID_CONFIG } from "sections/admin/mapDesigner/theme.config";
+import {
+  GRID_CONFIG,
+  THEME_COLORS,
+} from "sections/admin/mapDesigner/theme.config";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import ThreeDRotationIcon from "@mui/icons-material/ThreeDRotation";
 import { MAP_ASSETS } from "sections/admin/mapDesigner/mapAssets.config";
@@ -428,12 +431,13 @@ export default function MapDesignerPage() {
           {/* Title & Description moved to bottom */}
         </Box>
 
-        <Grid container spacing={2} sx={{ height: "calc(100vh - 250px)" }}>
+        <Grid container spacing={2}>
           <Grid item xs={12} md={3}>
             <Box
               className="map-designer-workspace"
               sx={{
                 height: "100%",
+                minHeight: "700px",
                 // Hard reset some MUI spacing possibly affected by previous page styles
                 "& .MuiDivider-root": { mb: 0.5 },
                 "& .MuiTabs-root": { mb: 0.5, minHeight: 32 },
@@ -453,7 +457,12 @@ export default function MapDesignerPage() {
           <Grid item xs={12} md={9}>
             <Box
               ref={gridContainerRef}
-              sx={{ height: "100%", width: "100%", position: "relative" }}
+              sx={{
+                height: "100%",
+                width: "100%",
+                position: "relative",
+                minHeight: "700px",
+              }}
             >
               {/* Gate render until container size stabilized to avoid 2.5D stretch */}
               {viewMode === "orthogonal" ? (
@@ -478,63 +487,79 @@ export default function MapDesignerPage() {
               )}
             </Box>
           </Grid>
+          {/* Bottom: Map Info (Title & Description) */}
+          <Grid item xs={12}>
+            <Paper
+              sx={{
+                p: 2,
+                height: "auto",
+                overflow: "visible",
+                bgcolor: THEME_COLORS.surface,
+                borderRadius: 2,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  mb: 2,
+                  fontWeight: 600,
+                  color: THEME_COLORS.text.primary,
+                }}
+              >
+                Map Information
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Title"
+                    placeholder="Enter map title"
+                    size="small"
+                    error={
+                      mapTitle.trim().length > 0 && mapTitle.trim().length < 5
+                    }
+                    helperText={
+                      mapTitle.trim().length > 0 && mapTitle.trim().length < 5
+                        ? "At least 5 characters"
+                        : ""
+                    }
+                    value={mapTitle}
+                    onChange={(e) => setMapTitle(e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Description"
+                    placeholder="Enter map description"
+                    size="small"
+                    multiline
+                    minRows={3}
+                    maxRows={8}
+                    error={
+                      mapDescription.trim().length > 0 &&
+                      mapDescription.trim().length < 10
+                    }
+                    helperText={
+                      mapDescription.trim().length > 0 &&
+                      mapDescription.trim().length < 10
+                        ? "At least 10 characters"
+                        : ""
+                    }
+                    value={mapDescription}
+                    onChange={(e) => setMapDescription(e.target.value)}
+                  />
+                </Grid>
+              </Grid>
+              <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+                <Button variant="contained" onClick={handleSaveMap}>
+                  Save Map
+                </Button>
+              </Box>
+            </Paper>
+          </Grid>
         </Grid>
-        {/* Bottom: Map Info (Title & Description) */}
-        <Box sx={{ mt: 45 }}>
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-              Map Information
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Title"
-                  placeholder="Enter map title"
-                  size="small"
-                  error={
-                    mapTitle.trim().length > 0 && mapTitle.trim().length < 5
-                  }
-                  helperText={
-                    mapTitle.trim().length > 0 && mapTitle.trim().length < 5
-                      ? "At least 5 characters"
-                      : ""
-                  }
-                  value={mapTitle}
-                  onChange={(e) => setMapTitle(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Description"
-                  placeholder="Enter map description"
-                  size="small"
-                  multiline
-                  minRows={3}
-                  maxRows={8}
-                  error={
-                    mapDescription.trim().length > 0 &&
-                    mapDescription.trim().length < 10
-                  }
-                  helperText={
-                    mapDescription.trim().length > 0 &&
-                    mapDescription.trim().length < 10
-                      ? "At least 10 characters"
-                      : ""
-                  }
-                  value={mapDescription}
-                  onChange={(e) => setMapDescription(e.target.value)}
-                />
-              </Grid>
-            </Grid>
-            <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-              <Button variant="contained" onClick={handleSaveMap}>
-                Save Map
-              </Button>
-            </Box>
-          </Paper>
-        </Box>
       </Container>
       {/* Update confirmation dialog */}
       <Dialog
