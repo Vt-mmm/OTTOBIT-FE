@@ -67,7 +67,8 @@ export interface ProgramAction {
     | "if"
     | "while"
     | "callFunction";
-  count?: number;
+  // Cho phép string để truyền placeholder biến (ví dụ: "{{i}}") cho phaser-map thay thế
+  count?: number | string;
   color?: string;
   colors?: string[];
   // Control structure properties

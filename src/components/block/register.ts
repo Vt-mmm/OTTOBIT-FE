@@ -7,7 +7,10 @@ import { controlBlocks } from "./ottobit_control";
 import { sensorBlocks } from "./ottobit_sensors";
 import { actionBlocks } from "./ottobit_actions";
 import { functionBlocks } from "./ottobit_functions";
-import { ottobit_function_def, ottobit_function_call } from "./blocks/functionBlocks";
+import {
+  ottobit_function_def,
+  ottobit_function_call,
+} from "./blocks/functionBlocks";
 
 // Import generators to register them automatically
 import "./generators/javascript";
@@ -23,7 +26,7 @@ let isMutatorRegistered = false;
  * Register all ottobit block definitions following Google Blockly standards
  */
 export function registerottobitBlocks(): void {
-  // Register mutators first (guard against double registration)
+  // Register mutators and extensions first (guard against double registration)
   if (!isMutatorRegistered) {
     try {
       registerIfElseMutator();
@@ -56,14 +59,49 @@ export function registerottobitBlocks(): void {
       Blockly.Blocks[blockType] = {
         init: function () {
           this.jsonInit(blockDef);
+
+          // Thêm shadow blocks cho các input value của movement và actions
+          if (blockType === "ottobit_move_forward") {
+            // Chỉ apply compact style nếu block đã sẵn sàng
+            if (this.inputList) {
+            }
+            const input = this.getInput("STEPS");
+            if (input && input.connection && this.workspace) {
+              const shadowBlock = this.workspace.newBlock("ottobit_number");
+              shadowBlock.setShadow(true);
+              shadowBlock.setFieldValue(1, "NUM");
+              shadowBlock.initSvg();
+              shadowBlock.render();
+              input.connection.connect(shadowBlock.outputConnection);
+            }
+          }
+
+          if (
+            blockType === "ottobit_collect_green" ||
+            blockType === "ottobit_collect_red" ||
+            blockType === "ottobit_collect_yellow"
+          ) {
+            // Chỉ apply compact style nếu block đã sẵn sàng
+            if (this.inputList) {
+            }
+            const input = this.getInput("COUNT");
+            if (input && input.connection && this.workspace) {
+              const shadowBlock = this.workspace.newBlock("ottobit_number");
+              shadowBlock.setShadow(true);
+              shadowBlock.setFieldValue(1, "NUM");
+              shadowBlock.initSvg();
+              shadowBlock.render();
+              input.connection.connect(shadowBlock.outputConnection);
+            }
+          }
         },
       };
     });
   });
 
   // Register custom function blocks
-  Blockly.Blocks['ottobit_function_def'] = ottobit_function_def;
-  Blockly.Blocks['ottobit_function_call'] = ottobit_function_call;
+  Blockly.Blocks["ottobit_function_def"] = ottobit_function_def;
+  Blockly.Blocks["ottobit_function_call"] = ottobit_function_call;
 
   // Blocks registered successfully
 
@@ -105,7 +143,6 @@ export const BLOCK_TYPES = {
   ottobit_boolean: "ottobit_boolean",
   ottobit_logic_operation: "ottobit_logic_operation",
 
-
   // Sensors (cập nhật)
   ottobit_read_sensor: "ottobit_read_sensor",
   ottobit_sensor_condition: "ottobit_sensor_condition",
@@ -126,12 +163,12 @@ export const BLOCK_TYPES = {
 
   // Sensors (additional)
   ottobit_bale_number: "ottobit_bale_number",
-  
+
   // Battery color checks
   ottobit_is_green: "ottobit_is_green",
-  ottobit_is_red: "ottobit_is_red", 
+  ottobit_is_red: "ottobit_is_red",
   ottobit_is_yellow: "ottobit_is_yellow",
-  
+
   // Function blocks (sử dụng custom blocks)
   ottobit_function_def: "ottobit_function_def",
   ottobit_function_call: "ottobit_function_call",
