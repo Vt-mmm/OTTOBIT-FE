@@ -28,11 +28,18 @@ import ThreeDRotationIcon from "@mui/icons-material/ThreeDRotation";
 import { axiosClient } from "axiosClient";
 import { ROUTES_API_CHALLENGE } from "constants/routesApiKeys";
 import { extractApiErrorMessage } from "utils/errorHandler";
+import { useAppDispatch, useAppSelector } from "../../redux/config";
+import { getCourses } from "../../redux/course/courseSlice";
+import { getLessons } from "../../redux/lesson/lessonSlice";
 import MapPickerDialog from "sections/admin/map/MapPickerDialog";
 import BlocksWorkspace from "sections/studio/BlocksWorkspace";
 import { BlocklyToPhaserConverter } from "../../features/phaser/services/blocklyToPhaserConverter";
 
 const MapDesignerPage = () => {
+  const dispatch = useAppDispatch();
+  const { data: coursesData } = useAppSelector((s) => s.course.courses);
+  const { data: lessonsData } = useAppSelector((s) => s.lesson.lessons);
+
   const [selectedAsset, setSelectedAsset] = useState<string>("robot_east");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [mapName, setMapName] = useState<string>("New Map");
@@ -44,6 +51,7 @@ const MapDesignerPage = () => {
   // Buffer new solution JSON here so UI state doesn't change and won't disturb map
   // pendingSolutionJsonRef removed; we build from workspace at save time
   const [challengeJson, setChallengeJson] = useState<string | null>(null);
+  const [courseId, setCourseId] = useState<string>("");
   const [lessonId, setLessonId] = useState<string>("");
   const [order, setOrder] = useState<number>(1);
   const [difficulty, setDifficulty] = useState<number>(1);
@@ -100,6 +108,19 @@ const MapDesignerPage = () => {
       return 0;
     }
   };
+
+  // Fetch courses and lessons
+  useEffect(() => {
+    dispatch(getCourses({ pageSize: 100 }));
+  }, [dispatch]);
+
+  // Fetch lessons when courseId changes
+  useEffect(() => {
+    if (courseId) {
+      dispatch(getLessons({ courseId, pageSize: 100 }));
+      setLessonId(""); // Reset lesson selection when course changes
+    }
+  }, [dispatch, courseId]);
 
   // Prefill from query params when navigated from Map Management (Edit)
   useEffect(() => {
@@ -580,6 +601,23 @@ const MapDesignerPage = () => {
       }
     } catch {}
     // Validate required fields
+    if (!courseId || courseId.trim().length === 0) {
+      const msg = "Please select a Course before saving";
+      try {
+        if ((window as any).Snackbar?.enqueueSnackbar) {
+          (window as any).Snackbar.enqueueSnackbar(msg, {
+            variant: "error",
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+          });
+        } else {
+          showLocalToast(msg, "error");
+        }
+      } catch {
+        showLocalToast(msg, "error");
+      }
+      return;
+    }
+
     if (!lessonId || lessonId.trim().length === 0) {
       const msg = "Please select a Lesson before saving";
       try {
@@ -995,6 +1033,8 @@ const MapDesignerPage = () => {
               onMapNameChange={setMapName}
               mapDescription={mapDescription}
               onMapDescriptionChange={setMapDescription}
+              courseId={courseId}
+              onCourseIdChange={setCourseId}
               lessonId={lessonId}
               onLessonIdChange={setLessonId}
               order={order}
@@ -1013,6 +1053,8 @@ const MapDesignerPage = () => {
               registerOpenChallengeTrigger={(fn: () => void) => {
                 (openChallengeDialogRef as any).current = fn;
               }}
+              courses={coursesData?.items || []}
+              lessons={lessonsData?.items || []}
             />
             {/* Inline Solution Editor (moved from WinConditionsSection) */}
             <Box

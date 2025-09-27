@@ -18,6 +18,7 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
+  FormHelperText,
 } from "@mui/material";
 import { createPortal } from "react-dom";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
@@ -32,8 +33,6 @@ import {
   getIsometricGridDimensions,
   ISOMETRIC_CONFIG,
 } from "sections/admin/mapDesigner/isometricHelpers";
-import { axiosClient } from "axiosClient";
-import { ROUTES_API_LESSON } from "constants/routesApiKeys";
 // (use existing imports at top of file)
 
 interface WinConditionsSectionProps {
@@ -41,6 +40,8 @@ interface WinConditionsSectionProps {
   onMapNameChange: (name: string) => void;
   mapDescription: string;
   onMapDescriptionChange: (description: string) => void;
+  courseId: string;
+  onCourseIdChange: (id: string) => void;
   lessonId: string;
   onLessonIdChange: (id: string) => void;
   order: number;
@@ -58,6 +59,8 @@ interface WinConditionsSectionProps {
   onOpenMapPicker?: () => void;
   onSolutionDialogToggle?: (open: boolean) => void;
   registerOpenChallengeTrigger?: (fn: () => void) => void;
+  courses?: any[];
+  lessons?: any[];
 }
 
 export default function WinConditionsSection({
@@ -65,6 +68,8 @@ export default function WinConditionsSection({
   onMapNameChange,
   mapDescription,
   onMapDescriptionChange,
+  courseId,
+  onCourseIdChange,
   lessonId,
   onLessonIdChange,
   order,
@@ -79,8 +84,14 @@ export default function WinConditionsSection({
   onSaveMap,
   onSolutionDialogToggle,
   registerOpenChallengeTrigger,
+  courses = [],
+  lessons = [],
 }: WinConditionsSectionProps) {
   const [openSolution] = useState(false);
+
+  // Validate solutionJson prop
+  const isSolutionValid = solutionJson && solutionJson.trim().length > 0;
+
   // Notify parent when Solution dialog open/close toggles (to stabilize isometric grid)
   useEffect(() => {
     try {
@@ -103,9 +114,6 @@ export default function WinConditionsSection({
 
   // Mini-map temporarily disabled for testing
   // duplicate declarations removed
-  const [lessonOptions, setLessonOptions] = useState<
-    { id: string; title: string }[]
-  >([]);
   // Challenge basic fields
   const [robotX, setRobotX] = useState<number>(0);
   const [robotY, setRobotY] = useState<number>(0);
@@ -371,49 +379,7 @@ export default function WinConditionsSection({
     // No warehouse anymore
   }, [openChallenge, mapGrid]);
 
-  // Fetch lessons for dropdown (value=id, label=title)
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await axiosClient.get(ROUTES_API_LESSON.GET_ALL);
-        const items = res?.data?.data?.items as
-          | { id: string; title: string }[]
-          | undefined;
-        if (!cancelled && Array.isArray(items)) {
-          const options = items.map((i) => ({ id: i.id, title: i.title }));
-          setLessonOptions(options);
-          // Auto-select first lesson if none selected
-          if (
-            options.length > 0 &&
-            (!lessonId || lessonId.trim().length === 0)
-          ) {
-            onLessonIdChange(options[0].id);
-          }
-        }
-      } catch (e) {
-        // Silent fail but notify
-        try {
-          if ((window as any).Snackbar?.enqueueSnackbar) {
-            (window as any).Snackbar.enqueueSnackbar(
-              "Failed to load lesson list",
-              {
-                variant: "error",
-                anchorOrigin: { vertical: "top", horizontal: "right" },
-              }
-            );
-          } else {
-            showToast("Failed to load lesson list", "error");
-          }
-        } catch {
-          // no-op
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [lessonId, onLessonIdChange]);
+  // Lessons are now passed as props, no need to manage local state
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -598,25 +564,64 @@ export default function WinConditionsSection({
             </IconButton>
           </Tooltip>
         </Box>
-        <FormControl fullWidth size="small" error={!lessonId}>
-          <InputLabel>Lesson</InputLabel>
+
+        {/* Course Selection */}
+        <FormControl fullWidth size="small" error={!courseId}>
+          <InputLabel>Course</InputLabel>
           <Select
-            label="Lesson"
-            value={lessonOptions.length > 0 ? lessonId : ""}
-            onChange={(e) => onLessonIdChange(e.target.value as string)}
+            label="Course"
+            value={courseId}
+            onChange={(e) => onCourseIdChange(e.target.value as string)}
           >
-            {lessonOptions.length === 0 ? (
+            {courses.length === 0 ? (
               <MenuItem value="" disabled>
-                No data
+                No courses available
               </MenuItem>
             ) : (
-              lessonOptions.map((opt) => (
-                <MenuItem key={opt.id} value={opt.id}>
-                  {opt.title}
+              courses.map((course) => (
+                <MenuItem key={course.id} value={course.id}>
+                  {course.title}
                 </MenuItem>
               ))
             )}
           </Select>
+          {!courseId && <FormHelperText>Please select a course</FormHelperText>}
+        </FormControl>
+
+        {/* Lesson Selection */}
+        <FormControl
+          fullWidth
+          size="small"
+          error={!lessonId}
+          disabled={!courseId}
+        >
+          <InputLabel>Lesson</InputLabel>
+          <Select
+            label="Lesson"
+            value={lessonId}
+            onChange={(e) => onLessonIdChange(e.target.value as string)}
+          >
+            {!courseId ? (
+              <MenuItem value="" disabled>
+                Please select a course first
+              </MenuItem>
+            ) : lessons.length === 0 ? (
+              <MenuItem value="" disabled>
+                No lessons available for this course
+              </MenuItem>
+            ) : (
+              lessons.map((lesson) => (
+                <MenuItem key={lesson.id} value={lesson.id}>
+                  {lesson.title}
+                </MenuItem>
+              ))
+            )}
+          </Select>
+          {!courseId ? (
+            <FormHelperText>Please select a course first</FormHelperText>
+          ) : !lessonId ? (
+            <FormHelperText>Please select a lesson</FormHelperText>
+          ) : null}
         </FormControl>
 
         <FormControl fullWidth size="small">

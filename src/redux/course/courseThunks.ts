@@ -9,6 +9,7 @@ import {
   UpdateCourseRequest,
   GetCoursesRequest,
 } from "common/@types/course";
+import { extractApiErrorMessage } from "utils/errorHandler";
 
 // API Response wrapper interface
 interface ApiResponse<T> {
@@ -55,16 +56,17 @@ export const getCoursesThunk = createAsyncThunk<
 >("course/getAll", async (request, { rejectWithValue }) => {
   try {
     const response = await callApiWithRetry(() =>
-      axiosClient.get<ApiResponse<CoursesResponse>>(
-        ROUTES_API_COURSE.GET_ALL,
-        {
-          params: request,
-        }
-      )
+      axiosClient.get<ApiResponse<CoursesResponse>>(ROUTES_API_COURSE.GET_ALL, {
+        params: request,
+      })
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to fetch courses");
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to fetch courses"
+      );
+      throw new Error(errorMessage);
     }
 
     if (!response.data.data) {
@@ -73,10 +75,11 @@ export const getCoursesThunk = createAsyncThunk<
 
     return response.data.data;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch courses"
+    const errorMessage = extractApiErrorMessage(
+      error,
+      "Failed to fetch courses"
     );
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -94,7 +97,11 @@ export const getCourseByIdThunk = createAsyncThunk<
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to fetch course");
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to fetch course"
+      );
+      throw new Error(errorMessage);
     }
 
     if (!response.data.data) {
@@ -103,10 +110,11 @@ export const getCourseByIdThunk = createAsyncThunk<
 
     return response.data.data;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch course"
+    const errorMessage = extractApiErrorMessage(
+      error,
+      "Failed to fetch course"
     );
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -125,7 +133,11 @@ export const createCourseThunk = createAsyncThunk<
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to create course");
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to create course"
+      );
+      throw new Error(errorMessage);
     }
 
     if (!response.data.data) {
@@ -134,10 +146,11 @@ export const createCourseThunk = createAsyncThunk<
 
     return response.data.data;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to create course"
+    const errorMessage = extractApiErrorMessage(
+      error,
+      "Failed to create course"
     );
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -156,7 +169,11 @@ export const updateCourseThunk = createAsyncThunk<
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to update course");
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to update course"
+      );
+      throw new Error(errorMessage);
     }
 
     if (!response.data.data) {
@@ -165,10 +182,11 @@ export const updateCourseThunk = createAsyncThunk<
 
     return response.data.data;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to update course"
+    const errorMessage = extractApiErrorMessage(
+      error,
+      "Failed to update course"
     );
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -184,15 +202,20 @@ export const deleteCourseThunk = createAsyncThunk<
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to delete course");
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to delete course"
+      );
+      throw new Error(errorMessage);
     }
 
     return id;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to delete course"
+    const errorMessage = extractApiErrorMessage(
+      error,
+      "Failed to delete course"
     );
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -204,22 +227,16 @@ export const restoreCourseThunk = createAsyncThunk<
 >("course/restore", async (id, { rejectWithValue }) => {
   try {
     const response = await callApiWithRetry(() =>
-      axiosClient.post<ApiResponse<CourseResult>>(ROUTES_API_COURSE.RESTORE(id))
+      axiosClient.post<CourseResult>(ROUTES_API_COURSE.RESTORE(id))
     );
 
-    if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to restore course");
-    }
-
-    if (!response.data.data) {
-      throw new Error("No course data received");
-    }
-
-    return response.data.data;
+    // API restore trả về trực tiếp CourseResult, không wrap trong ApiResponse
+    return response.data;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to restore course"
+    const errorMessage = extractApiErrorMessage(
+      error,
+      "Failed to restore course"
     );
+    return rejectWithValue(errorMessage);
   }
 });

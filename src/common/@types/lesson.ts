@@ -1,5 +1,5 @@
 // Import Challenge type for relationship
-import { Challenge } from './challenge';
+import { Challenge } from "./challenge";
 
 // Lesson entity interfaces based on BE models
 export interface Lesson {
@@ -14,6 +14,7 @@ export interface Lesson {
   challengesCount?: number;
   courseTitle?: string;
   challenges?: Challenge[]; // Array of challenges for this lesson
+  isDeleted?: boolean;
 }
 
 // Request types
@@ -41,6 +42,8 @@ export interface GetLessonsRequest {
   includeDeleted?: boolean;
   pageNumber?: number;
   pageSize?: number;
+  sortBy?: number;
+  sortDirection?: number;
 }
 
 export interface GetLessonsPreviewRequest {
@@ -60,15 +63,15 @@ export interface UpdateLessonData extends UpdateLessonRequest {}
 export interface LessonResult extends Lesson {}
 
 export interface LessonsResponse {
-  items: LessonResult[];  // Backend trả về 'items' thay vì 'data'
-  page: number;           // Backend trả về 'page' thay vì 'pageNumber'
-  size: number;           // Backend trả về 'size' thay vì 'pageSize'
-  total: number;          // Backend trả về 'total' thay vì 'totalCount'
+  items: LessonResult[]; // Backend trả về 'items' thay vì 'data'
+  page: number; // Backend trả về 'page' thay vì 'pageNumber'
+  size: number; // Backend trả về 'size' thay vì 'pageSize'
+  total: number; // Backend trả về 'total' thay vì 'totalCount'
   totalPages: number;
 }
 
 export interface LessonsPreviewResponse {
-  items: LessonResult[];  // Preview lessons for non-enrolled users
+  items: LessonResult[]; // Preview lessons for non-enrolled users
   page: number;
   size: number;
   total: number;
@@ -78,7 +81,7 @@ export interface LessonsPreviewResponse {
 // Lesson Progress types (for user progress tracking)
 export enum LessonStatus {
   NotStarted = "NotStarted",
-  InProgress = "InProgress", 
+  InProgress = "InProgress",
   Completed = "Completed",
 }
 

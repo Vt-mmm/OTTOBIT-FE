@@ -33,7 +33,6 @@ export const ROUTES_API_ACCOUNT = {
   PROFILE: path(ROOTS_ACCOUNT, `/profile`), // GET /api/v1/accounts/profile
 };
 
-
 export const ROUTES_API_STUDENT = {
   // Student endpoints
   GET_ALL: ROOTS_STUDENT, // GET /api/v1/students (with pagination)
@@ -44,8 +43,8 @@ export const ROUTES_API_STUDENT = {
 
 export const ROUTES_API_COURSE = {
   // Course endpoints
-  GET_ALL: ROOTS_COURSE, // GET /api/v1/courses (with pagination)
-  GET_BY_ID: (id: string) => path(ROOTS_COURSE, `/${id}`), // GET /api/v1/courses/{id}
+  GET_ALL: path(ROOTS_COURSE, `/admin`), // GET /api/v1/courses/admin (with pagination)
+  GET_BY_ID: (id: string) => path(ROOTS_COURSE, `/admin/${id}`), // GET /api/v1/courses/admin/{id}
   CREATE: ROOTS_COURSE, // POST /api/v1/courses
   UPDATE: (id: string) => path(ROOTS_COURSE, `/${id}`), // PUT /api/v1/courses/{id}
   DELETE: (id: string) => path(ROOTS_COURSE, `/${id}`), // DELETE /api/v1/courses/{id}
@@ -54,8 +53,8 @@ export const ROUTES_API_COURSE = {
 
 export const ROUTES_API_LESSON = {
   // Lesson endpoints
-  GET_ALL: path(ROOTS_LESSON, `/admin`), // GET /api/v1/lessons/admin (for Admin)
-  GET_BY_ID: (id: string) => path(ROOTS_LESSON, `/${id}`), // GET /api/v1/lessons/{id}
+  GET_ALL: path(ROOTS_LESSON, `/admin`), // GET /api/v1/lessons/admin (with pagination)
+  GET_BY_ID: (id: string) => path(ROOTS_LESSON, `/admin/${id}`), // GET /api/v1/lessons/admin/{id}
   BY_COURSE: (courseId: string) => path(ROOTS_LESSON, `/by-course/${courseId}`), // GET /api/v1/lessons/by-course/{courseId}
   PREVIEW: path(ROOTS_LESSON, `/preview`), // GET /api/v1/lessons/preview
   CREATE: ROOTS_LESSON, // POST /api/v1/lessons
@@ -69,7 +68,7 @@ export const ROUTES_API_CHALLENGE = {
   GET_BY_ID: (id: string) => path(ROOTS_CHALLENGE, `/${id}`), // GET /api/v1/challenges/{id} (for users)
   BY_LESSON: (lessonId: string) => path(ROOTS_CHALLENGE, `/lesson/${lessonId}`), // GET /api/v1/challenges/lesson/{lessonId} (for users)
   SOLUTION: (id: string) => path(ROOTS_CHALLENGE, `/${id}/solution`), // GET /api/v1/challenges/{id}/solution (for users)
-  
+
   // Challenge endpoints for admin
   ADMIN_GET_ALL: path(ROOTS_CHALLENGE, `/admin`), // GET /api/v1/challenges/admin
   ADMIN_GET_BY_ID: (id: string) => path(ROOTS_CHALLENGE, `/admin/${id}`), // GET /api/v1/challenges/admin/{id}
@@ -96,7 +95,8 @@ export const ROUTES_API_SUBMISSION = {
   UPDATE: (id: string) => path(ROOTS_SUBMISSION, `/${id}`), // PUT /api/v1/submissions/{id}
   DELETE: (id: string) => path(ROOTS_SUBMISSION, `/${id}`), // DELETE /api/v1/submissions/{id}
   MY_SUBMISSIONS: path(ROOTS_SUBMISSION, `/my-submissions`), // GET /api/v1/submissions/my-submissions
-  BY_CHALLENGE: (challengeId: string) => path(ROOTS_SUBMISSION, `/by-challenge/${challengeId}`), // GET /api/v1/submissions/by-challenge/{challengeId}
+  BY_CHALLENGE: (challengeId: string) =>
+    path(ROOTS_SUBMISSION, `/by-challenge/${challengeId}`), // GET /api/v1/submissions/by-challenge/{challengeId}
 };
 
 export const ROUTES_API_MAP = {
@@ -116,6 +116,7 @@ export const ROUTES_API_CHALLENGE_PROCESS = {
 
 export const ROUTES_API_LESSON_PROGRESS = {
   // Lesson Progress endpoints
-  START_LESSON: (lessonId: string) => path(ROOTS_LESSON_PROGRESS, `/start-lesson/${lessonId}`), // POST /api/v1/lesson-process/start-lesson/{lessonId}
+  START_LESSON: (lessonId: string) =>
+    path(ROOTS_LESSON_PROGRESS, `/start-lesson/${lessonId}`), // POST /api/v1/lesson-process/start-lesson/{lessonId}
   MY_PROGRESS: path(ROOTS_LESSON_PROGRESS, `/my-progress`), // GET /api/v1/lesson-process/my-progress
 };
