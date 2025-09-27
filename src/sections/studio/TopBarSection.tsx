@@ -1031,41 +1031,38 @@ function TopBarContent({
           {/* Divider */}
           <Box sx={{ width: 1, height: 32, bgcolor: "#e2e8f0", mx: 0.8 }} />
 
-          <Tooltip title={isRunning ? "Stop Program" : "Run Program"}>
-            <span>
-              <IconButton
-                onClick={isRunning ? handleStop : handleRun}
-                disabled={!workspace}
-                sx={{
-                  bgcolor: isRunning ? "#ef4444" : "#10b981",
-                  color: "white",
-                  width: { xs: 36, sm: 42, md: 48 },
-                  height: { xs: 36, sm: 42, md: 48 },
-                  "&:hover": {
-                    bgcolor: isRunning ? "#dc2626" : "#059669",
-                    transform: "translateY(-1px)",
-                    boxShadow: isRunning
-                      ? "0 4px 12px rgba(239, 68, 68, 0.4)"
-                      : "0 4px 12px rgba(16, 185, 129, 0.4)",
-                  },
-                  "&:disabled": {
-                    bgcolor: "#9ca3af",
-                    color: "#6b7280",
-                    "&:hover": {
-                      transform: "none",
-                      boxShadow: "none",
-                    },
-                  },
-                }}
-              >
-                {isRunning ? (
-                  <StopIcon sx={{ fontSize: 24 }} />
-                ) : (
-                  <RunIcon sx={{ fontSize: 24 }} />
-                )}
-              </IconButton>
-            </span>
-          </Tooltip>
+          <IconButton
+            aria-label={isRunning ? "Stop Program" : "Run Program"}
+            onClick={isRunning ? handleStop : handleRun}
+            disabled={!workspace}
+            sx={{
+              bgcolor: isRunning ? "#ef4444" : "#10b981",
+              color: "white",
+              width: { xs: 36, sm: 42, md: 48 },
+              height: { xs: 36, sm: 42, md: 48 },
+              "&:hover": {
+                bgcolor: isRunning ? "#dc2626" : "#059669",
+                transform: "translateY(-1px)",
+                boxShadow: isRunning
+                  ? "0 4px 12px rgba(239, 68, 68, 0.4)"
+                  : "0 4px 12px rgba(16, 185, 129, 0.4)",
+              },
+              "&:disabled": {
+                bgcolor: "#9ca3af",
+                color: "#6b7280",
+                "&:hover": {
+                  transform: "none",
+                  boxShadow: "none",
+                },
+              },
+            }}
+          >
+            {isRunning ? (
+              <StopIcon sx={{ fontSize: 24 }} />
+            ) : (
+              <RunIcon sx={{ fontSize: 24 }} />
+            )}
+          </IconButton>
 
           <Tooltip title="Restart Map">
             <span>

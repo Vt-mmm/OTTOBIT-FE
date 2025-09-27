@@ -4,6 +4,29 @@
   font-weight: 400;
 }
 
+html {
+  /* Reserve space for the vertical scrollbar to avoid layout shift when it appears/disappears */
+  scrollbar-gutter: stable both-edges;
+}
+
+/* Used to lock page scroll on Studio route to prevent scrollbar flicker */
+body.no-scroll {
+  overflow: hidden !important;
+  display: block !important;
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+html.no-scroll {
+  overflow: hidden !important;
+}
+
+/* Ensure app root does not introduce scrollbars in studio */
+body.no-scroll #root {
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
 body {
   margin: 0;
   min-width: 320px;

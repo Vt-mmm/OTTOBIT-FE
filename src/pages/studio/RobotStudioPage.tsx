@@ -124,6 +124,8 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
         m: 0,
         p: 0,
         boxSizing: "border-box",
+        // Prevent page-level scrollbars from appearing/disappearing (causes layout shift)
+        overflow: "hidden",
         // Mobile-specific adjustments
         "@media (max-width: 900px)": {
           height: "100vh",
@@ -256,6 +258,16 @@ const RobotStudioPage = () => {
     // For now, don't navigate to avoid URL complications
     // navigate(`/studio/${challengeIdSelected}`);
   };
+
+  // Lock body scroll while in studio to prevent page scrollbar flicker
+  useEffect(() => {
+    document.body.classList.add('no-scroll');
+    document.documentElement.classList.add('no-scroll');
+    return () => {
+      document.body.classList.remove('no-scroll');
+      document.documentElement.classList.remove('no-scroll');
+    };
+  }, []);
 
   // Single PhaserProvider to prevent iframe reload issues
   return (
