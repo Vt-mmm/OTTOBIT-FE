@@ -88,9 +88,20 @@ export class BlocklyToPhaserConverter {
 
     // Traverse through connected blocks
     while (currentBlock) {
+      try {
+        // Debug: log visiting block types to trace missing conversions
+        // eslint-disable-next-line no-console
+        console.log("[Converter] Visiting block:", currentBlock.type);
+      } catch {}
+
       const convertedActions = this.convertBlockToActions(currentBlock);
       if (convertedActions && convertedActions.length > 0) {
         actions.push(...convertedActions);
+      } else {
+        try {
+          // eslint-disable-next-line no-console
+          console.warn("[Converter] No actions produced for block:", currentBlock.type);
+        } catch {}
       }
 
       // Move to next connected block
@@ -130,6 +141,17 @@ export class BlocklyToPhaserConverter {
     const blockType = block.type;
 
     try {
+      // Debug: log block type at conversion
+      try {
+        // eslint-disable-next-line no-console
+        console.log("[Converter] Converting block type:", blockType);
+      } catch {}
+
+      // Fallback: handle any collect variant by prefix to avoid missing cases
+      if (typeof blockType === "string" && blockType.startsWith("ottobit_collect")) {
+        return [this.convertCollect(block)];
+      }
+      
       switch (blockType) {
         case "ottobit_move_forward":
           return [this.convertMoveForward(block)];
@@ -137,7 +159,7 @@ export class BlocklyToPhaserConverter {
         case "ottobit_rotate":
           return [this.convertRotate(block)];
 
-        // Collect blocks
+        // Explicit collect variants (kept for clarity; prefix handler above already covers)
         case "ottobit_collect_green":
         case "ottobit_collect_red":
         case "ottobit_collect_yellow":
@@ -264,9 +286,10 @@ export class BlocklyToPhaserConverter {
     const inputBlock = block.getInputTargetBlock("COUNT");
     if (inputBlock) {
       // Nếu có khối gắn vào (số hoặc biến)
-      if (inputBlock.type === "ottobit_number") {
-        countToken = inputBlock.getFieldValue("NUM") || "1";
-      } else if (inputBlock.type === "ottobit_variable_i") {
+      if (inputBlock.type === "ottobit_number" || inputBlock.type === "math_number") {
+        const val = inputBlock.getFieldValue("NUM");
+        countToken = String(val ?? "1");
+      } else if (inputBlock.type === "ottobit_variable_i" || inputBlock.type === "variables_get") {
         // Nếu là biến i, dùng placeholder để ProgramExecutor thay thế theo vòng lặp
         // ProgramExecutor.replaceVariableInAction() sẽ tìm mẫu {{i}} và thay bằng giá trị thực
         countToken = "{{i}}";
@@ -290,9 +313,10 @@ export class BlocklyToPhaserConverter {
 
     // Không ép kiểu sang number ở đây để tránh làm mất placeholder của biến
     // ProgramExecutor (JS) sẽ giữ nguyên string và thay thế khi mở rộng repeatRange
-    const countValue: any = countToken.match(/^\{\{.*\}\}$/)
-      ? countToken
-      : parseInt(countToken) || 1;
+    const tokenStr = String(countToken);
+    const countValue: any = tokenStr.match(/^\{\{.*\}\}$/)
+      ? tokenStr
+      : parseInt(tokenStr) || 1;
 
     return {
       type: "collect",

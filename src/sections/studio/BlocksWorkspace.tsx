@@ -212,8 +212,11 @@ export default function BlocksWorkspace({
         startBlock.initSvg();
         startBlock.render();
         startBlock.moveBy(moveDistance, moveDistance);
-
-        try {
+        
+        // Defer program rendering to the dedicated effect to avoid double-render
+         if (initialProgramActionsJson) { return; }
+ 
+         try {
           const program = initialProgramActionsJson;
           const actions = program?.actions;
 
@@ -321,27 +324,63 @@ export default function BlocksWorkspace({
 
             // Try set common fields if exist
             try {
-              if (typeof act.count === "number" && block.setFieldValue) {
-                // Prefer COUNT field when available
-                const countField =
-                  block.getField &&
-                  (block.getField("COUNT")
-                    ? "COUNT"
-                    : block.getField("count")
-                    ? "count"
-                    : null);
-                if (countField)
-                  block.setFieldValue(String(act.count), countField);
+              // Set counts by connecting number inputs or setting fields depending on block type
+              if (typeof act.count === "number") {
+                // Repeat: TIMES is a field_number
+                if (blockType === "ottobit_repeat" && block.setFieldValue) {
+                  if (block.getField && block.getField("TIMES")) {
+                    block.setFieldValue(String(act.count), "TIMES");
+                  }
+                }
+                // Move forward: input_value STEPS
+                else if (blockType === "ottobit_move_forward") {
+                  const input = block.getInput && block.getInput("STEPS");
+                  if (input?.connection) {
+                    const num = workspace.newBlock("ottobit_number");
+                    num.initSvg();
+                    num.render();
+                    try { num.setFieldValue(String(act.count), "NUM"); } catch {}
+                    input.connection.connect(num.outputConnection);
+                  }
+                }
+                // Collect blocks: input_value COUNT
+                else if (
+                  blockType === "ottobit_collect_green" ||
+                  blockType === "ottobit_collect_red" ||
+                  blockType === "ottobit_collect_yellow"
+                ) {
+                  const input = block.getInput && block.getInput("COUNT");
+                  if (input?.connection) {
+                    const num = workspace.newBlock("ottobit_number");
+                    num.initSvg();
+                    num.render();
+                    try { num.setFieldValue(String(act.count), "NUM"); } catch {}
+                    input.connection.connect(num.outputConnection);
+                  }
+                }
               }
-              if (typeof act.direction === "string" && block.setFieldValue) {
-                const dirField =
-                  block.getField &&
-                  (block.getField("DIRECTION")
-                    ? "DIRECTION"
-                    : block.getField("DIR")
-                    ? "DIR"
-                    : null);
-                if (dirField) block.setFieldValue(act.direction, dirField);
+              // Set rotate direction from either explicit property or action type
+              {
+                let dir: string | null = null;
+                if (typeof act.direction === "string") {
+                  dir = act.direction;
+                } else if (blockType === "ottobit_rotate") {
+                  // Infer from action type
+                  const t = String(act?.type || "").toLowerCase();
+                  if (t === "turnright") dir = "RIGHT";
+                  else if (t === "turnleft") dir = "LEFT";
+                  else if (t === "turnback") dir = "BACK";
+                }
+                if (dir && block.setFieldValue) {
+                  const dirField =
+                    block.getField &&
+                    (block.getField("DIRECTION")
+                      ? "DIRECTION"
+                      : block.getField("DIR")
+                      ? "DIR"
+                      : null);
+                  if (dirField) block.setFieldValue(dir, dirField);
+                }
               }
               // Attach condition for IF/WHILE from JSON program if provided
               const attachCondition = (targetBlock: any, cond: any) => {
@@ -1590,24 +1629,61 @@ export default function BlocksWorkspace({
           }
         } catch {}
         try {
-          if (typeof act.count === "number" && block.setFieldValue) {
-            const fieldIds = [
-              "COUNT",
-              "count",
-              "TIMES",
-              "VALUE",
-              "N",
-              "NUMBER",
-              "STEP",
-              "STEPS",
-              "DIST",
-              "DISTANCE",
-            ];
-            for (const fid of fieldIds) {
-              if (block.getField && block.getField(fid)) {
-                block.setFieldValue(String(act.count), fid);
-                break;
+          // Set counts by connecting number inputs or setting fields depending on block type
+          if (typeof act.count === "number") {
+            // Repeat: TIMES is a field_number
+            if (blockType === "ottobit_repeat" && block.setFieldValue) {
+              if (block.getField && block.getField("TIMES")) {
+                block.setFieldValue(String(act.count), "TIMES");
               }
+            }
+            // Move forward: input_value STEPS
+            else if (blockType === "ottobit_move_forward") {
+              const input = block.getInput && block.getInput("STEPS");
+              if (input?.connection) {
+                const num = blocklyWorkspace.newBlock("ottobit_number");
+                num.initSvg();
+                num.render();
+                try { num.setFieldValue(String(act.count), "NUM"); } catch {}
+                input.connection.connect(num.outputConnection);
+              }
+            }
+            // Collect blocks: input_value COUNT
+            else if (
+              blockType === "ottobit_collect_green" ||
+              blockType === "ottobit_collect_red" ||
+              blockType === "ottobit_collect_yellow"
+            ) {
+              const input = block.getInput && block.getInput("COUNT");
+              if (input?.connection) {
+                const num = blocklyWorkspace.newBlock("ottobit_number");
+                num.initSvg();
+                num.render();
+                try { num.setFieldValue(String(act.count), "NUM"); } catch {}
+                input.connection.connect(num.outputConnection);
+              }
+            }
+          }
+          // Set rotate direction from either explicit property or action type
+          {
+            let dir: string | null = null;
+            if (typeof (act as any).direction === "string") {
+              dir = (act as any).direction;
+            } else if (blockType === "ottobit_rotate") {
+              const t = String(act?.type || "").toLowerCase();
+              if (t === "turnright") dir = "RIGHT";
+              else if (t === "turnleft") dir = "LEFT";
+              else if (t === "turnback") dir = "BACK";
+            }
+            if (dir && block.setFieldValue) {
+              const dirField =
+                block.getField &&
+                (block.getField("DIRECTION")
+                  ? "DIRECTION"
+                  : block.getField("DIR")
+                  ? "DIR"
+                  : null);
+              if (dirField) block.setFieldValue(dir, dirField);
             }
           }
           // Attach condition for IF/WHILE from JSON program if provided
