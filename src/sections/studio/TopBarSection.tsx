@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Box,
@@ -33,12 +33,14 @@ import {
   Refresh as RestartIcon,
   Usb as UsbIcon,
   ArrowBack as BackIcon,
+  Lock as LockIcon,
+  TipsAndUpdates as HintIcon,
 } from "@mui/icons-material";
 import { usePhaserContext } from "../../features/phaser/context/PhaserContext";
 import { useNotification } from "hooks/useNotification";
 import { forceCleanupBeforeExecute } from "../../theme/block/renderer-ottobit";
 import { useFieldInputManager } from "../../components/block/hooks/useFieldInputManager";
-import { useAppDispatch } from "../../redux/config";
+import { useAppDispatch, useAppSelector } from "../../redux/config";
 import { createSubmissionThunk } from "../../redux/submission/submissionThunks";
 import { BlocklyToPhaserConverter } from "../../features/phaser/services/blocklyToPhaserConverter";
 import MicrobitDialog from "../../components/MicrobitDialog";
@@ -47,6 +49,9 @@ import {
   generateStudioUrl,
   getStoredNavigationData,
 } from "../../utils/studioNavigation";
+import { isChallengeAccessible } from "../../utils/challengeUtils";
+import { getChallengeProcesses } from "../../redux/challenge/challengeSlice";
+import SolutionHintDialog from "./SolutionHintDialog";
 
 interface TopBarSectionProps {
   activeTab?: number;
@@ -77,6 +82,7 @@ function TopBarContent({
   const [showCameraDialog, setShowCameraDialog] = useState(false);
   const [showMicrobitDialog, setShowMicrobitDialog] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [showHintDialog, setShowHintDialog] = useState(false);
   const [isCameraLoading, setIsCameraLoading] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
@@ -135,12 +141,44 @@ function TopBarContent({
     if (!lessonId) return;
     const items = (lessonChallenges as any)?.items || [];
     if (items.length === 0) {
-      fetchChallengesByLesson(lessonId, 1, 8);
+      // Fetch a larger page size to include all challenges for the lesson
+      fetchChallengesByLesson(lessonId, 1, 100);
     }
   }, [lessonId, fetchChallengesByLesson, lessonChallenges]);
 
-  // Challenge list for lesson (max 8)
+  // Challenge list for lesson
   const lessonChallengeItems = (lessonChallenges as any)?.items || [];
+
+  // Index map for quick lookup
+  const challengeIndexMap = useMemo(() => {
+    const map = new Map<string, number>();
+    (lessonChallengeItems || []).forEach((c: any, i: number) => map.set(c.id, i));
+    return map;
+  }, [lessonChallengeItems]);
+
+  // Challenge processes from Redux (progress info)
+  const challengeProcessesItems = useAppSelector(
+    (state) => state.challenge.challengeProcesses.data?.items || []
+  );
+
+  // Fetch challenge processes when lessonId is present
+  useEffect(() => {
+    if (!lessonId) return;
+    dispatch(getChallengeProcesses({ lessonId, page: 1, size: 50 }));
+  }, [lessonId, dispatch]);
+
+  // Check accessibility using the same logic as LessonTabletSection
+  const isChallengeUnlocked = useCallback(
+    (id: string, index?: number) => {
+      const challenge =
+        (typeof index === "number" && index >= 0)
+          ? lessonChallengeItems[index]
+          : lessonChallengeItems.find((c: any) => c.id === id);
+      if (!challenge) return false;
+      return isChallengeAccessible(challenge, challengeProcessesItems);
+    },
+    [lessonChallengeItems, challengeProcessesItems]
+  );
 
   // Function to submit solution after completing challenge - memoized to prevent recreations
   const submitSolution = useCallback(
@@ -242,10 +280,13 @@ function TopBarContent({
         finalStars: calculatedStars,
       });
 
-      // Submit solution with calculated stars
+      // Refresh progress from server and submit solution
+      if (lessonId) {
+        dispatch(getChallengeProcesses({ lessonId, page: 1, size: 50 }));
+      }
       submitSolution(calculatedStars);
     },
-    [submitSolution]
+    [submitSolution, lessonId, dispatch]
   ); // Only depend on memoized submitSolution
 
   // Listen for victory events from Phaser - optimized effect with minimal dependencies
@@ -372,9 +413,20 @@ function TopBarContent({
     }
   };
 
-  // Navigate to a specific challenge within the lesson (1..8)
+  // Navigate to a specific challenge within the lesson (sequential unlock)
   const handleSelectChallenge = (targetChallengeId: string) => {
     if (!targetChallengeId || targetChallengeId === currentChallengeId) return;
+
+    const idx = challengeIndexMap.get(targetChallengeId) ?? -1;
+    const unlocked = isChallengeUnlocked(targetChallengeId, idx);
+    if (!unlocked) {
+      showNotification(
+        "Bạn cần hoàn thành map trước đó để mở khóa map này.",
+        "warning"
+      );
+      return;
+    }
+
     const url = lessonId
       ? generateStudioUrl(targetChallengeId, lessonId)
       : generateStudioUrl(targetChallengeId);
@@ -817,58 +869,70 @@ function TopBarContent({
           </Tabs>
         </Box>
 
-        {/* Map selector 1–8 (lesson) - centered absolutely */}
+        {/* Map selector - single responsive center container */}
         {lessonChallengeItems && lessonChallengeItems.length > 0 && (
-          <Box
-            sx={{
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%, -50%)",
-              zIndex: 1,
-              display: { xs: "none", sm: "flex" },
-              alignItems: "center",
-              gap: 1,
-              px: 1,
-              py: 0.5,
-              bgcolor: "#ffffff",
-              borderRadius: "9999px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-            }}
-          >
-            {lessonChallengeItems.slice(0, 8).map((c: any, idx: number) => {
-              const selected = c.id === currentChallengeId;
-              return (
-                <Button
-                  key={c.id}
-                  onClick={() => handleSelectChallenge(c.id)}
-                  variant={selected ? "contained" : "outlined"}
-                  size="small"
-                  sx={{
-                    minWidth: 32,
-                    width: 36,
-                    height: 36,
-                    borderRadius: "50%",
-                    p: 0,
-                    fontWeight: 700,
-                    color: selected ? "#ffffff" : "#10b981",
-                    bgcolor: selected ? "#10b981" : "transparent",
-                    borderColor: "#10b981",
-                    "&:hover": {
-                      bgcolor: selected ? "#059669" : "#f0fdf4",
-                      borderColor: "#059669",
-                    },
-                  }}
-                >
-                  {idx + 1}
-                </Button>
-              );
-            })}
+          <Box sx={{ flex: 1, display: "flex", justifyContent: "center", px: { xs: 1, md: 2 } }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: { xs: 0.5, sm: 1 },
+                px: 1,
+                py: 0.5,
+                bgcolor: "#ffffff",
+                borderRadius: "9999px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                overflowX: "auto",
+                maxWidth: "100%",
+              }}
+            >
+              {lessonChallengeItems.map((c: any, idx: number) => {
+                const selected = c.id === currentChallengeId;
+                const unlocked = isChallengeUnlocked(c.id, idx);
+
+                const Btn = (
+                  <Button
+                    key={c.id}
+                    onClick={() => handleSelectChallenge(c.id)}
+                    variant={selected ? "contained" : "outlined"}
+                    size="small"
+                    disabled={!unlocked}
+                    sx={{
+                      minWidth: { xs: 28, sm: 32 },
+                      width: { xs: 28, sm: 36 },
+                      height: { xs: 28, sm: 36 },
+                      borderRadius: "50%",
+                      p: 0,
+                      fontWeight: 700,
+                      fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                      color: selected ? "#ffffff" : unlocked ? "#10b981" : "#9ca3af",
+                      bgcolor: selected ? "#10b981" : "transparent",
+                      borderColor: unlocked ? "#10b981" : "#d1d5db",
+                      "&:hover": {
+                        bgcolor: selected ? "#059669" : unlocked ? "#f0fdf4" : "transparent",
+                        borderColor: unlocked ? "#059669" : "#d1d5db",
+                      },
+                      "&:disabled": {
+                        color: "#9ca3af",
+                        borderColor: "#d1d5db",
+                      },
+                    }}
+                  >
+                    {unlocked ? idx + 1 : <LockIcon fontSize="inherit" />}
+                  </Button>
+                );
+
+                return unlocked ? (
+                  Btn
+                ) : (
+                  <Tooltip key={c.id} title="Hoàn thành map trước để mở khóa">
+                    <span>{Btn}</span>
+                  </Tooltip>
+                );
+              })}
+            </Box>
           </Box>
         )}
-
-        {/* Spacer to push buttons right */}
-        <Box sx={{ flexGrow: 1 }} />
 
         {/* All Action Buttons - Mobile Responsive */}
         <Box
@@ -919,6 +983,25 @@ function TopBarContent({
               }}
             >
               <CameraIcon sx={{ fontSize: 24 }} />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Gợi ý lời giải">
+            <IconButton
+              onClick={() => setShowHintDialog(true)}
+              sx={{
+                bgcolor: "#e0f2f1",
+                color: "#00695c",
+                width: { xs: 36, sm: 42, md: 48 },
+                height: { xs: 36, sm: 42, md: 48 },
+                "&:hover": {
+                  bgcolor: "#b2dfdb",
+                  transform: "translateY(-1px)",
+                  boxShadow: "0 4px 12px rgba(0, 105, 92, 0.3)",
+                },
+              }}
+            >
+              <HintIcon sx={{ fontSize: 24 }} />
             </IconButton>
           </Tooltip>
 
@@ -1020,6 +1103,13 @@ function TopBarContent({
         open={showMicrobitDialog}
         onClose={() => setShowMicrobitDialog(false)}
         workspace={workspace}
+      />
+
+      {/* Solution Hint Dialog */}
+      <SolutionHintDialog
+        open={showHintDialog}
+        onClose={() => setShowHintDialog(false)}
+        challengeId={currentChallengeId as string}
       />
 
       {/* Camera Dialog */}

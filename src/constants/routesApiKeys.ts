@@ -68,6 +68,7 @@ export const ROUTES_API_CHALLENGE = {
   // Challenge endpoints for users
   GET_BY_ID: (id: string) => path(ROOTS_CHALLENGE, `/${id}`), // GET /api/v1/challenges/{id} (for users)
   BY_LESSON: (lessonId: string) => path(ROOTS_CHALLENGE, `/lesson/${lessonId}`), // GET /api/v1/challenges/lesson/{lessonId} (for users)
+  SOLUTION: (id: string) => path(ROOTS_CHALLENGE, `/${id}/solution`), // GET /api/v1/challenges/{id}/solution (for users)
   
   // Challenge endpoints for admin
   ADMIN_GET_ALL: path(ROOTS_CHALLENGE, `/admin`), // GET /api/v1/challenges/admin

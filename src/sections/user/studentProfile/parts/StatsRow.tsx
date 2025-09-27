@@ -2,7 +2,7 @@ import { Grid, Card, Box, Typography, CircularProgress } from "@mui/material";
 import SchoolIcon from "@mui/icons-material/School";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+// import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 
 interface Props {
   totalEnrollments: number;
@@ -25,13 +25,14 @@ const CardStat = ({ icon, value, label, color, loading }: { icon: JSX.Element; v
 );
 
 export default function StatsRow(props: Props) {
-  const { totalEnrollments, totalSubmissions, completedCourses, totalPoints, loading } = props;
+  const { totalEnrollments, totalSubmissions, completedCourses, loading, totalPoints: _totalPoints } = props;
   const stats = [
     { icon: <SchoolIcon sx={{ color: "white", fontSize: 20 }} />, value: totalEnrollments, label: "Khóa học đã tham gia", color: "#ff6b6b" },
     { icon: <AssignmentIcon sx={{ color: "white", fontSize: 20 }} />, value: totalSubmissions, label: "Bài tập đã nộp", color: "#4ecdc4" },
     { icon: <SchoolIcon sx={{ color: "white", fontSize: 20 }} />, value: completedCourses, label: "Khóa học hoàn thành", color: "#a8e6cf" },
-    { icon: <AccountBalanceIcon sx={{ color: "white", fontSize: 20 }} />, value: totalPoints, label: "Tổng điểm số", color: "#42a5f5" },
+    // Removed Tổng điểm số card
   ];
+
 
   return (
     <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mb: 3 }}>

@@ -13,7 +13,8 @@ javascriptGenerator.forBlock["ottobit_start"] = function (_block: any): string {
 javascriptGenerator.forBlock["ottobit_move_forward"] = function (
   block: any
 ): string {
-  const steps = block.getFieldValue("STEPS") || "1";
+  // Lấy giá trị từ input value (có thể là số hoặc biến)
+  const steps = javascriptGenerator.valueToCode(block, "STEPS", Order.ATOMIC) || "1";
   return `moveForward(${steps});\n`;
 };
 
@@ -199,25 +200,28 @@ javascriptGenerator.forBlock["ottobit_send_message"] = function (
 };
 
 // Collect blocks
-javascriptGenerator.forBlock["ottobit_collect_green"] = function (
+javascriptGenerator.forBlock["ottobit_collect_green"] = function(
   block: any
 ): string {
-  const count = block.getFieldValue("COUNT") || "1";
-  return `robot.collect(${count}, 'green');\n`;
+  // Lấy giá trị từ input value (có thể là số hoặc biến)
+  const count = javascriptGenerator.valueToCode(block, "COUNT", Order.ATOMIC) || "1";
+  return `collectGreen(${count});\n`;
 };
 
-javascriptGenerator.forBlock["ottobit_collect_red"] = function (
+javascriptGenerator.forBlock["ottobit_collect_red"] = function(
   block: any
 ): string {
-  const count = block.getFieldValue("COUNT") || "1";
-  return `robot.collect(${count}, 'red');\n`;
+  // Lấy giá trị từ input value (có thể là số hoặc biến)
+  const count = javascriptGenerator.valueToCode(block, "COUNT", Order.ATOMIC) || "1";
+  return `collectRed(${count});\n`;
 };
 
-javascriptGenerator.forBlock["ottobit_collect_yellow"] = function (
+javascriptGenerator.forBlock["ottobit_collect_yellow"] = function(
   block: any
 ): string {
-  const count = block.getFieldValue("COUNT") || "1";
-  return `robot.collect(${count}, 'yellow');\n`;
+  // Lấy giá trị từ input value (có thể là số hoặc biến)
+  const count = javascriptGenerator.valueToCode(block, "COUNT", Order.ATOMIC) || "1";
+  return `collectYellow(${count});\n`;
 };
 
 // Bale handling blocks
@@ -359,8 +363,17 @@ javascriptGenerator.forBlock["ottobit_if_elseif_else"] = function (block: any): 
 // Variable block
 javascriptGenerator.forBlock["ottobit_variable_i"] = function (
   _block: any
-): [string, number] {
+): [string, Order] {
+  // Trả về biến i
   return ["i", Order.ATOMIC];
+};
+
+// Number block
+javascriptGenerator.forBlock["ottobit_number"] = function (
+  block: any
+): [string, Order] {
+  const num = block.getFieldValue("NUM") || "0";
+  return [num, Order.ATOMIC];
 };
 
 // Logic compare block

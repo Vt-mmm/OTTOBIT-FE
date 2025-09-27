@@ -107,7 +107,7 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     deletable: true,
     movable: true,
     editable: true,
-    style: "ottobit_event",
+    style: "ottobit_control",
     tooltip: "Lặp lại các lệnh khi điều kiện còn đúng",
     helpUrl: "",
   },
@@ -236,14 +236,16 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     tooltip: "Kết hợp hai điều kiện với toán tử AND hoặc OR - layout ngang",
     helpUrl: "",
   },
-  // Variable block đơn giản
+  // Variable block đơn giản với style compact
   {
     type: "ottobit_variable_i",
     message0: "i",
-    output: "Number", 
-    style: "ottobit_control",
+    output: "Number",
+    style: "ottobit_variable",
     tooltip: "Biến i",
-    helpUrl: ""
+    helpUrl: "",
+    // Thêm custom CSS class để style nhỏ gọn
+    customContextMenu: false,
   },
   {
     type: "ottobit_logic_compare",
@@ -289,15 +291,17 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
         type: "field_number",
         name: "NUM",
         value: 0,
+        precision: 1,
       },
     ],
     output: "Number",
     deletable: true,
     movable: true,
     editable: true,
-    style: "ottobit_control",
+    style: "field_blocks",
     tooltip: "Một số",
     helpUrl: "",
+    customContextMenu: false,
   },
   // Simple condition block - chỉ để chứa giá trị Boolean
   {

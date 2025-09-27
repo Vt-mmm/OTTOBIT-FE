@@ -33,7 +33,6 @@ import {
   Book as CourseIcon,
   CheckCircle as CompletedIcon,
   Schedule as InProgressIcon,
-  Cancel as CancelledIcon,
   Visibility as ViewIcon,
 } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
@@ -59,9 +58,16 @@ export default function EnrollmentListSection({
   const [statusFilter, setStatusFilter] = useState<EnrollmentStatus | "">("");
 
   useEffect(() => {
+    const isCompleted =
+      statusFilter === EnrollmentStatus.COMPLETED
+        ? true
+        : statusFilter === EnrollmentStatus.IN_PROGRESS
+        ? false
+        : undefined;
+
     dispatch(getEnrollments({
       searchTerm: searchTerm || undefined,
-      status: statusFilter || undefined,
+      isCompleted,
       pageNumber: 1,
       pageSize: 50,
     }));
@@ -75,30 +81,16 @@ export default function EnrollmentListSection({
     setStatusFilter(event.target.value);
   };
 
-  const getStatusIcon = (status: EnrollmentStatus) => {
-    switch (status) {
-      case EnrollmentStatus.COMPLETED:
-        return <CompletedIcon fontSize="small" />;
-      case EnrollmentStatus.IN_PROGRESS:
-        return <InProgressIcon fontSize="small" />;
-      case EnrollmentStatus.CANCELLED:
-        return <CancelledIcon fontSize="small" />;
-      default:
-        return <InProgressIcon fontSize="small" />;
-    }
+  const getStatusIcon = (isCompleted: boolean) => {
+    return isCompleted ? (
+      <CompletedIcon fontSize="small" />
+    ) : (
+      <InProgressIcon fontSize="small" />
+    );
   };
 
-  const getStatusColor = (status: EnrollmentStatus) => {
-    switch (status) {
-      case EnrollmentStatus.COMPLETED:
-        return "success";
-      case EnrollmentStatus.IN_PROGRESS:
-        return "primary";
-      case EnrollmentStatus.CANCELLED:
-        return "error";
-      default:
-        return "default";
-    }
+  const getStatusColor = (isCompleted: boolean) => {
+    return isCompleted ? "success" : "primary";
   };
 
   if (enrollments.isLoading && !enrollments.data) {
@@ -153,7 +145,6 @@ export default function EnrollmentListSection({
                 <MenuItem value="">All</MenuItem>
                 <MenuItem value={EnrollmentStatus.IN_PROGRESS}>In Progress</MenuItem>
                 <MenuItem value={EnrollmentStatus.COMPLETED}>Completed</MenuItem>
-                <MenuItem value={EnrollmentStatus.CANCELLED}>Cancelled</MenuItem>
               </Select>
             </FormControl>
           </Box>
@@ -214,22 +205,16 @@ export default function EnrollmentListSection({
                 </TableCell>
                 <TableCell align="center">
                   <Chip
-                    label={enrollment.status}
+                    label={enrollment.isCompleted ? "COMPLETED" : "IN_PROGRESS"}
                     size="small"
-                    color={getStatusColor(enrollment.status) as any}
+                    color={getStatusColor(!!enrollment.isCompleted) as any}
                     variant="outlined"
-                    icon={getStatusIcon(enrollment.status)}
+                    icon={getStatusIcon(!!enrollment.isCompleted)}
                   />
                 </TableCell>
                 <TableCell align="center">
                   <Typography variant="body2">
-                    {enrollment.completedLessonsCount || 0} / {enrollment.totalLessonsCount || 0}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {enrollment.totalLessonsCount > 0 
-                      ? `${Math.round((enrollment.completedLessonsCount / enrollment.totalLessonsCount) * 100)}%`
-                      : '0%'
-                    }
+                    {`${Math.round(enrollment.progress ?? 0)}%`}
                   </Typography>
                 </TableCell>
                 <TableCell>

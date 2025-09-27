@@ -88,9 +88,20 @@ export class BlocklyToPhaserConverter {
 
     // Traverse through connected blocks
     while (currentBlock) {
+      try {
+        // Debug: log visiting block types to trace missing conversions
+        // eslint-disable-next-line no-console
+        console.log("[Converter] Visiting block:", currentBlock.type);
+      } catch {}
+
       const convertedActions = this.convertBlockToActions(currentBlock);
       if (convertedActions && convertedActions.length > 0) {
         actions.push(...convertedActions);
+      } else {
+        try {
+          // eslint-disable-next-line no-console
+          console.warn("[Converter] No actions produced for block:", currentBlock.type);
+        } catch {}
       }
 
       // Move to next connected block
@@ -130,6 +141,17 @@ export class BlocklyToPhaserConverter {
     const blockType = block.type;
 
     try {
+      // Debug: log block type at conversion
+      try {
+        // eslint-disable-next-line no-console
+        console.log("[Converter] Converting block type:", blockType);
+      } catch {}
+
+      // Fallback: handle any collect variant by prefix to avoid missing cases
+      if (typeof blockType === "string" && blockType.startsWith("ottobit_collect")) {
+        return [this.convertCollect(block)];
+      }
+      
       switch (blockType) {
         case "ottobit_move_forward":
           return [this.convertMoveForward(block)];
@@ -137,7 +159,7 @@ export class BlocklyToPhaserConverter {
         case "ottobit_rotate":
           return [this.convertRotate(block)];
 
-        // Collect blocks
+        // Explicit collect variants (kept for clarity; prefix handler above already covers)
         case "ottobit_collect_green":
         case "ottobit_collect_red":
         case "ottobit_collect_yellow":
@@ -202,10 +224,27 @@ export class BlocklyToPhaserConverter {
    * Convert move forward block
    */
   private static convertMoveForward(block: any): ProgramAction {
-    const steps = block.getFieldValue("STEPS") || "1";
+    // Lấy giá trị từ input value (có thể là số hoặc biến)
+    let steps = "1";
+    
+    // Thử lấy input target block (khối được gắn vào)
+    const inputBlock = block.getInputTargetBlock("STEPS");
+    if (inputBlock) {
+      // Nếu có khối gắn vào (số hoặc biến)
+      if (inputBlock.type === "ottobit_number") {
+        steps = inputBlock.getFieldValue("NUM") || "1";
+      } else if (inputBlock.type === "ottobit_variable_i") {
+        // Nếu là biến i, giữ nguyên string "i" để xử lý sau
+        steps = "i";
+      }
+    }
+    
+    // Convert sang số nếu không phải biến
+    const count = steps === "i" ? -1 : parseInt(steps); // Dùng -1 để đánh dấu biến i
+    
     return {
       type: "forward",
-      count: parseInt(steps),
+      count: count > 0 ? count : 1, // Default to 1 if invalid
     };
   }
 
@@ -240,12 +279,21 @@ export class BlocklyToPhaserConverter {
    */
   private static convertCollect(block: any): ProgramAction {
     const blockType = block.type;
-    let count = "1";
+    let countToken: string = "1"; // giữ ở dạng string để có thể mang placeholder biến
     let color = "green"; // default
 
-    // Get count field
-    if (block.getFieldValue("COUNT")) {
-      count = block.getFieldValue("COUNT");
+    // Lấy giá trị từ input value (có thể là số hoặc biến)
+    const inputBlock = block.getInputTargetBlock("COUNT");
+    if (inputBlock) {
+      // Nếu có khối gắn vào (số hoặc biến)
+      if (inputBlock.type === "ottobit_number" || inputBlock.type === "math_number") {
+        const val = inputBlock.getFieldValue("NUM");
+        countToken = String(val ?? "1");
+      } else if (inputBlock.type === "ottobit_variable_i" || inputBlock.type === "variables_get") {
+        // Nếu là biến i, dùng placeholder để ProgramExecutor thay thế theo vòng lặp
+        // ProgramExecutor.replaceVariableInAction() sẽ tìm mẫu {{i}} và thay bằng giá trị thực
+        countToken = "{{i}}";
+      }
     }
 
     // Determine color based on block type
@@ -263,11 +311,19 @@ export class BlocklyToPhaserConverter {
         color = "green";
     }
 
+    // Không ép kiểu sang number ở đây để tránh làm mất placeholder của biến
+    // ProgramExecutor (JS) sẽ giữ nguyên string và thay thế khi mở rộng repeatRange
+    const tokenStr = String(countToken);
+    const countValue: any = tokenStr.match(/^\{\{.*\}\}$/)
+      ? tokenStr
+      : parseInt(tokenStr) || 1;
+
     return {
       type: "collect",
-      count: parseInt(count),
+      // Cho phép giữ string placeholder hoặc số đã parse
+      count: countValue as any,
       color: color,
-    };
+    } as any;
   }
 
   /**
@@ -681,16 +737,28 @@ export class BlocklyToPhaserConverter {
         errors.push(`Action ${index}: type is required`);
       }
 
-      if (action.type === "forward" && (!action.count || action.count < 1)) {
+      if (
+        action.type === "forward" &&
+        (action.count === undefined || (typeof action.count === "number" && action.count < 1))
+      ) {
         errors.push(`Action ${index}: forward action requires count >= 1`);
       }
 
-      if (action.type === "collect" && (!action.count || action.count < 1)) {
-        errors.push(`Action ${index}: collect action requires count >= 1`);
+      if (
+        action.type === "collect" &&
+        (action.count === undefined ||
+          (typeof action.count === "number" && action.count < 1) ||
+          (typeof action.count === "string" && action.count.trim() === ""))
+      ) {
+        errors.push(`Action ${index}: collect action requires valid count`);
       }
 
       // Validate control structures
-      if (action.type === "repeat" && (!action.count || action.count < 1)) {
+      if (
+        action.type === "repeat" &&
+        (action.count === undefined ||
+          (typeof action.count === "number" && action.count < 1))
+      ) {
         errors.push(`Action ${index}: repeat action requires count >= 1`);
       }
 
