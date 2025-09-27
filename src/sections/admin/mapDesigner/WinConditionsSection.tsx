@@ -51,8 +51,6 @@ interface WinConditionsSectionProps {
   challengeMode: number;
   onChallengeModeChange: (value: number) => void;
   mapGrid: MapCell[][];
-  onSolutionJsonChange?: (json: string) => void;
-  solutionJson?: string | null;
   onChallengeJsonChange?: (json: string) => void;
   challengeJson?: string | null;
   onSaveMap?: () => void;
@@ -61,6 +59,7 @@ interface WinConditionsSectionProps {
   registerOpenChallengeTrigger?: (fn: () => void) => void;
   courses?: any[];
   lessons?: any[];
+  hasTriedSave?: boolean;
 }
 
 export default function WinConditionsSection({
@@ -86,11 +85,9 @@ export default function WinConditionsSection({
   registerOpenChallengeTrigger,
   courses = [],
   lessons = [],
+  hasTriedSave = false,
 }: WinConditionsSectionProps) {
   const [openSolution] = useState(false);
-
-  // Validate solutionJson prop
-  const isSolutionValid = solutionJson && solutionJson.trim().length > 0;
 
   // Notify parent when Solution dialog open/close toggles (to stabilize isometric grid)
   useEffect(() => {
@@ -585,7 +582,9 @@ export default function WinConditionsSection({
               ))
             )}
           </Select>
-          {!courseId && <FormHelperText>Please select a course</FormHelperText>}
+          {hasTriedSave && !courseId && (
+            <FormHelperText>Please select a course</FormHelperText>
+          )}
         </FormControl>
 
         {/* Lesson Selection */}
@@ -617,9 +616,9 @@ export default function WinConditionsSection({
               ))
             )}
           </Select>
-          {!courseId ? (
+          {hasTriedSave && !courseId ? (
             <FormHelperText>Please select a course first</FormHelperText>
-          ) : !lessonId ? (
+          ) : hasTriedSave && !lessonId ? (
             <FormHelperText>Please select a lesson</FormHelperText>
           ) : null}
         </FormControl>

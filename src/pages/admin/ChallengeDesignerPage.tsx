@@ -57,6 +57,7 @@ const MapDesignerPage = () => {
   const [difficulty, setDifficulty] = useState<number>(1);
   const [challengeMode, setChallengeMode] = useState<number>(0);
   const [openUpdateConfirm, setOpenUpdateConfirm] = useState(false);
+  const [hasTriedSave, setHasTriedSave] = useState(false);
   const [mapPickerOpen, setMapPickerOpen] = useState(false);
   const [solutionDialogOpen] = useState(false);
   const [isoRemountId] = useState(0);
@@ -151,6 +152,34 @@ const MapDesignerPage = () => {
             initialSolutionJsonRef.current = item.solutionJson;
           }
           if (item?.challengeJson) setChallengeJson(item.challengeJson);
+
+          // Find courseId from lessonId for edit mode
+          if (item?.lessonId) {
+            try {
+              const lessonRes = await axiosClient.get(
+                `/api/v1/lessons/admin/${item.lessonId}`
+              );
+              const lesson = lessonRes?.data?.data;
+              if (lesson?.courseId) {
+                setCourseId(lesson.courseId);
+                // Fetch lessons for this course
+                await dispatch(
+                  getLessons({
+                    courseId: lesson.courseId,
+                    includeDeleted: true,
+                  })
+                );
+                // Set lessonId after fetching lessons
+                setLessonId(item.lessonId);
+              }
+            } catch (error) {
+              console.error(
+                "Error fetching lesson details for courseId:",
+                error
+              );
+            }
+          }
+
           // Prefer load map by mapId when available (admin detail)
           let newGrid: (MapCell & { itemCount?: number })[][] | null = null;
           if (item?.mapId) {
@@ -590,6 +619,9 @@ const MapDesignerPage = () => {
   };
 
   const handleSaveMap = async () => {
+    // Set hasTriedSave to true to show validation messages
+    setHasTriedSave(true);
+
     // Build solution JSON directly from current workspace (unwrapped program)
     let solutionJsonToSave: string | null = null;
     try {
@@ -893,6 +925,17 @@ const MapDesignerPage = () => {
     } catch {}
   };
 
+  const handleCourseIdChange = (value: string) => {
+    setCourseId(value);
+    setLessonId(""); // Reset lesson when course changes
+    setHasTriedSave(false); // Reset validation state
+  };
+
+  const handleLessonIdChange = (value: string) => {
+    setLessonId(value);
+    setHasTriedSave(false); // Reset validation state
+  };
+
   return (
     <AdminLayout>
       <Container maxWidth="xl">
@@ -1034,9 +1077,9 @@ const MapDesignerPage = () => {
               mapDescription={mapDescription}
               onMapDescriptionChange={setMapDescription}
               courseId={courseId}
-              onCourseIdChange={setCourseId}
+              onCourseIdChange={handleCourseIdChange}
               lessonId={lessonId}
-              onLessonIdChange={setLessonId}
+              onLessonIdChange={handleLessonIdChange}
               order={order}
               onOrderChange={setOrder}
               difficulty={difficulty}
@@ -1044,8 +1087,6 @@ const MapDesignerPage = () => {
               challengeMode={challengeMode}
               onChallengeModeChange={setChallengeMode}
               mapGrid={mapGrid}
-              onSolutionJsonChange={() => {}}
-              solutionJson={initialSolutionJsonRef.current}
               onChallengeJsonChange={handleChallengeJsonChange}
               challengeJson={challengeJson}
               onSaveMap={handleSaveMap}
@@ -1055,6 +1096,7 @@ const MapDesignerPage = () => {
               }}
               courses={coursesData?.items || []}
               lessons={lessonsData?.items || []}
+              hasTriedSave={hasTriedSave}
             />
             {/* Inline Solution Editor (moved from WinConditionsSection) */}
             <Box
