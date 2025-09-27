@@ -43,7 +43,7 @@ async function callApiWithRetry<T>(
   throw lastError;
 }
 
-// Get courses with pagination
+// Get courses with pagination (for users)
 export const getCoursesThunk = createAsyncThunk<
   CoursesResponse,
   GetCoursesRequest,
@@ -78,7 +78,45 @@ export const getCoursesThunk = createAsyncThunk<
   }
 });
 
-// Get course by ID
+// Get courses with pagination (for admin)
+export const getCoursesForAdminThunk = createAsyncThunk<
+  CoursesResponse,
+  GetCoursesRequest,
+  { rejectValue: string }
+>("course/getAllForAdmin", async (request, { rejectWithValue }) => {
+  try {
+    const response = await callApiWithRetry(() =>
+      axiosClient.get<ApiResponse<CoursesResponse>>(
+        ROUTES_API_COURSE.GET_ALL_FOR_ADMIN,
+        {
+          params: request,
+        }
+      )
+    );
+
+    if (response.data.errors || response.data.errorCode) {
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to fetch courses"
+      );
+      throw new Error(errorMessage);
+    }
+
+    if (!response.data.data) {
+      throw new Error("No courses data received");
+    }
+
+    return response.data.data;
+  } catch (error: any) {
+    const errorMessage = extractApiErrorMessage(
+      error,
+      "Failed to fetch courses"
+    );
+    return rejectWithValue(errorMessage);
+  }
+});
+
+// Get course by ID (for users)
 export const getCourseByIdThunk = createAsyncThunk<
   CourseResult,
   string,
@@ -88,6 +126,41 @@ export const getCourseByIdThunk = createAsyncThunk<
     const response = await callApiWithRetry(() =>
       axiosClient.get<ApiResponse<CourseResult>>(
         ROUTES_API_COURSE.GET_BY_ID(id)
+      )
+    );
+
+    if (response.data.errors || response.data.errorCode) {
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to fetch course"
+      );
+      throw new Error(errorMessage);
+    }
+
+    if (!response.data.data) {
+      throw new Error("No course data received");
+    }
+
+    return response.data.data;
+  } catch (error: any) {
+    const errorMessage = extractApiErrorMessage(
+      error,
+      "Failed to fetch course"
+    );
+    return rejectWithValue(errorMessage);
+  }
+});
+
+// Get course by ID (for admin)
+export const getCourseByIdForAdminThunk = createAsyncThunk<
+  CourseResult,
+  string,
+  { rejectValue: string }
+>("course/getByIdForAdmin", async (id, { rejectWithValue }) => {
+  try {
+    const response = await callApiWithRetry(() =>
+      axiosClient.get<ApiResponse<CourseResult>>(
+        ROUTES_API_COURSE.GET_BY_ID_FOR_ADMIN(id)
       )
     );
 

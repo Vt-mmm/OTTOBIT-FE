@@ -87,7 +87,7 @@ export const getLessonsThunk = createAsyncThunk<
   }
 });
 
-// Get lesson by ID
+// Get lesson by ID (for users)
 export const getLessonByIdThunk = createAsyncThunk<
   LessonResult,
   string,
@@ -97,6 +97,36 @@ export const getLessonByIdThunk = createAsyncThunk<
     const response = await callApiWithRetry(() =>
       axiosClient.get<ApiResponse<LessonResult>>(
         ROUTES_API_LESSON.GET_BY_ID(id)
+      )
+    );
+
+    if (response.data.errors || response.data.errorCode) {
+      throw new Error(response.data.message || "Failed to fetch lesson");
+    }
+
+    if (!response.data.data) {
+      throw new Error("No lesson data received");
+    }
+
+    return response.data.data;
+  } catch (error: any) {
+    const err = error as AxiosError<ErrorResponse>;
+    return rejectWithValue(
+      err.response?.data?.message || "Failed to fetch lesson"
+    );
+  }
+});
+
+// Get lesson by ID (for admin)
+export const getLessonByIdForAdminThunk = createAsyncThunk<
+  LessonResult,
+  string,
+  { rejectValue: string }
+>("lesson/getByIdForAdmin", async (id, { rejectWithValue }) => {
+  try {
+    const response = await callApiWithRetry(() =>
+      axiosClient.get<ApiResponse<LessonResult>>(
+        ROUTES_API_LESSON.GET_BY_ID_FOR_ADMIN(id)
       )
     );
 

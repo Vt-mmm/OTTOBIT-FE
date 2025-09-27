@@ -36,7 +36,7 @@ import {
   deleteLesson,
   restoreLesson,
 } from "../../../redux/lesson/lessonSlice";
-import { getCourses } from "../../../redux/course/courseSlice";
+import { getCoursesForAdmin } from "../../../redux/course/courseSlice";
 import { LessonResult } from "../../../common/@types/lesson";
 
 interface Props {
@@ -52,7 +52,7 @@ export default function LessonListSection({
 }: Props) {
   const dispatch = useAppDispatch();
   const { data, isLoading, error } = useAppSelector((s) => s.lesson.lessons);
-  const { data: coursesData } = useAppSelector((s) => s.course.courses);
+  const { data: coursesData } = useAppSelector((s) => s.course.adminCourses);
 
   const [searchTerm, setSearchTerm] = useState(""); // Input state
   const [committedSearch, setCommittedSearch] = useState(""); // Actual search term sent to API
@@ -87,7 +87,7 @@ export default function LessonListSection({
         sortDirection, // 0 = oldest first, 1 = newest first (default)
       })
     );
-    dispatch(getCourses({ pageSize: 100 } as any));
+    dispatch(getCoursesForAdmin({ pageSize: 100 } as any));
   }, [dispatch, committedSearch, page, pageSize, courseId, sortDirection]);
 
   useEffect(() => {

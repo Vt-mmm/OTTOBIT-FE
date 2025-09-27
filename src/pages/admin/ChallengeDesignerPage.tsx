@@ -29,15 +29,18 @@ import { axiosClient } from "axiosClient";
 import { ROUTES_API_CHALLENGE } from "constants/routesApiKeys";
 import { extractApiErrorMessage } from "utils/errorHandler";
 import { useAppDispatch, useAppSelector } from "../../redux/config";
-import { getCourses } from "../../redux/course/courseSlice";
-import { getLessons } from "../../redux/lesson/lessonSlice";
+import { getCoursesForAdmin } from "../../redux/course/courseSlice";
+import {
+  getLessons,
+  getLessonByIdForAdmin,
+} from "../../redux/lesson/lessonSlice";
 import MapPickerDialog from "sections/admin/map/MapPickerDialog";
 import BlocksWorkspace from "sections/studio/BlocksWorkspace";
 import { BlocklyToPhaserConverter } from "../../features/phaser/services/blocklyToPhaserConverter";
 
 const MapDesignerPage = () => {
   const dispatch = useAppDispatch();
-  const { data: coursesData } = useAppSelector((s) => s.course.courses);
+  const { data: coursesData } = useAppSelector((s) => s.course.adminCourses);
   const { data: lessonsData } = useAppSelector((s) => s.lesson.lessons);
 
   const [selectedAsset, setSelectedAsset] = useState<string>("robot_east");
@@ -106,7 +109,7 @@ const MapDesignerPage = () => {
 
   // Fetch courses and lessons
   useEffect(() => {
-    dispatch(getCourses({ pageSize: 100 }));
+    dispatch(getCoursesForAdmin({ pageSize: 100 }));
   }, [dispatch]);
 
   // Fetch lessons when courseId changes
@@ -150,16 +153,15 @@ const MapDesignerPage = () => {
           // Find courseId from lessonId for edit mode
           if (item?.lessonId) {
             try {
-              const lessonRes = await axiosClient.get(
-                `/api/v1/lessons/admin/${item.lessonId}`
-              );
-              const lesson = lessonRes?.data?.data;
-              if (lesson?.courseId) {
-                setCourseId(lesson.courseId);
+              const lessonResult = await dispatch(
+                getLessonByIdForAdmin(item.lessonId)
+              ).unwrap();
+              if (lessonResult?.courseId) {
+                setCourseId(lessonResult.courseId);
                 // Fetch lessons for this course
                 await dispatch(
                   getLessons({
-                    courseId: lesson.courseId,
+                    courseId: lessonResult.courseId,
                     includeDeleted: true,
                   })
                 );

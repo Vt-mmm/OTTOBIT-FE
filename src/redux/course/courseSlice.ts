@@ -3,6 +3,8 @@ import { CourseResult, CoursesResponse } from "common/@types/course";
 import {
   getCoursesThunk,
   getCourseByIdThunk,
+  getCoursesForAdminThunk,
+  getCourseByIdForAdminThunk,
   createCourseThunk,
   updateCourseThunk,
   deleteCourseThunk,
@@ -10,15 +12,28 @@ import {
 } from "./courseThunks";
 
 interface CourseState {
-  // Courses list
+  // Courses list (for users)
   courses: {
     data: CoursesResponse | null;
     isLoading: boolean;
     error: string | null;
     lastQuery: any;
   };
-  // Current course
+  // Courses list (for admin)
+  adminCourses: {
+    data: CoursesResponse | null;
+    isLoading: boolean;
+    error: string | null;
+    lastQuery: any;
+  };
+  // Current course (for users)
   currentCourse: {
+    data: CourseResult | null;
+    isLoading: boolean;
+    error: string | null;
+  };
+  // Current course (for admin)
+  adminCurrentCourse: {
     data: CourseResult | null;
     isLoading: boolean;
     error: string | null;
@@ -43,7 +58,18 @@ const initialState: CourseState = {
     error: null,
     lastQuery: null,
   },
+  adminCourses: {
+    data: null,
+    isLoading: false,
+    error: null,
+    lastQuery: null,
+  },
   currentCourse: {
+    data: null,
+    isLoading: false,
+    error: null,
+  },
+  adminCurrentCourse: {
     data: null,
     isLoading: false,
     error: null,
@@ -131,6 +157,38 @@ const courseSlice = createSlice({
         state.currentCourse.error = action.payload || "Failed to fetch course";
       })
 
+      // Get courses for admin
+      .addCase(getCoursesForAdminThunk.pending, (state, action) => {
+        state.adminCourses.isLoading = true;
+        state.adminCourses.error = null;
+        state.adminCourses.lastQuery = action.meta.arg;
+      })
+      .addCase(getCoursesForAdminThunk.fulfilled, (state, action) => {
+        state.adminCourses.isLoading = false;
+        state.adminCourses.error = null;
+        state.adminCourses.data = action.payload;
+      })
+      .addCase(getCoursesForAdminThunk.rejected, (state, action) => {
+        state.adminCourses.isLoading = false;
+        state.adminCourses.error = action.payload || "Failed to fetch courses";
+      })
+
+      // Get course by ID for admin
+      .addCase(getCourseByIdForAdminThunk.pending, (state) => {
+        state.adminCurrentCourse.isLoading = true;
+        state.adminCurrentCourse.error = null;
+      })
+      .addCase(getCourseByIdForAdminThunk.fulfilled, (state, action) => {
+        state.adminCurrentCourse.isLoading = false;
+        state.adminCurrentCourse.error = null;
+        state.adminCurrentCourse.data = action.payload;
+      })
+      .addCase(getCourseByIdForAdminThunk.rejected, (state, action) => {
+        state.adminCurrentCourse.isLoading = false;
+        state.adminCurrentCourse.error =
+          action.payload || "Failed to fetch course";
+      })
+
       // Create course
       .addCase(createCourseThunk.pending, (state) => {
         state.operations.isCreating = true;
@@ -147,7 +205,8 @@ const courseSlice = createSlice({
       })
       .addCase(createCourseThunk.rejected, (state, action) => {
         state.operations.isCreating = false;
-        state.operations.createError = action.payload || "Failed to create course";
+        state.operations.createError =
+          action.payload || "Failed to create course";
       })
 
       // Update course
@@ -174,7 +233,8 @@ const courseSlice = createSlice({
       })
       .addCase(updateCourseThunk.rejected, (state, action) => {
         state.operations.isUpdating = false;
-        state.operations.updateError = action.payload || "Failed to update course";
+        state.operations.updateError =
+          action.payload || "Failed to update course";
       })
 
       // Delete course
@@ -202,7 +262,8 @@ const courseSlice = createSlice({
       })
       .addCase(deleteCourseThunk.rejected, (state, action) => {
         state.operations.isDeleting = false;
-        state.operations.deleteError = action.payload || "Failed to delete course";
+        state.operations.deleteError =
+          action.payload || "Failed to delete course";
       })
 
       // Restore course
@@ -221,7 +282,8 @@ const courseSlice = createSlice({
       })
       .addCase(restoreCourseThunk.rejected, (state, action) => {
         state.operations.isRestoring = false;
-        state.operations.restoreError = action.payload || "Failed to restore course";
+        state.operations.restoreError =
+          action.payload || "Failed to restore course";
       });
   },
 });
@@ -238,6 +300,8 @@ export const {
 export {
   getCoursesThunk as getCourses,
   getCourseByIdThunk as getCourseById,
+  getCoursesForAdminThunk as getCoursesForAdmin,
+  getCourseByIdForAdminThunk as getCourseByIdForAdmin,
   createCourseThunk as createCourse,
   updateCourseThunk as updateCourse,
   deleteCourseThunk as deleteCourse,
