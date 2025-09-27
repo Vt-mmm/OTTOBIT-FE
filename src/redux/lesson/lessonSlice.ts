@@ -1,8 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { LessonResult, LessonsResponse, LessonsPreviewResponse, LessonProgressResponse } from "common/@types/lesson";
+import {
+  LessonResult,
+  LessonsResponse,
+  LessonsPreviewResponse,
+  LessonProgressResponse,
+} from "common/@types/lesson";
 import {
   getLessonsThunk,
   getLessonByIdThunk,
+  getLessonByIdForAdminThunk,
   getLessonsByCourseThunk,
   getLessonsPreviewThunk,
   createLessonThunk,
@@ -35,8 +41,14 @@ interface LessonState {
     error: string | null;
     courseId: string | null;
   };
-  // Current lesson
+  // Current lesson (for users)
   currentLesson: {
+    data: LessonResult | null;
+    isLoading: boolean;
+    error: string | null;
+  };
+  // Current lesson (for admin)
+  adminCurrentLesson: {
     data: LessonResult | null;
     isLoading: boolean;
     error: string | null;
@@ -83,6 +95,11 @@ const initialState: LessonState = {
     courseId: null,
   },
   currentLesson: {
+    data: null,
+    isLoading: false,
+    error: null,
+  },
+  adminCurrentLesson: {
     data: null,
     isLoading: false,
     error: null,
@@ -182,12 +199,12 @@ const lessonSlice = createSlice({
         const lessons = [...state.courseLessons.data.items];
         const [movedLesson] = lessons.splice(fromIndex, 1);
         lessons.splice(toIndex, 0, movedLesson);
-        
+
         // Update order property
         lessons.forEach((lesson, index) => {
           lesson.order = index + 1;
         });
-        
+
         state.courseLessons.data.items = lessons;
       }
 
@@ -196,15 +213,15 @@ const lessonSlice = createSlice({
         const lessons = [...state.lessons.data.items];
         const fromLesson = lessons[fromIndex];
         const toLesson = lessons[toIndex];
-        
+
         if (fromLesson && toLesson) {
           lessons.splice(fromIndex, 1);
           lessons.splice(toIndex, 0, fromLesson);
-          
+
           lessons.forEach((lesson, index) => {
             lesson.order = index + 1;
           });
-          
+
           state.lessons.data.items = lessons;
         }
       }
@@ -243,6 +260,22 @@ const lessonSlice = createSlice({
         state.currentLesson.error = action.payload || "Failed to fetch lesson";
       })
 
+      // Get lesson by ID for admin
+      .addCase(getLessonByIdForAdminThunk.pending, (state) => {
+        state.adminCurrentLesson.isLoading = true;
+        state.adminCurrentLesson.error = null;
+      })
+      .addCase(getLessonByIdForAdminThunk.fulfilled, (state, action) => {
+        state.adminCurrentLesson.isLoading = false;
+        state.adminCurrentLesson.error = null;
+        state.adminCurrentLesson.data = action.payload;
+      })
+      .addCase(getLessonByIdForAdminThunk.rejected, (state, action) => {
+        state.adminCurrentLesson.isLoading = false;
+        state.adminCurrentLesson.error =
+          action.payload || "Failed to fetch lesson";
+      })
+
       // Get lessons by course
       .addCase(getLessonsByCourseThunk.pending, (state, action) => {
         state.courseLessons.isLoading = true;
@@ -256,7 +289,8 @@ const lessonSlice = createSlice({
       })
       .addCase(getLessonsByCourseThunk.rejected, (state, action) => {
         state.courseLessons.isLoading = false;
-        state.courseLessons.error = action.payload || "Failed to fetch course lessons";
+        state.courseLessons.error =
+          action.payload || "Failed to fetch course lessons";
       })
 
       // Get lessons preview
@@ -272,7 +306,8 @@ const lessonSlice = createSlice({
       })
       .addCase(getLessonsPreviewThunk.rejected, (state, action) => {
         state.lessonsPreview.isLoading = false;
-        state.lessonsPreview.error = action.payload || "Failed to fetch lesson preview";
+        state.lessonsPreview.error =
+          action.payload || "Failed to fetch lesson preview";
       })
 
       // Create lesson
@@ -283,25 +318,30 @@ const lessonSlice = createSlice({
       .addCase(createLessonThunk.fulfilled, (state, action) => {
         state.operations.isCreating = false;
         state.operations.createError = null;
-        
+
         // Add to lessons list if exists
         if (state.lessons.data?.items) {
           state.lessons.data.items.unshift(action.payload);
           state.lessons.data.total += 1;
         }
-        
+
         // Add to course lessons if same course
-        if (state.courseLessons.courseId === action.payload.courseId && state.courseLessons.data?.items) {
+        if (
+          state.courseLessons.courseId === action.payload.courseId &&
+          state.courseLessons.data?.items
+        ) {
           // Insert in correct order position
           const newLesson = action.payload;
           const lessons = [...state.courseLessons.data.items];
-          
+
           // Find correct insertion point based on order
-          let insertIndex = lessons.findIndex(lesson => lesson.order > newLesson.order);
+          let insertIndex = lessons.findIndex(
+            (lesson) => lesson.order > newLesson.order
+          );
           if (insertIndex === -1) {
             insertIndex = lessons.length;
           }
-          
+
           lessons.splice(insertIndex, 0, newLesson);
           state.courseLessons.data.items = lessons;
           state.courseLessons.data.total += 1;
@@ -309,7 +349,8 @@ const lessonSlice = createSlice({
       })
       .addCase(createLessonThunk.rejected, (state, action) => {
         state.operations.isCreating = false;
-        state.operations.createError = action.payload || "Failed to create lesson";
+        state.operations.createError =
+          action.payload || "Failed to create lesson";
       })
 
       // Update lesson
@@ -348,7 +389,8 @@ const lessonSlice = createSlice({
       })
       .addCase(updateLessonThunk.rejected, (state, action) => {
         state.operations.isUpdating = false;
-        state.operations.updateError = action.payload || "Failed to update lesson";
+        state.operations.updateError =
+          action.payload || "Failed to update lesson";
       })
 
       // Delete lesson
@@ -391,7 +433,8 @@ const lessonSlice = createSlice({
       })
       .addCase(deleteLessonThunk.rejected, (state, action) => {
         state.operations.isDeleting = false;
-        state.operations.deleteError = action.payload || "Failed to delete lesson";
+        state.operations.deleteError =
+          action.payload || "Failed to delete lesson";
       })
 
       // Restore lesson
@@ -402,22 +445,26 @@ const lessonSlice = createSlice({
       .addCase(restoreLessonThunk.fulfilled, (state, action) => {
         state.operations.isRestoring = false;
         state.operations.restoreError = null;
-        
+
         // Add back to lessons list if exists
         if (state.lessons.data?.items) {
           state.lessons.data.items.unshift(action.payload);
           state.lessons.data.total += 1;
         }
-        
+
         // Add back to course lessons if same course
-        if (state.courseLessons.courseId === action.payload.courseId && state.courseLessons.data?.items) {
+        if (
+          state.courseLessons.courseId === action.payload.courseId &&
+          state.courseLessons.data?.items
+        ) {
           state.courseLessons.data.items.unshift(action.payload);
           state.courseLessons.data.total += 1;
         }
       })
       .addCase(restoreLessonThunk.rejected, (state, action) => {
         state.operations.isRestoring = false;
-        state.operations.restoreError = action.payload || "Failed to restore lesson";
+        state.operations.restoreError =
+          action.payload || "Failed to restore lesson";
       })
 
       // Get lesson progress
@@ -433,7 +480,8 @@ const lessonSlice = createSlice({
       })
       .addCase(getLessonProgressThunk.rejected, (state, action) => {
         state.lessonProgress.isLoading = false;
-        state.lessonProgress.error = action.payload || "Failed to fetch lesson progress";
+        state.lessonProgress.error =
+          action.payload || "Failed to fetch lesson progress";
       })
 
       // Start lesson
@@ -444,13 +492,13 @@ const lessonSlice = createSlice({
       .addCase(startLessonThunk.fulfilled, (state, action) => {
         state.operations.isStarting = false;
         state.operations.startError = null;
-        
+
         // Update lesson progress data if it exists
         if (state.lessonProgress.data?.items) {
           const existingIndex = state.lessonProgress.data.items.findIndex(
             (progress) => progress.lessonId === action.payload.lessonId
           );
-          
+
           if (existingIndex !== -1) {
             state.lessonProgress.data.items[existingIndex] = action.payload;
           } else {
@@ -461,7 +509,8 @@ const lessonSlice = createSlice({
       })
       .addCase(startLessonThunk.rejected, (state, action) => {
         state.operations.isStarting = false;
-        state.operations.startError = action.payload || "Failed to start lesson";
+        state.operations.startError =
+          action.payload || "Failed to start lesson";
       });
   },
 });
@@ -482,6 +531,7 @@ export const {
 export {
   getLessonsThunk as getLessons,
   getLessonByIdThunk as getLessonById,
+  getLessonByIdForAdminThunk as getLessonByIdForAdmin,
   getLessonsByCourseThunk as getLessonsByCourse,
   getLessonsPreviewThunk as getLessonsPreview,
   getLessonProgressThunk as getLessonProgress,

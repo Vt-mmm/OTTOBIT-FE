@@ -43,8 +43,10 @@ export const ROUTES_API_STUDENT = {
 
 export const ROUTES_API_COURSE = {
   // Course endpoints
-  GET_ALL: path(ROOTS_COURSE, `/admin`), // GET /api/v1/courses/admin (with pagination)
-  GET_BY_ID: (id: string) => path(ROOTS_COURSE, `/admin/${id}`), // GET /api/v1/courses/admin/{id}
+  GET_ALL_FOR_ADMIN: path(ROOTS_COURSE, `/admin`), // GET /api/v1/courses/admin (with pagination)
+  GET_BY_ID_FOR_ADMIN: (id: string) => path(ROOTS_COURSE, `/admin/${id}`), // GET /api/v1/courses/admin/{id}
+  GET_ALL: ROOTS_COURSE, // GET /api/v1/courses (with pagination)
+  GET_BY_ID: (id: string) => path(ROOTS_COURSE, `/${id}`), // GET /api/v1/courses/{id}
   CREATE: ROOTS_COURSE, // POST /api/v1/courses
   UPDATE: (id: string) => path(ROOTS_COURSE, `/${id}`), // PUT /api/v1/courses/{id}
   DELETE: (id: string) => path(ROOTS_COURSE, `/${id}`), // DELETE /api/v1/courses/{id}
@@ -53,8 +55,9 @@ export const ROUTES_API_COURSE = {
 
 export const ROUTES_API_LESSON = {
   // Lesson endpoints
-  GET_ALL: path(ROOTS_LESSON, `/admin`), // GET /api/v1/lessons/admin (with pagination)
-  GET_BY_ID: (id: string) => path(ROOTS_LESSON, `/admin/${id}`), // GET /api/v1/lessons/admin/{id}
+  GET_BY_ID_FOR_ADMIN: (id: string) => path(ROOTS_LESSON, `/admin/${id}`), // GET /api/v1/lessons/admin/{id}
+  GET_ALL: path(ROOTS_LESSON, `/admin`), // GET /api/v1/lessons/admin (for Admin)
+  GET_BY_ID: (id: string) => path(ROOTS_LESSON, `/${id}`), // GET /api/v1/lessons/{id}
   BY_COURSE: (courseId: string) => path(ROOTS_LESSON, `/by-course/${courseId}`), // GET /api/v1/lessons/by-course/{courseId}
   PREVIEW: path(ROOTS_LESSON, `/preview`), // GET /api/v1/lessons/preview
   CREATE: ROOTS_LESSON, // POST /api/v1/lessons

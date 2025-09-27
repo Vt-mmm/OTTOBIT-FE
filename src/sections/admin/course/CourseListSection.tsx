@@ -33,7 +33,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PersonIcon from "@mui/icons-material/Person";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import {
-  getCourses,
+  getCoursesForAdmin,
   deleteCourse,
   restoreCourse,
 } from "../../../redux/course/courseSlice";
@@ -51,7 +51,9 @@ export default function CourseListSection({
   onViewDetails,
 }: Props) {
   const dispatch = useAppDispatch();
-  const { data, isLoading, error } = useAppSelector((s) => s.course.courses);
+  const { data, isLoading, error } = useAppSelector(
+    (s) => s.course.adminCourses
+  );
 
   const [searchTerm, setSearchTerm] = useState(""); // Input state
   const [committedSearch, setCommittedSearch] = useState(""); // Actual search term sent to API
@@ -71,7 +73,7 @@ export default function CourseListSection({
 
   useEffect(() => {
     dispatch(
-      getCourses({
+      getCoursesForAdmin({
         searchTerm: committedSearch || undefined,
         pageNumber: page,
         pageSize,
