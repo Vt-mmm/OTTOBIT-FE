@@ -43,6 +43,7 @@ import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import Pagination from "@mui/material/Pagination";
 import { axiosClient } from "axiosClient";
+import { extractApiErrorMessage } from "utils/errorHandler";
 
 interface ChallengeListSectionProps {
   onCreateNew?: () => void;
@@ -113,14 +114,26 @@ export default function ChallengeListSection({
     try {
       await (axiosClient as any).delete(`/api/v1/challenges/admin/${id}`);
       refresh();
-    } catch {}
+    } catch (error: any) {
+      const errorMessage = extractApiErrorMessage(
+        error,
+        "Failed to delete challenge"
+      );
+      console.error("Delete challenge error:", errorMessage);
+    }
   };
 
   const handleRestore = async (id: string) => {
     try {
       await (axiosClient as any).post(`/api/v1/challenges/admin/${id}/restore`);
       refresh();
-    } catch {}
+    } catch (error: any) {
+      const errorMessage = extractApiErrorMessage(
+        error,
+        "Failed to restore challenge"
+      );
+      console.error("Restore challenge error:", errorMessage);
+    }
   };
 
   const handleRestoreConfirm = (id: string) => {
@@ -157,34 +170,21 @@ export default function ChallengeListSection({
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 3,
-        }}
-      >
-        <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-          🎯 Challenge Management
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() =>
-            onCreateNew
-              ? onCreateNew()
-              : navigate("/admin/challenge-designer?mode=create")
-          }
-        >
-          Add Challenge
-        </Button>
-      </Box>
+      <Typography variant="h4" sx={{ fontWeight: "bold", mb: 3 }}>
+        🎯 Challenge Management
+      </Typography>
 
       {/* Search and Filters */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              alignItems: "center",
+              flexWrap: { xs: "wrap", sm: "nowrap" },
+            }}
+          >
             <TextField
               fullWidth
               placeholder="Search challenges by title or description..."
@@ -211,7 +211,22 @@ export default function ChallengeListSection({
                 ),
               }}
             />
-            {/* Mode filter removed */}
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() =>
+                onCreateNew
+                  ? onCreateNew()
+                  : navigate("/admin/challenge-designer?mode=create")
+              }
+              sx={{
+                flexShrink: 0,
+                whiteSpace: "nowrap",
+                minWidth: "auto",
+              }}
+            >
+              Add Challenge
+            </Button>
           </Box>
         </CardContent>
       </Card>
@@ -225,7 +240,7 @@ export default function ChallengeListSection({
 
       {/* Challenges Table */}
       <Paper>
-        <Table>
+        <Table stickyHeader>
           <TableHead>
             <TableRow>
               <TableCell>Challenge</TableCell>
@@ -253,7 +268,17 @@ export default function ChallengeListSection({
               >
                 <TableCell>
                   <Box>
-                    <Typography variant="body2" sx={{ fontWeight: "medium" }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: "medium",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        maxWidth: 200,
+                      }}
+                      title={challenge.title}
+                    >
                       {challenge.title}
                     </Typography>
                     {challenge.isDeleted && (
@@ -265,7 +290,18 @@ export default function ChallengeListSection({
                         sx={{ mt: 0.5 }}
                       />
                     )}
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        maxWidth: 200,
+                        display: "block",
+                      }}
+                      title={challenge.description}
+                    >
                       {challenge.description}
                     </Typography>
                   </Box>

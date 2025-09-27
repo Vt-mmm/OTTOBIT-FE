@@ -20,30 +20,47 @@ import {
   WinConditionsSection,
 } from "sections/admin/mapDesigner";
 import SimpleIsometricMapGrid from "sections/admin/mapDesigner/SimpleIsometricMapGrid";
+import MiniIsometricMapGrid from "sections/admin/mapDesigner/MiniIsometricMapGrid";
 import { GRID_CONFIG } from "sections/admin/mapDesigner/theme.config";
 import { MAP_ASSETS } from "sections/admin/mapDesigner/mapAssets.config";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import ThreeDRotationIcon from "@mui/icons-material/ThreeDRotation";
 import { axiosClient } from "axiosClient";
 import { ROUTES_API_CHALLENGE } from "constants/routesApiKeys";
+import { extractApiErrorMessage } from "utils/errorHandler";
+import { useAppDispatch, useAppSelector } from "../../redux/config";
+import { getCourses } from "../../redux/course/courseSlice";
+import { getLessons } from "../../redux/lesson/lessonSlice";
 import MapPickerDialog from "sections/admin/map/MapPickerDialog";
+import BlocksWorkspace from "sections/studio/BlocksWorkspace";
+import { BlocklyToPhaserConverter } from "../../features/phaser/services/blocklyToPhaserConverter";
 
 const MapDesignerPage = () => {
+  const dispatch = useAppDispatch();
+  const { data: coursesData } = useAppSelector((s) => s.course.courses);
+  const { data: lessonsData } = useAppSelector((s) => s.lesson.lessons);
+
   const [selectedAsset, setSelectedAsset] = useState<string>("robot_east");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [mapName, setMapName] = useState<string>("New Map");
   const [mapDescription, setMapDescription] = useState<string>("");
-  const [solutionJson, setSolutionJson] = useState<string | null>(null);
+  // Removed solutionJsonRef; we rely on initialSolutionJsonRef for workspace init and
+  // always rebuild JSON from workspace when saving
+  // Keep the original solution JSON fetched from API for initializing the workspace only
+  const initialSolutionJsonRef = useRef<string | null>(null);
+  // Buffer new solution JSON here so UI state doesn't change and won't disturb map
+  // pendingSolutionJsonRef removed; we build from workspace at save time
   const [challengeJson, setChallengeJson] = useState<string | null>(null);
+  const [courseId, setCourseId] = useState<string>("");
   const [lessonId, setLessonId] = useState<string>("");
   const [order, setOrder] = useState<number>(1);
   const [difficulty, setDifficulty] = useState<number>(1);
   const [challengeMode, setChallengeMode] = useState<number>(0);
   const [openUpdateConfirm, setOpenUpdateConfirm] = useState(false);
+  const [hasTriedSave, setHasTriedSave] = useState(false);
   const [mapPickerOpen, setMapPickerOpen] = useState(false);
-  const [solutionDialogOpen, setSolutionDialogOpen] = useState(false);
-  const [isoRemountId, setIsoRemountId] = useState(0);
-  const [isoReady, setIsoReady] = useState(false);
+  const [solutionDialogOpen] = useState(false);
+  // Isometric map renders with fixed viewport; no readiness gating needed
   const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
   const [selectedMapTitle, setSelectedMapTitle] =
     useState<string>("No map selected");
@@ -65,17 +82,40 @@ const MapDesignerPage = () => {
       )
   );
 
-  // Debounced container sizing for isometric grid stability
-  const gridContainerRef = useRef<HTMLDivElement | null>(null);
-  const [containerSizeRaw, setContainerSizeRaw] = useState<{
-    w: number;
-    h: number;
-  }>({ w: 0, h: 0 });
-  const [containerSizeStable, setContainerSizeStable] = useState<{
-    w: number;
-    h: number;
-  }>({ w: 0, h: 0 });
+  // Disable automatic ResizeObserver + debounce to avoid size recalculation when unrelated state updates
+  const [enableAutoResize] = useState<boolean>(false);
   const debounceTimerRef = useRef<any>(null);
+  // Snapshot of last good terrain grid to recover from accidental resets
+  const terrainSnapshotRef = useRef<MapCell[][] | null>(null);
+  const solutionWorkspaceRef = useRef<any>(null);
+  const openChallengeDialogRef = useRef<(() => void) | null>(null);
+
+  const countTerrainCells = (grid: MapCell[][]): number => {
+    try {
+      let n = 0;
+      for (const row of grid) {
+        for (const cell of row) {
+          if (cell && cell.terrain) n++;
+        }
+      }
+      return n;
+    } catch {
+      return 0;
+    }
+  };
+
+  // Fetch courses and lessons
+  useEffect(() => {
+    dispatch(getCourses({ pageSize: 100 }));
+  }, [dispatch]);
+
+  // Fetch lessons when courseId changes
+  useEffect(() => {
+    if (courseId) {
+      dispatch(getLessons({ courseId, pageSize: 100 }));
+      setLessonId(""); // Reset lesson selection when course changes
+    }
+  }, [dispatch, courseId]);
 
   // Prefill from query params when navigated from Map Management (Edit)
   useEffect(() => {
@@ -102,8 +142,38 @@ const MapDesignerPage = () => {
           // Admin detail endpoint for challenge edit
           const res = await axiosClient.get(`/api/v1/challenges/admin/${qpId}`);
           const item = res?.data?.data;
-          if (item?.solutionJson) setSolutionJson(item.solutionJson);
+          if (item?.solutionJson) {
+            initialSolutionJsonRef.current = item.solutionJson;
+          }
           if (item?.challengeJson) setChallengeJson(item.challengeJson);
+
+          // Find courseId from lessonId for edit mode
+          if (item?.lessonId) {
+            try {
+              const lessonRes = await axiosClient.get(
+                `/api/v1/lessons/admin/${item.lessonId}`
+              );
+              const lesson = lessonRes?.data?.data;
+              if (lesson?.courseId) {
+                setCourseId(lesson.courseId);
+                // Fetch lessons for this course
+                await dispatch(
+                  getLessons({
+                    courseId: lesson.courseId,
+                    includeDeleted: true,
+                  })
+                );
+                // Set lessonId after fetching lessons
+                setLessonId(item.lessonId);
+              }
+            } catch (error) {
+              console.error(
+                "Error fetching lesson details for courseId:",
+                error
+              );
+            }
+          }
+
           // Prefer load map by mapId when available (admin detail)
           let newGrid: (MapCell & { itemCount?: number })[][] | null = null;
           if (item?.mapId) {
@@ -164,6 +234,10 @@ const MapDesignerPage = () => {
               }
               if (newGrid) {
                 setMapGrid(newGrid);
+                // Save terrain snapshot
+                terrainSnapshotRef.current = newGrid.map((r) =>
+                  r.map((c) => ({ ...c }))
+                );
               }
             } catch (e) {
               // ignore map fetch errors
@@ -279,62 +353,140 @@ const MapDesignerPage = () => {
     return () => clearTimeout(t);
   }, []);
 
-  // Reflow when toggling view mode and ensure container size is measured when switching to isometric
+  // Fixed viewport: no re-measure needed when toggling view mode
+  useEffect(() => {}, [viewMode]);
+
+  // Fixed viewport: no ResizeObserver
+  useEffect(() => {}, [solutionDialogOpen, enableAutoResize]);
+
+  // Fixed viewport: no debounce sizing
+  useEffect(() => {}, []);
+
+  // Fixed viewport: no lock/unlock needed
+  useEffect(() => {}, [solutionDialogOpen]);
+
+  // Handle browser tab visibility/focus changes to prevent "bunging" after returning
   useEffect(() => {
-    const tick = () => window.dispatchEvent(new Event("resize"));
-    requestAnimationFrame(tick);
-    const t = setTimeout(() => {
-      tick();
-      if (viewMode === "isometric" && gridContainerRef.current) {
-        const rect = gridContainerRef.current.getBoundingClientRect();
-        const w = Math.round(rect.width);
-        const h = Math.round(rect.height);
-        if (w > 0 && h > 0) {
-          setContainerSizeRaw({ w, h });
-          setContainerSizeStable({ w, h });
-          // Wait a short moment, then allow isometric render
-          setTimeout(() => setIsoReady(true), 200);
+    const handleSolutionUpdating = (e: any) => {
+      // When Solution save completes (detail=false), restore terrain if lost
+      try {
+        const done = e && e.detail === false;
+        if (done) {
+          const lostTerrain = countTerrainCells(mapGrid) === 0;
+          if (lostTerrain && terrainSnapshotRef.current) {
+            setMapGrid(
+              terrainSnapshotRef.current.map((r) => r.map((c) => ({ ...c })))
+            );
+          }
+        }
+      } catch {}
+    };
+    const handleMapPickerOpen = (e: any) => {
+      const isOpen = !!e?.detail;
+      if (isOpen) {
+        // Ensure no resize logic runs while map picker dialog is open
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current);
+          debounceTimerRef.current = null;
+        }
+        // Guard: if terrain was lost unexpectedly, restore snapshot
+        const lostTerrain = countTerrainCells(mapGrid) === 0;
+        if (lostTerrain && terrainSnapshotRef.current) {
+          setMapGrid(
+            terrainSnapshotRef.current.map((r) => r.map((c) => ({ ...c })))
+          );
         }
       }
-    }, 120);
-    return () => clearTimeout(t);
-  }, [viewMode]);
-
-  // Observe middle container size and debounce stabilization (no immediate resize ping)
-  useEffect(() => {
-    if (!gridContainerRef.current || !(window as any).ResizeObserver) return;
-    const ro = new (window as any).ResizeObserver((entries: any[]) => {
-      if (solutionDialogOpen) return; // freeze size updates while dialog open
-      const entry = entries?.[0];
-      if (!entry) return;
-      const cr = entry.contentRect || entry.target.getBoundingClientRect();
-      const w = Math.round(cr.width);
-      const h = Math.round(cr.height);
-      setContainerSizeRaw((prev) =>
-        prev.w !== w || prev.h !== h ? { w, h } : prev
-      );
-    });
-    const el = gridContainerRef.current;
-    ro.observe(el);
-    return () => ro.unobserve(el);
-  }, [solutionDialogOpen]);
-
-  useEffect(() => {
-    if (solutionDialogOpen) return; // don't commit size while dialog open
-    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
-    debounceTimerRef.current = setTimeout(() => {
-      setContainerSizeStable(containerSizeRaw);
-      const tick = () => window.dispatchEvent(new Event("resize"));
-      requestAnimationFrame(tick);
-      // allow render shortly after size is stable
-      setIsoReady(true);
-    }, 320);
-    return () => {
-      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     };
-  }, [containerSizeRaw.w, containerSizeRaw.h, solutionDialogOpen]);
 
-  const gridKey = `${viewMode}-${containerSizeStable.w}x${containerSizeStable.h}-${isoRemountId}`;
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === "hidden") return;
+
+      // Fixed viewport: no re-measure on focus/visibility
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityOrFocus);
+    window.addEventListener("focus", handleVisibilityOrFocus);
+    window.addEventListener("solution-updating", handleSolutionUpdating as any);
+    window.addEventListener("map-picker-open", handleMapPickerOpen as any);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityOrFocus);
+      window.removeEventListener("focus", handleVisibilityOrFocus);
+      window.removeEventListener(
+        "solution-updating",
+        handleSolutionUpdating as any
+      );
+      window.removeEventListener("map-picker-open", handleMapPickerOpen as any);
+    };
+  }, [viewMode, mapGrid]);
+
+  // const gridKey = `${viewMode}-${containerSizeStable.w}x${containerSizeStable.h}-${isoRemountId}`;
+
+  // Unused legacy panel; keep commented reference for future if needed
+  /* const IsometricMapPanel = memo(
+    ({
+      isoReadyProp,
+      frozenSizeProp,
+      containerSizeProp,
+      gridKeyProp,
+      mapGridProp,
+      selectedAssetProp,
+      onCellClickProp,
+    }: {
+      isoReadyProp: boolean;
+      frozenSizeProp: { w: number; h: number } | null;
+      containerSizeProp: { w: number; h: number };
+      gridKeyProp: string;
+      mapGridProp: MapCell[][];
+      selectedAssetProp: string;
+      onCellClickProp: (row: number, col: number) => void;
+    }) => {
+      return (
+        <Box
+          ref={gridContainerRef}
+          sx={{
+            height: "100%",
+            width: "100%",
+            position: "relative",
+            minHeight: "700px",
+            ...(frozenSizeProp
+              ? {
+                  width: `${frozenSizeProp.w}px`,
+                  height: `${frozenSizeProp.h}px`,
+                  overflow: "hidden",
+                }
+              : {}),
+          }}
+        >
+          {isoReadyProp &&
+          (frozenSizeProp ||
+            (containerSizeProp.w > 0 && containerSizeProp.h > 0)) ? (
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: `${
+                  frozenSizeProp ? frozenSizeProp.w : containerSizeProp.w
+                }px`,
+                height: `${
+                  frozenSizeProp ? frozenSizeProp.h : containerSizeProp.h
+                }px`,
+                overflow: "hidden",
+              }}
+            >
+              <SimpleIsometricMapGrid
+                key={gridKeyProp}
+                mapGrid={mapGridProp}
+                selectedAsset={selectedAssetProp}
+                onCellClick={onCellClickProp}
+              />
+            </Box>
+          ) : null}
+        </Box>
+      );
+    }
+  ); */
 
   // Lightweight toast fallback (top-right) when global Snackbar is unavailable
   const showLocalToast = (
@@ -398,14 +550,11 @@ const MapDesignerPage = () => {
   };
 
   const handleCellClick = (row: number, col: number) => {
-    console.log("Cell clicked:", row, col, "selectedAsset:", selectedAsset);
-    console.log("Grid dimensions:", mapGrid.length, "x", mapGrid[0]?.length);
     const newGrid = [...mapGrid];
     const asset = MAP_ASSETS.find((a) => a.id === selectedAsset);
     const currentCell = newGrid[row][col];
 
     if (!asset) {
-      console.log("No asset found for:", selectedAsset);
       return;
     }
 
@@ -464,7 +613,37 @@ const MapDesignerPage = () => {
   };
 
   const handleSaveMap = async () => {
+    // Set hasTriedSave to true to show validation messages
+    setHasTriedSave(true);
+
+    // Build solution JSON directly from current workspace (unwrapped program)
+    let solutionJsonToSave: string | null = null;
+    try {
+      if (solutionWorkspaceRef.current) {
+        const program = BlocklyToPhaserConverter.convertWorkspace(
+          solutionWorkspaceRef.current
+        );
+        solutionJsonToSave = JSON.stringify(program);
+      }
+    } catch {}
     // Validate required fields
+    if (!courseId || courseId.trim().length === 0) {
+      const msg = "Please select a Course before saving";
+      try {
+        if ((window as any).Snackbar?.enqueueSnackbar) {
+          (window as any).Snackbar.enqueueSnackbar(msg, {
+            variant: "error",
+            anchorOrigin: { vertical: "top", horizontal: "right" },
+          });
+        } else {
+          showLocalToast(msg, "error");
+        }
+      } catch {
+        showLocalToast(msg, "error");
+      }
+      return;
+    }
+
     if (!lessonId || lessonId.trim().length === 0) {
       const msg = "Please select a Lesson before saving";
       try {
@@ -547,7 +726,7 @@ const MapDesignerPage = () => {
     }
 
     // Validate: solution and challenge must be configured
-    const missingSolution = !solutionJson || solutionJson.trim().length === 0;
+    const missingSolution = (solutionJsonToSave || "").trim().length === 0;
     const missingChallenge =
       !challengeJson || challengeJson.trim().length === 0;
     if (missingSolution || missingChallenge) {
@@ -634,7 +813,7 @@ const MapDesignerPage = () => {
       difficulty,
       mapId: selectedMapId,
       challengeJson: challengeJson,
-      solutionJson: solutionJson,
+      solutionJson: solutionJsonToSave,
       challengeMode,
     } as any;
 
@@ -662,14 +841,17 @@ const MapDesignerPage = () => {
         showLocalToast(msg, variant as any);
       }
     } catch (e: any) {
-      const msg = "Failed to save challenge";
+      const errorMessage = extractApiErrorMessage(
+        e,
+        "Failed to save challenge"
+      );
       if ((window as any).Snackbar?.enqueueSnackbar) {
-        (window as any).Snackbar.enqueueSnackbar(msg, {
+        (window as any).Snackbar.enqueueSnackbar(errorMessage, {
           variant: "error",
           anchorOrigin: { vertical: "top", horizontal: "right" },
         });
       } else {
-        showLocalToast(msg, "error");
+        showLocalToast(errorMessage, "error");
       }
     }
   };
@@ -730,9 +912,22 @@ const MapDesignerPage = () => {
             (next[y][x] as any).itemCount = count;
           }
         });
+        // Update terrain snapshot alongside changes
+        terrainSnapshotRef.current = next.map((r) => r.map((c) => ({ ...c })));
         return next;
       });
     } catch {}
+  };
+
+  const handleCourseIdChange = (value: string) => {
+    setCourseId(value);
+    setLessonId(""); // Reset lesson when course changes
+    setHasTriedSave(false); // Reset validation state
+  };
+
+  const handleLessonIdChange = (value: string) => {
+    setLessonId(value);
+    setHasTriedSave(false); // Reset validation state
   };
 
   return (
@@ -805,12 +1000,22 @@ const MapDesignerPage = () => {
           </Box>
         </Box>
 
-        <Grid container spacing={2} sx={{ height: "calc(100vh - 250px)" }}>
+        <Grid
+          container
+          spacing={2}
+          sx={{
+            height: "calc(100vh - 200px)", // Increased height (reduced top margin)
+            minHeight: "800px", // Increased minimum height
+            position: "relative", // Stable positioning
+          }}
+        >
           {/* Left Panel - Workspace */}
           <Grid item xs={12} md={3}>
             <Box
               sx={{
                 height: "100%",
+                minHeight: "700px", // Increased minimum height for longer workspace
+                position: "relative", // Stable positioning
                 // Hard reset spacing like Map Designer lite to avoid inherited styles
                 "& .MuiDivider-root": { mb: 0.5 },
                 "& .MuiTabs-root": { mb: 0.5, minHeight: 32 },
@@ -829,31 +1034,33 @@ const MapDesignerPage = () => {
 
           {/* Middle Panel - Map Grid (wider) */}
           <Grid item xs={12} md={9}>
-            {viewMode === "orthogonal" ? (
-              <MapGridSection
-                mapGrid={mapGrid}
-                selectedAsset={selectedAsset}
-                onCellClick={handleCellClick}
-                onSaveMap={handleSaveMap}
-                onClearMap={handleClearMap}
-              />
-            ) : (
-              <Box
-                ref={gridContainerRef}
-                sx={{ height: "100%", width: "100%", position: "relative" }}
-              >
-                {solutionDialogOpen ? null : isoReady &&
-                  containerSizeStable.w > 0 &&
-                  containerSizeStable.h > 0 ? (
+            <Box
+              sx={{
+                height: "100%",
+                minHeight: "700px", // Increased minimum height to match workspace
+                position: "relative", // Stable positioning
+              }}
+            >
+              {viewMode === "orthogonal" ? (
+                <MapGridSection
+                  mapGrid={mapGrid}
+                  selectedAsset={selectedAsset}
+                  onCellClick={handleCellClick}
+                  onSaveMap={handleSaveMap}
+                  onClearMap={handleClearMap}
+                />
+              ) : (
+                <Box
+                  sx={{ height: "100%", width: "100%", position: "relative" }}
+                >
                   <SimpleIsometricMapGrid
-                    key={gridKey}
                     mapGrid={mapGrid}
                     selectedAsset={selectedAsset}
                     onCellClick={handleCellClick}
                   />
-                ) : null}
-              </Box>
-            )}
+                </Box>
+              )}
+            </Box>
           </Grid>
 
           {/* Bottom Row - Map Info (moves below for more map space) */}
@@ -863,8 +1070,10 @@ const MapDesignerPage = () => {
               onMapNameChange={setMapName}
               mapDescription={mapDescription}
               onMapDescriptionChange={setMapDescription}
+              courseId={courseId}
+              onCourseIdChange={handleCourseIdChange}
               lessonId={lessonId}
-              onLessonIdChange={setLessonId}
+              onLessonIdChange={handleLessonIdChange}
               order={order}
               onOrderChange={setOrder}
               difficulty={difficulty}
@@ -872,33 +1081,162 @@ const MapDesignerPage = () => {
               challengeMode={challengeMode}
               onChallengeModeChange={setChallengeMode}
               mapGrid={mapGrid}
-              onSolutionJsonChange={(json) => {
-                setSolutionJson(json);
-                // After solution save, force a remount tick for isometric grid
-                setTimeout(() => setIsoRemountId((x) => x + 1), 0);
-              }}
-              solutionJson={solutionJson}
               onChallengeJsonChange={handleChallengeJsonChange}
               challengeJson={challengeJson}
               onSaveMap={handleSaveMap}
               onOpenMapPicker={() => setMapPickerOpen(true)}
-              onSolutionDialogToggle={(o) => {
-                // Avoid causing loops by setting only when value changes
-                setSolutionDialogOpen((prev) => {
-                  if (!!o === prev) return prev;
-                  return !!o;
-                });
-                if (!o) {
-                  // Close -> delay remount so container can settle
-                  setTimeout(() => {
-                    const tick = () =>
-                      window.dispatchEvent(new Event("resize"));
-                    requestAnimationFrame(tick);
-                    setIsoRemountId((x) => x + 1);
-                  }, 200);
-                }
+              registerOpenChallengeTrigger={(fn: () => void) => {
+                (openChallengeDialogRef as any).current = fn;
               }}
+              courses={coursesData?.items || []}
+              lessons={lessonsData?.items || []}
+              hasTriedSave={hasTriedSave}
             />
+            {/* Inline Solution Editor (moved from WinConditionsSection) */}
+            <Box
+              sx={{
+                mt: 3,
+                p: 2,
+                border: `1px solid #e0e0e0`,
+                borderRadius: 1.5,
+                minHeight: 500,
+              }}
+            >
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>
+                Solution
+              </Typography>
+              <Box sx={{ display: "flex", gap: 0 }}>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <BlocksWorkspace
+                    onWorkspaceChange={(ws) => {
+                      solutionWorkspaceRef.current = ws;
+                    }}
+                    initialProgramActionsJson={(() => {
+                      try {
+                        const raw = initialSolutionJsonRef.current;
+                        if (!raw) return undefined;
+                        const parsed = JSON.parse(raw);
+                        // Support both formats: wrapped {data: {program: ...}} and direct {actions: [...]}
+                        return parsed?.data?.program ?? parsed;
+                      } catch {
+                        return undefined;
+                      }
+                    })()}
+                  />
+                </Box>
+                <Box
+                  sx={{
+                    width: 400,
+                    height: 500,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                  }}
+                >
+                  {mapGrid && mapGrid.length > 0 ? (
+                    <Box
+                      sx={{
+                        width: "100%",
+                        height: "100%",
+                        position: "relative",
+                        transformOrigin: "center",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: "100%",
+                          height: "100%",
+                          pointerEvents: "none",
+                          userSelect: "none",
+                        }}
+                      >
+                        <MiniIsometricMapGrid
+                          mapGrid={mapGrid}
+                          selectedAsset=""
+                          onCellClick={() => {}}
+                        />
+                      </Box>
+                    </Box>
+                  ) : (
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "#999", textAlign: "center" }}
+                    >
+                      No map selected
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+              {/* Actions moved under Solution */}
+              <Box
+                sx={{
+                  mt: 2,
+                  display: "flex",
+                  gap: 1.5,
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                }}
+              >
+                <Button
+                  variant="contained"
+                  disableElevation
+                  onClick={() => {
+                    try {
+                      (openChallengeDialogRef as any).current?.();
+                    } catch {}
+                  }}
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 600,
+                    borderRadius: "8px",
+                    py: 1.5,
+                    px: 3,
+                    minWidth: 200,
+                    bgcolor: challengeJson ? "#4CAF50" : "#FF9800",
+                    color: "white",
+                    "&:hover": {
+                      bgcolor: challengeJson ? "#45a049" : "#F57C00",
+                    },
+                    boxShadow: challengeJson
+                      ? "0 2px 8px rgba(76, 175, 80, 0.3)"
+                      : "0 2px 8px rgba(255, 152, 0, 0.3)",
+                    transition: "all 0.2s ease-in-out",
+                  }}
+                  startIcon={
+                    challengeJson ? (
+                      <Box
+                        sx={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: "50%",
+                          bgcolor: "white",
+                        }}
+                      />
+                    ) : (
+                      <Box
+                        sx={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: "50%",
+                          bgcolor: "white",
+                          opacity: 0.7,
+                        }}
+                      />
+                    )
+                  }
+                >
+                  {challengeJson
+                    ? "Challenge Configured"
+                    : "Configure Challenge"}
+                </Button>
+                <Box sx={{ flexGrow: 1 }} />
+                <Button variant="contained" onClick={handleSaveMap}>
+                  Save Challenge
+                </Button>
+              </Box>
+              {/* Auto-use buffered solution on Challenge Save; no separate Save Solution button */}
+            </Box>
           </Grid>
         </Grid>
         {/* Save button moved inside WinConditionsSection */}
@@ -958,62 +1296,11 @@ const MapDesignerPage = () => {
                           } as any;
                         })
                     );
-                  // Debug: Check final grid state
-                  console.log("Final grid state before setMapGrid:");
-                  for (let r = 0; r < newGrid.length; r++) {
-                    for (let c = 0; c < newGrid[r].length; c++) {
-                      if (newGrid[r][c].terrain || newGrid[r][c].object) {
-                        console.log(
-                          `Grid[${r}][${c}]: terrain=${newGrid[r][c].terrain}, object=${newGrid[r][c].object}`
-                        );
-                      }
-                    }
-                  }
-                  // Debug: Check final grid state
-                  console.log("Final grid state before setMapGrid:");
-                  for (let r = 0; r < newGrid.length; r++) {
-                    for (let c = 0; c < newGrid[r].length; c++) {
-                      if (newGrid[r][c].terrain || newGrid[r][c].object) {
-                        console.log(
-                          `Grid[${r}][${c}]: terrain=${newGrid[r][c].terrain}, object=${newGrid[r][c].object}`
-                        );
-                      }
-                    }
-                  }
-                  // Debug: Check final grid state
-                  console.log("Final grid state before setMapGrid:");
-                  for (let r = 0; r < newGrid.length; r++) {
-                    for (let c = 0; c < newGrid[r].length; c++) {
-                      if (newGrid[r][c].terrain || newGrid[r][c].object) {
-                        console.log(
-                          `Grid[${r}][${c}]: terrain=${newGrid[r][c].terrain}, object=${newGrid[r][c].object}`
-                        );
-                      }
-                    }
-                  }
-                  // Debug: Check final grid state
-                  console.log("Final grid state before setMapGrid:");
-                  for (let r = 0; r < newGrid.length; r++) {
-                    for (let c = 0; c < newGrid[r].length; c++) {
-                      if (newGrid[r][c].terrain || newGrid[r][c].object) {
-                        console.log(
-                          `Grid[${r}][${c}]: terrain=${newGrid[r][c].terrain}, object=${newGrid[r][c].object}`
-                        );
-                      }
-                    }
-                  }
-                  // Debug: Check final grid state
-                  console.log("Final grid state before setMapGrid:");
-                  for (let r = 0; r < newGrid.length; r++) {
-                    for (let c = 0; c < newGrid[r].length; c++) {
-                      if (newGrid[r][c].terrain || newGrid[r][c].object) {
-                        console.log(
-                          `Grid[${r}][${c}]: terrain=${newGrid[r][c].terrain}, object=${newGrid[r][c].object}`
-                        );
-                      }
-                    }
-                  }
                   setMapGrid(newGrid);
+                  // Save terrain snapshot
+                  terrainSnapshotRef.current = newGrid.map((r) =>
+                    r.map((c) => ({ ...c }))
+                  );
                 }
               } catch {}
             }
@@ -1035,6 +1322,35 @@ const MapDesignerPage = () => {
             onClick={async () => {
               setOpenUpdateConfirm(false);
               try {
+                // Rebuild solution JSON directly from workspace at update time
+                let solutionJsonToSave: string | null = null;
+                try {
+                  if (solutionWorkspaceRef.current) {
+                    const program = BlocklyToPhaserConverter.convertWorkspace(
+                      solutionWorkspaceRef.current
+                    );
+                    solutionJsonToSave = JSON.stringify(program);
+                  }
+                } catch {}
+                if (
+                  !solutionJsonToSave ||
+                  solutionJsonToSave.trim().length === 0
+                ) {
+                  const msg = "Please configure Solution before saving";
+                  try {
+                    if ((window as any).Snackbar?.enqueueSnackbar) {
+                      (window as any).Snackbar.enqueueSnackbar(msg, {
+                        variant: "error",
+                        anchorOrigin: { vertical: "top", horizontal: "right" },
+                      });
+                    } else {
+                      showLocalToast(msg, "error");
+                    }
+                  } catch {
+                    showLocalToast(msg, "error");
+                  }
+                  return;
+                }
                 const updateBody = {
                   title: mapName,
                   description: mapDescription,
@@ -1042,7 +1358,7 @@ const MapDesignerPage = () => {
                   difficulty,
                   mapId: selectedMapId,
                   challengeJson: challengeJson,
-                  solutionJson: solutionJson,
+                  solutionJson: solutionJsonToSave,
                   challengeMode,
                 } as any;
                 const res = await axiosClient.put(
@@ -1062,15 +1378,18 @@ const MapDesignerPage = () => {
                 } else {
                   showLocalToast(msg, variant as any);
                 }
-              } catch (e) {
-                const msg = "Failed to save challenge";
+              } catch (e: any) {
+                const errorMessage = extractApiErrorMessage(
+                  e,
+                  "Failed to save challenge"
+                );
                 if ((window as any).Snackbar?.enqueueSnackbar) {
-                  (window as any).Snackbar.enqueueSnackbar(msg, {
+                  (window as any).Snackbar.enqueueSnackbar(errorMessage, {
                     variant: "error",
                     anchorOrigin: { vertical: "top", horizontal: "right" },
                   });
                 } else {
-                  showLocalToast(msg, "error");
+                  showLocalToast(errorMessage, "error");
                 }
               }
             }}

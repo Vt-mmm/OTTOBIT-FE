@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Box, Paper, Typography, IconButton, Chip } from "@mui/material";
 import { useNotification } from "hooks/useNotification";
 import { MapCell } from "common/models";
@@ -19,7 +19,7 @@ interface SimpleIsometricMapGridProps {
   onCellClick: (row: number, col: number) => void;
 }
 
-export default function SimpleIsometricMapGrid({
+function SimpleIsometricMapGrid({
   mapGrid,
   selectedAsset,
   onCellClick,
@@ -110,12 +110,36 @@ export default function SimpleIsometricMapGrid({
     return () => window.removeEventListener("mouseup", handleMouseUp);
   }, []);
 
-  // Calculate grid dimensions
+  // Calculate grid dimensions based on actual mapGrid size (not static GRID_CONFIG)
+  const actualRows = Array.isArray(mapGrid) ? mapGrid.length : GRID_CONFIG.rows;
+  const actualCols =
+    Array.isArray(mapGrid) && mapGrid[0] ? mapGrid[0].length : GRID_CONFIG.cols;
   const gridDimensions = getIsometricGridDimensions(
-    GRID_CONFIG.rows,
-    GRID_CONFIG.cols,
+    actualRows,
+    actualCols,
     ISOMETRIC_CONFIG
   );
+
+  // Auto-fit grid to fixed viewport (ChallengeDesigner wraps at 980x700)
+  useEffect(() => {
+    try {
+      const VIEWPORT_W = 980;
+      const VIEWPORT_H = 700;
+      const contentW = gridDimensions.width + gridDimensions.offsetX;
+      const contentH = gridDimensions.height;
+      if (contentW > 0 && contentH > 0) {
+        const fit = Math.min(VIEWPORT_W / contentW, VIEWPORT_H / contentH, 1);
+        setZoom(fit);
+        setPanOffset({ x: 0, y: 0 });
+      }
+    } catch {}
+  }, [
+    gridDimensions.width,
+    gridDimensions.height,
+    gridDimensions.offsetX,
+    actualRows,
+    actualCols,
+  ]);
 
   return (
     <Paper
@@ -145,7 +169,7 @@ export default function SimpleIsometricMapGrid({
             variant="h6"
             sx={{ fontWeight: 600, color: THEME_COLORS.text.primary }}
           >
-            Isometric Map ({GRID_CONFIG.rows}x{GRID_CONFIG.cols})
+            Isometric Map ({actualRows}x{actualCols})
           </Typography>
 
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
@@ -499,3 +523,13 @@ export default function SimpleIsometricMapGrid({
     </Paper>
   );
 }
+// Prevent unnecessary rerenders when unrelated parent state updates (e.g., solutionJson updates)
+export default (React as any).memo(
+  SimpleIsometricMapGrid,
+  (prev: SimpleIsometricMapGridProps, next: SimpleIsometricMapGridProps) => {
+    if (prev.selectedAsset !== next.selectedAsset) return false;
+    if (prev.onCellClick !== next.onCellClick) return false;
+    if (prev.mapGrid !== next.mapGrid) return false; // identity check
+    return true;
+  }
+);

@@ -1,7 +1,11 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { axiosClient } from "axiosClient/axiosClient";
-import { ROUTES_API_LESSON, ROUTES_API_LESSON_PROGRESS } from "constants/routesApiKeys";
+import {
+  ROUTES_API_LESSON,
+  ROUTES_API_LESSON_PROGRESS,
+} from "constants/routesApiKeys";
+import { extractApiErrorMessage } from "utils/errorHandler";
 import {
   LessonResult,
   LessonsResponse,
@@ -61,12 +65,9 @@ export const getLessonsThunk = createAsyncThunk<
 >("lesson/getAll", async (request, { rejectWithValue }) => {
   try {
     const response = await callApiWithRetry(() =>
-      axiosClient.get<ApiResponse<LessonsResponse>>(
-        ROUTES_API_LESSON.GET_ALL,
-        {
-          params: request,
-        }
-      )
+      axiosClient.get<ApiResponse<LessonsResponse>>(ROUTES_API_LESSON.GET_ALL, {
+        params: request,
+      })
     );
 
     if (response.data.errors || response.data.errorCode) {
@@ -121,36 +122,41 @@ export const getLessonsByCourseThunk = createAsyncThunk<
   LessonsResponse,
   { courseId: string; pageNumber?: number; pageSize?: number },
   { rejectValue: string }
->("lesson/getByCourse", async ({ courseId, pageNumber = 1, pageSize = 50 }, { rejectWithValue }) => {
-  try {
-    const response = await callApiWithRetry(() =>
-      axiosClient.get<ApiResponse<LessonsResponse>>(
-        ROUTES_API_LESSON.BY_COURSE(courseId),
-        {
-          params: {
-            pageNumber,
-            pageSize,
-          },
-        }
-      )
-    );
+>(
+  "lesson/getByCourse",
+  async ({ courseId, pageNumber = 1, pageSize = 50 }, { rejectWithValue }) => {
+    try {
+      const response = await callApiWithRetry(() =>
+        axiosClient.get<ApiResponse<LessonsResponse>>(
+          ROUTES_API_LESSON.BY_COURSE(courseId),
+          {
+            params: {
+              pageNumber,
+              pageSize,
+            },
+          }
+        )
+      );
 
-    if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to fetch course lessons");
+      if (response.data.errors || response.data.errorCode) {
+        throw new Error(
+          response.data.message || "Failed to fetch course lessons"
+        );
+      }
+
+      if (!response.data.data) {
+        throw new Error("No lessons data received");
+      }
+
+      return response.data.data;
+    } catch (error: any) {
+      const err = error as AxiosError<ErrorResponse>;
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch course lessons"
+      );
     }
-
-    if (!response.data.data) {
-      throw new Error("No lessons data received");
-    }
-
-    return response.data.data;
-  } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch course lessons"
-    );
   }
-});
+);
 
 // Get lessons preview (for non-enrolled users)
 export const getLessonsPreviewThunk = createAsyncThunk<
@@ -169,7 +175,9 @@ export const getLessonsPreviewThunk = createAsyncThunk<
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to fetch lesson preview");
+      throw new Error(
+        response.data.message || "Failed to fetch lesson preview"
+      );
     }
 
     if (!response.data.data) {
@@ -279,23 +287,17 @@ export const restoreLessonThunk = createAsyncThunk<
 >("lesson/restore", async (id, { rejectWithValue }) => {
   try {
     const response = await callApiWithRetry(() =>
-      axiosClient.post<ApiResponse<LessonResult>>(ROUTES_API_LESSON.RESTORE(id))
+      axiosClient.post<LessonResult>(ROUTES_API_LESSON.RESTORE(id))
     );
 
-    if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to restore lesson");
-    }
-
-    if (!response.data.data) {
-      throw new Error("No lesson data received");
-    }
-
-    return response.data.data;
+    // API restore trả về trực tiếp LessonResult, không wrap trong ApiResponse
+    return response.data;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to restore lesson"
+    const errorMessage = extractApiErrorMessage(
+      error,
+      "Failed to restore lesson"
     );
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -316,7 +318,9 @@ export const getLessonProgressThunk = createAsyncThunk<
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to fetch lesson progress");
+      throw new Error(
+        response.data.message || "Failed to fetch lesson progress"
+      );
     }
 
     if (!response.data.data) {

@@ -30,8 +30,26 @@ interface TabPanelProps {
 
 function TabPanel({ children, value, index }: TabPanelProps) {
   return (
-    <Box hidden={value !== index} sx={{ pt: 0, mt: 0 }}>
-      {value === index && <Box sx={{ mt: 0 }}>{children}</Box>}
+    <Box
+      hidden={value !== index}
+      sx={{
+        pt: 0,
+        mt: 0,
+        width: "100%", // Fixed width
+        position: "relative", // Stable positioning
+      }}
+    >
+      {value === index && (
+        <Box
+          sx={{
+            mt: 0,
+            width: "100%", // Fixed width
+            position: "relative", // Stable positioning
+          }}
+        >
+          {children}
+        </Box>
+      )}
     </Box>
   );
 }
@@ -93,6 +111,8 @@ export default function WorkspaceSection({
             }`,
             bgcolor: isSelected ? `${THEME_COLORS.primary}15` : "transparent",
             transition: "all 0.15s",
+            position: "relative", // Stable positioning
+            flexShrink: 0, // Prevent shrinking
             "&:hover": {
               bgcolor: isSelected
                 ? `${THEME_COLORS.primary}20`
@@ -136,13 +156,20 @@ export default function WorkspaceSection({
     <Paper
       sx={{
         p: 1.5,
-        height: "100%",
+        minHeight: "100%",
+        maxHeight: "100%",
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
         bgcolor: THEME_COLORS.surface,
         borderRadius: 2,
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        position: "relative", // Ensure stable positioning
+        // Fixed padding to prevent layout shift
+        paddingLeft: "12px !important",
+        paddingRight: "12px !important",
+        paddingTop: "12px !important",
+        paddingBottom: "12px !important",
       }}
     >
       <Typography
@@ -152,19 +179,40 @@ export default function WorkspaceSection({
           fontWeight: 600,
           color: THEME_COLORS.text.primary,
           fontSize: "0.95rem",
+          height: 24, // Fixed height
+          flexShrink: 0, // Prevent shrinking
+          display: "flex",
+          alignItems: "center",
+          // Fixed margin to prevent layout shift
+          marginBottom: "8px !important",
+          marginTop: "0px !important",
+          marginLeft: "0px !important",
+          marginRight: "0px !important",
         }}
       >
         Workspace
       </Typography>
 
-      {/* Search Field */}
+      {/* Search Field - Fixed height to prevent layout shift */}
       <TextField
         fullWidth
         placeholder="Search assets..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         size="small"
-        sx={{ mb: 1 }}
+        sx={{
+          mb: 1,
+          height: 40, // Fixed height
+          flexShrink: 0, // Prevent shrinking
+          // Fixed margin to prevent layout shift
+          marginBottom: "8px !important",
+          marginTop: "0px !important",
+          marginLeft: "0px !important",
+          marginRight: "0px !important",
+          "& .MuiInputBase-root": {
+            height: 40, // Fixed height for input
+          },
+        }}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
@@ -176,27 +224,51 @@ export default function WorkspaceSection({
         }}
       />
 
-      <Divider sx={{ mb: 0.5 }} />
+      <Divider
+        sx={{
+          mb: 0.5,
+          height: 1, // Fixed height
+          flexShrink: 0, // Prevent shrinking
+          // Fixed margin to prevent layout shift
+          marginBottom: "4px !important",
+          marginTop: "0px !important",
+          marginLeft: "0px !important",
+          marginRight: "0px !important",
+        }}
+      />
 
-      {/* Asset Categories Tabs */}
+      {/* Asset Categories Tabs - Fixed height to prevent layout shift */}
       <Tabs
         value={tabValue}
         onChange={handleTabChange}
-        variant="scrollable"
-        scrollButtons="auto"
+        variant="standard"
         sx={{
           borderBottom: 1,
           borderColor: "divider",
           mb: 0.5,
-          minHeight: 32,
+          height: 40, // Fixed height instead of minHeight
+          flexShrink: 0, // Prevent shrinking
+          // No scrollbar needed with standard variant
+          "& .MuiTabs-root": {
+            height: 40, // Fixed height for root
+          },
+          "& .MuiTabs-flexContainer": {
+            height: 40, // Fixed height for flex container
+            alignItems: "center",
+          },
           "& .MuiTab-root": {
             color: THEME_COLORS.text.secondary,
             fontSize: "0.75rem",
-            minHeight: 32,
+            height: 40, // Fixed height for tabs
+            minHeight: 40,
             py: 0.25,
             px: 1,
             textTransform: "none",
             whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0, // Prevent shrinking
           },
           "& .Mui-selected": {
             color: THEME_COLORS.primary,
@@ -205,11 +277,7 @@ export default function WorkspaceSection({
             backgroundColor: THEME_COLORS.primary,
             height: 2,
           },
-          "& .MuiTabs-scrollButtons": {
-            "&.Mui-disabled": {
-              opacity: 0.3,
-            },
-          },
+          // No scroll buttons needed with standard variant
         }}
       >
         <Tab label="Robot" />
@@ -217,8 +285,22 @@ export default function WorkspaceSection({
         <Tab label="Tools" />
       </Tabs>
 
-      {/* Scrollable content area */}
-      <Box sx={{ flexGrow: 1, overflow: "auto", pr: 1, mt: 0 }}>
+      {/* Content area - No scroll needed */}
+      <Box
+        sx={{
+          flex: "1 1 0",
+          minHeight: 0, // Allow flex shrinking
+          overflow: "hidden", // Remove scroll completely
+          pr: 1,
+          mt: 0,
+          position: "relative", // Stable positioning
+          // Fixed padding to prevent layout shift
+          paddingRight: "8px !important",
+          paddingLeft: "0px !important",
+          paddingTop: "0px !important",
+          paddingBottom: "0px !important",
+        }}
+      >
         {/* Robot Tab */}
         <TabPanel value={tabValue} index={0}>
           <Box
@@ -226,6 +308,8 @@ export default function WorkspaceSection({
               display: "grid",
               gridTemplateColumns: "repeat(2, 1fr)",
               gap: 0.5,
+              width: "100%", // Fixed width
+              position: "relative", // Stable positioning
             }}
           >
             {filterAssets(getAssetsByCategory("robot")).map(renderAssetButton)}
@@ -239,6 +323,8 @@ export default function WorkspaceSection({
               display: "grid",
               gridTemplateColumns: "repeat(2, 1fr)",
               gap: 0.5,
+              width: "100%", // Fixed width
+              position: "relative", // Stable positioning
             }}
           >
             {filterAssets(getAssetsByCategory("item")).map(renderAssetButton)}
@@ -252,6 +338,8 @@ export default function WorkspaceSection({
               display: "grid",
               gridTemplateColumns: "repeat(2, 1fr)",
               gap: 0.5,
+              width: "100%", // Fixed width
+              position: "relative", // Stable positioning
             }}
           >
             {filterAssets(

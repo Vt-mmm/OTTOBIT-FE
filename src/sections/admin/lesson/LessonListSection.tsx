@@ -14,7 +14,6 @@ import {
   Pagination,
   Snackbar,
   Alert,
-  Stack,
   TextField,
   Typography,
   Chip,
@@ -22,14 +21,21 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  InputAdornment,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import RestoreIcon from "@mui/icons-material/Restore";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import SearchIcon from "@mui/icons-material/Search";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
-import { getLessons, deleteLesson } from "../../../redux/lesson/lessonSlice";
+import {
+  getLessons,
+  deleteLesson,
+  restoreLesson,
+} from "../../../redux/lesson/lessonSlice";
 import { getCourses } from "../../../redux/course/courseSlice";
 import { LessonResult } from "../../../common/@types/lesson";
 
@@ -39,75 +45,190 @@ interface Props {
   onViewDetails: (lesson: LessonResult) => void;
 }
 
-export default function LessonListSection({ onCreateNew, onEditLesson, onViewDetails }: Props) {
+export default function LessonListSection({
+  onCreateNew,
+  onEditLesson,
+  onViewDetails,
+}: Props) {
   const dispatch = useAppDispatch();
   const { data, isLoading, error } = useAppSelector((s) => s.lesson.lessons);
   const { data: coursesData } = useAppSelector((s) => s.course.courses);
 
-  const [query, setQuery] = useState({ pageNumber: 1, pageSize: 12, searchTerm: "", courseId: "" });
+  const [searchTerm, setSearchTerm] = useState(""); // Input state
+  const [committedSearch, setCommittedSearch] = useState(""); // Actual search term sent to API
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
+  const [totalPages, setTotalPages] = useState(1);
+  const [courseId, setCourseId] = useState("");
+  const [sortDirection, setSortDirection] = useState(1); // 0 = oldest first, 1 = newest first (default)
   const [confirmDelete, setConfirmDelete] = useState<LessonResult | null>(null);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({ 
-    open: false, 
-    message: "", 
-    severity: "success" 
+  const [confirmRestore, setConfirmRestore] = useState<LessonResult | null>(
+    null
+  );
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({
+    open: false,
+    message: "",
+    severity: "success",
   });
 
   useEffect(() => {
-    dispatch(getLessons(query as any));
+    dispatch(
+      getLessons({
+        searchTerm: committedSearch || undefined,
+        pageNumber: page,
+        pageSize,
+        courseId: courseId || undefined,
+        includeDeleted: true,
+        sortBy: 1, // Mặc định sortBy = 1
+        sortDirection, // 0 = oldest first, 1 = newest first (default)
+      })
+    );
     dispatch(getCourses({ pageSize: 100 } as any));
-  }, [dispatch, query.pageNumber, query.pageSize, query.searchTerm, query.courseId]);
+  }, [dispatch, committedSearch, page, pageSize, courseId, sortDirection]);
+
+  useEffect(() => {
+    const meta = data;
+    if (meta?.totalPages) setTotalPages(meta.totalPages);
+    else if (meta?.total && meta?.size)
+      setTotalPages(Math.max(1, Math.ceil(meta.total / meta.size)));
+  }, [data]);
 
   const items = data?.items || [];
-  const totalPages = data?.totalPages || 1;
   const courses = coursesData?.items || [];
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const triggerSearch = () => {
+    setCommittedSearch(searchTerm.trim());
+    setPage(1);
+  };
 
   const handleDelete = async () => {
     if (!confirmDelete) return;
     try {
       await dispatch(deleteLesson(confirmDelete.id)).unwrap();
-      setSnackbar({ open: true, message: "Xóa bài học thành công", severity: "success" });
+      setSnackbar({
+        open: true,
+        message: "Xóa bài học thành công",
+        severity: "success",
+      });
     } catch (e: any) {
-      setSnackbar({ open: true, message: e?.message || "Không thể xóa bài học", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: e?.message || "Không thể xóa bài học",
+        severity: "error",
+      });
     } finally {
       setConfirmDelete(null);
     }
   };
 
+  const handleRestore = async () => {
+    if (!confirmRestore) return;
+    try {
+      await dispatch(restoreLesson(confirmRestore.id)).unwrap();
+      setSnackbar({
+        open: true,
+        message: "Khôi phục bài học thành công",
+        severity: "success",
+      });
+    } catch (e: any) {
+      setSnackbar({
+        open: true,
+        message: e?.message || "Không thể khôi phục bài học",
+        severity: "error",
+      });
+    } finally {
+      setConfirmRestore(null);
+    }
+  };
+
   return (
     <Box>
-      <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ xs: "stretch", sm: "center" }} justifyContent="space-between" sx={{ mb: 2 }}>
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ flex: 1 }}>
-          <TextField
-            size="small"
-            placeholder="Tìm kiếm bài học..."
-            value={query.searchTerm}
-            onChange={(e) => setQuery((q) => ({ ...q, searchTerm: e.target.value, pageNumber: 1 }))}
-            sx={{ maxWidth: 300 }}
-          />
-          <FormControl size="small" sx={{ minWidth: 200 }}>
-            <InputLabel>Khóa học</InputLabel>
-            <Select
-              value={query.courseId}
-              label="Khóa học"
-              onChange={(e) => setQuery((q) => ({ ...q, courseId: e.target.value, pageNumber: 1 }))}
+      {/* Search and Header */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              alignItems: "center",
+              flexWrap: { xs: "wrap", sm: "nowrap" },
+            }}
+          >
+            <TextField
+              fullWidth
+              placeholder="Tìm kiếm bài học theo tên hoặc mô tả..."
+              value={searchTerm}
+              onChange={handleSearch}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") triggerSearch();
+              }}
+              sx={{
+                "& .MuiInputBase-root": { pr: 4 },
+              }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      edge="end"
+                      onClick={triggerSearch}
+                      sx={{ mr: 0 }}
+                    >
+                      <SearchIcon />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel>Khóa học</InputLabel>
+              <Select
+                value={courseId}
+                label="Khóa học"
+                onChange={(e) => setCourseId(e.target.value)}
+              >
+                <MenuItem value="">Tất cả khóa học</MenuItem>
+                {courses.map((course) => (
+                  <MenuItem key={course.id} value={course.id}>
+                    {course.title}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel>Sắp xếp</InputLabel>
+              <Select
+                label="Sắp xếp"
+                value={sortDirection}
+                onChange={(e) => setSortDirection(Number(e.target.value))}
+              >
+                <MenuItem value={0}>Cũ nhất trước</MenuItem>
+                <MenuItem value={1}>Mới nhất trước</MenuItem>
+              </Select>
+            </FormControl>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => onCreateNew(courseId)}
+              sx={{
+                flexShrink: 0,
+                whiteSpace: "nowrap",
+                minWidth: "auto",
+              }}
             >
-              <MenuItem value="">Tất cả khóa học</MenuItem>
-              {courses.map((course) => (
-                <MenuItem key={course.id} value={course.id}>
-                  {course.title}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Stack>
-        <Button 
-          variant="contained" 
-          startIcon={<AddIcon />} 
-          onClick={() => onCreateNew(query.courseId)}
-        >
-          Tạo bài học
-        </Button>
-      </Stack>
+              Tạo bài học
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
 
       {isLoading ? (
         <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
@@ -121,78 +242,226 @@ export default function LessonListSection({ onCreateNew, onEditLesson, onViewDet
         <Grid container spacing={2}>
           {items.map((lesson) => (
             <Grid item xs={12} md={6} lg={4} key={lesson.id}>
-              <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+              <Card
+                sx={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  opacity: lesson.isDeleted ? 0.6 : 1,
+                  border: lesson.isDeleted
+                    ? "2px dashed #f44336"
+                    : "1px solid #e0e0e0",
+                }}
+              >
                 <CardContent sx={{ flex: 1 }}>
-                  <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2 }}>
-                    <Chip
-                      label={`Bài ${lesson.order}`}
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                    />
-                    <Chip
-                      label={lesson.courseTitle || "Không xác định"}
-                      size="small"
-                      variant="outlined"
-                    />
-                  </Stack>
-                  
-                  <Typography variant="h6" sx={{ mb: 1 }}>
-                    {lesson.title}
-                  </Typography>
-                  
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    {lesson.content && lesson.content.length > 100 
-                      ? `${lesson.content.substring(0, 100)}...` 
-                      : lesson.content || "Chưa có nội dung"}
-                  </Typography>
-                  
-                  <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-                    <AccessTimeIcon fontSize="small" color="action" />
-                    <Typography variant="body2" color="text.secondary">
-                      {lesson.durationInMinutes} phút
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      mb: 2,
+                      gap: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      component="h2"
+                      noWrap
+                      sx={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        display: "block",
+                        maxWidth: "100%",
+                      }}
+                    >
+                      {lesson.title}
                     </Typography>
-                  </Stack>
+                    {lesson.isDeleted && (
+                      <Chip
+                        size="small"
+                        label="Deleted"
+                        color="error"
+                        variant="outlined"
+                      />
+                    )}
+                  </Box>
 
-                  <Stack direction="row" spacing={1}>
-                    <Button size="small" variant="outlined" startIcon={<VisibilityIcon />} onClick={() => onViewDetails(lesson)}>
-                      Chi tiết
-                    </Button>
-                    <Button size="small" variant="contained" startIcon={<EditIcon />} onClick={() => onEditLesson(lesson)}>
-                      Sửa
-                    </Button>
-                    <IconButton color="error" onClick={() => setConfirmDelete(lesson)}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      mb: 2,
+                      height: 40,
+                      overflow: "hidden",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      wordBreak: "break-word",
+                    }}
+                    title={lesson.content || "Chưa có nội dung"}
+                  >
+                    {lesson.content || "Chưa có nội dung"}
+                  </Typography>
+
+                  {/* Course and Order Info */}
+                  <Box sx={{ mb: 2 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.5,
+                        mb: 0.5,
+                      }}
+                    >
+                      <Chip
+                        label={`Bài ${lesson.order}`}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                      <Chip
+                        label={lesson.courseTitle || "Không xác định"}
+                        size="small"
+                        variant="outlined"
+                      />
+                    </Box>
+
+                    {/* Duration */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.5,
+                      }}
+                    >
+                      <AccessTimeIcon
+                        sx={{ fontSize: 16, color: "text.secondary" }}
+                      />
+                      <Typography variant="caption" color="text.secondary">
+                        {lesson.durationInMinutes} phút
+                      </Typography>
+                    </Box>
+                  </Box>
+                </CardContent>
+
+                {/* Actions */}
+                <Box
+                  sx={{
+                    p: 1,
+                    pt: 0,
+                    display: "flex",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <IconButton
+                    size="small"
+                    onClick={() => onViewDetails(lesson)}
+                    title="Xem chi tiết"
+                  >
+                    <VisibilityIcon />
+                  </IconButton>
+                  {!lesson.isDeleted && (
+                    <IconButton
+                      size="small"
+                      onClick={() => onEditLesson(lesson)}
+                      title="Chỉnh sửa"
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  )}
+                  {lesson.isDeleted ? (
+                    <IconButton
+                      size="small"
+                      onClick={() => setConfirmRestore(lesson)}
+                      color="success"
+                      title="Khôi phục"
+                    >
+                      <RestoreIcon />
+                    </IconButton>
+                  ) : (
+                    <IconButton
+                      size="small"
+                      onClick={() => setConfirmDelete(lesson)}
+                      color="error"
+                      title="Xóa"
+                    >
                       <DeleteIcon />
                     </IconButton>
-                  </Stack>
-                </CardContent>
+                  )}
+                </Box>
               </Card>
             </Grid>
           ))}
         </Grid>
       )}
 
+      {/* Pagination */}
       {totalPages > 1 && (
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            p: 2,
+          }}
+        >
+          <FormControl size="small">
+            <InputLabel>Page size</InputLabel>
+            <Select
+              label="Page size"
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              sx={{ minWidth: 120 }}
+            >
+              {[6, 12, 24, 48].map((n) => (
+                <MenuItem key={n} value={n}>
+                  {n}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <Pagination
             count={totalPages}
-            page={query.pageNumber}
-            onChange={(_, p) => setQuery((q) => ({ ...q, pageNumber: p }))}
+            page={page}
+            onChange={(_, v) => setPage(v)}
+            shape="rounded"
             color="primary"
           />
         </Box>
       )}
 
+      {/* Delete Confirm Dialog */}
       <Dialog open={!!confirmDelete} onClose={() => setConfirmDelete(null)}>
         <DialogTitle>Xác nhận xóa</DialogTitle>
-        <DialogContent>Bạn có chắc muốn xóa bài học "{confirmDelete?.title}"?</DialogContent>
+        <DialogContent>
+          Bạn có chắc muốn xóa bài học "{confirmDelete?.title}"?
+        </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmDelete(null)}>Hủy</Button>
-          <Button color="error" onClick={handleDelete}>Xóa</Button>
+          <Button color="error" onClick={handleDelete}>
+            Xóa
+          </Button>
         </DialogActions>
       </Dialog>
 
-      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar((s) => ({ ...s, open: false }))}>
+      {/* Restore Confirm Dialog */}
+      <Dialog open={!!confirmRestore} onClose={() => setConfirmRestore(null)}>
+        <DialogTitle>Xác nhận khôi phục</DialogTitle>
+        <DialogContent>
+          Bạn có chắc muốn khôi phục bài học "{confirmRestore?.title}"?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmRestore(null)}>Hủy</Button>
+          <Button color="success" onClick={handleRestore}>
+            Khôi phục
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+      >
         <Alert severity={snackbar.severity} sx={{ width: "100%" }}>
           {snackbar.message}
         </Alert>

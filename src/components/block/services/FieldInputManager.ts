@@ -29,7 +29,6 @@ class FieldInputManager {
     });
 
     this.isInitialized = true;
-    console.log("[FieldInputManager] Initialized (minimal mode)");
   }
 
   /**
@@ -72,9 +71,6 @@ class FieldInputManager {
         ) {
           try {
             overlay.parentNode.removeChild(overlay);
-            console.log(
-              `[FieldInputManager] Removed stuck overlay: ${selector}`
-            );
           } catch (error) {
             // Element đã bị remove rồi, bỏ qua
           }
@@ -144,8 +140,6 @@ class FieldInputManager {
    * Dispose of all resources
    */
   public dispose(): void {
-    console.log("[FieldInputManager] Disposing");
-
     // Force cleanup
     this.forceCleanupAll();
 
@@ -154,7 +148,7 @@ class FieldInputManager {
       try {
         callback();
       } catch (error) {
-        console.warn("[FieldInputManager] Error in cleanup callback:", error);
+        // Silent fail
       }
     });
 

@@ -16,6 +16,10 @@ import {
   Grid,
   CircularProgress,
   Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import Pagination from "@mui/material/Pagination";
 import {
@@ -30,6 +34,7 @@ import {
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getMaps, deleteMap } from "../../../redux/map/mapSlice";
 import { axiosClient } from "axiosClient";
+import { extractApiErrorMessage } from "utils/errorHandler";
 import {
   MapResult as BackendMapResult,
   MapSortBy,
@@ -62,7 +67,9 @@ export default function MapListSection() {
     null
   );
   const [sortBy] = useState<MapSortBy>(MapSortBy.CreatedAt);
-  const [sortDirection] = useState<SortDirection>(SortDirection.Descending);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(
+    SortDirection.Descending
+  );
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(12);
 
@@ -112,8 +119,12 @@ export default function MapListSection() {
         : null;
       setViewMapJson(json);
       setViewDialogOpen(true);
-    } catch (e) {
-      showToast("Failed to load map for preview.", "error");
+    } catch (e: any) {
+      const errorMessage = extractApiErrorMessage(
+        e,
+        "Failed to load map for preview."
+      );
+      showToast(errorMessage, "error");
     }
   };
 
@@ -132,8 +143,9 @@ export default function MapListSection() {
         } else {
           showToast(action?.payload || "Failed to delete map.", "error");
         }
-      } catch (e) {
-        showToast("Failed to delete map.", "error");
+      } catch (e: any) {
+        const errorMessage = extractApiErrorMessage(e, "Failed to delete map.");
+        showToast(errorMessage, "error");
       } finally {
         setDeleteDialogOpen(false);
         setMapToDelete(null);
@@ -179,61 +191,82 @@ export default function MapListSection() {
     <Box sx={{ p: 3 }}>
       <Toast />
       {/* Header */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 3,
-        }}
-      >
-        <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-          🗺️ Maps Management
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleCreateMap}
-          sx={{ minWidth: 120 }}
-        >
-          Create Map
-        </Button>
-      </Box>
+      <Typography variant="h4" sx={{ fontWeight: "bold", mb: 3 }}>
+        🗺️ Maps Management
+      </Typography>
 
       {/* Search and Filters */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                placeholder="Search maps by title or description..."
-                value={searchTerm}
-                onChange={handleSearchInput}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") triggerSearch();
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              alignItems: "center",
+              flexWrap: { xs: "wrap", sm: "nowrap" },
+            }}
+          >
+            <TextField
+              fullWidth
+              placeholder="Search maps by title or description..."
+              value={searchTerm}
+              onChange={handleSearchInput}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") triggerSearch();
+              }}
+              sx={{
+                "& .MuiInputBase-root": { pr: 4 },
+              }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      edge="end"
+                      onClick={triggerSearch}
+                      sx={{ mr: 0 }}
+                    >
+                      <SearchIcon />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel>Sắp xếp</InputLabel>
+              <Select
+                label="Sắp xếp"
+                value={sortDirection}
+                onChange={(e: any) => {
+                  const value = Number(e.target.value);
+                  setSortDirection(
+                    value === 0
+                      ? SortDirection.Ascending
+                      : SortDirection.Descending
+                  );
                 }}
-                sx={{
-                  "& .MuiInputBase-root": { pr: 4 },
-                }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        size="small"
-                        edge="end"
-                        onClick={triggerSearch}
-                        sx={{ mr: 0 }}
-                      >
-                        <SearchIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            {/* Removed top dropdowns (Sort By, Order, Page Size) as requested */}
-          </Grid>
+              >
+                <MenuItem value={SortDirection.Ascending}>
+                  Cũ nhất trước
+                </MenuItem>
+                <MenuItem value={SortDirection.Descending}>
+                  Mới nhất trước
+                </MenuItem>
+              </Select>
+            </FormControl>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleCreateMap}
+              sx={{
+                flexShrink: 0,
+                whiteSpace: "nowrap",
+                minWidth: "auto",
+              }}
+            >
+              Create Map
+            </Button>
+          </Box>
         </CardContent>
       </Card>
 

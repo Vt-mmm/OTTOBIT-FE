@@ -7,6 +7,7 @@ export interface Course {
   imageUrl: string;
   createdAt: string;
   updatedAt: string;
+  isDeleted?: boolean;
   lessonsCount?: number;
   enrollmentsCount?: number;
   createdByName?: string;
@@ -31,15 +32,17 @@ export interface GetCoursesRequest {
   includeDeleted?: boolean;
   pageNumber?: number;
   pageSize?: number;
+  sortBy?: number;
+  sortDirection?: number;
 }
 
 // Response types
 export interface CourseResult extends Course {}
 
 export interface CoursesResponse {
-  items: CourseResult[];  // Backend trả về 'items' thay vì 'data'
-  page: number;           // Backend trả về 'page' thay vì 'pageNumber'
-  size: number;           // Backend trả về 'size' thay vì 'pageSize'
-  total: number;          // Backend trả về 'total' thay vì 'totalCount'
+  items: CourseResult[]; // Backend trả về 'items' thay vì 'data'
+  page: number; // Backend trả về 'page' thay vì 'pageNumber'
+  size: number; // Backend trả về 'size' thay vì 'pageSize'
+  total: number; // Backend trả về 'total' thay vì 'totalCount'
   totalPages: number;
 }

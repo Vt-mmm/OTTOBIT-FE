@@ -6,6 +6,7 @@ import {
   Tabs,
   Tab,
   InputAdornment,
+  Divider,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import CropFreeIcon from "@mui/icons-material/CropFree";
@@ -109,8 +110,9 @@ export default function WorkspaceSectionLite({
     <Paper
       sx={{
         p: 1.25,
-        height: "100%",
-        overflow: "hidden",
+        minHeight: "100%",
+        maxHeight: "100%",
+        overflow: "auto", // Allow scrolling if needed
         display: "flex",
         flexDirection: "column",
         bgcolor: THEME_COLORS.surface,
@@ -120,7 +122,16 @@ export default function WorkspaceSectionLite({
     >
       <Typography
         variant="h6"
-        sx={{ mb: 1, fontWeight: 600, fontSize: "0.95rem" }}
+        sx={{
+          mb: 1,
+          fontWeight: 600,
+          color: THEME_COLORS.text.primary,
+          fontSize: "0.95rem",
+          height: 24, // Fixed height like Challenge Designer
+          flexShrink: 0, // Prevent shrinking
+          display: "flex",
+          alignItems: "center",
+        }}
       >
         Workspace
       </Typography>
@@ -131,7 +142,14 @@ export default function WorkspaceSectionLite({
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         size="small"
-        sx={{ mb: 0.25 }}
+        sx={{
+          mb: 1,
+          height: 40, // Fixed height like Challenge Designer
+          flexShrink: 0, // Prevent shrinking
+          "& .MuiInputBase-root": {
+            height: 40, // Fixed height for input
+          },
+        }}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
@@ -143,24 +161,59 @@ export default function WorkspaceSectionLite({
         }}
       />
 
+      <Divider
+        sx={{
+          mb: 0.5,
+          height: 1, // Fixed height
+          flexShrink: 0, // Prevent shrinking
+        }}
+      />
+
       <Tabs
         value={tabValue}
         onChange={(_, v) => setTabValue(v)}
-        variant="fullWidth"
+        variant="standard"
         sx={{
           borderBottom: 1,
           borderColor: "divider",
-          minHeight: 30,
-          mb: 0.25,
-          "& .MuiTab-root": { minHeight: 30, py: 0.25, fontSize: "0.8rem" },
-          "& .MuiTabs-indicator": { height: 2, bgcolor: THEME_COLORS.primary },
+          mb: 0.5,
+          height: 40, // Fixed height like Challenge Designer
+          flexShrink: 0, // Prevent shrinking
+          "& .MuiTabs-root": {
+            height: 40, // Fixed height for root
+          },
+          "& .MuiTabs-flexContainer": {
+            height: 40, // Fixed height for flex container
+            alignItems: "center",
+          },
+          "& .MuiTab-root": {
+            color: THEME_COLORS.text.secondary,
+            fontSize: "0.75rem", // Same as Challenge Designer
+            height: 40, // Fixed height for tabs
+            minHeight: 40,
+            py: 0.25,
+            px: 1,
+            textTransform: "none",
+            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0, // Prevent shrinking
+          },
+          "& .Mui-selected": {
+            color: THEME_COLORS.primary,
+          },
+          "& .MuiTabs-indicator": {
+            backgroundColor: THEME_COLORS.primary,
+            height: 2,
+          },
         }}
       >
         <Tab label="Terrain" />
         <Tab label="Tools" />
       </Tabs>
 
-      <Box sx={{ flexGrow: 1, overflow: "auto", pr: 1 }}>
+      <Box sx={{ flexGrow: 1, overflow: "visible", pr: 1 }}>
         {tabValue === 0 && (
           <AssetGrid assets={filterAssets(getAssetsByCategory("terrain"))} />
         )}
