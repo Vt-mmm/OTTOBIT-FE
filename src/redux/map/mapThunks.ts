@@ -9,6 +9,7 @@ import {
   UpdateMapRequest,
   GetMapsRequest,
 } from "common/@types/map";
+import { extractApiErrorMessage } from "utils/errorHandler";
 
 // API Response wrapper interface
 interface ApiResponse<T> {
@@ -55,16 +56,17 @@ export const getMapsThunk = createAsyncThunk<
 >("map/getAll", async (request, { rejectWithValue }) => {
   try {
     const response = await callApiWithRetry(() =>
-      axiosClient.get<ApiResponse<MapsResponse>>(
-        ROUTES_API_MAP.GET_ALL,
-        {
-          params: request,
-        }
-      )
+      axiosClient.get<ApiResponse<MapsResponse>>(ROUTES_API_MAP.GET_ALL, {
+        params: request,
+      })
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to fetch maps");
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to fetch maps"
+      );
+      throw new Error(errorMessage);
     }
 
     if (!response.data.data) {
@@ -73,10 +75,8 @@ export const getMapsThunk = createAsyncThunk<
 
     return response.data.data;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch maps"
-    );
+    const errorMessage = extractApiErrorMessage(error, "Failed to fetch maps");
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -88,13 +88,15 @@ export const getMapByIdThunk = createAsyncThunk<
 >("map/getById", async (id, { rejectWithValue }) => {
   try {
     const response = await callApiWithRetry(() =>
-      axiosClient.get<ApiResponse<MapResult>>(
-        ROUTES_API_MAP.GET_BY_ID(id)
-      )
+      axiosClient.get<ApiResponse<MapResult>>(ROUTES_API_MAP.GET_BY_ID(id))
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to fetch map");
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to fetch map"
+      );
+      throw new Error(errorMessage);
     }
 
     if (!response.data.data) {
@@ -103,10 +105,8 @@ export const getMapByIdThunk = createAsyncThunk<
 
     return response.data.data;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch map"
-    );
+    const errorMessage = extractApiErrorMessage(error, "Failed to fetch map");
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -118,14 +118,15 @@ export const createMapThunk = createAsyncThunk<
 >("map/create", async (mapData, { rejectWithValue }) => {
   try {
     const response = await callApiWithRetry(() =>
-      axiosClient.post<ApiResponse<MapResult>>(
-        ROUTES_API_MAP.CREATE,
-        mapData
-      )
+      axiosClient.post<ApiResponse<MapResult>>(ROUTES_API_MAP.CREATE, mapData)
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to create map");
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to create map"
+      );
+      throw new Error(errorMessage);
     }
 
     if (!response.data.data) {
@@ -134,10 +135,8 @@ export const createMapThunk = createAsyncThunk<
 
     return response.data.data;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to create map"
-    );
+    const errorMessage = extractApiErrorMessage(error, "Failed to create map");
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -149,14 +148,15 @@ export const updateMapThunk = createAsyncThunk<
 >("map/update", async ({ id, data }, { rejectWithValue }) => {
   try {
     const response = await callApiWithRetry(() =>
-      axiosClient.put<ApiResponse<MapResult>>(
-        ROUTES_API_MAP.UPDATE(id),
-        data
-      )
+      axiosClient.put<ApiResponse<MapResult>>(ROUTES_API_MAP.UPDATE(id), data)
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to update map");
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to update map"
+      );
+      throw new Error(errorMessage);
     }
 
     if (!response.data.data) {
@@ -165,10 +165,8 @@ export const updateMapThunk = createAsyncThunk<
 
     return response.data.data;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to update map"
-    );
+    const errorMessage = extractApiErrorMessage(error, "Failed to update map");
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -184,15 +182,17 @@ export const deleteMapThunk = createAsyncThunk<
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to delete map");
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to delete map"
+      );
+      throw new Error(errorMessage);
     }
 
     return id;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to delete map"
-    );
+    const errorMessage = extractApiErrorMessage(error, "Failed to delete map");
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -208,7 +208,11 @@ export const restoreMapThunk = createAsyncThunk<
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to restore map");
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to restore map"
+      );
+      throw new Error(errorMessage);
     }
 
     if (!response.data.data) {
@@ -217,9 +221,7 @@ export const restoreMapThunk = createAsyncThunk<
 
     return response.data.data;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to restore map"
-    );
+    const errorMessage = extractApiErrorMessage(error, "Failed to restore map");
+    return rejectWithValue(errorMessage);
   }
 });

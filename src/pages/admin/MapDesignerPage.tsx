@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import { axiosClient } from "axiosClient";
 import { useNotification } from "hooks/useNotification";
+import { extractApiErrorMessage } from "utils/errorHandler";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import AdminLayout from "layout/admin/AdminLayout";
@@ -385,7 +386,11 @@ export default function MapDesignerPage() {
       showToast("Map saved successfully.", "success");
     } catch (err: any) {
       console.error("[MapDesigner] Save map failed:", err);
-      showToast("Failed to save map. Please try again.", "error");
+      const errorMessage = extractApiErrorMessage(
+        err,
+        "Failed to save map. Please try again."
+      );
+      showToast(errorMessage, "error");
     }
   };
 

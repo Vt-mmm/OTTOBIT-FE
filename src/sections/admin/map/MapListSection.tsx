@@ -30,6 +30,7 @@ import {
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getMaps, deleteMap } from "../../../redux/map/mapSlice";
 import { axiosClient } from "axiosClient";
+import { extractApiErrorMessage } from "utils/errorHandler";
 import {
   MapResult as BackendMapResult,
   MapSortBy,
@@ -112,8 +113,12 @@ export default function MapListSection() {
         : null;
       setViewMapJson(json);
       setViewDialogOpen(true);
-    } catch (e) {
-      showToast("Failed to load map for preview.", "error");
+    } catch (e: any) {
+      const errorMessage = extractApiErrorMessage(
+        e,
+        "Failed to load map for preview."
+      );
+      showToast(errorMessage, "error");
     }
   };
 
@@ -132,8 +137,9 @@ export default function MapListSection() {
         } else {
           showToast(action?.payload || "Failed to delete map.", "error");
         }
-      } catch (e) {
-        showToast("Failed to delete map.", "error");
+      } catch (e: any) {
+        const errorMessage = extractApiErrorMessage(e, "Failed to delete map.");
+        showToast(errorMessage, "error");
       } finally {
         setDeleteDialogOpen(false);
         setMapToDelete(null);

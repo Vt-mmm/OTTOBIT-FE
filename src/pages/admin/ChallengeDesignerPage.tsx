@@ -27,6 +27,7 @@ import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import ThreeDRotationIcon from "@mui/icons-material/ThreeDRotation";
 import { axiosClient } from "axiosClient";
 import { ROUTES_API_CHALLENGE } from "constants/routesApiKeys";
+import { extractApiErrorMessage } from "utils/errorHandler";
 import MapPickerDialog from "sections/admin/map/MapPickerDialog";
 import BlocksWorkspace from "sections/studio/BlocksWorkspace";
 import { BlocklyToPhaserConverter } from "../../features/phaser/services/blocklyToPhaserConverter";
@@ -505,14 +506,11 @@ const MapDesignerPage = () => {
   };
 
   const handleCellClick = (row: number, col: number) => {
-    console.log("Cell clicked:", row, col, "selectedAsset:", selectedAsset);
-    console.log("Grid dimensions:", mapGrid.length, "x", mapGrid[0]?.length);
     const newGrid = [...mapGrid];
     const asset = MAP_ASSETS.find((a) => a.id === selectedAsset);
     const currentCell = newGrid[row][col];
 
     if (!asset) {
-      console.log("No asset found for:", selectedAsset);
       return;
     }
 
@@ -779,14 +777,17 @@ const MapDesignerPage = () => {
         showLocalToast(msg, variant as any);
       }
     } catch (e: any) {
-      const msg = "Failed to save challenge";
+      const errorMessage = extractApiErrorMessage(
+        e,
+        "Failed to save challenge"
+      );
       if ((window as any).Snackbar?.enqueueSnackbar) {
-        (window as any).Snackbar.enqueueSnackbar(msg, {
+        (window as any).Snackbar.enqueueSnackbar(errorMessage, {
           variant: "error",
           anchorOrigin: { vertical: "top", horizontal: "right" },
         });
       } else {
-        showLocalToast(msg, "error");
+        showLocalToast(errorMessage, "error");
       }
     }
   };
@@ -1217,50 +1218,6 @@ const MapDesignerPage = () => {
                           } as any;
                         })
                     );
-                  // Debug: Check final grid state
-                  console.log("Final grid state before setMapGrid:");
-                  for (let r = 0; r < newGrid.length; r++) {
-                    for (let c = 0; c < newGrid[r].length; c++) {
-                      if (newGrid[r][c].terrain || newGrid[r][c].object) {
-                        console.log(
-                          `Grid[${r}][${c}]: terrain=${newGrid[r][c].terrain}, object=${newGrid[r][c].object}`
-                        );
-                      }
-                    }
-                  }
-                  // Debug: Check final grid state
-                  console.log("Final grid state before setMapGrid:");
-                  for (let r = 0; r < newGrid.length; r++) {
-                    for (let c = 0; c < newGrid[r].length; c++) {
-                      if (newGrid[r][c].terrain || newGrid[r][c].object) {
-                        console.log(
-                          `Grid[${r}][${c}]: terrain=${newGrid[r][c].terrain}, object=${newGrid[r][c].object}`
-                        );
-                      }
-                    }
-                  }
-                  // Debug: Check final grid state
-                  console.log("Final grid state before setMapGrid:");
-                  for (let r = 0; r < newGrid.length; r++) {
-                    for (let c = 0; c < newGrid[r].length; c++) {
-                      if (newGrid[r][c].terrain || newGrid[r][c].object) {
-                        console.log(
-                          `Grid[${r}][${c}]: terrain=${newGrid[r][c].terrain}, object=${newGrid[r][c].object}`
-                        );
-                      }
-                    }
-                  }
-                  // Debug: Check final grid state
-                  console.log("Final grid state before setMapGrid:");
-                  for (let r = 0; r < newGrid.length; r++) {
-                    for (let c = 0; c < newGrid[r].length; c++) {
-                      if (newGrid[r][c].terrain || newGrid[r][c].object) {
-                        console.log(
-                          `Grid[${r}][${c}]: terrain=${newGrid[r][c].terrain}, object=${newGrid[r][c].object}`
-                        );
-                      }
-                    }
-                  }
                   setMapGrid(newGrid);
                   // Save terrain snapshot
                   terrainSnapshotRef.current = newGrid.map((r) =>
@@ -1343,15 +1300,18 @@ const MapDesignerPage = () => {
                 } else {
                   showLocalToast(msg, variant as any);
                 }
-              } catch (e) {
-                const msg = "Failed to save challenge";
+              } catch (e: any) {
+                const errorMessage = extractApiErrorMessage(
+                  e,
+                  "Failed to save challenge"
+                );
                 if ((window as any).Snackbar?.enqueueSnackbar) {
-                  (window as any).Snackbar.enqueueSnackbar(msg, {
+                  (window as any).Snackbar.enqueueSnackbar(errorMessage, {
                     variant: "error",
                     anchorOrigin: { vertical: "top", horizontal: "right" },
                   });
                 } else {
-                  showLocalToast(msg, "error");
+                  showLocalToast(errorMessage, "error");
                 }
               }
             }}

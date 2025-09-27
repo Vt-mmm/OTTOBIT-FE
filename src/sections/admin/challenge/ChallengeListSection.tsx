@@ -43,6 +43,7 @@ import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import Pagination from "@mui/material/Pagination";
 import { axiosClient } from "axiosClient";
+import { extractApiErrorMessage } from "utils/errorHandler";
 
 interface ChallengeListSectionProps {
   onCreateNew?: () => void;
@@ -113,14 +114,26 @@ export default function ChallengeListSection({
     try {
       await (axiosClient as any).delete(`/api/v1/challenges/admin/${id}`);
       refresh();
-    } catch {}
+    } catch (error: any) {
+      const errorMessage = extractApiErrorMessage(
+        error,
+        "Failed to delete challenge"
+      );
+      console.error("Delete challenge error:", errorMessage);
+    }
   };
 
   const handleRestore = async (id: string) => {
     try {
       await (axiosClient as any).post(`/api/v1/challenges/admin/${id}/restore`);
       refresh();
-    } catch {}
+    } catch (error: any) {
+      const errorMessage = extractApiErrorMessage(
+        error,
+        "Failed to restore challenge"
+      );
+      console.error("Restore challenge error:", errorMessage);
+    }
   };
 
   const handleRestoreConfirm = (id: string) => {

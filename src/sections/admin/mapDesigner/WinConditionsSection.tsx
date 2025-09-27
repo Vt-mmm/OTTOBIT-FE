@@ -19,6 +19,7 @@ import {
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
+import { createPortal } from "react-dom";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useNotification } from "hooks/useNotification";
 import { useRef, useState, useEffect } from "react";
@@ -245,6 +246,21 @@ export default function WinConditionsSection({
     col: number;
   } | null>(null);
 
+  // Custom tooltip state
+  const [tooltipState, setTooltipState] = useState<{
+    open: boolean;
+    content: string;
+    x: number;
+    y: number;
+  }>({
+    open: false,
+    content: "",
+    x: 0,
+    y: 0,
+  });
+
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Prefill Box victory from challengeJson (byType + description)
   useEffect(() => {
     try {
@@ -398,6 +414,65 @@ export default function WinConditionsSection({
       cancelled = true;
     };
   }, [lessonId, onLessonIdChange]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Custom tooltip handlers
+  const handleTooltipOpen = (content: string, event: React.MouseEvent) => {
+    // Clear any pending close timeout
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    setTooltipState({
+      open: true,
+      content,
+      x: rect.left + rect.width / 2,
+      y: rect.top - 10,
+    });
+  };
+
+  const handleTooltipClose = () => {
+    // Clear any pending timeout first
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+    }
+
+    // Set delay close to allow mouse to move to tooltip
+    closeTimeoutRef.current = setTimeout(() => {
+      setTooltipState((prev) => ({ ...prev, open: false }));
+      closeTimeoutRef.current = null;
+    }, 150);
+  };
+
+  const handleTooltipMouseEnter = () => {
+    // Clear close timeout when entering tooltip
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    // Keep tooltip open when hovering over it
+    setTooltipState((prev) => ({ ...prev, open: true }));
+  };
+
+  const handleTooltipMouseLeave = () => {
+    // Immediate close when leaving tooltip
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setTooltipState((prev) => ({ ...prev, open: false }));
+  };
+
   return (
     <Paper
       sx={{
@@ -490,30 +565,32 @@ export default function WinConditionsSection({
             }
             arrow
             placement="top-start"
-            PopperProps={{
-              style: { zIndex: 9999 },
-              modifiers: [
-                {
-                  name: "preventOverflow",
-                  enabled: true,
-                  options: {
-                    altBoundary: true,
-                    rootBoundary: "viewport",
-                    padding: 8,
+            slotProps={{
+              popper: {
+                style: { zIndex: 1400 },
+                modifiers: [
+                  {
+                    name: "preventOverflow",
+                    enabled: true,
+                    options: {
+                      altBoundary: true,
+                      rootBoundary: "viewport",
+                      padding: 8,
+                    },
                   },
-                },
-                {
-                  name: "flip",
-                  enabled: true,
-                  options: {
-                    fallbackPlacements: [
-                      "top-end",
-                      "bottom-start",
-                      "bottom-end",
-                    ],
+                  {
+                    name: "flip",
+                    enabled: true,
+                    options: {
+                      fallbackPlacements: [
+                        "top-end",
+                        "bottom-start",
+                        "bottom-end",
+                      ],
+                    },
                   },
-                },
-              ],
+                ],
+              },
             }}
           >
             <IconButton size="small" sx={{ color: "warning.main" }}>
@@ -608,6 +685,7 @@ export default function WinConditionsSection({
         onClose={() => setOpenChallenge(false)}
         fullWidth
         maxWidth="md"
+        sx={{ zIndex: 1300 }}
       >
         <DialogTitle
           sx={{
@@ -617,35 +695,20 @@ export default function WinConditionsSection({
           }}
         >
           Challenge Editor
-          <Tooltip
-            title={
-              <Box>
-                <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
-                  Spread Guide:
-                </Typography>
-                <Typography variant="body2">
-                  • Distance between items in the same tile
-                </Typography>
-                <Typography variant="body2">• 1 item: spread = 1</Typography>
-                <Typography variant="body2">
-                  • More than 2: spread = 1.2
-                </Typography>
-              </Box>
+          <IconButton
+            size="small"
+            aria-label="spread-help"
+            sx={{ color: THEME_COLORS.text.secondary }}
+            onMouseEnter={(e) =>
+              handleTooltipOpen(
+                "Spread Guide:\n• Distance between items in the same tile\n• 1 item: spread = 1\n• More than 2: spread = 1.2",
+                e
+              )
             }
-            placement="left"
-            arrow
-            PopperProps={{
-              style: { zIndex: 99999 },
-            }}
+            onMouseLeave={handleTooltipClose}
           >
-            <IconButton
-              size="small"
-              aria-label="spread-help"
-              sx={{ color: THEME_COLORS.text.secondary }}
-            >
-              <InfoOutlinedIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+            <InfoOutlinedIcon fontSize="small" />
+          </IconButton>
         </DialogTitle>
         <DialogContent dividers>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -919,18 +982,20 @@ export default function WinConditionsSection({
                     <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                       Victory
                     </Typography>
-                    <Tooltip
-                      title="Enter the number of batteries to collect for victory. Note: total required must be less than or equal to the number of batteries available on the map."
-                      placement="right"
+                    <IconButton
+                      size="small"
+                      aria-label="battery-victory-help"
+                      sx={{ color: THEME_COLORS.text.secondary }}
+                      onMouseEnter={(e) =>
+                        handleTooltipOpen(
+                          "Enter the number of batteries to collect for victory.\nNote: total required must be less than or equal to the number of batteries available on the map.",
+                          e
+                        )
+                      }
+                      onMouseLeave={handleTooltipClose}
                     >
-                      <IconButton
-                        size="small"
-                        aria-label="battery-victory-help"
-                        sx={{ color: THEME_COLORS.text.secondary }}
-                      >
-                        <InfoOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+                      <InfoOutlinedIcon fontSize="small" />
+                    </IconButton>
                   </Box>
                   <Box
                     sx={{
@@ -1166,18 +1231,20 @@ export default function WinConditionsSection({
                     <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                       Victory
                     </Typography>
-                    <Tooltip
-                      title="Add position and number of boxes to place for victory. Note: total number of boxes to place must be less than or equal to the available quantity."
-                      placement="right"
+                    <IconButton
+                      size="small"
+                      aria-label="victory-help"
+                      sx={{ color: THEME_COLORS.text.secondary }}
+                      onMouseEnter={(e) =>
+                        handleTooltipOpen(
+                          "Add position and number of boxes to place for victory.\nNote: total number of boxes to place must be less than or equal to the available quantity.",
+                          e
+                        )
+                      }
+                      onMouseLeave={handleTooltipClose}
                     >
-                      <IconButton
-                        size="small"
-                        aria-label="victory-help"
-                        sx={{ color: THEME_COLORS.text.secondary }}
-                      >
-                        <InfoOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+                      <InfoOutlinedIcon fontSize="small" />
+                    </IconButton>
                   </Box>
                   <Box
                     sx={{ display: "flex", flexDirection: "column", gap: 1 }}
@@ -1286,35 +1353,20 @@ export default function WinConditionsSection({
                 <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                   Constraints
                 </Typography>
-                <Tooltip
-                  title={
-                    <Box>
-                      <Typography
-                        variant="body2"
-                        sx={{ fontWeight: 600, mb: 0.5 }}
-                      >
-                        Constraints Guide:
-                      </Typography>
-                      <Typography variant="body2">
-                        • Select the cards that players must use to complete the
-                        level
-                      </Typography>
-                      <Typography variant="body2">
-                        • And the minimum number of cards players must use
-                      </Typography>
-                    </Box>
+                <IconButton
+                  size="small"
+                  aria-label="constraints-help"
+                  sx={{ color: THEME_COLORS.text.secondary }}
+                  onMouseEnter={(e) =>
+                    handleTooltipOpen(
+                      "Constraints Guide:\n• Select the cards that players must use to complete the level\n• And the minimum number of cards players must use",
+                      e
+                    )
                   }
-                  placement="top"
-                  arrow
+                  onMouseLeave={handleTooltipClose}
                 >
-                  <IconButton
-                    size="small"
-                    aria-label="constraints-help"
-                    sx={{ color: THEME_COLORS.text.secondary }}
-                  >
-                    <InfoOutlinedIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
+                  <InfoOutlinedIcon fontSize="small" />
+                </IconButton>
               </Box>
               <Box sx={{ mb: 2 }}>
                 <Typography
@@ -2092,6 +2144,57 @@ export default function WinConditionsSection({
       </Dialog>
       {/* Local notification container for this section */}
       <Toast />
+
+      {/* Custom Tooltip - Render outside Dialog using Portal */}
+      {tooltipState.open &&
+        createPortal(
+          <Box
+            onMouseEnter={handleTooltipMouseEnter}
+            onMouseLeave={handleTooltipMouseLeave}
+            sx={{
+              position: "fixed",
+              left: tooltipState.x,
+              top: tooltipState.y,
+              transform: "translateX(-50%)",
+              zIndex: 99999,
+              pointerEvents: "auto", // Enable pointer events for hover
+              maxWidth: 300,
+              bgcolor: "rgba(0, 0, 0, 0.9)",
+              color: "white",
+              borderRadius: 2,
+              p: 1.5,
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+              fontSize: "0.875rem",
+              lineHeight: 1.4,
+              whiteSpace: "pre-line",
+              opacity: 1,
+              transition: "all 0.2s ease-in-out",
+              animation: "tooltipFadeIn 0.2s ease-out",
+              "@keyframes tooltipFadeIn": {
+                "0%": {
+                  opacity: 0,
+                  transform: "translateX(-50%) translateY(-5px) scale(0.95)",
+                },
+                "100%": {
+                  opacity: 1,
+                  transform: "translateX(-50%) translateY(0) scale(1)",
+                },
+              },
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                top: "100%",
+                left: "50%",
+                transform: "translateX(-50%)",
+                border: "6px solid transparent",
+                borderTopColor: "rgba(0, 0, 0, 0.9)",
+              },
+            }}
+          >
+            {tooltipState.content}
+          </Box>,
+          document.body
+        )}
     </Paper>
   );
 }

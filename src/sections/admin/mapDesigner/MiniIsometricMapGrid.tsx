@@ -249,6 +249,9 @@ function MiniIsometricMapGrid({
                       component="img"
                       src={objectAsset.imagePath}
                       alt={objectAsset.name}
+                      title={`${objectAsset.name}${
+                        itemCount > 1 ? ` ×${itemCount}` : ""
+                      }`}
                       sx={{
                         position: "absolute",
                         top: -12,

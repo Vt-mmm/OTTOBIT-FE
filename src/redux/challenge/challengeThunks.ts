@@ -1,7 +1,10 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { axiosClient } from "axiosClient/axiosClient";
-import { ROUTES_API_CHALLENGE, ROUTES_API_CHALLENGE_PROCESS } from "constants/routesApiKeys";
+import {
+  ROUTES_API_CHALLENGE,
+  ROUTES_API_CHALLENGE_PROCESS,
+} from "constants/routesApiKeys";
 import {
   ChallengeResult,
   ChallengesResponse,
@@ -11,6 +14,7 @@ import {
   ChallengeProcessesResponse,
   GetChallengeProcessesRequest,
 } from "common/@types/challenge";
+import { extractApiErrorMessage } from "utils/errorHandler";
 
 // API Response wrapper interface
 interface ApiResponse<T> {
@@ -66,7 +70,11 @@ export const getChallengesThunk = createAsyncThunk<
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to fetch challenges");
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to fetch challenges"
+      );
+      throw new Error(errorMessage);
     }
 
     if (!response.data.data) {
@@ -75,10 +83,11 @@ export const getChallengesThunk = createAsyncThunk<
 
     return response.data.data;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch challenges"
+    const errorMessage = extractApiErrorMessage(
+      error,
+      "Failed to fetch challenges"
     );
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -96,7 +105,11 @@ export const getChallengeByIdThunk = createAsyncThunk<
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to fetch challenge");
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to fetch challenge"
+      );
+      throw new Error(errorMessage);
     }
 
     if (!response.data.data) {
@@ -104,7 +117,7 @@ export const getChallengeByIdThunk = createAsyncThunk<
     }
 
     // Debug: Log the complete challenge response
-    console.log('📊 Challenge API Response Debug:', {
+    console.log("📊 Challenge API Response Debug:", {
       challengeId: id,
       responseStatus: response.status,
       hasData: !!response.data.data,
@@ -112,16 +125,18 @@ export const getChallengeByIdThunk = createAsyncThunk<
       hasMapJson: !!(response.data.data as any)?.mapJson,
       mapJsonType: typeof (response.data.data as any)?.mapJson,
       mapJsonLength: (response.data.data as any)?.mapJson?.length || 0,
-      mapJsonSample: (response.data.data as any)?.mapJson?.substring(0, 100) || 'N/A',
-      fullResponse: response.data
+      mapJsonSample:
+        (response.data.data as any)?.mapJson?.substring(0, 100) || "N/A",
+      fullResponse: response.data,
     });
 
     return response.data.data;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch challenge"
+    const errorMessage = extractApiErrorMessage(
+      error,
+      "Failed to fetch challenge"
     );
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -130,73 +145,89 @@ export const getChallengesByLessonThunk = createAsyncThunk<
   ChallengesResponse,
   { lessonId: string; pageNumber?: number; pageSize?: number },
   { rejectValue: string }
->("challenge/getByLesson", async ({ lessonId, pageNumber = 1, pageSize = 50 }, { rejectWithValue }) => {
-  try {
-    const response = await callApiWithRetry(() =>
-      axiosClient.get<ApiResponse<ChallengesResponse>>(
-        ROUTES_API_CHALLENGE.BY_LESSON(lessonId),
-        {
-          params: {
-            pageNumber,
-            pageSize,
-          },
-        }
-      )
-    );
+>(
+  "challenge/getByLesson",
+  async ({ lessonId, pageNumber = 1, pageSize = 50 }, { rejectWithValue }) => {
+    try {
+      const response = await callApiWithRetry(() =>
+        axiosClient.get<ApiResponse<ChallengesResponse>>(
+          ROUTES_API_CHALLENGE.BY_LESSON(lessonId),
+          {
+            params: {
+              pageNumber,
+              pageSize,
+            },
+          }
+        )
+      );
 
-    if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to fetch lesson challenges");
+      if (response.data.errors || response.data.errorCode) {
+        const errorMessage = extractApiErrorMessage(
+          { response: { data: response.data } },
+          "Failed to fetch lesson challenges"
+        );
+        throw new Error(errorMessage);
+      }
+
+      if (!response.data.data) {
+        throw new Error("No challenges data received");
+      }
+
+      return response.data.data;
+    } catch (error: any) {
+      const errorMessage = extractApiErrorMessage(
+        error,
+        "Failed to fetch lesson challenges"
+      );
+      return rejectWithValue(errorMessage);
     }
-
-    if (!response.data.data) {
-      throw new Error("No challenges data received");
-    }
-
-    return response.data.data;
-  } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch lesson challenges"
-    );
   }
-});
+);
 
 // Get challenges by course ID (admin only)
 export const getChallengesByCourseThunk = createAsyncThunk<
   ChallengesResponse,
   { courseId: string; pageNumber?: number; pageSize?: number },
   { rejectValue: string }
->("challenge/getByCourse", async ({ courseId, pageNumber = 1, pageSize = 100 }, { rejectWithValue }) => {
-  try {
-    const response = await callApiWithRetry(() =>
-      axiosClient.get<ApiResponse<ChallengesResponse>>(
-        ROUTES_API_CHALLENGE.ADMIN_GET_ALL,
-        {
-          params: {
-            courseId,
-            pageNumber,
-            pageSize,
-          },
-        }
-      )
-    );
+>(
+  "challenge/getByCourse",
+  async ({ courseId, pageNumber = 1, pageSize = 100 }, { rejectWithValue }) => {
+    try {
+      const response = await callApiWithRetry(() =>
+        axiosClient.get<ApiResponse<ChallengesResponse>>(
+          ROUTES_API_CHALLENGE.ADMIN_GET_ALL,
+          {
+            params: {
+              courseId,
+              pageNumber,
+              pageSize,
+            },
+          }
+        )
+      );
 
-    if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to fetch course challenges");
+      if (response.data.errors || response.data.errorCode) {
+        const errorMessage = extractApiErrorMessage(
+          { response: { data: response.data } },
+          "Failed to fetch course challenges"
+        );
+        throw new Error(errorMessage);
+      }
+
+      if (!response.data.data) {
+        throw new Error("No challenges data received");
+      }
+
+      return response.data.data;
+    } catch (error: any) {
+      const errorMessage = extractApiErrorMessage(
+        error,
+        "Failed to fetch course challenges"
+      );
+      return rejectWithValue(errorMessage);
     }
-
-    if (!response.data.data) {
-      throw new Error("No challenges data received");
-    }
-
-    return response.data.data;
-  } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch course challenges"
-    );
   }
-});
+);
 
 // Create challenge
 export const createChallengeThunk = createAsyncThunk<
@@ -213,7 +244,11 @@ export const createChallengeThunk = createAsyncThunk<
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to create challenge");
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to create challenge"
+      );
+      throw new Error(errorMessage);
     }
 
     if (!response.data.data) {
@@ -222,10 +257,11 @@ export const createChallengeThunk = createAsyncThunk<
 
     return response.data.data;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to create challenge"
+    const errorMessage = extractApiErrorMessage(
+      error,
+      "Failed to create challenge"
     );
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -244,7 +280,11 @@ export const updateChallengeThunk = createAsyncThunk<
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to update challenge");
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to update challenge"
+      );
+      throw new Error(errorMessage);
     }
 
     if (!response.data.data) {
@@ -253,10 +293,11 @@ export const updateChallengeThunk = createAsyncThunk<
 
     return response.data.data;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to update challenge"
+    const errorMessage = extractApiErrorMessage(
+      error,
+      "Failed to update challenge"
     );
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -268,19 +309,26 @@ export const deleteChallengeThunk = createAsyncThunk<
 >("challenge/delete", async (id, { rejectWithValue }) => {
   try {
     const response = await callApiWithRetry(() =>
-      axiosClient.delete<ApiResponse<string>>(ROUTES_API_CHALLENGE.ADMIN_DELETE(id))
+      axiosClient.delete<ApiResponse<string>>(
+        ROUTES_API_CHALLENGE.ADMIN_DELETE(id)
+      )
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to delete challenge");
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to delete challenge"
+      );
+      throw new Error(errorMessage);
     }
 
     return id;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to delete challenge"
+    const errorMessage = extractApiErrorMessage(
+      error,
+      "Failed to delete challenge"
     );
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -292,11 +340,17 @@ export const restoreChallengeThunk = createAsyncThunk<
 >("challenge/restore", async (id, { rejectWithValue }) => {
   try {
     const response = await callApiWithRetry(() =>
-      axiosClient.post<ApiResponse<ChallengeResult>>(ROUTES_API_CHALLENGE.ADMIN_RESTORE(id))
+      axiosClient.post<ApiResponse<ChallengeResult>>(
+        ROUTES_API_CHALLENGE.ADMIN_RESTORE(id)
+      )
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to restore challenge");
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to restore challenge"
+      );
+      throw new Error(errorMessage);
     }
 
     if (!response.data.data) {
@@ -305,10 +359,11 @@ export const restoreChallengeThunk = createAsyncThunk<
 
     return response.data.data;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to restore challenge"
+    const errorMessage = extractApiErrorMessage(
+      error,
+      "Failed to restore challenge"
     );
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -329,7 +384,11 @@ export const getChallengeProcessesThunk = createAsyncThunk<
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to fetch challenge processes");
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to fetch challenge processes"
+      );
+      throw new Error(errorMessage);
     }
 
     if (!response.data.data) {
@@ -338,9 +397,10 @@ export const getChallengeProcessesThunk = createAsyncThunk<
 
     return response.data.data;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch challenge processes"
+    const errorMessage = extractApiErrorMessage(
+      error,
+      "Failed to fetch challenge processes"
     );
+    return rejectWithValue(errorMessage);
   }
 });
