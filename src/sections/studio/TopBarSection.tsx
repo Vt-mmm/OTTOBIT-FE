@@ -34,6 +34,7 @@ import {
   Usb as UsbIcon,
   ArrowBack as BackIcon,
   Lock as LockIcon,
+  TipsAndUpdates as HintIcon,
 } from "@mui/icons-material";
 import { usePhaserContext } from "../../features/phaser/context/PhaserContext";
 import { useNotification } from "hooks/useNotification";
@@ -50,6 +51,7 @@ import {
 } from "../../utils/studioNavigation";
 import { isChallengeAccessible } from "../../utils/challengeUtils";
 import { getChallengeProcesses } from "../../redux/challenge/challengeSlice";
+import SolutionHintDialog from "./SolutionHintDialog";
 
 interface TopBarSectionProps {
   activeTab?: number;
@@ -80,6 +82,7 @@ function TopBarContent({
   const [showCameraDialog, setShowCameraDialog] = useState(false);
   const [showMicrobitDialog, setShowMicrobitDialog] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [showHintDialog, setShowHintDialog] = useState(false);
   const [isCameraLoading, setIsCameraLoading] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
@@ -983,6 +986,25 @@ function TopBarContent({
             </IconButton>
           </Tooltip>
 
+          <Tooltip title="Gợi ý lời giải">
+            <IconButton
+              onClick={() => setShowHintDialog(true)}
+              sx={{
+                bgcolor: "#e0f2f1",
+                color: "#00695c",
+                width: { xs: 36, sm: 42, md: 48 },
+                height: { xs: 36, sm: 42, md: 48 },
+                "&:hover": {
+                  bgcolor: "#b2dfdb",
+                  transform: "translateY(-1px)",
+                  boxShadow: "0 4px 12px rgba(0, 105, 92, 0.3)",
+                },
+              }}
+            >
+              <HintIcon sx={{ fontSize: 24 }} />
+            </IconButton>
+          </Tooltip>
+
           {/* Divider */}
           <Box sx={{ width: 1, height: 32, bgcolor: "#e2e8f0", mx: 0.8 }} />
 
@@ -1081,6 +1103,13 @@ function TopBarContent({
         open={showMicrobitDialog}
         onClose={() => setShowMicrobitDialog(false)}
         workspace={workspace}
+      />
+
+      {/* Solution Hint Dialog */}
+      <SolutionHintDialog
+        open={showHintDialog}
+        onClose={() => setShowHintDialog(false)}
+        challengeId={currentChallengeId as string}
       />
 
       {/* Camera Dialog */}
