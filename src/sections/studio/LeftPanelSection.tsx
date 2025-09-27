@@ -90,7 +90,7 @@ export default function LeftPanelSection({
             fontSize: "0.95rem",
           }}
         >
-          🧩 {tabNames[activeTab]}
+           {tabNames[activeTab]}
         </Box>
       </Box>
 

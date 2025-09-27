@@ -359,13 +359,18 @@ javascriptGenerator.forBlock["ottobit_if_elseif_else"] = function (block: any): 
   return code;
 };
 
-// Variable block
-// Variable block
+// Variable blocks
 javascriptGenerator.forBlock["ottobit_variable_i"] = function (
   _block: any
 ): [string, Order] {
-  // Trả về biến i
   return ["i", Order.ATOMIC];
+};
+
+javascriptGenerator.forBlock["ottobit_variable"] = function (
+  block: any
+): [string, Order] {
+  const varName = block.getFieldValue("VAR") || "i";
+  return [varName, Order.ATOMIC];
 };
 
 // Number block

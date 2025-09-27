@@ -224,28 +224,45 @@ export class BlocklyToPhaserConverter {
    * Convert move forward block
    */
   private static convertMoveForward(block: any): ProgramAction {
-    // Lấy giá trị từ input value (có thể là số hoặc biến)
-    let steps = "1";
-    
-    // Thử lấy input target block (khối được gắn vào)
+    // Hỗ trợ cả số và biến (ví dụ: i) giống như collect blocks
+    let countToken: string = "1";
+
+    // Lấy khối gắn vào input STEPS
     const inputBlock = block.getInputTargetBlock("STEPS");
     if (inputBlock) {
-      // Nếu có khối gắn vào (số hoặc biến)
-      if (inputBlock.type === "ottobit_number") {
-        steps = inputBlock.getFieldValue("NUM") || "1";
-      } else if (inputBlock.type === "ottobit_variable_i") {
-        // Nếu là biến i, giữ nguyên string "i" để xử lý sau
-        steps = "i";
+      // Nếu là số (custom hoặc mặc định của Blockly)
+      if (inputBlock.type === "ottobit_number" || inputBlock.type === "math_number") {
+        const val = inputBlock.getFieldValue("NUM");
+        countToken = String(val ?? "1");
+      }
+      // Nếu là biến i (khối custom)
+      else if (inputBlock.type === "ottobit_variable_i") {
+        countToken = "{{i}}"; // Giữ placeholder để thay thế trong vòng lặp
+      }
+      // Biến dropdown tuỳ chọn (i/j/k/...)
+      else if (inputBlock.type === "ottobit_variable") {
+        const varName = inputBlock.getFieldValue("VAR") || "i";
+        countToken = `{{${varName}}}`;
+      }
+      // Nếu là biến chung của Blockly
+      else if (inputBlock.type === "variables_get") {
+        // Cố gắng lấy tên hiển thị của biến, fallback về giá trị trường VAR
+        const field: any = inputBlock.getField && inputBlock.getField("VAR");
+        const varName = (field && typeof field.getText === "function" && field.getText()) || inputBlock.getFieldValue("VAR") || "i";
+        countToken = `{{${varName}}}`;
       }
     }
-    
-    // Convert sang số nếu không phải biến
-    const count = steps === "i" ? -1 : parseInt(steps); // Dùng -1 để đánh dấu biến i
-    
+
+    // Giữ nguyên placeholder nếu có dạng {{var}}, ngược lại parse số
+    const tokenStr = String(countToken);
+    const countValue: any = tokenStr.match(/^\{\{.*\}\}$/)
+      ? tokenStr
+      : parseInt(tokenStr) || 1;
+
     return {
       type: "forward",
-      count: count > 0 ? count : 1, // Default to 1 if invalid
-    };
+      count: countValue as any,
+    } as any;
   }
 
   /**
@@ -289,10 +306,17 @@ export class BlocklyToPhaserConverter {
       if (inputBlock.type === "ottobit_number" || inputBlock.type === "math_number") {
         const val = inputBlock.getFieldValue("NUM");
         countToken = String(val ?? "1");
-      } else if (inputBlock.type === "ottobit_variable_i" || inputBlock.type === "variables_get") {
-        // Nếu là biến i, dùng placeholder để ProgramExecutor thay thế theo vòng lặp
-        // ProgramExecutor.replaceVariableInAction() sẽ tìm mẫu {{i}} và thay bằng giá trị thực
-        countToken = "{{i}}";
+      } else if (
+        inputBlock.type === "ottobit_variable_i" ||
+        inputBlock.type === "ottobit_variable"
+      ) {
+        // Sử dụng placeholder để ProgramExecutor thay thế theo vòng lặp
+        const varName = inputBlock.type === "ottobit_variable" ? (inputBlock.getFieldValue("VAR") || "i") : "i";
+        countToken = `{{${varName}}}`;
+      } else if (inputBlock.type === "variables_get") {
+        const field: any = inputBlock.getField && inputBlock.getField("VAR");
+        const varName = (field && typeof field.getText === "function" && field.getText()) || inputBlock.getFieldValue("VAR") || "i";
+        countToken = `{{${varName}}}`;
       }
     }
 
@@ -676,8 +700,13 @@ export class BlocklyToPhaserConverter {
 
     switch (block.type) {
       case "ottobit_variable_i":
-      case "variables_get":
-        return block.getFieldValue("VAR") || "i";
+        return "i";
+      case "ottobit_variable":
+      case "variables_get": {
+        const field: any = block.getField && block.getField("VAR");
+        const varName = (field && typeof field.getText === "function" && field.getText()) || block.getFieldValue("VAR") || "i";
+        return varName;
+      }
       case "ottobit_number":
       case "math_number":
         return parseInt(block.getFieldValue("NUM")) || 0;
