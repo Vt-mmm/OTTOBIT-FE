@@ -236,7 +236,7 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     tooltip: "Kết hợp hai điều kiện với toán tử AND hoặc OR - layout ngang",
     helpUrl: "",
   },
-  // Variable block đơn giản với style compact
+  // Variable block đơn giản (giữ để tương thích ngược)
   {
     type: "ottobit_variable_i",
     message0: "i",
@@ -244,7 +244,29 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     style: "ottobit_variable",
     tooltip: "Biến i",
     helpUrl: "",
-    // Thêm custom CSS class để style nhỏ gọn
+    customContextMenu: false,
+  },
+  // Variable block với dropdown (i/j/k/count/index)
+  {
+    type: "ottobit_variable",
+    message0: "%1",
+    args0: [
+      {
+        type: "field_dropdown",
+        name: "VAR",
+        options: [
+          ["i", "i"],
+          ["j", "j"],
+          ["k", "k"],
+          ["count", "count"],
+          ["index", "index"],
+        ],
+      },
+    ],
+    output: "Number",
+    style: "ottobit_variable",
+    tooltip: "Biến vòng lặp (chọn i, j, k, count, index)",
+    helpUrl: "",
     customContextMenu: false,
   },
   {

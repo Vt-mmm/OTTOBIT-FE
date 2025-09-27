@@ -84,6 +84,19 @@ function TopBarContent({
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [showHintDialog, setShowHintDialog] = useState(false);
   const [isCameraLoading, setIsCameraLoading] = useState(false);
+
+  // Helper: close Blockly toolbox/flyout safely
+  const closeWorkspaceToolbox = useCallback(() => {
+    try {
+      if (!workspace) return;
+      const toolbox = workspace.getToolbox && workspace.getToolbox();
+      toolbox?.clearSelection?.();
+      const flyout = workspace.getFlyout && workspace.getFlyout();
+      const emptyToolbox = { kind: "flyoutToolbox", contents: [] as any[] };
+      workspace.updateToolbox(emptyToolbox);
+      if (flyout) flyout.setVisible(false);
+    } catch {}
+  }, [workspace]);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isCaptured, setIsCaptured] = useState(false);
@@ -388,6 +401,13 @@ function TopBarContent({
     } catch (error) {}
     setIsRunning(false);
   };
+
+  // Close toolbox automatically when opening solution dialog
+  useEffect(() => {
+    if (showHintDialog) {
+      closeWorkspaceToolbox();
+    }
+  }, [showHintDialog, closeWorkspaceToolbox]);
 
   const handleRestart = async () => {
     console.log("🔄 [TopBar] Restart button clicked");
@@ -988,7 +1008,10 @@ function TopBarContent({
 
           <Tooltip title="Gợi ý lời giải">
             <IconButton
-              onClick={() => setShowHintDialog(true)}
+              onClick={() => {
+                closeWorkspaceToolbox();
+                setShowHintDialog(true);
+              }}
               sx={{
                 bgcolor: "#e0f2f1",
                 color: "#00695c",

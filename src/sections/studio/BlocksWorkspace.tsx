@@ -25,6 +25,7 @@ export default function BlocksWorkspace({
   const workspaceRef = useRef<HTMLDivElement>(null);
   const [blocklyWorkspace, setBlocklyWorkspace] = useState<any>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const selectedCategoryRef = useRef<string>("");
 
   // Category blocks mapping - sử dụng block types từ cấu trúc mới
   const categoryBlocks = {
@@ -40,7 +41,7 @@ export default function BlocksWorkspace({
     conditions: [
       { kind: "block", type: "ottobit_while" },
       { kind: "block", type: "ottobit_if_expandable" },
-      { kind: "block", type: "ottobit_variable_i" },
+      { kind: "block", type: "ottobit_variable" },
       { kind: "block", type: "ottobit_number" },
     ],
     logic: [
@@ -135,6 +136,25 @@ export default function BlocksWorkspace({
             }, 50);
           }
         }
+
+        // Tự động ĐÓNG toolbox khi thả block thành công từ flyout vào workspace
+        if (event.type === Blockly.Events.BLOCK_CREATE) {
+          // Chỉ đóng nếu hiện tại đang mở một category (tránh can thiệp lúc init)
+          if (selectedCategoryRef.current && selectedCategoryRef.current !== "") {
+            // Delay nhẹ để tránh ảnh hưởng quá trình tạo block
+            setTimeout(() => {
+              try {
+                // Đóng bằng cả 2 cách: state + cập nhật toolbox rỗng ngay lập tức
+                setSelectedCategory("");
+                selectedCategoryRef.current = "";
+                const emptyToolbox = { kind: "flyoutToolbox", contents: [] as any[] };
+                workspace.updateToolbox(emptyToolbox);
+                const flyout = workspace.getFlyout();
+                if (flyout) flyout.setVisible(false);
+              } catch {}
+            }, 30);
+          }
+        }
       });
 
       // Đơn giản hóa xử lý click events
@@ -168,6 +188,20 @@ export default function BlocksWorkspace({
       // Add responsive resize handler
       const handleResize = () => {
         const newScreenWidth = window.innerWidth;
+
+        // Auto-close flyout on resize to prevent overlap/resizing over blocks
+        try {
+          // Always close toolbox/flyout on resize to avoid overlap issues
+          const toolbox = workspace.getToolbox && workspace.getToolbox();
+          toolbox?.clearSelection?.();
+          const flyout = workspace.getFlyout && workspace.getFlyout();
+
+          setSelectedCategory("");
+          selectedCategoryRef.current = "";
+          const emptyToolbox = { kind: "flyoutToolbox", contents: [] as any[] };
+          workspace.updateToolbox(emptyToolbox);
+          if (flyout) flyout.setVisible(false);
+        } catch {}
 
         // Update flyout width on resize
         const flyoutBg = document.querySelector(
@@ -203,6 +237,8 @@ export default function BlocksWorkspace({
       };
 
       window.addEventListener("resize", handleResize);
+      // Also react to orientation changes (mobile/tablet)
+      window.addEventListener("orientationchange", handleResize as any);
 
       // Helper: render program actions into workspace starting from a new start block
       setTimeout(() => {
@@ -2330,6 +2366,7 @@ export default function BlocksWorkspace({
 
   const handleCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId);
+    selectedCategoryRef.current = categoryId;
   };
 
   return (

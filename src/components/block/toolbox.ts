@@ -54,7 +54,7 @@ export const ottobit_TOOLBOX = {
         },
         {
           kind: "block",
-          type: "ottobit_variable_i",
+          type: "ottobit_variable",
         },
         {
           kind: "block",

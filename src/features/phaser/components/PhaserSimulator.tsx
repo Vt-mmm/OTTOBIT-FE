@@ -1,5 +1,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { Box, Typography, Alert } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { generateStudioUrl, getStoredNavigationData } from "../../../utils/studioNavigation";
 import { usePhaserContext } from "../context/PhaserContext.js";
 import VictoryModal from "./VictoryModal.js";
 import DefeatModal from "./DefeatModal";
@@ -11,6 +13,7 @@ interface PhaserSimulatorProps {
 }
 
 export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
+  const navigate = useNavigate();
   const {
     isConnected,
     gameState,
@@ -28,8 +31,10 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     defeatData,
     isDefeatModalOpen,
     hideDefeatModal,
-    // Note: loadMap and currentMapKey are available through PhaserContext
-    // But they may not be directly exposed in the current interface
+    // Challenge context
+    currentChallengeId,
+    lessonChallenges,
+    fetchChallengesByLesson,
   } = usePhaserContext();
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -64,6 +69,34 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
       hideDefeatModal();
     }
   };
+
+  // Handle next challenge navigation from victory modal
+  const handlePlayNext = useCallback(async () => {
+    try {
+      const nav = getStoredNavigationData();
+      const lessonId = nav?.lessonId;
+
+      // Ensure we have lesson challenge list
+      let items = ((lessonChallenges as any)?.items || []) as Array<any>;
+      if (lessonId && (!items || items.length === 0)) {
+        await fetchChallengesByLesson(lessonId, 1, 100);
+        // small wait for Redux to update
+        await new Promise((r) => setTimeout(r, 200));
+        items = ((lessonChallenges as any)?.items || []) as Array<any>;
+      }
+
+      // Find current index and next
+      const currentIndex = items.findIndex((c) => c.id === currentChallengeId);
+      const next = currentIndex >= 0 ? items[currentIndex + 1] : null;
+
+      if (next) {
+        const url = generateStudioUrl(next.id, lessonId || undefined);
+        navigate(url);
+      }
+    } finally {
+      hideVictoryModal();
+    }
+  }, [lessonChallenges, currentChallengeId, fetchChallengesByLesson, navigate, hideVictoryModal]);
 
   // Debounced resize function to optimize performance
   // Simple iframe scaling theo iframe-resizer approach - không dùng transform phức tạp
@@ -294,18 +327,15 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
         isOpen={isVictoryModalOpen}
       >
         <VictoryModal
-          open={isVictoryModalOpen}
-          onClose={hideVictoryModal}
-          victoryData={victoryData}
-          onPlayNext={() => {
-            // TODO: Implement play next logic
-            hideVictoryModal();
-          }}
-          onReplay={handleReplay}
-          onGoHome={() => {
-            // TODO: Implement go home logic
-            hideVictoryModal();
-          }}
+        open={isVictoryModalOpen}
+        onClose={hideVictoryModal}
+        victoryData={victoryData}
+        onPlayNext={handlePlayNext}
+        onReplay={handleReplay}
+        onGoHome={() => {
+          // TODO: Implement go home logic
+          hideVictoryModal();
+        }}
         />
       </VictoryErrorBoundary>
 

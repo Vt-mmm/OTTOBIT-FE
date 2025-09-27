@@ -308,11 +308,18 @@ pythonGenerator.forBlock["ottobit_if"] = function (block: any): string {
   return code;
 };
 
-// Variable block
+// Variable blocks
 pythonGenerator.forBlock["ottobit_variable_i"] = function (
   _block: any
 ): [string, number] {
   return ["i", Order.ATOMIC];
+};
+
+pythonGenerator.forBlock["ottobit_variable"] = function (
+  block: any
+): [string, number] {
+  const varName = block.getFieldValue("VAR") || "i";
+  return [varName, Order.ATOMIC];
 };
 
 // Logic compare block
