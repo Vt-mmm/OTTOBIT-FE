@@ -400,10 +400,16 @@ export default function LessonDetailsSection({
                           </TableCell>
                           <TableCell align="center">
                             <Chip
-                              label={challenge.mode === 0 ? "Practice" : "Test"}
+                              label={
+                                challenge.challengeMode === "Simulation"
+                                  ? "Practice"
+                                  : "Test"
+                              }
                               size="small"
                               color={
-                                challenge.mode === 0 ? "primary" : "secondary"
+                                challenge.challengeMode === "Simulation"
+                                  ? "primary"
+                                  : "secondary"
                               }
                               variant="outlined"
                             />

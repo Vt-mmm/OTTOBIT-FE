@@ -68,20 +68,6 @@ function MiniIsometricMapGrid({
     left: 0, // Same as main map
   };
 
-  const countTerrainCells = (grid: MapCell[][]): number => {
-    try {
-      let n = 0;
-      for (const row of grid) {
-        for (const cell of row) {
-          if (cell && cell.terrain) n++;
-        }
-      }
-      return n;
-    } catch {
-      return 0;
-    }
-  };
-
   // const terrainCount = countTerrainCells(mapGrid);
 
   return (

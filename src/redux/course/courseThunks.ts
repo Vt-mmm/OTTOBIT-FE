@@ -20,11 +20,6 @@ interface ApiResponse<T> {
   timestamp?: string;
 }
 
-interface ErrorResponse {
-  message: string;
-  errors?: string[];
-}
-
 // Helper function for API calls with retry logic
 async function callApiWithRetry<T>(
   apiCall: () => Promise<T>,

@@ -26,7 +26,6 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import GroupIcon from "@mui/icons-material/Group";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getLessons } from "../../../redux/lesson/lessonSlice";
-import { getChallenges } from "../../../redux/challenge/challengeSlice";
 import { CourseResult } from "../../../common/@types/course";
 
 interface Props {
@@ -43,9 +42,6 @@ export default function CourseDetailsSection({
   const dispatch = useAppDispatch();
   const { data: lessonsData, isLoading: lessonsLoading } = useAppSelector(
     (s) => s.lesson.lessons
-  );
-  const { data: challengesData, isLoading: challengesLoading } = useAppSelector(
-    (s) => s.challenge.challenges
   );
 
   // Sử dụng dữ liệu từ API lessons

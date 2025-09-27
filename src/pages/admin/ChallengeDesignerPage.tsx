@@ -60,7 +60,6 @@ const MapDesignerPage = () => {
   const [hasTriedSave, setHasTriedSave] = useState(false);
   const [mapPickerOpen, setMapPickerOpen] = useState(false);
   const [solutionDialogOpen] = useState(false);
-  const [isoRemountId] = useState(0);
   // Isometric map renders with fixed viewport; no readiness gating needed
   const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
   const [selectedMapTitle, setSelectedMapTitle] =
@@ -83,11 +82,6 @@ const MapDesignerPage = () => {
       )
   );
 
-  // Debounced container sizing for isometric grid stability
-  const [containerSizeStable] = useState<{
-    w: number;
-    h: number;
-  }>({ w: 0, h: 0 });
   // Disable automatic ResizeObserver + debounce to avoid size recalculation when unrelated state updates
   const [enableAutoResize] = useState<boolean>(false);
   const debounceTimerRef = useRef<any>(null);

@@ -14,7 +14,6 @@ import {
   Pagination,
   Snackbar,
   Alert,
-  Stack,
   TextField,
   Typography,
   Chip,
@@ -30,8 +29,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import RestoreIcon from "@mui/icons-material/Restore";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import PersonIcon from "@mui/icons-material/Person";
-import AssignmentIcon from "@mui/icons-material/Assignment";
 import SearchIcon from "@mui/icons-material/Search";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import {
@@ -40,7 +37,6 @@ import {
   restoreLesson,
 } from "../../../redux/lesson/lessonSlice";
 import { getCourses } from "../../../redux/course/courseSlice";
-import { getChallenges } from "../../../redux/challenge/challengeSlice";
 import { LessonResult } from "../../../common/@types/lesson";
 
 interface Props {
@@ -57,7 +53,6 @@ export default function LessonListSection({
   const dispatch = useAppDispatch();
   const { data, isLoading, error } = useAppSelector((s) => s.lesson.lessons);
   const { data: coursesData } = useAppSelector((s) => s.course.courses);
-  const { data: challengesData, isLoading: challengesLoading } = useAppSelector((s) => s.challenge.challenges);
 
   const [searchTerm, setSearchTerm] = useState(""); // Input state
   const [committedSearch, setCommittedSearch] = useState(""); // Actual search term sent to API
@@ -79,8 +74,6 @@ export default function LessonListSection({
     message: "",
     severity: "success",
   });
-  const [selectedLesson, setSelectedLesson] = useState<LessonResult | null>(null);
-  const [challengesDialogOpen, setChallengesDialogOpen] = useState(false);
 
   useEffect(() => {
     dispatch(
@@ -100,8 +93,8 @@ export default function LessonListSection({
   useEffect(() => {
     const meta = data;
     if (meta?.totalPages) setTotalPages(meta.totalPages);
-    else if (meta?.total && meta?.pageSize)
-      setTotalPages(Math.max(1, Math.ceil(meta.total / meta.pageSize)));
+    else if (meta?.total && meta?.size)
+      setTotalPages(Math.max(1, Math.ceil(meta.total / meta.size)));
   }, [data]);
 
   const items = data?.items || [];
@@ -154,18 +147,6 @@ export default function LessonListSection({
     } finally {
       setConfirmRestore(null);
     }
-  };
-
-  const handleViewChallenges = (lesson: LessonResult) => {
-    setSelectedLesson(lesson);
-    setChallengesDialogOpen(true);
-    // Fetch challenges for this lesson
-    dispatch(getChallenges({
-      lessonId: lesson.id,
-      includeDeleted: true,
-      pageNumber: 1,
-      pageSize: 100,
-    }));
   };
 
   return (
