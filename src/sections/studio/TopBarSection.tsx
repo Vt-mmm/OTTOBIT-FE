@@ -24,7 +24,6 @@ import {
 import {
   PlayArrow as RunIcon,
   Stop as StopIcon,
-  CheckCircle as ValidateIcon,
   ViewModule as WorkspaceIcon,
   Code as PythonIcon,
   Javascript as JavascriptIcon,
@@ -35,6 +34,7 @@ import {
   ArrowBack as BackIcon,
   Lock as LockIcon,
   TipsAndUpdates as HintIcon,
+  Tour as TourIcon,
 } from "@mui/icons-material";
 import { usePhaserContext } from "../../features/phaser/context/PhaserContext";
 import { useNotification } from "hooks/useNotification";
@@ -165,7 +165,9 @@ function TopBarContent({
   // Index map for quick lookup
   const challengeIndexMap = useMemo(() => {
     const map = new Map<string, number>();
-    (lessonChallengeItems || []).forEach((c: any, i: number) => map.set(c.id, i));
+    (lessonChallengeItems || []).forEach((c: any, i: number) =>
+      map.set(c.id, i)
+    );
     return map;
   }, [lessonChallengeItems]);
 
@@ -184,7 +186,7 @@ function TopBarContent({
   const isChallengeUnlocked = useCallback(
     (id: string, index?: number) => {
       const challenge =
-        (typeof index === "number" && index >= 0)
+        typeof index === "number" && index >= 0
           ? lessonChallengeItems[index]
           : lessonChallengeItems.find((c: any) => c.id === id);
       if (!challenge) return false;
@@ -451,10 +453,6 @@ function TopBarContent({
       ? generateStudioUrl(targetChallengeId, lessonId)
       : generateStudioUrl(targetChallengeId);
     navigate(url);
-  };
-
-  const handleValidate = () => {
-    // TODO: Implement validation logic
   };
 
   const handleSendToMicrobit = () => {
@@ -893,7 +891,14 @@ function TopBarContent({
 
         {/* Map selector - single responsive center container */}
         {lessonChallengeItems && lessonChallengeItems.length > 0 && (
-          <Box sx={{ flex: 1, display: "flex", justifyContent: "center", px: { xs: 1, md: 2 } }}>
+          <Box
+            sx={{
+              flex: 1,
+              display: "flex",
+              justifyContent: "center",
+              px: { xs: 1, md: 2 },
+            }}
+          >
             <Box
               id="tour-challenge-nav"
               sx={{
@@ -928,11 +933,19 @@ function TopBarContent({
                       p: 0,
                       fontWeight: 700,
                       fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                      color: selected ? "#ffffff" : unlocked ? "#10b981" : "#9ca3af",
+                      color: selected
+                        ? "#ffffff"
+                        : unlocked
+                        ? "#10b981"
+                        : "#9ca3af",
                       bgcolor: selected ? "#10b981" : "transparent",
                       borderColor: unlocked ? "#10b981" : "#d1d5db",
                       "&:hover": {
-                        bgcolor: selected ? "#059669" : unlocked ? "#f0fdf4" : "transparent",
+                        bgcolor: selected
+                          ? "#059669"
+                          : unlocked
+                          ? "#f0fdf4"
+                          : "transparent",
                         borderColor: unlocked ? "#059669" : "#d1d5db",
                       },
                       "&:disabled": {
@@ -959,6 +972,7 @@ function TopBarContent({
 
         {/* All Action Buttons - Mobile Responsive */}
         <Box
+          id="studio-actions"
           sx={{
             bgcolor: "#ffffff",
             borderRadius: { xs: "12px", md: "20px" },
@@ -1039,7 +1053,7 @@ function TopBarContent({
             <IconButton
               onClick={() => {
                 try {
-                  window.dispatchEvent(new Event('studio-tour:run'));
+                  window.dispatchEvent(new Event("studio-tour:run"));
                 } catch {}
               }}
               sx={{
@@ -1054,8 +1068,7 @@ function TopBarContent({
                 },
               }}
             >
-              {/* Use the same HintIcon for consistency, or choose HelpOutline */}
-              <HintIcon sx={{ fontSize: 24 }} />
+              <TourIcon sx={{ fontSize: 24 }} />
             </IconButton>
           </Tooltip>
 
@@ -1097,7 +1110,7 @@ function TopBarContent({
           </IconButton>
 
           <Tooltip title="Restart Map">
-            <span>
+            <span id="tour-btn-restart-wrap">
               <IconButton
                 id="tour-btn-restart"
                 onClick={handleRestart}
@@ -1126,28 +1139,6 @@ function TopBarContent({
                 <RestartIcon sx={{ fontSize: 24 }} />
               </IconButton>
             </span>
-          </Tooltip>
-
-          <Tooltip title="Validate Code">
-            <IconButton
-              id="tour-btn-validate"
-              onClick={handleValidate}
-              sx={{
-                bgcolor: "#e8f5e8",
-                color: "#2e7d32",
-                width: { xs: 36, sm: 42, md: 48 },
-                height: { xs: 36, sm: 42, md: 48 },
-                border: "2px solid #4caf50",
-                "&:hover": {
-                  bgcolor: "#4caf50",
-                  color: "white",
-                  transform: "translateY(-1px)",
-                  boxShadow: "0 4px 12px rgba(76, 175, 80, 0.4)",
-                },
-              }}
-            >
-              <ValidateIcon sx={{ fontSize: 24 }} />
-            </IconButton>
           </Tooltip>
         </Box>
       </Toolbar>

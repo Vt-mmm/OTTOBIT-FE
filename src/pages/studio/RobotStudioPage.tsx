@@ -170,6 +170,44 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
     loadedChallengeId,
   ]);
 
+  // Reset Blockly workspace when switching to a different challenge
+  useEffect(() => {
+    if (!workspace) return;
+    if (!challengeId) return;
+
+    try {
+      // Clear existing blocks completely
+      if (typeof workspace.clear === 'function') {
+        workspace.clear();
+      }
+
+      // Close toolbox/flyout if any is open to avoid ghost UI
+      try {
+        const toolbox = workspace.getToolbox && workspace.getToolbox();
+        toolbox?.clearSelection?.();
+        const flyout = workspace.getFlyout && workspace.getFlyout();
+        if (flyout && typeof flyout.setVisible === 'function') {
+          flyout.setVisible(false);
+        }
+        // Also update to an empty toolbox (prevents flicker)
+        if (typeof workspace.updateToolbox === 'function') {
+          workspace.updateToolbox({ kind: 'flyoutToolbox', contents: [] });
+        }
+      } catch {}
+
+      // Ensure a fresh start block exists for new challenge
+      try {
+        const start = workspace.newBlock && workspace.newBlock('ottobit_start');
+        if (start) {
+          start.initSvg && start.initSvg();
+          start.render && start.render();
+          // Place it with a small offset
+          start.moveBy && start.moveBy(50, 50);
+        }
+      } catch {}
+    } catch {}
+  }, [challengeId, currentChallengeId, workspace]);
+
   return (
     <Box
       sx={{

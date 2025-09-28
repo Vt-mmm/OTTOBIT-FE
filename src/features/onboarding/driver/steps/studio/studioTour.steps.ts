@@ -17,7 +17,7 @@ export const studioTourSteps: DriveStep[] = [
     },
     onHighlightStarted: (element, _step, { driver }) => {
       try {
-        driver.setConfig({ ...driver.getConfig(), overlayOpacity: 0.08, stagePadding: 12, stageRadius: 8 });
+        driver.setConfig({ ...driver.getConfig(), overlayOpacity: 0.10, stagePadding: 20, stageRadius: 12 });
       } catch {}
       element?.classList?.add('studio-tour-accent');
     },
@@ -53,74 +53,26 @@ export const studioTourSteps: DriveStep[] = [
     },
   },
 
-  // Buttons group
+  // Buttons group (gộp)
   {
-    element: STUDIO_SELECTORS.btnHint,
+    element: STUDIO_SELECTORS.actions,
     disableActiveInteraction: true,
     popover: {
-      title: 'Gợi ý lời giải',
-      description: 'Mở gợi ý để định hướng cách giải. Chúng tôi tự động đóng toolbox trước khi mở.',
+      title: 'Nhóm nút thao tác',
+      description: 'Từ trái qua phải: gửi micro:bit, mở camera, gợi ý, cờ, chạy/dừng, tải lại map.',
       side: 'bottom',
-      align: 'start',
+      align: 'center',
       popoverClass: 'studio-popover',
     },
-  },
-  {
-    element: STUDIO_SELECTORS.btnCamera,
-    disableActiveInteraction: true,
-    popover: {
-      title: 'Camera / Ảnh',
-      description: 'Mở camera hoặc chọn ảnh để xử lý (khi bài học có yêu cầu).',
-      side: 'bottom',
-      align: 'start',
-      popoverClass: 'studio-popover',
+    onHighlightStarted: (el, _step, { driver }) => {
+      try { (el as HTMLElement)?.scrollIntoView({ block: 'nearest', inline: 'center' }); } catch {}
+      setTimeout(() => { try { driver.refresh(); } catch {} }, 50);
     },
+    onHighlighted: (_el, _step, { driver }) => {
+      setTimeout(() => { try { driver.refresh(); } catch {} }, 100);
+    }
   },
-  {
-    element: STUDIO_SELECTORS.btnMicrobit,
-    disableActiveInteraction: true,
-    popover: {
-      title: 'Kết nối micro:bit',
-      description: 'Gửi chương trình sang micro:bit (nếu thiết bị sẵn sàng).',
-      side: 'bottom',
-      align: 'start',
-      popoverClass: 'studio-popover',
-    },
-  },
-  {
-    element: STUDIO_SELECTORS.btnRun,
-    disableActiveInteraction: true,
-    popover: {
-      title: 'Chạy/Dừng chương trình',
-      description: 'Nhấn để chạy code từ khối lệnh. Khi đang chạy, nút chuyển thành Dừng.',
-      side: 'bottom',
-      align: 'start',
-      popoverClass: 'studio-popover',
-    },
-  },
-  {
-    element: STUDIO_SELECTORS.btnRestart,
-    disableActiveInteraction: true,
-    popover: {
-      title: 'Tải lại map',
-      description: 'Khởi động lại simulator để chạy lại từ đầu.',
-      side: 'bottom',
-      align: 'start',
-      popoverClass: 'studio-popover',
-    },
-  },
-  {
-    element: STUDIO_SELECTORS.btnValidate,
-    disableActiveInteraction: true,
-    popover: {
-      title: 'Kiểm tra code',
-      description: 'Chạy kiểm tra nhanh (nếu map hỗ trợ).',
-      side: 'bottom',
-      align: 'start',
-      popoverClass: 'studio-popover',
-    },
-  },
-
+  
   // Left: Toolbox categories
   {
     element: STUDIO_SELECTORS.toolbox,
