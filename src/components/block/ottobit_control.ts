@@ -16,11 +16,9 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     message0: "repeat %1 times %2 %3",
     args0: [
       {
-        type: "field_number",
+        type: "input_value",
         name: "TIMES",
-        value: 10,
-        min: 1,
-        max: 100,
+        check: "Number",
       },
       {
         type: "input_dummy",
@@ -36,7 +34,7 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     movable: true,
     editable: true,
     style: "ottobit_control",
-    tooltip: "Lặp lại các lệnh một số lần nhất định",
+    tooltip: "Lặp lại các lệnh một số lần nhất định (kéo thả số hoặc biến)",
     helpUrl: "",
   },
   {
@@ -44,30 +42,24 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     message0: "repeat %1 From %2 To %3 By %4 %5 %6",
     args0: [
       {
-        type: "field_dropdown",
+        type: "input_value",
         name: "VAR",
-        options: [
-          ["i", "i"],
-          ["j", "j"],
-          ["k", "k"],
-          ["count", "count"],
-          ["index", "index"],
-        ],
+        check: ["Number"],
       },
       {
-        type: "field_number",
+        type: "input_value",
         name: "FROM",
-        value: 1,
+        check: "Number",
       },
       {
-        type: "field_number",
+        type: "input_value",
         name: "TO",
-        value: 5,
+        check: "Number",
       },
       {
-        type: "field_number",
+        type: "input_value",
         name: "BY",
-        value: 1,
+        check: "Number",
       },
       {
         type: "input_dummy",
@@ -83,7 +75,7 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     movable: true,
     editable: true,
     style: "ottobit_control",
-    tooltip: "Lặp với biến từ giá trị đầu đến giá trị cuối",
+    tooltip: "Lặp với biến từ giá trị đầu đến giá trị cuối. Có thể kéo thả biến và số vào các ô VAR, FROM, TO, BY",
     helpUrl: "",
   },
   {
@@ -111,49 +103,7 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     tooltip: "Lặp lại các lệnh khi điều kiện còn đúng",
     helpUrl: "",
   },
-  {
-    type: "ottobit_while_compare",
-    message0: "while %1 %2 %3 %4 %5",
-    args0: [
-      {
-        type: "input_value",
-        name: "LEFT",
-        check: "Number",
-      },
-      {
-        type: "field_dropdown",
-        name: "OPERATOR",
-        options: [
-          ["=", "EQ"],
-          ["≠", "NEQ"],
-          ["<", "LT"],
-          ["≤", "LTE"],
-          [">", "GT"],
-          ["≥", "GTE"],
-        ],
-      },
-      {
-        type: "input_value",
-        name: "RIGHT",
-        check: "Number",
-      },
-      {
-        type: "input_dummy",
-      },
-      {
-        type: "input_statement",
-        name: "DO",
-      },
-    ],
-    previousStatement: null,
-    nextStatement: null,
-    deletable: true,
-    movable: true,
-    editable: true,
-    style: "ottobit_control",
-    tooltip: "Lặp lại khi điều kiện so sánh còn đúng",
-    helpUrl: "",
-  },
+
   {
     type: "ottobit_if_expandable",
     message0: "if %1",
@@ -236,16 +186,7 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     tooltip: "Kết hợp hai điều kiện với toán tử AND hoặc OR - layout ngang",
     helpUrl: "",
   },
-  // Variable block đơn giản (giữ để tương thích ngược)
-  {
-    type: "ottobit_variable_i",
-    message0: "i",
-    output: "Number",
-    style: "ottobit_variable",
-    tooltip: "Biến i",
-    helpUrl: "",
-    customContextMenu: false,
-  },
+
   // Variable block với dropdown (i/j/k/count/index)
   {
     type: "ottobit_variable",
