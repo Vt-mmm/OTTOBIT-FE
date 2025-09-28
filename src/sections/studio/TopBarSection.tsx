@@ -705,6 +705,7 @@ function TopBarContent({
 
   return (
     <AppBar
+      id="studio-topbar"
       position="static"
       elevation={0}
       sx={{
@@ -724,6 +725,7 @@ function TopBarContent({
       >
         {/* Ottobit Logo - Mobile Responsive with Navigation */}
         <Box
+          id="tour-logo-home"
           onClick={() => navigate("/")}
           sx={{
             width: { xs: 40, sm: 45, md: 50 },
@@ -893,6 +895,7 @@ function TopBarContent({
         {lessonChallengeItems && lessonChallengeItems.length > 0 && (
           <Box sx={{ flex: 1, display: "flex", justifyContent: "center", px: { xs: 1, md: 2 } }}>
             <Box
+              id="tour-challenge-nav"
               sx={{
                 display: "flex",
                 alignItems: "center",
@@ -970,6 +973,7 @@ function TopBarContent({
         >
           <Tooltip title="Send to micro:bit">
             <IconButton
+              id="tour-btn-microbit"
               onClick={handleSendToMicrobit}
               sx={{
                 bgcolor: "#eef2ff",
@@ -989,6 +993,7 @@ function TopBarContent({
 
           <Tooltip title="Open Camera">
             <IconButton
+              id="tour-btn-camera"
               onClick={handleCamera}
               sx={{
                 bgcolor: "#fff3e0",
@@ -1008,6 +1013,7 @@ function TopBarContent({
 
           <Tooltip title="Gợi ý lời giải">
             <IconButton
+              id="tour-btn-hint"
               onClick={() => {
                 closeWorkspaceToolbox();
                 setShowHintDialog(true);
@@ -1028,10 +1034,36 @@ function TopBarContent({
             </IconButton>
           </Tooltip>
 
+          {/* Re-run tour */}
+          <Tooltip title="Xem lại hướng dẫn">
+            <IconButton
+              onClick={() => {
+                try {
+                  window.dispatchEvent(new Event('studio-tour:run'));
+                } catch {}
+              }}
+              sx={{
+                bgcolor: "#eef2ff",
+                color: "#4338ca",
+                width: { xs: 36, sm: 42, md: 48 },
+                height: { xs: 36, sm: 42, md: 48 },
+                "&:hover": {
+                  bgcolor: "#e0e7ff",
+                  transform: "translateY(-1px)",
+                  boxShadow: "0 4px 12px rgba(67, 56, 202, 0.25)",
+                },
+              }}
+            >
+              {/* Use the same HintIcon for consistency, or choose HelpOutline */}
+              <HintIcon sx={{ fontSize: 24 }} />
+            </IconButton>
+          </Tooltip>
+
           {/* Divider */}
           <Box sx={{ width: 1, height: 32, bgcolor: "#e2e8f0", mx: 0.8 }} />
 
           <IconButton
+            id="tour-btn-run"
             aria-label={isRunning ? "Stop Program" : "Run Program"}
             onClick={isRunning ? handleStop : handleRun}
             disabled={!workspace}
@@ -1067,6 +1099,7 @@ function TopBarContent({
           <Tooltip title="Restart Map">
             <span>
               <IconButton
+                id="tour-btn-restart"
                 onClick={handleRestart}
                 disabled={!phaserConnected || !phaserReady}
                 sx={{
@@ -1097,6 +1130,7 @@ function TopBarContent({
 
           <Tooltip title="Validate Code">
             <IconButton
+              id="tour-btn-validate"
               onClick={handleValidate}
               sx={{
                 bgcolor: "#e8f5e8",

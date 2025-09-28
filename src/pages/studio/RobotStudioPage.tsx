@@ -1,15 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { Box } from "@mui/material";
 import Header from "../../layout/components/header/Header";
 import TopBarSection from "sections/studio/TopBarSection";
 import LeftPanelSection from "sections/studio/LeftPanelSection";
 import SimulatorStageSection from "sections/studio/SimulatorStageSection";
+import { PhaserProvider, usePhaserContext } from "../../features/phaser";
 import {
-  PhaserProvider,
-  usePhaserContext,
-} from "../../features/phaser";
-import { parseStudioNavigation, storeStudioNavigationData } from "../../utils/studioNavigation";
+  parseStudioNavigation,
+  storeStudioNavigationData,
+  getStoredNavigationData,
+} from "../../utils/studioNavigation";
+import { useAppDispatch, useAppSelector } from "store/config";
+import { getLessonById } from "store/lesson/lessonSlice";
+import StudioTourGate from "../../features/onboarding/driver/components/StudioTourGate";
 
 // Simple Challenge Selector - temporary implementation
 const ChallengeSelector = ({
@@ -34,16 +38,16 @@ const ChallengeSelector = ({
         <Box sx={{ textAlign: "center", p: 4 }}>
           <h1>Challenge Selector</h1>
           <p>Temporary challenge selector - implementation pending</p>
-          <button 
-            onClick={() => onChallengeSelect('temp-challenge-id')}
-            style={{ 
-              padding: '12px 24px', 
-              fontSize: '16px', 
-              backgroundColor: '#1976d2', 
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
+          <button
+            onClick={() => onChallengeSelect("temp-challenge-id")}
+            style={{
+              padding: "12px 24px",
+              fontSize: "16px",
+              backgroundColor: "#1976d2",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
             }}
           >
             Load Test Challenge
@@ -58,9 +62,53 @@ const ChallengeSelector = ({
 const StudioContent = ({ challengeId }: { challengeId: string }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [workspace, setWorkspace] = useState<any>(null);
-  const [loadingChallengeId, setLoadingChallengeId] = useState<string | null>(null);
-  const [loadedChallengeId, setLoadedChallengeId] = useState<string | null>(null);
-  const { loadChallenge, onMessage, offMessage, isReady } = usePhaserContext();
+  const [loadingChallengeId, setLoadingChallengeId] = useState<string | null>(
+    null
+  );
+  const [loadedChallengeId, setLoadedChallengeId] = useState<string | null>(
+    null
+  );
+  const {
+    loadChallenge,
+    onMessage,
+    offMessage,
+    isReady,
+    lessonChallenges,
+    currentChallengeId,
+    currentChallenge,
+  } = usePhaserContext();
+
+  // Fetch current lesson info (for gating: courseId, lessonOrder)
+  const dispatch = useAppDispatch();
+  const currentLesson = useAppSelector((s) => s.lesson.currentLesson.data);
+  const userId = useAppSelector((s) => s.account.profile.data?.id);
+
+  useEffect(() => {
+    const nav = getStoredNavigationData();
+    const lessonId = nav?.lessonId;
+    if (lessonId) {
+      dispatch(getLessonById(lessonId));
+    }
+  }, [dispatch]);
+
+  // Fallback: if nav lacks lessonId, use currentChallenge.lessonId when available
+  useEffect(() => {
+    if (!currentLesson?.id && currentChallenge?.lessonId) {
+      dispatch(getLessonById(currentChallenge.lessonId));
+    }
+  }, [currentLesson?.id, currentChallenge?.lessonId, dispatch]);
+
+  // Prefer currentChallenge.order to avoid race with list fetching
+  const challengeOrder = useMemo(() => {
+    if (currentChallenge?.order != null) return currentChallenge.order;
+    try {
+      const items = (lessonChallenges as any)?.items || [];
+      const found = items.find((c: any) => c.id === currentChallengeId);
+      return found?.order as number | undefined;
+    } catch {
+      return undefined;
+    }
+  }, [currentChallenge?.order, lessonChallenges, currentChallengeId]);
 
   // Reset states when challenge changes
   useEffect(() => {
@@ -112,7 +160,15 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
     return () => {
       offMessage("READY", handleReady);
     };
-  }, [challengeId, loadChallenge, onMessage, offMessage, isReady, loadingChallengeId, loadedChallengeId]);
+  }, [
+    challengeId,
+    loadChallenge,
+    onMessage,
+    offMessage,
+    isReady,
+    loadingChallengeId,
+    loadedChallengeId,
+  ]);
 
   return (
     <Box
@@ -133,6 +189,16 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
         },
       }}
     >
+      {/* Driver.js Studio Tour Gate */}
+      {currentLesson && (
+        <StudioTourGate
+          courseId={currentLesson.courseId}
+          lessonOrder={currentLesson.order}
+          challengeOrder={challengeOrder ?? 0}
+          userId={userId}
+        />
+      )}
+
       {/* Top Bar - Fixed height */}
       <TopBarSection
         activeTab={activeTab}
@@ -160,18 +226,18 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
           sx={{
             // Desktop: fixed width để map có thể full size
             flex: { xs: "1 1 0%", lg: "0 0 auto" },
-            width: { 
-              xs: "100%", 
-              sm: "100%", 
-              md: "100%", 
+            width: {
+              xs: "100%",
+              sm: "100%",
+              md: "100%",
               lg: "480px", // Compact hơn để dành chỗ cho map
-              xl: "680px" // Vẫn đủ space cho blocks
+              xl: "680px", // Vẫn đủ space cho blocks
             },
-            height: { 
+            height: {
               xs: "45vh", // Giảm xuống để map có nhiều space hơn
-              sm: "45vh", 
-              md: "48vh", 
-              lg: "100%" 
+              sm: "45vh",
+              md: "48vh",
+              lg: "100%",
             },
             minHeight: { xs: "280px", sm: "300px", lg: "auto" },
             maxHeight: { xs: "45vh", sm: "45vh", md: "48vh", lg: "none" },
@@ -192,8 +258,8 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
         </Box>
 
         {/* Right Panel - Robot Simulator - Full size như HP Robots */}
-        <Box 
-          sx={{ 
+        <Box
+          sx={{
             position: "relative",
             flex: 1, // Lấy hết remaining space
             width: "100%",
@@ -218,21 +284,23 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
 const RobotStudioPage = () => {
   const { challengeId } = useParams<{ challengeId?: string }>();
   const [searchParams] = useSearchParams();
-  const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
+  const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(
+    null
+  );
   const [showChallengeSelector, setShowChallengeSelector] = useState(true);
   // Removed unused navigationData state
 
   // Parse navigation data from URL on mount
   useEffect(() => {
     const navData = parseStudioNavigation(challengeId, searchParams);
-    
+
     if (navData) {
-      console.log('🚀 Studio navigation detected:', navData);
-      
+      console.log("🚀 Studio navigation detected:", navData);
+
       // Store navigation data
       storeStudioNavigationData(navData);
       // TODO: Re-implement navigation data if needed
-      console.log('Navigation data:', navData);
+      console.log("Navigation data:", navData);
       setSelectedChallengeId(navData.challengeId);
       setShowChallengeSelector(false);
     } else {
@@ -261,11 +329,11 @@ const RobotStudioPage = () => {
 
   // Lock body scroll while in studio to prevent page scrollbar flicker
   useEffect(() => {
-    document.body.classList.add('no-scroll');
-    document.documentElement.classList.add('no-scroll');
+    document.body.classList.add("no-scroll");
+    document.documentElement.classList.add("no-scroll");
     return () => {
-      document.body.classList.remove('no-scroll');
-      document.documentElement.classList.remove('no-scroll');
+      document.body.classList.remove("no-scroll");
+      document.documentElement.classList.remove("no-scroll");
     };
   }, []);
 
@@ -273,9 +341,7 @@ const RobotStudioPage = () => {
   return (
     <PhaserProvider>
       {showChallengeSelector || !selectedChallengeId ? (
-        <ChallengeSelector
-          onChallengeSelect={handleChallengeSelect}
-        />
+        <ChallengeSelector onChallengeSelect={handleChallengeSelect} />
       ) : (
         <StudioContent challengeId={selectedChallengeId} />
       )}
