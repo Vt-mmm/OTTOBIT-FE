@@ -37,12 +37,12 @@ export default function BlocksWorkspace({
     loops: [
       { kind: "block", type: "ottobit_repeat" },
       { kind: "block", type: "ottobit_repeat_range" },
+      { kind: "block", type: "ottobit_variable" },
+      { kind: "block", type: "ottobit_number" },
     ],
     conditions: [
       { kind: "block", type: "ottobit_while" },
       { kind: "block", type: "ottobit_if_expandable" },
-      { kind: "block", type: "ottobit_variable" },
-      { kind: "block", type: "ottobit_number" },
     ],
     logic: [
       { kind: "block", type: "ottobit_boolean" },

@@ -374,7 +374,26 @@ export class BlocklyToPhaserConverter {
    * Convert repeat block
    */
   private static convertRepeat(block: any): ProgramAction {
-    const times = block.getFieldValue("TIMES") || "3";
+    // Read TIMES from input socket: number or variable placeholder
+    const inputBlock = block.getInputTargetBlock("TIMES");
+    let countToken: number | string = 1;
+    if (inputBlock) {
+      try {
+        if (inputBlock.type === "ottobit_number" || inputBlock.type === "math_number") {
+          const v = inputBlock.getFieldValue("NUM");
+          const n = parseInt(String(v));
+          countToken = isNaN(n) ? 1 : n;
+        } else if (inputBlock.type === "ottobit_variable") {
+          const name = inputBlock.getFieldValue("VAR") || "i";
+          countToken = `{{${name}}}`;
+        } else if (inputBlock.type === "variables_get") {
+          const field: any = inputBlock.getField && inputBlock.getField("VAR");
+          const name = (field && typeof field.getText === "function" && field.getText()) || inputBlock.getFieldValue("VAR") || "i";
+          countToken = `{{${name}}}`;
+        }
+      } catch {}
+    }
+
     const doBlock = block.getInputTargetBlock("DO");
 
     const bodyActions = doBlock
@@ -383,33 +402,71 @@ export class BlocklyToPhaserConverter {
 
     return {
       type: "repeat",
-      count: parseInt(times),
+      count: countToken as any,
       body: bodyActions,
-    };
+    } as any;
   }
 
   /**
    * Convert repeat range block (for loops)
    */
   private static convertRepeatRange(block: any): ProgramAction {
-    const varName = block.getFieldValue("VAR") || "i";
-    const from = block.getFieldValue("FROM") || "1";
-    const to = block.getFieldValue("TO") || "5";
-    const by = block.getFieldValue("BY") || "1";
-    const doBlock = block.getInputTargetBlock("DO");
+    // Helper to read token (number or variable placeholder) from an input socket
+    const readToken = (inputName: string, numFallback: number): number | string => {
+      const target = block.getInputTargetBlock(inputName);
+      if (!target) return numFallback;
+      try {
+        if (target.type === "ottobit_number" || target.type === "math_number") {
+          const v = target.getFieldValue("NUM");
+          const n = parseInt(String(v));
+          return isNaN(n) ? numFallback : n;
+        }
+        if (target.type === "ottobit_variable") {
+          const name = target.getFieldValue("VAR") || "i";
+          return `{{${name}}}`;
+        }
+        if (target.type === "variables_get") {
+          const field: any = target.getField && target.getField("VAR");
+          const name = (field && typeof field.getText === "function" && field.getText()) || target.getFieldValue("VAR") || "i";
+          return `{{${name}}}`;
+        }
+      } catch {}
+      return numFallback;
+    };
 
-    const bodyActions = doBlock
-      ? this.parseBlocksToActionsFromBlock(doBlock)
-      : [];
+    // Helper to read variable name from VAR input
+    const readVarName = (): string => {
+      const target = block.getInputTargetBlock("VAR");
+      if (!target) return "i";
+      try {
+        if (target.type === "ottobit_variable") {
+          return target.getFieldValue("VAR") || "i";
+        }
+        if (target.type === "variables_get") {
+          const field: any = target.getField && target.getField("VAR");
+          const name = (field && typeof field.getText === "function" && field.getText()) || target.getFieldValue("VAR");
+          return name || "i";
+        }
+      } catch {}
+      return "i";
+    };
+
+    const varName = readVarName();
+    const from = readToken("FROM", 1);
+    const to = readToken("TO", 5);
+    const by = readToken("BY", 1);
+
+    const doBlock = block.getInputTargetBlock("DO");
+    const bodyActions = doBlock ? this.parseBlocksToActionsFromBlock(doBlock) : [];
 
     return {
       type: "repeatRange",
       variable: varName,
-      from: parseInt(from),
-      to: parseInt(to),
-      step: parseInt(by),
+      from: from as any,
+      to: to as any,
+      step: by as any,
       body: bodyActions,
-    };
+    } as any;
   }
 
   /**

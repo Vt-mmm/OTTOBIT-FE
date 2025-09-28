@@ -72,20 +72,26 @@ javascriptGenerator.forBlock["ottobit_wait"] = function (block: any): string {
 };
 
 javascriptGenerator.forBlock["ottobit_repeat"] = function (block: any): string {
-  const times = block.getFieldValue("TIMES") || "3";
+  const times = javascriptGenerator.valueToCode(block, "TIMES", Order.ATOMIC) || "1";
   const statements = javascriptGenerator.statementToCode(block, "DO");
-  const varName = "count" + Math.floor(Math.random() * 1000);
-  return `for (var ${varName} = 0; ${varName} < ${times}; ${varName}++) {loopstep();\n${statements}}\nloopend();\n`;
+  const iter = "_i"; // fixed iterator name for clarity
+  return `for (let ${iter} = 0; ${iter} < ${times}; ${iter}++) {loopstep();\n${statements}}\nloopend();\n`;
 };
 
 javascriptGenerator.forBlock["ottobit_repeat_range"] = function (
   block: any
 ): string {
-  // Với field_dropdown, lấy value đơn giản
-  const varName = block.getFieldValue("VAR") || "i";
-  const from = block.getFieldValue("FROM") || "1";
-  const to = block.getFieldValue("TO") || "5";
-  const by = block.getFieldValue("BY") || "1";
+  // Hỗ trợ kéo-thả biến/số cho VAR, FROM, TO, BY
+  let varName =
+    javascriptGenerator.valueToCode(block, "VAR", Order.NONE) || "i";
+  const ident = String(varName).trim();
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(ident)) {
+    varName = "i";
+  }
+  const from =
+    javascriptGenerator.valueToCode(block, "FROM", Order.ATOMIC) || "1";
+  const to = javascriptGenerator.valueToCode(block, "TO", Order.ATOMIC) || "5";
+  const by = javascriptGenerator.valueToCode(block, "BY", Order.ATOMIC) || "1";
   const statements = javascriptGenerator.statementToCode(block, "DO");
   return `var ${varName};\nfor (${varName} = ${from}; ${varName} <= ${to}; ${varName} += ${by}) {loopstep();\n${statements}}\nloopend();\n`;
 };
@@ -114,12 +120,7 @@ javascriptGenerator.forBlock["ottobit_if_condition"] = function (
 };
 
 // Sensor blocks
-javascriptGenerator.forBlock["ottobit_read_sensor"] = function (
-  block: any
-): [string, number] {
-  const sensorType = block.getFieldValue("SENSOR_TYPE") || "DISTANCE";
-  return [`readSensor('${sensorType}')`, Order.FUNCTION_CALL];
-};
+
 
 javascriptGenerator.forBlock["ottobit_comparison"] = function (
   block: any
@@ -142,23 +143,7 @@ javascriptGenerator.forBlock["ottobit_comparison"] = function (
   return [code, Order.RELATIONAL];
 };
 
-javascriptGenerator.forBlock["ottobit_touch_sensor"] = function (
-  _block: any
-): [string, number] {
-  return ["robot.getTouchSensor()", Order.FUNCTION_CALL];
-};
 
-javascriptGenerator.forBlock["ottobit_light_sensor"] = function (
-  _block: any
-): [string, number] {
-  return ["robot.getLightLevel()", Order.FUNCTION_CALL];
-};
-
-javascriptGenerator.forBlock["ottobit_sound_sensor"] = function (
-  _block: any
-): [string, number] {
-  return ["robot.getSoundLevel()", Order.FUNCTION_CALL];
-};
 
 // Action blocks
 javascriptGenerator.forBlock["ottobit_led_on"] = function (block: any): string {
@@ -238,28 +223,7 @@ javascriptGenerator.forBlock["ottobit_put_bale"] = function (
 };
 
 // New control blocks generators
-javascriptGenerator.forBlock["ottobit_while_compare"] = function (
-  block: any
-): string {
-  const leftValue =
-    javascriptGenerator.valueToCode(block, "LEFT", Order.RELATIONAL) || "0";
-  const operator = block.getFieldValue("OPERATOR") || "EQ";
-  const rightValue =
-    javascriptGenerator.valueToCode(block, "RIGHT", Order.RELATIONAL) || "0";
-  const statements = javascriptGenerator.statementToCode(block, "DO");
 
-  const operators: { [key: string]: string } = {
-    EQ: "==",
-    NEQ: "!=",
-    LT: "<",
-    LTE: "<=",
-    GT: ">",
-    GTE: ">=",
-  };
-
-  const condition = `${leftValue} ${operators[operator]} ${rightValue}`;
-  return `while (${condition}) {\n${statements}}\n`;
-};
 
 // ottobit_if_expandable generator - Khối IF có thể mở rộng vô hạn
 javascriptGenerator.forBlock["ottobit_if_expandable"] = function (block: any): string {
@@ -360,11 +324,7 @@ javascriptGenerator.forBlock["ottobit_if_elseif_else"] = function (block: any): 
 };
 
 // Variable blocks
-javascriptGenerator.forBlock["ottobit_variable_i"] = function (
-  _block: any
-): [string, Order] {
-  return ["i", Order.ATOMIC];
-};
+
 
 javascriptGenerator.forBlock["ottobit_variable"] = function (
   block: any
@@ -496,28 +456,7 @@ javascriptGenerator.forBlock["ottobit_sensor_condition"] = function (
   return [code, Order.RELATIONAL];
 };
 
-// Enhanced comparison block with input values
-javascriptGenerator.forBlock["ottobit_comparison"] = function (
-  block: any
-): [string, number] {
-  const valueA =
-    javascriptGenerator.valueToCode(block, "A", Order.RELATIONAL) || "0";
-  const op = block.getFieldValue("OP") || "EQ";
-  const valueB =
-    javascriptGenerator.valueToCode(block, "B", Order.RELATIONAL) || "0";
 
-  const operators: { [key: string]: string } = {
-    EQ: "==",
-    NEQ: "!=",
-    LT: "<",
-    LTE: "<=",
-    GT: ">",
-    GTE: ">=",
-  };
-
-  const code = `${valueA} ${operators[op]} ${valueB}`;
-  return [code, Order.RELATIONAL];
-};
 
 // Battery color check blocks - trả về Boolean
 javascriptGenerator.forBlock["ottobit_is_green"] = function (

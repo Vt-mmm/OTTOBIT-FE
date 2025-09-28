@@ -76,6 +76,21 @@ export function registerottobitBlocks(): void {
             }
           }
 
+          // Add default shadow for repeat TIMES
+          if (blockType === "ottobit_repeat") {
+            const timesInput = this.getInput("TIMES");
+            if (timesInput?.connection && this.workspace) {
+              const num = this.workspace.newBlock("ottobit_number");
+              num.setShadow(true);
+              try { num.setFieldValue(2, "NUM"); } catch {}
+              num.initSvg();
+              num.render();
+              if (!timesInput.connection.targetBlock()) {
+                timesInput.connection.connect(num.outputConnection);
+              }
+            }
+          }
+
           if (
             blockType === "ottobit_collect_green" ||
             blockType === "ottobit_collect_red" ||
@@ -93,6 +108,60 @@ export function registerottobitBlocks(): void {
               shadowBlock.render();
               input.connection.connect(shadowBlock.outputConnection);
             }
+          }
+
+          // Add default shadows for repeat_range inputs
+          if (blockType === "ottobit_repeat_range") {
+            try {
+              // VAR: default ottobit_variable with i
+              const varInput = this.getInput("VAR");
+              if (varInput?.connection && this.workspace) {
+                const varShadow = this.workspace.newBlock("ottobit_variable");
+                varShadow.setShadow(true);
+                try { varShadow.setFieldValue("i", "VAR"); } catch {}
+                varShadow.initSvg();
+                varShadow.render();
+                if (!varInput.connection.targetBlock()) {
+                  varInput.connection.connect(varShadow.outputConnection);
+                }
+              }
+              // FROM: default number 1
+              const fromInput = this.getInput("FROM");
+              if (fromInput?.connection && this.workspace) {
+                const num = this.workspace.newBlock("ottobit_number");
+                num.setShadow(true);
+                try { num.setFieldValue(1, "NUM"); } catch {}
+                num.initSvg();
+                num.render();
+                if (!fromInput.connection.targetBlock()) {
+                  fromInput.connection.connect(num.outputConnection);
+                }
+              }
+              // TO: default number 5
+              const toInput = this.getInput("TO");
+              if (toInput?.connection && this.workspace) {
+                const num = this.workspace.newBlock("ottobit_number");
+                num.setShadow(true);
+                try { num.setFieldValue(5, "NUM"); } catch {}
+                num.initSvg();
+                num.render();
+                if (!toInput.connection.targetBlock()) {
+                  toInput.connection.connect(num.outputConnection);
+                }
+              }
+              // BY: default number 1
+              const byInput = this.getInput("BY");
+              if (byInput?.connection && this.workspace) {
+                const num = this.workspace.newBlock("ottobit_number");
+                num.setShadow(true);
+                try { num.setFieldValue(1, "NUM"); } catch {}
+                num.initSvg();
+                num.render();
+                if (!byInput.connection.targetBlock()) {
+                  byInput.connection.connect(num.outputConnection);
+                }
+              }
+            } catch {}
           }
         },
       };
