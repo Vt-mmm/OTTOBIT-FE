@@ -16,10 +16,17 @@ export function useDriverTour({ enabled, steps, config, waitMs = 0 }: UseDriverT
 
   const tour = useMemo(() => driver({
     showProgress: true,
+    // Không đóng khi click vào overlay; cho phép next step nếu click overlay
     overlayClickBehavior: 'nextStep',
+    allowClose: false,
     smoothScroll: true,
-    overlayOpacity: 0.08,
+    overlayOpacity: 0.06,
     popoverClass: mergedPopoverClass,
+    // Force footer buttons to include Close
+    showButtons: ['previous', 'next', 'close'],
+    prevBtnText: 'Trước',
+    nextBtnText: 'Tiếp',
+    doneBtnText: 'Xong',
     ...config,
     steps,
   }), [steps, config, mergedPopoverClass]);
@@ -56,6 +63,20 @@ export function useDriverTour({ enabled, steps, config, waitMs = 0 }: UseDriverT
       if (tour.isActive()) tour.destroy();
     };
   }, [enabled, steps, waitMs, tour]);
+
+  // Global refresh on viewport changes while tour active
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    const handler = () => {
+      try { if (tour.isActive()) tour.refresh(); } catch {}
+    };
+    window.addEventListener('resize', handler);
+    window.addEventListener('orientationchange', handler as any);
+    return () => {
+      window.removeEventListener('resize', handler);
+      window.removeEventListener('orientationchange', handler as any);
+    };
+  }, [tour]);
 
   return tour;
 }

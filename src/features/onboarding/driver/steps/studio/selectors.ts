@@ -6,6 +6,7 @@ export const STUDIO_SELECTORS = {
   toolbox: '#studio-toolbox',
   workspaceCanvas: '#studio-workspace-canvas',
   // Topbar actionable buttons
+  actions: '#studio-actions',
   btnMicrobit: '#tour-btn-microbit',
   btnCamera: '#tour-btn-camera',
   btnHint: '#tour-btn-hint',
