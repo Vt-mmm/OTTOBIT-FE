@@ -1,0 +1,63 @@
+.driver-popover {
+  z-index: 1305;
+}
+.driver-overlay {
+  z-index: 1300;
+}
+
+/* Accent style for highlighted Studio TopBar */
+.studio-tour-accent {
+  outline: 3px solid rgba(16, 185, 129, 0.8) !important; /* #10b981 */
+  box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.35), 0 10px 30px rgba(16, 185, 129, 0.35) !important;
+  filter: brightness(1.05);
+}
+
+/* Popover theming for Studio */
+.driver-popover.studio-popover {
+  background: #fffde7 !important; /* sáng hơn */
+  border: 2px solid #0ea5a5 !important; /* teal border cho nổi */
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22), 0 0 0 2px rgba(14, 165, 165, 0.1) !important;
+  color: #111827 !important; /* gray-900 */
+  opacity: 1 !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.driver-popover.studio-popover .driver-popover-title {
+  color: #065f46 !important; /* darker green */
+  font-weight: 700 !important; /* đồng bộ typography h5/h6 */
+}
+.driver-popover.studio-popover .driver-popover-description {
+  color: #334155 !important; /* slate-700 */
+}
+.driver-popover.studio-popover .driver-popover-close-btn {
+  color: #0f766e !important;
+}
+.driver-popover.studio-popover, 
+.driver-popover.studio-popover * {
+  font-family: Poppins, sans-serif !important; /* đồng bộ MUI */
+}
+.driver-popover.studio-popover button {
+  border-radius: 10px !important;
+  font-weight: 600 !important; /* nút đậm vừa phải */
+}
+/* Nút ít chói: nền trắng, chữ xanh đậm, hover nhạt */
+.driver-popover.studio-popover .driver-popover-prev-btn, 
+.driver-popover.studio-popover .driver-popover-next-btn, 
+.driver-popover.studio-popover .driver-popover-done-btn {
+  background: #ffffff !important;
+  color: #065f46 !important;
+  border: 1px solid #10b981 !important;
+}
+.driver-popover.studio-popover .driver-popover-prev-btn:hover, 
+.driver-popover.studio-popover .driver-popover-next-btn:hover, 
+.driver-popover.studio-popover .driver-popover-done-btn:hover {
+  background: #ecfdf5 !important; /* xanh nhạt */
+  border-color: #059669 !important;
+  color: #065f46 !important;
+}
+/* Progress text dịu hơn */
+.driver-popover.studio-popover .driver-popover-progress-text {
+  color: #64748b !important; /* slate-500 */
+}

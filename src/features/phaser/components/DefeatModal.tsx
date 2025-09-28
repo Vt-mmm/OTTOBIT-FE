@@ -13,7 +13,6 @@ import {
   IconButton,
   Alert,
   Divider,
-  Fade,
   Slide,
 } from "@mui/material";
 import {
@@ -88,7 +87,6 @@ export default function DefeatModal({
   // Safe data extraction with fallbacks
   const errorMessage = defeatData.message || "Đã xảy ra lỗi!";
   const errorType = defeatData.type || "PROGRAM_ERROR";
-  const errorDetails = defeatData.details || null;
   const errorStep = defeatData.step || null;
 
   // Get error icon and color based on type

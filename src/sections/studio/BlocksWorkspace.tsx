@@ -2371,6 +2371,7 @@ export default function BlocksWorkspace({
 
   return (
     <Box
+      id="studio-blocks"
       sx={{
         width: "100%",
         height: "100%",
@@ -2381,13 +2382,16 @@ export default function BlocksWorkspace({
       }}
     >
       {/* Custom Toolbox với UI đẹp */}
-      <BlockToolbox onCategorySelect={handleCategorySelect} />
-
+      <Box id="studio-toolbox" sx={{ display: 'flex' }}>
+             <BlockToolbox onCategorySelect={handleCategorySelect} />
+      </Box>
+      
       {/* Blockly Workspace */}
       <Box
-        ref={workspaceRef}
-        sx={{
-          flex: 1,
+      id="studio-workspace-canvas"
+      ref={workspaceRef}
+      sx={{
+        flex: 1,
           height: "100%",
           backgroundColor: "#ffffff",
         }}

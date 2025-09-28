@@ -222,6 +222,7 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
 
   return (
     <Box
+      id="studio-simulator"
       ref={containerRef}
       className={className}
       sx={{
@@ -300,6 +301,7 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
       {/* Game state indicator */}
       {gameState && (
         <Box
+          id="tour-game-status"
           sx={{
             position: "absolute",
             top: 8,
