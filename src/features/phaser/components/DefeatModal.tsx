@@ -98,7 +98,7 @@ export default function DefeatModal({
         return {
           icon: ErrorOutline,
           color: "#ef4444",
-          title: "Lỗi chương trình",
+          title: "Nhiệm vụ thất bại",
         };
       case "MAP_ERROR":
         return { icon: ErrorOutline, color: "#f97316", title: "Lỗi bản đồ" };
@@ -183,16 +183,6 @@ export default function DefeatModal({
             >
               💥 Thất bại!
             </Typography>
-
-            <Typography
-              variant="h6"
-              sx={{
-                color: "#7f1d1d",
-                fontWeight: 500,
-              }}
-            >
-              Nhiệm vụ chưa hoàn thành
-            </Typography>
           </Box>
 
           {/* Error Information */}
@@ -256,61 +246,6 @@ export default function DefeatModal({
                 </Box>
               </Box>
             )}
-
-            {/* Details */}
-            {errorDetails && (
-              <Fade in={open} timeout={1000}>
-                <Box
-                  sx={{
-                    p: 2,
-                    borderRadius: "12px",
-                    backgroundColor: "rgba(0, 0, 0, 0.05)",
-                    border: "1px solid rgba(0, 0, 0, 0.1)",
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    sx={{ fontFamily: "monospace", color: "#374151" }}
-                  >
-                    {typeof errorDetails === "string"
-                      ? errorDetails
-                      : JSON.stringify(errorDetails, null, 2)}
-                  </Typography>
-                </Box>
-              </Fade>
-            )}
-          </Box>
-
-          {/* Suggestions */}
-          <Box sx={{ mb: 4 }}>
-            <Typography
-              variant="h6"
-              sx={{
-                mb: 2,
-                color: "#7f1d1d",
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-              }}
-            >
-              💡 Gợi ý khắc phục
-            </Typography>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              <Typography variant="body2" sx={{ color: "#991b1b" }}>
-                • Kiểm tra lại logic chương trình của bạn
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#991b1b" }}>
-                • Đảm bảo robot di chuyển đúng hướng
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#991b1b" }}>
-                • Xác nhận có đủ pin tại các vị trí cần thu thập
-              </Typography>
-              {errorStep && (
-                <Typography variant="body2" sx={{ color: "#991b1b" }}>
-                  • Tập trung vào bước {errorStep} có vấn đề
-                </Typography>
-              )}
-            </Box>
           </Box>
 
           <Divider sx={{ my: 3, borderColor: "rgba(239, 68, 68, 0.2)" }} />
