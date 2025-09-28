@@ -131,24 +131,44 @@ export function usePhaserSimulator(
     [showDefeatModal]
   );
 
-  const handleLose = useCallback(() => {
+  const handleLose = useCallback((data?: any) => {
     // Prevent duplicate opens
     if (isDefeatModalOpen) {
       return;
     }
 
-    // Simple generic error data for DefeatModal
-    const errorData: ErrorData = {
-      type: "PROGRAM_ERROR",
-      message: "Chương trình không hoàn thành được nhiệm vụ!",
-      details: "Hãy kiểm tra lại logic chương trình của bạn",
-      step: undefined,
+    // Map Phaser LOSE payload to our ErrorData shape
+    const reason = data?.reason as string | undefined;
+    const message = (data?.message as string) || "Chương trình không hoàn thành được nhiệm vụ!";
+    const step = (data?.failedStep ?? data?.step) as number | undefined;
+    const details = {
+      ...(data?.details || {}),
+      reason,
+      failedAction: data?.failedAction,
+      executionTime: data?.executionTime,
+      totalSteps: data?.totalSteps,
+      robotPosition: data?.robotPosition,
+      robotDirection: data?.robotDirection,
     };
 
-    // Don't set error state to avoid conflict with DefeatModal
-    // setError("Thất bại!"); // Commented out to prevent error alert
-    setGameState((prev) => (prev ? { ...prev, programStatus: "error" } : null));
+    // Heuristic map reason -> type for nicer UI
+    const mapReasonToType = (r?: string): ErrorData["type"] => {
+      if (!r) return "PROGRAM_ERROR";
+      const R = r.toUpperCase();
+      if (R.includes("BOUND") || R.includes("COLLISION") || R.includes("WALL")) return "MAP_ERROR";
+      if (R.includes("VALIDATION") || R.includes("STATEMENT")) return "VALIDATION_ERROR";
+      return "PROGRAM_ERROR";
+    };
 
+    const errorData: ErrorData = {
+      type: mapReasonToType(reason),
+      message,
+      details,
+      step,
+    };
+
+    // Don't set global error alert; just reflect program status and show modal
+    setGameState((prev) => (prev ? { ...prev, programStatus: "error" } : null));
     showDefeatModal(errorData);
   }, [showDefeatModal, isDefeatModalOpen]);
 
