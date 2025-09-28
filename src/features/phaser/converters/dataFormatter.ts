@@ -31,22 +31,9 @@ export function fixDescription(description: string): string {
     .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
     .trim();
 
-  // Add spaces around common words if they're stuck together
-  const commonWords = [
-    'all', 'the', 'and', 'or', 'if', 'using', 'with', 'without', 'from', 'to',
-    'collect', 'batteries', 'battery', 'yellow', 'red', 'green', 'blue',
-    'statements', 'loops', 'functions', 'variables'
-  ];
-
-  commonWords.forEach(word => {
-    // Add space before the word if it's preceded by a letter
-    const beforePattern = new RegExp(`([a-z])${word}`, 'gi');
-    fixed = fixed.replace(beforePattern, `$1 ${word}`);
-    
-    // Add space after the word if it's followed by a letter
-    const afterPattern = new RegExp(`${word}([a-z])`, 'gi');
-    fixed = fixed.replace(afterPattern, `${word} $1`);
-  });
+  // NOTE: Do not attempt to inject spaces around common words.
+  // This previously caused corrupted text like "comm and" and "ga the r".
+  // Keep only camelCase and acronym spacing above.
 
   // Clean up multiple spaces
   fixed = fixed.replace(/\s+/g, ' ').trim();
