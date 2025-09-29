@@ -27,6 +27,51 @@ export default function BlocksWorkspace({
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const selectedCategoryRef = useRef<string>("");
 
+  // Helper: safely create a number block with output and set value
+  const createNumberBlock = (ws: any, value: number) => {
+    const numberBlockTypes = [
+      "ottobit_number",
+      "ottobit_math_number",
+      "ottobit_value",
+      "math_number",
+      "number",
+    ];
+    const fieldCandidates = ["NUM", "VALUE", "TEXT"];
+    for (const t of numberBlockTypes) {
+      try {
+        const b = ws.newBlock(t);
+        if (!b) continue;
+        // Must have output to connect into ValueInput
+        if (!b.outputConnection) {
+          try {
+            b.dispose?.();
+          } catch {}
+          continue;
+        }
+        b.initSvg?.();
+        b.render?.();
+        let set = false;
+        for (const fname of fieldCandidates) {
+          try {
+            if (b.getField && b.getField(fname)) {
+              b.setFieldValue(String(value), fname);
+              set = true;
+              break;
+            }
+          } catch {}
+        }
+        // Best effort default
+        if (!set) {
+          try {
+            b.setFieldValue(String(value), "NUM");
+          } catch {}
+        }
+        return b;
+      } catch {}
+    }
+    return null;
+  };
+
   // Category blocks mapping - sử dụng block types từ cấu trúc mới
   const categoryBlocks = {
     basics: [
@@ -140,14 +185,20 @@ export default function BlocksWorkspace({
         // Tự động ĐÓNG toolbox khi thả block thành công từ flyout vào workspace
         if (event.type === Blockly.Events.BLOCK_CREATE) {
           // Chỉ đóng nếu hiện tại đang mở một category (tránh can thiệp lúc init)
-          if (selectedCategoryRef.current && selectedCategoryRef.current !== "") {
+          if (
+            selectedCategoryRef.current &&
+            selectedCategoryRef.current !== ""
+          ) {
             // Delay nhẹ để tránh ảnh hưởng quá trình tạo block
             setTimeout(() => {
               try {
                 // Đóng bằng cả 2 cách: state + cập nhật toolbox rỗng ngay lập tức
                 setSelectedCategory("");
                 selectedCategoryRef.current = "";
-                const emptyToolbox = { kind: "flyoutToolbox", contents: [] as any[] };
+                const emptyToolbox = {
+                  kind: "flyoutToolbox",
+                  contents: [] as any[],
+                };
                 workspace.updateToolbox(emptyToolbox);
                 const flyout = workspace.getFlyout();
                 if (flyout) flyout.setVisible(false);
@@ -248,11 +299,13 @@ export default function BlocksWorkspace({
         startBlock.initSvg();
         startBlock.render();
         startBlock.moveBy(moveDistance, moveDistance);
-        
+
         // Defer program rendering to the dedicated effect to avoid double-render
-         if (initialProgramActionsJson) { return; }
- 
-         try {
+        if (initialProgramActionsJson) {
+          return;
+        }
+
+        try {
           const program = initialProgramActionsJson;
           const actions = program?.actions;
 
@@ -361,22 +414,27 @@ export default function BlocksWorkspace({
             // Try set common fields if exist
             try {
               // Set counts by connecting number inputs or setting fields depending on block type
-              if (typeof act.count === "number") {
+              if (typeof (act.value ?? act.count) === "number") {
                 // Repeat: TIMES is a field_number
                 if (blockType === "ottobit_repeat" && block.setFieldValue) {
                   if (block.getField && block.getField("TIMES")) {
-                    block.setFieldValue(String(act.count), "TIMES");
+                    block.setFieldValue(
+                      String(act.value ?? act.count),
+                      "TIMES"
+                    );
                   }
                 }
                 // Move forward: input_value STEPS
                 else if (blockType === "ottobit_move_forward") {
                   const input = block.getInput && block.getInput("STEPS");
                   if (input?.connection) {
-                    const num = workspace.newBlock("ottobit_number");
-                    num.initSvg();
-                    num.render();
-                    try { num.setFieldValue(String(act.count), "NUM"); } catch {}
-                    input.connection.connect(num.outputConnection);
+                    const num = createNumberBlock(
+                      workspace,
+                      (act.value ?? act.count) as number
+                    );
+                    if (num?.outputConnection) {
+                      input.connection.connect(num.outputConnection);
+                    }
                   }
                 }
                 // Collect blocks: input_value COUNT
@@ -387,11 +445,13 @@ export default function BlocksWorkspace({
                 ) {
                   const input = block.getInput && block.getInput("COUNT");
                   if (input?.connection) {
-                    const num = workspace.newBlock("ottobit_number");
-                    num.initSvg();
-                    num.render();
-                    try { num.setFieldValue(String(act.count), "NUM"); } catch {}
-                    input.connection.connect(num.outputConnection);
+                    const num = createNumberBlock(
+                      workspace,
+                      (act.value ?? act.count) as number
+                    );
+                    if (num?.outputConnection) {
+                      input.connection.connect(num.outputConnection);
+                    }
                   }
                 }
               }
@@ -914,26 +974,30 @@ export default function BlocksWorkspace({
           // Build actions array compatible with existing renderer
           const mapDetectionToAction = (det: any): any | null => {
             const name = String(det?.class_name || "").toLowerCase();
+
             if (name === "start") return { type: "start" };
             if (name === "move_forward") {
-              const count = Number(det?.value);
-              return Number.isFinite(count)
-                ? { type: "move_forward", count }
+              const value = Number(det?.value);
+
+              return Number.isFinite(value)
+                ? { type: "move_forward", value }
                 : { type: "move_forward" };
             }
             if (name === "collect") {
-              const count = Number(det?.value);
-              return Number.isFinite(count)
-                ? { type: "collect", count }
+              const value = Number(det?.value);
+
+              return Number.isFinite(value)
+                ? { type: "collect", value }
                 : { type: "collect" };
             }
             if (name === "repeat_start") {
               const body = Array.isArray(det?.actions)
                 ? det.actions.map(mapDetectionToAction).filter(Boolean)
                 : [];
-              const count = Number(det?.value);
-              return Number.isFinite(count)
-                ? { type: "repeat", count, body }
+              const value = Number(det?.value);
+
+              return Number.isFinite(value)
+                ? { type: "repeat", value, body }
                 : { type: "repeat", body };
             }
             if (name === "turn_right")
@@ -962,12 +1026,20 @@ export default function BlocksWorkspace({
 
           const createBlockFromAction = (act: any, index: number): any => {
             let blockType: string | null = null;
-            const type = String(act?.type || "").toLowerCase();
-            if (type === "repeat") blockType = "ottobit_repeat";
+            // Handle both class_name (from detection API) and type (from program JSON)
+            const type = String(
+              act?.class_name || act?.type || ""
+            ).toLowerCase();
+            if (type === "repeat" || type === "repeat_start")
+              blockType = "ottobit_repeat";
             else if (type === "repeatrange") blockType = "ottobit_repeat_range";
             else if (type === "forward" || type === "move_forward")
               blockType = "ottobit_move_forward";
-            else if (type === "turnright" || type === "rotate")
+            else if (
+              type === "turnright" ||
+              type === "rotate" ||
+              type === "turn_right"
+            )
               blockType = "ottobit_rotate";
             else if (type === "if") blockType = "ottobit_if_expandable";
             else if (type === "while") blockType = "ottobit_while";
@@ -976,6 +1048,8 @@ export default function BlocksWorkspace({
             else if (type === "takebox") blockType = "ottobit_take_bale";
             else if (type === "putbox") blockType = "ottobit_put_bale";
             else if (type === "collect") blockType = "ottobit_collect_yellow";
+            else if (type === "turn_left") blockType = "ottobit_rotate";
+            else if (type === "turn_back") blockType = "ottobit_rotate";
             if (!blockType) return null;
             const block: any = workspace.newBlock(blockType);
             block.initSvg();
@@ -1032,35 +1106,65 @@ export default function BlocksWorkspace({
               }
             } catch {}
             try {
-              if (typeof act.count === "number" && block.setFieldValue) {
-                const fieldIds = [
-                  "COUNT",
-                  "count",
+              const value = act.value ?? act.count;
+
+              if (typeof value === "number") {
+                // Try to set value directly to field first
+                const fieldNames = [
                   "TIMES",
+                  "COUNT",
                   "VALUE",
                   "N",
-                  "NUMBER",
-                  "STEP",
+                  "NUM",
                   "STEPS",
-                  "DIST",
-                  "DISTANCE",
                 ];
-                let applied = false;
-                for (const fid of fieldIds) {
-                  if (block.getField && block.getField(fid)) {
-                    block.setFieldValue(String(act.count), fid);
-                    applied = true;
-                    break;
-                  }
-                }
-                if (!applied && (block as any).setCount) {
+                let fieldSet = false;
+                for (const fieldName of fieldNames) {
                   try {
-                    (block as any).setCount(act.count);
-                    applied = true;
-                  } catch {}
+                    if (block.getField && block.getField(fieldName)) {
+                      block.setFieldValue(String(value), fieldName);
+
+                      fieldSet = true;
+                      break;
+                    }
+                  } catch (e) {}
+                }
+
+                if (fieldSet) {
+                  return;
+                }
+
+                // Find ValueInput in the block
+                const valueInput = block.inputList?.find(
+                  (inp: any) => inp.type === 1
+                ); // ValueInput type
+                if (valueInput && valueInput.connection) {
+                  const numBlock = createNumberBlock(workspace, value);
+                  if (!numBlock) {
+                    return;
+                  }
+                  try {
+                    valueInput.connection.connect(numBlock.outputConnection);
+                  } catch (e) {}
+                } else {
                 }
               }
-              if (typeof act.direction === "string" && block.setFieldValue) {
+
+              // Handle direction for turn blocks
+              let direction = act.direction;
+              if (
+                !direction &&
+                (type === "turn_left" ||
+                  type === "turn_right" ||
+                  type === "turn_back")
+              ) {
+                // Map class_name to direction
+                if (type === "turn_left") direction = "left";
+                else if (type === "turn_right") direction = "right";
+                else if (type === "turn_back") direction = "back";
+              }
+
+              if (typeof direction === "string" && block.setFieldValue) {
                 const dirFieldIds = [
                   "DIRECTION",
                   "DIR",
@@ -1069,7 +1173,7 @@ export default function BlocksWorkspace({
                   "TURN",
                   "TURN_DIR",
                 ];
-                const dirValue = act.direction;
+                const dirValue = direction;
                 const dirUpper = dirValue.toUpperCase();
                 let set = false;
                 for (const fid of dirFieldIds) {
@@ -1140,9 +1244,28 @@ export default function BlocksWorkspace({
             try {
               const body = Array.isArray(act.body) ? act.body : [];
               if (body.length > 0) {
-                const stmtInput = (block.inputList || []).find(
-                  (inp: any) => inp.type === 3 || inp.connection
-                );
+                // Pick correct statement input for repeat (prefer known names)
+                const pickStatementInput = (): any => {
+                  const tryInputs = (names: string[]) => {
+                    for (const nm of names) {
+                      const inp = block.getInput && block.getInput(nm);
+                      if (inp && inp.connection) return inp;
+                    }
+                    return null;
+                  };
+                  if (blockType === "ottobit_repeat") {
+                    return (
+                      tryInputs(["DO", "BODY", "STACK"]) ||
+                      (block.inputList || []).find(
+                        (inp: any) => inp && inp.type === 3 && inp.connection
+                      )
+                    );
+                  }
+                  return (block.inputList || []).find(
+                    (inp: any) => inp && inp.type === 3 && inp.connection
+                  );
+                };
+                const stmtInput = pickStatementInput();
                 if (stmtInput && stmtInput.connection) {
                   let prevInner: any = null;
                   body.forEach((childAct: any, childIdx: number) => {
@@ -1680,7 +1803,9 @@ export default function BlocksWorkspace({
                 const num = blocklyWorkspace.newBlock("ottobit_number");
                 num.initSvg();
                 num.render();
-                try { num.setFieldValue(String(act.count), "NUM"); } catch {}
+                try {
+                  num.setFieldValue(String(act.count), "NUM");
+                } catch {}
                 input.connection.connect(num.outputConnection);
               }
             }
@@ -1695,7 +1820,9 @@ export default function BlocksWorkspace({
                 const num = blocklyWorkspace.newBlock("ottobit_number");
                 num.initSvg();
                 num.render();
-                try { num.setFieldValue(String(act.count), "NUM"); } catch {}
+                try {
+                  num.setFieldValue(String(act.count), "NUM");
+                } catch {}
                 input.connection.connect(num.outputConnection);
               }
             }
@@ -2382,16 +2509,16 @@ export default function BlocksWorkspace({
       }}
     >
       {/* Custom Toolbox với UI đẹp */}
-      <Box id="studio-toolbox" sx={{ display: 'flex' }}>
-             <BlockToolbox onCategorySelect={handleCategorySelect} />
+      <Box id="studio-toolbox" sx={{ display: "flex" }}>
+        <BlockToolbox onCategorySelect={handleCategorySelect} />
       </Box>
-      
+
       {/* Blockly Workspace */}
       <Box
-      id="studio-workspace-canvas"
-      ref={workspaceRef}
-      sx={{
-        flex: 1,
+        id="studio-workspace-canvas"
+        ref={workspaceRef}
+        sx={{
+          flex: 1,
           height: "100%",
           backgroundColor: "#ffffff",
         }}

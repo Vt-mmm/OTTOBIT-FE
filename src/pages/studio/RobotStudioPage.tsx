@@ -177,7 +177,7 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
 
     try {
       // Clear existing blocks completely
-      if (typeof workspace.clear === 'function') {
+      if (typeof workspace.clear === "function") {
         workspace.clear();
       }
 
@@ -186,18 +186,18 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
         const toolbox = workspace.getToolbox && workspace.getToolbox();
         toolbox?.clearSelection?.();
         const flyout = workspace.getFlyout && workspace.getFlyout();
-        if (flyout && typeof flyout.setVisible === 'function') {
+        if (flyout && typeof flyout.setVisible === "function") {
           flyout.setVisible(false);
         }
         // Also update to an empty toolbox (prevents flicker)
-        if (typeof workspace.updateToolbox === 'function') {
-          workspace.updateToolbox({ kind: 'flyoutToolbox', contents: [] });
+        if (typeof workspace.updateToolbox === "function") {
+          workspace.updateToolbox({ kind: "flyoutToolbox", contents: [] });
         }
       } catch {}
 
       // Ensure a fresh start block exists for new challenge
       try {
-        const start = workspace.newBlock && workspace.newBlock('ottobit_start');
+        const start = workspace.newBlock && workspace.newBlock("ottobit_start");
         if (start) {
           start.initSvg && start.initSvg();
           start.render && start.render();
@@ -333,12 +333,9 @@ const RobotStudioPage = () => {
     const navData = parseStudioNavigation(challengeId, searchParams);
 
     if (navData) {
-      console.log("🚀 Studio navigation detected:", navData);
-
       // Store navigation data
       storeStudioNavigationData(navData);
       // TODO: Re-implement navigation data if needed
-      console.log("Navigation data:", navData);
       setSelectedChallengeId(navData.challengeId);
       setShowChallengeSelector(false);
     } else {

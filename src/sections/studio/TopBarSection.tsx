@@ -212,21 +212,10 @@ function TopBarContent({
       submissionInProgress.current = true;
 
       try {
-        console.log("🎆 Submitting solution:", {
-          challengeId: currentChallengeId,
-          stars,
-          hasWorkspace: !!workspace,
-        });
-
         // Convert workspace to program using existing converter
         const programData =
           BlocklyToPhaserConverter.convertWorkspace(workspace);
         const codeJson = JSON.stringify(programData);
-
-        console.log("📝 Generated code JSON:", {
-          programData,
-          codeJsonLength: codeJson.length,
-        });
 
         // Submit to backend
         const result = await dispatch(
@@ -236,8 +225,6 @@ function TopBarContent({
             star: stars,
           })
         ).unwrap();
-
-        console.log("✅ Submission successful:", result);
 
         showNotification(
           `Chúc mừng! Bạn đã hoàn thành challenge với ${stars} sao! ⭐️`,
@@ -261,11 +248,8 @@ function TopBarContent({
   // Create stable victory handler - memoized to prevent useEffect re-runs
   const handleVictory = useCallback(
     (victoryData: any) => {
-      console.log("🎆 Victory event received:", victoryData);
-
       // Use stars calculation logic from VictoryModal (same as UI)
       const score = victoryData.starScore ?? victoryData.score ?? 0;
-      console.log("🎯 Final score used for stars calculation:", score);
 
       // Use the same calculateStarsFromScore logic as VictoryModal
       const calculateStarsFromScore = (score: number): number => {
@@ -273,27 +257,12 @@ function TopBarContent({
           Math.max(min, Math.min(max, value));
         const stars = clamp(Math.ceil(score * 3), 1, 3);
 
-        console.log("🌟 Stars Calculation - Input score:", score);
-        console.log("🌟 Formula: stars = clamp(ceil(score * 3), 1, 3)");
-        console.log(
-          `🌟 Step: ${score} * 3 = ${score * 3}, ceil = ${Math.ceil(
-            score * 3
-          )}, clamp = ${stars}`
-        );
-        console.log("🌟 Final stars:", stars);
-
         return stars;
       };
 
       // Calculate stars exactly like VictoryModal does
       const calculatedStars =
         victoryData.stars ?? calculateStarsFromScore(score);
-
-      console.log("🏆 Final stars for submission:", {
-        providedStars: victoryData.stars,
-        calculatedStars,
-        finalStars: calculatedStars,
-      });
 
       // Refresh progress from server and submit solution
       if (lessonId) {
@@ -306,27 +275,20 @@ function TopBarContent({
 
   // Listen for victory events from Phaser - optimized effect with minimal dependencies
   useEffect(() => {
-    console.log("🎵 Registering VICTORY listener");
-
     // Register victory listener
     onMessage("VICTORY", handleVictory);
 
     // Cleanup listener on unmount or effect re-run
     return () => {
-      console.log("🧹 Cleaning up VICTORY listener");
       offMessage("VICTORY", handleVictory);
     };
   }, [onMessage, offMessage, handleVictory]); // Minimal dependencies
 
   const handleRun = async () => {
-    console.log("🚀 [TopBar] Execute button clicked");
-
     // CRITICAL: Emergency cleanup before execute to prevent field editor leaks
-    console.log("🚨 [TopBar] Running emergency cleanup before execute...");
     forceCleanupBeforeExecute();
 
     // ENHANCED: Also cleanup field inputs specifically
-    console.log("🧡 [TopBar] Cleaning up field inputs...");
     forceCleanupFields();
 
     if (!workspace) {
@@ -334,25 +296,12 @@ function TopBarContent({
       return;
     }
 
-    console.log("📋 [TopBar] Workspace available:", {
-      workspaceId: workspace.id,
-      blockCount: workspace.getAllBlocks().length,
-      hasStartBlock: workspace
-        .getAllBlocks()
-        .some((b: any) => b.type === "ottobit_start"),
-    });
-
     setIsRunning(true);
 
     try {
       // Đảm bảo Phaser thực sự sẵn sàng
-      console.log("🎮 [TopBar] Checking Phaser connection:", {
-        phaserConnected,
-        phaserReady,
-      });
 
       if (!phaserConnected || !phaserReady) {
-        console.log("⏳ [TopBar] Waiting for Phaser to be ready...");
         // Đợi một chút để Phaser sẵn sàng
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -364,10 +313,8 @@ function TopBarContent({
       }
 
       // Thêm delay nhỏ trước khi gửi message để đảm bảo Phaser thực sự sẵn sàng
-      console.log("⏳ [TopBar] Adding safety delay before execution...");
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      console.log("🎯 [TopBar] Calling runProgramFromWorkspace...");
       await runProgramFromWorkspace(workspace);
     } catch (error) {
       console.error("❌ [TopBar] Error during execution:", error);
@@ -412,12 +359,8 @@ function TopBarContent({
   }, [showHintDialog, closeWorkspaceToolbox]);
 
   const handleRestart = async () => {
-    console.log("🔄 [TopBar] Restart button clicked");
-
     try {
-      console.log("⏳ [TopBar] Calling restartScene...");
       await restartScene();
-      console.log("✅ [TopBar] Scene restarted successfully");
 
       showNotification("Map đã được tải lại thành công!", "success");
     } catch (error) {
@@ -622,7 +565,6 @@ function TopBarContent({
       }
 
       const result = await response.json();
-      console.log("Detection result:", result);
 
       // Render blocks in Blockly workspace immediately if available
       try {

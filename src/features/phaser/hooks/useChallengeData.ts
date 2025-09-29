@@ -1,21 +1,24 @@
 /**
- * Hook for Challenge Data management  
+ * Hook for Challenge Data management
  * Provides challenge data from backend via Redux
  */
 
 import { useCallback, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { parseJsonSafely, parseAllChallengeJsons } from "../converters";
-import { 
-  getChallenges, 
+import {
+  getChallenges,
   getChallengeById,
   getChallengesByLesson,
   setCurrentChallenge,
   clearChallenges,
   clearChallengeErrors,
-  resetChallengeState
+  resetChallengeState,
 } from "../../../redux/challenge/challengeSlice";
-import { ChallengeResult, GetChallengesRequest } from "../../../common/@types/challenge";
+import {
+  ChallengeResult,
+  GetChallengesRequest,
+} from "../../../common/@types/challenge";
 
 export function useChallengeData() {
   const dispatch = useAppDispatch();
@@ -23,22 +26,46 @@ export function useChallengeData() {
   // Direct import from converters - no hooks needed
 
   // Selectors với memoization
-  const challenges = useMemo(() => challengeState.challenges, [challengeState.challenges]);
-  const lessonChallenges = useMemo(() => challengeState.lessonChallenges, [challengeState.lessonChallenges]);
-  const currentChallenge = useMemo(() => challengeState.currentChallenge, [challengeState.currentChallenge]);
+  const challenges = useMemo(
+    () => challengeState.challenges,
+    [challengeState.challenges]
+  );
+  const lessonChallenges = useMemo(
+    () => challengeState.lessonChallenges,
+    [challengeState.lessonChallenges]
+  );
+  const currentChallenge = useMemo(
+    () => challengeState.currentChallenge,
+    [challengeState.currentChallenge]
+  );
 
   // Loading states
-  const isLoadingChallenges = useMemo(() => challenges.isLoading, [challenges.isLoading]);
-  const isLoadingLessonChallenges = useMemo(() => lessonChallenges.isLoading, [lessonChallenges.isLoading]);
-  const isLoadingCurrentChallenge = useMemo(() => currentChallenge.isLoading, [currentChallenge.isLoading]);
+  const isLoadingChallenges = useMemo(
+    () => challenges.isLoading,
+    [challenges.isLoading]
+  );
+  const isLoadingLessonChallenges = useMemo(
+    () => lessonChallenges.isLoading,
+    [lessonChallenges.isLoading]
+  );
+  const isLoadingCurrentChallenge = useMemo(
+    () => currentChallenge.isLoading,
+    [currentChallenge.isLoading]
+  );
   const isLoading = useMemo(
-    () => isLoadingChallenges || isLoadingLessonChallenges || isLoadingCurrentChallenge,
+    () =>
+      isLoadingChallenges ||
+      isLoadingLessonChallenges ||
+      isLoadingCurrentChallenge,
     [isLoadingChallenges, isLoadingLessonChallenges, isLoadingCurrentChallenge]
   );
 
   // Error states
   const hasError = useMemo(
-    () => Boolean(challenges.error || lessonChallenges.error || currentChallenge.error),
+    () =>
+      Boolean(
+        challenges.error || lessonChallenges.error || currentChallenge.error
+      ),
     [challenges.error, lessonChallenges.error, currentChallenge.error]
   );
 
@@ -52,7 +79,9 @@ export function useChallengeData() {
 
   const fetchChallengesByLesson = useCallback(
     (lessonId: string, pageNumber = 1, pageSize = 100) => {
-      return dispatch(getChallengesByLesson({ lessonId, pageNumber, pageSize }));
+      return dispatch(
+        getChallengesByLesson({ lessonId, pageNumber, pageSize })
+      );
     },
     [dispatch]
   );
@@ -86,42 +115,31 @@ export function useChallengeData() {
   // Helper functions
   const findChallengeById = useCallback(
     (challengeId: string): ChallengeResult | null => {
-      console.log('🔍 findChallengeById debug:', {
-        challengeId,
-        currentChallengeId: currentChallenge.data?.id,
-        hasCurrentChallenge: !!currentChallenge.data,
-        allChallengesCount: challenges.data?.items?.length || 0,
-        lessonChallengesCount: lessonChallenges.data?.items?.length || 0,
-        allChallengeIds: challenges.data?.items?.map(c => c.id.slice(-8)) || [],
-        lessonChallengeIds: lessonChallenges.data?.items?.map(c => c.id.slice(-8)) || [],
-        targetIdSuffix: challengeId.slice(-8)
-      });
-      
       // Check current challenge first
       if (currentChallenge.data?.id === challengeId) {
-        console.log('✅ Found in currentChallenge');
         return currentChallenge.data;
       }
 
       // Check all challenges - fix property access
       if (challenges.data?.items) {
-        const found = challenges.data.items.find((challenge) => challenge.id === challengeId);
+        const found = challenges.data.items.find(
+          (challenge) => challenge.id === challengeId
+        );
         if (found) {
-          console.log('✅ Found in challenges.data.items');
           return found;
         }
       }
 
       // Check lesson challenges - fix property access
       if (lessonChallenges.data?.items) {
-        const found = lessonChallenges.data.items.find((challenge) => challenge.id === challengeId);
+        const found = lessonChallenges.data.items.find(
+          (challenge) => challenge.id === challengeId
+        );
         if (found) {
-          console.log('✅ Found in lessonChallenges.data.items');
           return found;
         }
       }
 
-      console.log('❌ Challenge not found in any Redux store');
       return null;
     },
     [currentChallenge.data, challenges.data, lessonChallenges.data]
@@ -131,10 +149,12 @@ export function useChallengeData() {
     (difficulty: number) => {
       const allChallengesList = [
         ...(challenges.data?.items || []),
-        ...(lessonChallenges.data?.items || [])
+        ...(lessonChallenges.data?.items || []),
       ];
-      
-      return allChallengesList.filter((challenge) => challenge.difficulty === difficulty);
+
+      return allChallengesList.filter(
+        (challenge) => challenge.difficulty === difficulty
+      );
     },
     [challenges.data, lessonChallenges.data]
   );
@@ -143,39 +163,24 @@ export function useChallengeData() {
     (challengeId: string, challengeData?: ChallengeResult): any | null => {
       // ✅ Use provided challengeData first (fresh from API), then fallback to Redux store
       const challenge = challengeData || findChallengeById(challengeId);
-      
-      console.log('🗺️ getMapJsonFromChallenge debug:', {
-        challengeId,
-        hasProvidedData: !!challengeData,
-        hasChallenge: !!challenge,
-        challengeKeys: challenge ? Object.keys(challenge) : [],
-        hasMapJson: !!(challenge as any)?.mapJson,
-        mapJsonLength: (challenge as any)?.mapJson?.length || 0,
-        mapJsonSample: (challenge as any)?.mapJson ? (challenge as any).mapJson.substring(0, 100) : 'N/A'
-      });
-      
+
       if (!challenge) {
-        console.log('❌ No challenge data available from either source');
         return null;
       }
 
       // ✅ NEW: Use mapJson from backend response (populated by AutoMapper)
       if (challenge.mapJson) {
         const result = parseJsonSafely(challenge.mapJson);
-        console.log('🗺️ mapJson parsing result:', {
-          success: result.success,
-          hasData: !!result.data,
-          error: result.error
-        });
+
         return result.success ? result.data : null;
       }
-      
+
       // ❌ FALLBACK: Use challengeJson if mapJson not available (for backwards compatibility)
       if (challenge.challengeJson) {
         const result = parseJsonSafely(challenge.challengeJson);
         return result.success ? result.data : null;
       }
-      
+
       return null;
     },
     [findChallengeById]
@@ -210,9 +215,9 @@ export function useChallengeData() {
       if (!challenge) return null;
 
       return parseAllChallengeJsons({
-        mapJson: challenge.mapJson || '', // ✅ Use mapJson from backend response
+        mapJson: challenge.mapJson || "", // ✅ Use mapJson from backend response
         challengeJson: challenge.challengeJson,
-        solutionJson: challenge.solutionJson || '', // Handle undefined case
+        solutionJson: challenge.solutionJson || "", // Handle undefined case
       });
     },
     [findChallengeById]
@@ -222,19 +227,8 @@ export function useChallengeData() {
   const ensureChallengeLoaded = useCallback(
     async (challengeId: string): Promise<ChallengeResult | null> => {
       const existingChallenge = findChallengeById(challengeId);
-      
-      // 🔍 Debug: Check if existing challenge has required data
       const hasMapJson = !!(existingChallenge as any)?.mapJson;
       const hasChallengeJson = !!(existingChallenge as any)?.challengeJson;
-      
-      console.log('🗺 ensureChallengeLoaded debug:', {
-        challengeId,
-        hasExistingChallenge: !!existingChallenge,
-        hasMapJson,
-        hasChallengeJson,
-        shouldFetchById: !hasMapJson || !hasChallengeJson
-      });
-      
       // 🚀 FORCE API call if existing challenge lacks mapJson or challengeJson
       if (existingChallenge && hasMapJson && hasChallengeJson) {
         setCurrentChallengeData(existingChallenge);
@@ -242,44 +236,26 @@ export function useChallengeData() {
       }
 
       try {
-        // 💲 ALWAYS fetch by ID to get complete data (mapJson + challengeJson)
-        console.log('💲 Fetching challenge by ID for complete data:', challengeId);
         const result = await fetchChallengeById(challengeId);
-        
-        console.log('🔍 fetchChallengeById result debug:', {
-          resultType: result.type,
-          hasPayload: !!result.payload,
-          payloadKeys: result.payload ? Object.keys(result.payload) : []
-        });
-        
+
         if (result.type === "challenge/getById/fulfilled") {
           const challengeData = result.payload as ChallengeResult;
-          
-          console.log('✅ Challenge fetched successfully, setting current challenge:', {
-            challengeId: challengeData.id,
-            hasMapJson: !!challengeData.mapJson,
-            hasChallengeJson: !!challengeData.challengeJson
-          });
-          
+
           // ✅ CRITICAL FIX: Set current challenge data immediately
           setCurrentChallengeData(challengeData);
-          
+
           // Wait longer for Redux state to properly update
-          await new Promise(resolve => setTimeout(resolve, 200));
-          
+          await new Promise((resolve) => setTimeout(resolve, 200));
+
           // Verify that the challenge is now findable in Redux store
           const verifyChallenge = findChallengeById(challengeId);
-          console.log('🔍 Verification after Redux update:', {
-            challengeFound: !!verifyChallenge,
-            currentChallengeInStore: verifyChallenge?.id === challengeId
-          });
-          
+
           // Return the challenge data regardless of verification
           // because we have the fresh data from API
           return challengeData;
         }
-        
-        console.error('❌ fetchChallengeById failed or was rejected:', result);
+
+        console.error("❌ fetchChallengeById failed or was rejected:", result);
         return null;
       } catch (error) {
         return null;

@@ -1,7 +1,10 @@
 import { useEffect, useRef, useCallback } from "react";
 import { Box, Typography, Alert } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { generateStudioUrl, getStoredNavigationData } from "../../../utils/studioNavigation";
+import {
+  generateStudioUrl,
+  getStoredNavigationData,
+} from "../../../utils/studioNavigation";
 import { usePhaserContext } from "../context/PhaserContext.js";
 import VictoryModal from "./VictoryModal.js";
 import DefeatModal from "./DefeatModal";
@@ -44,27 +47,18 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
 
   // Handle replay using proper restart logic from PhaserContext
   const handleReplay = async () => {
-    console.log('🔄 [PhaserSimulator] Replay button clicked');
-    
     try {
       // Sử dụng restartScene từ PhaserContext giống TopBar
-      console.log('⏳ [PhaserSimulator] Calling restartScene...');
       await restartScene();
-      console.log('✅ [PhaserSimulator] Scene restarted successfully');
-      
       // Đóng modal
       hideVictoryModal();
       hideDefeatModal();
     } catch (error) {
-      console.error('❌ [PhaserSimulator] Error restarting scene:', error);
-      
       // Fallback: Reload iframe nếu restart không thành công
       const iframe = iframeRef.current;
       if (iframe) {
-        console.log('🔄 [PhaserSimulator] Fallback: Reloading iframe');
         iframe.src = iframe.src;
       }
-      
       hideVictoryModal();
       hideDefeatModal();
     }
@@ -96,75 +90,77 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     } finally {
       hideVictoryModal();
     }
-  }, [lessonChallenges, currentChallengeId, fetchChallengesByLesson, navigate, hideVictoryModal]);
+  }, [
+    lessonChallenges,
+    currentChallengeId,
+    fetchChallengesByLesson,
+    navigate,
+    hideVictoryModal,
+  ]);
 
   // Debounced resize function to optimize performance
   // Simple iframe scaling theo iframe-resizer approach - không dùng transform phức tạp
-  const sendResizeToPhaser = useCallback((containerWidth: number, containerHeight: number) => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
-    
-    // Đơn giản hóa: sử dụng CSS thuần túy
-    iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    iframe.style.position = 'relative';
-    iframe.style.transform = 'none';
-    iframe.style.left = 'auto';
-    iframe.style.top = 'auto';
-    iframe.style.marginLeft = '0';
-    iframe.style.marginTop = '0';
-    
-    // Gửi resize message đến Phaser để adjust game size
-    try {
-      iframe.contentWindow?.postMessage({
-        source: "parent-website",
-        type: "RESIZE",
-        data: {
-          width: Math.round(containerWidth),
-          height: Math.round(containerHeight)
-        }
-      }, "*");
-      
-      console.log('🎯 Simple resize sent to Phaser:', {
-        containerWidth, 
-        containerHeight
-      });
-    } catch (error) {
-      // Silently ignore errors if iframe is not ready
-    }
-    
-  }, []);
+  const sendResizeToPhaser = useCallback(
+    (containerWidth: number, containerHeight: number) => {
+      const iframe = iframeRef.current;
+      if (!iframe) return;
+      // Đơn giản hóa: sử dụng CSS thuần túy
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
+      iframe.style.position = "relative";
+      iframe.style.transform = "none";
+      iframe.style.left = "auto";
+      iframe.style.top = "auto";
+      iframe.style.marginLeft = "0";
+      iframe.style.marginTop = "0";
+      // Gửi resize message đến Phaser để adjust game size
+      try {
+        iframe.contentWindow?.postMessage(
+          {
+            source: "parent-website",
+            type: "RESIZE",
+            data: {
+              width: Math.round(containerWidth),
+              height: Math.round(containerHeight),
+            },
+          },
+          "*"
+        );
+      } catch (error) {
+        // Silently ignore errors if iframe is not ready
+      }
+    },
+    []
+  );
 
   // Handle iframe resize based on container size (debounced)
-  const handleContainerResize = useCallback((entries: ResizeObserverEntry[]) => {
-    const entry = entries[0];
-    if (entry) {
-      const { width, height } = entry.contentRect;
-      
-      // Clear existing timeout
-      if (resizeTimeoutRef.current) {
-        clearTimeout(resizeTimeoutRef.current);
+  const handleContainerResize = useCallback(
+    (entries: ResizeObserverEntry[]) => {
+      const entry = entries[0];
+      if (entry) {
+        const { width, height } = entry.contentRect;
+        // Clear existing timeout
+        if (resizeTimeoutRef.current) {
+          clearTimeout(resizeTimeoutRef.current);
+        }
+        // Debounce resize calls
+        resizeTimeoutRef.current = setTimeout(() => {
+          sendResizeToPhaser(width, height);
+        }, 150); // 150ms debounce
       }
-      
-      // Debounce resize calls
-      resizeTimeoutRef.current = setTimeout(() => {
-        sendResizeToPhaser(width, height);
-      }, 150); // 150ms debounce
-    }
-  }, [sendResizeToPhaser]);
+    },
+    [sendResizeToPhaser]
+  );
 
   // Setup ResizeObserver to monitor container size changes
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-
     // Create ResizeObserver
     const resizeObserver = new ResizeObserver(handleContainerResize);
     resizeObserverRef.current = resizeObserver;
-    
     // Start observing
     resizeObserver.observe(container);
-
     return () => {
       resizeObserver.disconnect();
       resizeObserverRef.current = null;
@@ -181,10 +177,8 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     if (!isConnected && !isLoading) {
       // Small delay to ensure iframe is rendered
       const timer = setTimeout(() => {
-        connect().catch((_err) => {
-        });
+        connect().catch((_err) => {});
       }, 500);
-
       return () => clearTimeout(timer);
     }
   }, [isConnected, isLoading, connect]);
@@ -202,23 +196,6 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
       }
     }
   }, [isConnected, sendResizeToPhaser]);
-
-  // DISABLED: Auto-load removed - manual control via StudioContent
-  // useEffect(() => {
-  //   if (isReady && !gameState?.mapKey) {
-  //     // Load basic1 map for testing
-  //     loadMap("basic1").catch((err) => {
-  //       //     });
-  //   }
-  // }, [isReady, gameState?.mapKey, loadMap]);
-
-  // REMOVED: Don't hide iframe on error - keep it available for message sending
-  // This allows us to send mapJson/challengeJson even after initial Phaser errors
-
-  // Initial loading state removed as we want to show iframe immediately to speed up loading process
-
-  // Always render iframe directly without loading overlays
-  // Phaser will handle its own loading states internally
 
   return (
     <Box
@@ -291,12 +268,11 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
             {error}
           </Alert>
           <Typography variant="body2" color="text.secondary" textAlign="center">
-            Đang khởi tạo simulator... Nếu lỗi vẫn còn, vui lòng thử tải lại trang.
+            Đang khởi tạo simulator... Nếu lỗi vẫn còn, vui lòng thử tải lại
+            trang.
           </Typography>
         </Box>
       )}
-
-      {/* Status overlay - Removed as Phaser handles loading states internally */}
 
       {/* Game state indicator */}
       {gameState && (
@@ -329,15 +305,15 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
         isOpen={isVictoryModalOpen}
       >
         <VictoryModal
-        open={isVictoryModalOpen}
-        onClose={hideVictoryModal}
-        victoryData={victoryData}
-        onPlayNext={handlePlayNext}
-        onReplay={handleReplay}
-        onGoHome={() => {
-          // TODO: Implement go home logic
-          hideVictoryModal();
-        }}
+          open={isVictoryModalOpen}
+          onClose={hideVictoryModal}
+          victoryData={victoryData}
+          onPlayNext={handlePlayNext}
+          onReplay={handleReplay}
+          onGoHome={() => {
+            // TODO: Implement go home logic
+            hideVictoryModal();
+          }}
         />
       </VictoryErrorBoundary>
 

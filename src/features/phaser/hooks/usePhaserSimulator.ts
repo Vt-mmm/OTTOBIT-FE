@@ -53,7 +53,8 @@ export function usePhaserSimulator(
 
   // Default configuration - use larger dimensions for better map visibility
   const defaultConfig: PhaserConfig = {
-    url: import.meta.env.VITE_PHASER_URL || "https://phaser-map-three.vercel.app",
+    url:
+      import.meta.env.VITE_PHASER_URL || "https://phaser-map-three.vercel.app",
     width: 1200, // Larger width to ensure map is not scaled down
     height: 800, // Larger height to show full map
     allowFullscreen: true,
@@ -131,46 +132,59 @@ export function usePhaserSimulator(
     [showDefeatModal]
   );
 
-  const handleLose = useCallback((data?: any) => {
-    // Prevent duplicate opens
-    if (isDefeatModalOpen) {
-      return;
-    }
+  const handleLose = useCallback(
+    (data?: any) => {
+      // Prevent duplicate opens
+      if (isDefeatModalOpen) {
+        return;
+      }
 
-    // Map Phaser LOSE payload to our ErrorData shape
-    const reason = data?.reason as string | undefined;
-    const message = (data?.message as string) || "Chương trình không hoàn thành được nhiệm vụ!";
-    const step = (data?.failedStep ?? data?.step) as number | undefined;
-    const details = {
-      ...(data?.details || {}),
-      reason,
-      failedAction: data?.failedAction,
-      executionTime: data?.executionTime,
-      totalSteps: data?.totalSteps,
-      robotPosition: data?.robotPosition,
-      robotDirection: data?.robotDirection,
-    };
+      // Map Phaser LOSE payload to our ErrorData shape
+      const reason = data?.reason as string | undefined;
+      const message =
+        (data?.message as string) ||
+        "Chương trình không hoàn thành được nhiệm vụ!";
+      const step = (data?.failedStep ?? data?.step) as number | undefined;
+      const details = {
+        ...(data?.details || {}),
+        reason,
+        failedAction: data?.failedAction,
+        executionTime: data?.executionTime,
+        totalSteps: data?.totalSteps,
+        robotPosition: data?.robotPosition,
+        robotDirection: data?.robotDirection,
+      };
 
-    // Heuristic map reason -> type for nicer UI
-    const mapReasonToType = (r?: string): ErrorData["type"] => {
-      if (!r) return "PROGRAM_ERROR";
-      const R = r.toUpperCase();
-      if (R.includes("BOUND") || R.includes("COLLISION") || R.includes("WALL")) return "MAP_ERROR";
-      if (R.includes("VALIDATION") || R.includes("STATEMENT")) return "VALIDATION_ERROR";
-      return "PROGRAM_ERROR";
-    };
+      // Heuristic map reason -> type for nicer UI
+      const mapReasonToType = (r?: string): ErrorData["type"] => {
+        if (!r) return "PROGRAM_ERROR";
+        const R = r.toUpperCase();
+        if (
+          R.includes("BOUND") ||
+          R.includes("COLLISION") ||
+          R.includes("WALL")
+        )
+          return "MAP_ERROR";
+        if (R.includes("VALIDATION") || R.includes("STATEMENT"))
+          return "VALIDATION_ERROR";
+        return "PROGRAM_ERROR";
+      };
 
-    const errorData: ErrorData = {
-      type: mapReasonToType(reason),
-      message,
-      details,
-      step,
-    };
+      const errorData: ErrorData = {
+        type: mapReasonToType(reason),
+        message,
+        details,
+        step,
+      };
 
-    // Don't set global error alert; just reflect program status and show modal
-    setGameState((prev) => (prev ? { ...prev, programStatus: "error" } : null));
-    showDefeatModal(errorData);
-  }, [showDefeatModal, isDefeatModalOpen]);
+      // Don't set global error alert; just reflect program status and show modal
+      setGameState((prev) =>
+        prev ? { ...prev, programStatus: "error" } : null
+      );
+      showDefeatModal(errorData);
+    },
+    [showDefeatModal, isDefeatModalOpen]
+  );
 
   const handleStatus = useCallback((data: GameState) => {
     setGameState(data);
@@ -233,7 +247,7 @@ export function usePhaserSimulator(
       const errorMessage =
         err instanceof Error ? err.message : "Failed to connect to Phaser";
       setError(errorMessage);
-      } finally {
+    } finally {
       setIsLoading(false);
     }
   }, []);
@@ -294,40 +308,33 @@ export function usePhaserSimulator(
 
   // Run program
   const runProgram = useCallback(async (program: ProgramData) => {
-    console.log("📻 [runProgram] Starting program execution...");
-    
     if (!communicationServiceRef.current) {
       console.error("❌ [runProgram] No communication service available");
       throw new Error("Not connected to Phaser");
     }
-
-    console.log("🔗 [runProgram] Communication service is available");
 
     try {
       setIsLoading(true);
       setError(null);
       setCurrentProgram(program);
 
-      console.log("🔍 [runProgram] Validating program...");
       const validation = BlocklyToPhaserConverter.validateProgram(program);
-      console.log("📋 [runProgram] Validation result:", validation);
-      
+
       if (!validation.isValid) {
-        console.error("❌ [runProgram] Program validation failed:", validation.errors);
+        console.error(
+          "❌ [runProgram] Program validation failed:",
+          validation.errors
+        );
         throw new Error(`Invalid program: ${validation.errors.join(", ")}`);
       }
 
-      console.log("✅ [runProgram] Program is valid, sending to Phaser...");
-      console.log("📦 [runProgram] Sending program data:", JSON.stringify(program, null, 2));
-      
       await communicationServiceRef.current.runProgram(program);
-      console.log("✅ [runProgram] Program sent to Phaser successfully");
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to run program";
       console.error("❌ [runProgram] Error occurred:", {
         error: err,
-        errorMessage
+        errorMessage,
       });
       setError(errorMessage);
       throw err;
@@ -339,41 +346,34 @@ export function usePhaserSimulator(
   // Run program from workspace
   const runProgramFromWorkspace = useCallback(
     async (workspace: any) => {
-      console.log("🔄 [usePhaserSimulator] Converting workspace to program...");
-      
       try {
         // Log workspace details
         const allBlocks = workspace.getAllBlocks();
-        console.log("📊 [usePhaserSimulator] Workspace analysis:", {
-          totalBlocks: allBlocks.length,
-          blockTypes: allBlocks.map((b: any) => b.type),
-          topBlocks: workspace.getTopBlocks().map((b: any) => b.type)
-        });
-        
+
         const program = BlocklyToPhaserConverter.convertWorkspace(workspace);
-        
-        console.log("✅ [usePhaserSimulator] Program converted successfully:");
+
         console.log("📋 [usePhaserSimulator] Program structure:", {
           version: program.version,
           programName: program.programName,
           actionsCount: program.actions?.length || 0,
-          functionsCount: program.functions?.length || 0
+          functionsCount: program.functions?.length || 0,
         });
-        
-        console.log("🎯 [usePhaserSimulator] Full program data:");
+
         console.log(JSON.stringify(program, null, 2));
-        
-        console.log("▶️ [usePhaserSimulator] Sending to runProgram...");
+
         await runProgram(program);
       } catch (err) {
         const errorMessage =
           err instanceof Error
             ? err.message
             : "Failed to convert and run program";
-        console.error("❌ [usePhaserSimulator] Error in runProgramFromWorkspace:", {
-          error: err,
-          errorMessage
-        });
+        console.error(
+          "❌ [usePhaserSimulator] Error in runProgramFromWorkspace:",
+          {
+            error: err,
+            errorMessage,
+          }
+        );
         setError(errorMessage);
         throw err;
       }
@@ -439,31 +439,31 @@ export function usePhaserSimulator(
 
   // Restart scene
   const restartScene = useCallback(async () => {
-    console.log("🔄 [usePhaserSimulator] Restarting scene...");
-    
     if (!communicationServiceRef.current) {
       throw new Error("Not connected to Phaser");
     }
 
     try {
       await communicationServiceRef.current.restartScene();
-      console.log("✅ [usePhaserSimulator] Scene restarted successfully");
-      
+
       // Reset current program state
       setCurrentProgram(null);
-      
+
       // Reset game state to initial values
-      setGameState((prev) => prev ? {
-        ...prev,
-        robotPosition: { x: 0, y: 0 },
-        robotDirection: 0,
-        collectedBatteries: 0,
-        collectedBatteryTypes: { red: 0, yellow: 0, green: 0 },
-        programStatus: "idle",
-        currentStep: 0,
-        totalSteps: 0,
-      } : null);
-      
+      setGameState((prev) =>
+        prev
+          ? {
+              ...prev,
+              robotPosition: { x: 0, y: 0 },
+              robotDirection: 0,
+              collectedBatteries: 0,
+              collectedBatteryTypes: { red: 0, yellow: 0, green: 0 },
+              programStatus: "idle",
+              currentStep: 0,
+              totalSteps: 0,
+            }
+          : null
+      );
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to restart scene";
