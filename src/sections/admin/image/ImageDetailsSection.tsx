@@ -28,15 +28,21 @@ import { ImageResult } from "../../../common/@types/image";
 interface ImageDetailsSectionProps {
   image: ImageResult | null;
   onBack: () => void;
-  onEdit: (image: ImageResult) => void;
+  onEdit?: (image: ImageResult) => void;
   onDelete: () => void;
+  /** Allow editing of the image */
+  allowEdit?: boolean;
+  /** Allow deletion of the image */
+  allowDelete?: boolean;
 }
 
 export default function ImageDetailsSection({ 
   image, 
   onBack, 
   onEdit, 
-  onDelete 
+  onDelete,
+  allowEdit = true,
+  allowDelete = true,
 }: ImageDetailsSectionProps) {
   const dispatch = useAppDispatch();
   const { operations } = useAppSelector((state) => state.image);
@@ -96,22 +102,26 @@ export default function ImageDetailsSection({
         </Button>
         
         <Box sx={{ display: "flex", gap: 1 }}>
-          <Button
-            variant="outlined"
-            startIcon={<EditIcon />}
-            onClick={() => onEdit(image)}
-          >
-            Edit
-          </Button>
-          <Button
-            variant="outlined"
-            color="error"
-            startIcon={<DeleteIcon />}
-            onClick={() => setShowDeleteConfirm(true)}
-            disabled={operations.isDeleting}
-          >
-            Delete
-          </Button>
+          {allowEdit && onEdit && (
+            <Button
+              variant="outlined"
+              startIcon={<EditIcon />}
+              onClick={() => onEdit(image)}
+            >
+              Edit
+            </Button>
+          )}
+          {allowDelete && (
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<DeleteIcon />}
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={operations.isDeleting}
+            >
+              Delete
+            </Button>
+          )}
         </Box>
       </Box>
 
@@ -124,18 +134,39 @@ export default function ImageDetailsSection({
                 <Box
                   sx={{
                     width: "100%",
-                    paddingTop: "60%", // 5:3 aspect ratio
+                    height: 400, // Fixed height instead of aspect ratio  
                     position: "relative",
                     borderRadius: 2,
                     overflow: "hidden",
                     backgroundColor: "grey.100",
-                    backgroundImage: `url(${image.url})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
                     cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                   onClick={() => setFullScreenOpen(true)}
                 >
+                  {/* Actual Image Element */}
+                  <Box
+                    component="img"
+                    src={image.url}
+                    alt={`Image ${image.id}`}
+                    sx={{
+                      maxWidth: "100%",
+                      maxHeight: "100%",
+                      width: "auto",
+                      height: "auto",
+                      objectFit: "contain",
+                      transition: "transform 0.3s ease",
+                      "&:hover": {
+                        transform: "scale(1.02)",
+                      },
+                    }}
+                    onError={(e) => {
+                      // Hide broken image and show fallback
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
                   {/* Zoom Icon */}
                   <IconButton
                     sx={{

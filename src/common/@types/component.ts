@@ -2,23 +2,29 @@
 export interface Component {
   id: string;
   name: string;
-  description?: string;
+  description: string;
   type: ComponentType;
   imageUrl?: string;
-  specifications?: ComponentSpecifications;
-  isActive: boolean;
+  price: number;
+  stockQuantity: number;
+  specifications?: string; // Backend uses string, not object
   createdAt: string;
   updatedAt: string;
-  isDeleted?: boolean;
+  isDeleted: boolean;
+  imagesCount: number;
 }
 
-// Component type enum
+// Component type enum - MUST match backend exactly
 export enum ComponentType {
-  SENSOR = "SENSOR",
-  ACTUATOR = "ACTUATOR", 
-  CONTROLLER = "CONTROLLER",
-  STRUCTURAL = "STRUCTURAL",
-  OTHER = "OTHER",
+  SENSOR = 1,
+  ACTUATOR = 2,
+  CONTROLLER = 3,
+  POWER_SUPPLY = 4,
+  CONNECTIVITY = 5,
+  MECHANICAL = 6,
+  DISPLAY = 7,
+  AUDIO = 8,
+  OTHER = 99,
 }
 
 // Component specifications
@@ -48,11 +54,12 @@ export interface ComponentPin {
 // Request types
 export interface CreateComponentRequest {
   name: string;
-  description?: string;
+  description: string;
   type: ComponentType;
   imageUrl?: string;
-  specifications?: ComponentSpecifications;
-  isActive?: boolean;
+  price: number;
+  stockQuantity: number;
+  specifications?: string;
 }
 
 export interface UpdateComponentRequest {
@@ -60,27 +67,30 @@ export interface UpdateComponentRequest {
   description?: string;
   type?: ComponentType;
   imageUrl?: string;
-  specifications?: ComponentSpecifications;
-  isActive?: boolean;
+  price?: number;
+  stockQuantity?: number;
+  specifications?: string;
 }
 
 export interface GetComponentsRequest {
+  page?: number;
+  size?: number;
   searchTerm?: string;
   type?: ComponentType;
-  isActive?: boolean;
-  pageNumber?: number;
-  pageSize?: number;
-  sortBy?: number;
-  sortDirection?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  inStock?: boolean;
+  orderBy?: string; // Name, Price, Type, StockQuantity, CreatedAt, UpdatedAt
+  orderDirection?: "ASC" | "DESC";
 }
 
 // Response types
 export interface ComponentResult extends Component {}
 
 export interface ComponentsResponse {
-  items: ComponentResult[]; // Backend trả về 'items' thay vì 'data'
-  page: number; // Backend trả về 'page' thay vì 'pageNumber'
-  size: number; // Backend trả về 'size' thay vì 'pageSize'
-  total: number; // Backend trả về 'total' thay vì 'totalCount'
+  items: ComponentResult[];
+  page: number;
+  size: number;
+  total: number;
   totalPages: number;
 }

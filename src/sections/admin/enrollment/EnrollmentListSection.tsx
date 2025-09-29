@@ -22,6 +22,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Pagination,
 } from "@mui/material";
 import {
   Search as SearchIcon,
@@ -55,7 +56,10 @@ export default function EnrollmentListSection({
   const { enrollments } = useAppSelector((state) => state.enrollment);
   
   const [searchTerm, setSearchTerm] = useState("");
+  const [committedSearch, setCommittedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<EnrollmentStatus | "">("");
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
 
   useEffect(() => {
     const isCompleted =
@@ -66,19 +70,25 @@ export default function EnrollmentListSection({
         : undefined;
 
     dispatch(getEnrollments({
-      searchTerm: searchTerm || undefined,
+      searchTerm: committedSearch || undefined,
       isCompleted,
-      pageNumber: 1,
-      pageSize: 50,
+      pageNumber,
+      pageSize,
     }));
-  }, [dispatch, searchTerm, statusFilter]);
+  }, [dispatch, committedSearch, statusFilter, pageNumber, pageSize]);
 
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+  };
+
+  const triggerSearch = () => {
+    setCommittedSearch(searchTerm.trim());
+    setPageNumber(1);
   };
 
   const handleStatusFilterChange = (event: any) => {
     setStatusFilter(event.target.value);
+    setPageNumber(1);
   };
 
   const getStatusIcon = (isCompleted: boolean) => {
@@ -126,11 +136,26 @@ export default function EnrollmentListSection({
               fullWidth
               placeholder="Search by student name, course title..."
               value={searchTerm}
-              onChange={handleSearch}
+              onChange={handleSearchInput}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") triggerSearch();
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
                     <SearchIcon />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      edge="end"
+                      onClick={triggerSearch}
+                      sx={{ mr: 0 }}
+                    >
+                      <SearchIcon />
+                    </IconButton>
                   </InputAdornment>
                 ),
               }}
@@ -258,12 +283,50 @@ export default function EnrollmentListSection({
               No Enrollments Found
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              {searchTerm || statusFilter
+              {committedSearch || statusFilter
                 ? "Try adjusting your search or filter criteria"
                 : "No student enrollments exist yet"}
             </Typography>
           </Box>
         )}
+
+        {/* Pagination */}
+        {enrollments.data?.totalPages ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              p: 2,
+            }}
+          >
+            <FormControl size="small">
+              <InputLabel>Page Size</InputLabel>
+              <Select
+                label="Page Size"
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPageNumber(1);
+                }}
+                sx={{ minWidth: 120 }}
+              >
+                {[6, 12, 24, 48].map((n) => (
+                  <MenuItem key={n} value={n}>
+                    {n}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Pagination
+              count={enrollments.data.totalPages}
+              page={pageNumber}
+              onChange={(_, v) => setPageNumber(v)}
+              shape="rounded"
+              color="primary"
+            />
+          </Box>
+        ) : null}
       </Paper>
     </Box>
   );

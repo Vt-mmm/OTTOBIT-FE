@@ -370,7 +370,7 @@ export default function RobotFormSection({ mode, robot, onBack, onSuccess }: Rob
               onImageChange={(url: string | null) => setFormData(prev => ({ ...prev, imageUrl: url || "" }))}
               title="Product Image"
               description="Upload product image for the robot"
-              height={200}
+              height={280}
               disabled={isLoading}
             />
 

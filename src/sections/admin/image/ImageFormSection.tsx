@@ -21,20 +21,38 @@ import {
 } from "@mui/icons-material";
 import { SimpleImageUploader } from "../../../components/common/SimpleImageUploader";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
-import { createImageThunk, updateImageThunk } from "../../../redux/image/imageThunks";
+import {
+  createImageThunk,
+  updateImageThunk,
+} from "../../../redux/image/imageThunks";
 import { getRobotsThunk } from "../../../redux/robot/robotThunks";
 import { getComponentsThunk } from "../../../redux/component/componentThunks";
 import { clearSuccessFlags } from "../../../redux/image/imageSlice";
-import { ImageResult, CreateImageRequest, UpdateImageRequest } from "../../../common/@types/image";
+import {
+  ImageResult,
+  CreateImageRequest,
+  UpdateImageRequest,
+} from "../../../common/@types/image";
 
 interface ImageFormSectionProps {
   mode: "create" | "edit";
   image?: ImageResult | null;
+  /** Pre-selected robot ID */
+  robotId?: string;
+  /** Pre-selected component ID */
+  componentId?: string;
   onBack: () => void;
   onSuccess: () => void;
 }
 
-export default function ImageFormSection({ mode, image, onBack, onSuccess }: ImageFormSectionProps) {
+export default function ImageFormSection({
+  mode,
+  image,
+  robotId,
+  componentId,
+  onBack,
+  onSuccess,
+}: ImageFormSectionProps) {
   const dispatch = useAppDispatch();
   const { operations } = useAppSelector((state) => state.image);
   const { robots } = useAppSelector((state) => state.robot);
@@ -42,17 +60,25 @@ export default function ImageFormSection({ mode, image, onBack, onSuccess }: Ima
 
   const [formData, setFormData] = useState({
     url: image?.url || "",
-    assignmentType: image?.robotId ? "robot" : image?.componentId ? "component" : "general",
-    robotId: image?.robotId || "",
-    componentId: image?.componentId || "",
+    assignmentType: image?.robotId
+      ? "robot"
+      : image?.componentId
+      ? "component"
+      : robotId
+      ? "robot"
+      : componentId
+      ? "component"
+      : "general",
+    robotId: image?.robotId || robotId || "",
+    componentId: image?.componentId || componentId || "",
   });
-  
+
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   // Load robots and components for assignment
   useEffect(() => {
     dispatch(getRobotsThunk({ pageNumber: 1, pageSize: 100 }));
-    dispatch(getComponentsThunk({ pageNumber: 1, pageSize: 100 }));
+    dispatch(getComponentsThunk({ page: 1, size: 100 }));
   }, [dispatch]);
 
   // Handle success
@@ -95,27 +121,35 @@ export default function ImageFormSection({ mode, image, onBack, onSuccess }: Ima
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     const baseData = {
       url: formData.url.trim(),
-      robotId: formData.assignmentType === "robot" ? formData.robotId || undefined : undefined,
-      componentId: formData.assignmentType === "component" ? formData.componentId || undefined : undefined,
+      robotId:
+        formData.assignmentType === "robot"
+          ? formData.robotId || undefined
+          : undefined,
+      componentId:
+        formData.assignmentType === "component"
+          ? formData.componentId || undefined
+          : undefined,
     };
 
     if (mode === "create") {
       await dispatch(createImageThunk(baseData as CreateImageRequest));
     } else if (image) {
-      await dispatch(updateImageThunk({ 
-        id: image.id, 
-        data: baseData as UpdateImageRequest 
-      }));
+      await dispatch(
+        updateImageThunk({
+          id: image.id,
+          data: baseData as UpdateImageRequest,
+        })
+      );
     }
   };
 
   const handleAssignmentTypeChange = (type: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       assignmentType: type,
       robotId: type === "robot" ? prev.robotId : "",
@@ -130,11 +164,7 @@ export default function ImageFormSection({ mode, image, onBack, onSuccess }: Ima
     <Box>
       {/* Header */}
       <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={onBack}
-          sx={{ mr: 2 }}
-        >
+        <Button startIcon={<ArrowBackIcon />} onClick={onBack} sx={{ mr: 2 }}>
           Back to List
         </Button>
       </Box>
@@ -147,23 +177,30 @@ export default function ImageFormSection({ mode, image, onBack, onSuccess }: Ima
               <form onSubmit={handleSubmit}>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                   {/* Error Alert */}
-                  {error && (
-                    <Alert severity="error">
-                      {error}
-                    </Alert>
-                  )}
+                  {error && <Alert severity="error">{error}</Alert>}
 
                   {/* Image Upload */}
                   <SimpleImageUploader
-                    entityId={formData.assignmentType === "robot" ? formData.robotId : 
-                             formData.assignmentType === "component" ? formData.componentId : 
-                             undefined}
-                    entityType={formData.assignmentType as "robot" | "component" | "general"}
+                    entityId={
+                      formData.assignmentType === "robot"
+                        ? formData.robotId
+                        : formData.assignmentType === "component"
+                        ? formData.componentId
+                        : undefined
+                    }
+                    entityType={
+                      formData.assignmentType as
+                        | "robot"
+                        | "component"
+                        | "general"
+                    }
                     currentImageUrl={formData.url}
-                    onImageChange={(url) => setFormData(prev => ({ ...prev, url: url || "" }))}
+                    onImageChange={(url) =>
+                      setFormData((prev) => ({ ...prev, url: url || "" }))
+                    }
                     title="Upload Image"
                     description="Upload an image file or enter a URL below"
-                    height={200}
+                    height={250}
                     disabled={isLoading}
                   />
 
@@ -171,9 +208,14 @@ export default function ImageFormSection({ mode, image, onBack, onSuccess }: Ima
                   <TextField
                     label="Or enter Image URL directly"
                     value={formData.url}
-                    onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, url: e.target.value }))
+                    }
                     error={!!errors.url}
-                    helperText={errors.url || "Alternative: Enter the direct URL to an existing image"}
+                    helperText={
+                      errors.url ||
+                      "Alternative: Enter the direct URL to an existing image"
+                    }
                     fullWidth
                     placeholder="https://example.com/robot-image.jpg"
                   />
@@ -184,9 +226,13 @@ export default function ImageFormSection({ mode, image, onBack, onSuccess }: Ima
                     <Select
                       value={formData.assignmentType}
                       label="Assignment"
-                      onChange={(e) => handleAssignmentTypeChange(e.target.value)}
+                      onChange={(e) =>
+                        handleAssignmentTypeChange(e.target.value)
+                      }
                     >
-                      <MenuItem value="general">General Use (No Assignment)</MenuItem>
+                      <MenuItem value="general">
+                        General Use (No Assignment)
+                      </MenuItem>
                       <MenuItem value="robot">Assign to Robot</MenuItem>
                       <MenuItem value="component">Assign to Component</MenuItem>
                     </Select>
@@ -199,7 +245,12 @@ export default function ImageFormSection({ mode, image, onBack, onSuccess }: Ima
                       <Select
                         value={formData.robotId}
                         label="Select Robot"
-                        onChange={(e) => setFormData(prev => ({ ...prev, robotId: e.target.value }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            robotId: e.target.value,
+                          }))
+                        }
                         disabled={robots.isLoading}
                       >
                         {robots.data?.items.map((robot) => (
@@ -209,7 +260,11 @@ export default function ImageFormSection({ mode, image, onBack, onSuccess }: Ima
                         ))}
                       </Select>
                       {errors.robotId && (
-                        <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
+                        <Typography
+                          variant="caption"
+                          color="error"
+                          sx={{ mt: 0.5, ml: 2 }}
+                        >
                           {errors.robotId}
                         </Typography>
                       )}
@@ -223,7 +278,12 @@ export default function ImageFormSection({ mode, image, onBack, onSuccess }: Ima
                       <Select
                         value={formData.componentId}
                         label="Select Component"
-                        onChange={(e) => setFormData(prev => ({ ...prev, componentId: e.target.value }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            componentId: e.target.value,
+                          }))
+                        }
                         disabled={components.isLoading}
                       >
                         {components.data?.items.map((component) => (
@@ -233,7 +293,11 @@ export default function ImageFormSection({ mode, image, onBack, onSuccess }: Ima
                         ))}
                       </Select>
                       {errors.componentId && (
-                        <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
+                        <Typography
+                          variant="caption"
+                          color="error"
+                          sx={{ mt: 0.5, ml: 2 }}
+                        >
                           {errors.componentId}
                         </Typography>
                       )}
@@ -245,7 +309,13 @@ export default function ImageFormSection({ mode, image, onBack, onSuccess }: Ima
                     <Button
                       type="submit"
                       variant="contained"
-                      startIcon={isLoading ? <CircularProgress size={20} /> : <SaveIcon />}
+                      startIcon={
+                        isLoading ? (
+                          <CircularProgress size={20} />
+                        ) : (
+                          <SaveIcon />
+                        )
+                      }
                       disabled={isLoading}
                       size="large"
                     >
@@ -273,21 +343,38 @@ export default function ImageFormSection({ mode, image, onBack, onSuccess }: Ima
               <Typography variant="h6" gutterBottom>
                 Preview
               </Typography>
-              
+
               {formData.url && isValidUrl(formData.url) ? (
                 <Box
                   sx={{
                     width: "100%",
-                    paddingTop: "75%", // 4:3 aspect ratio
-                    position: "relative",
+                    height: 250, // Fixed height instead of aspect ratio
                     borderRadius: 1,
                     overflow: "hidden",
                     backgroundColor: "grey.100",
-                    backgroundImage: `url(${formData.url})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
-                />
+                >
+                  <Box
+                    component="img"
+                    src={formData.url}
+                    alt="Preview"
+                    sx={{
+                      maxWidth: "100%",
+                      maxHeight: "100%",
+                      width: "auto",
+                      height: "auto",
+                      objectFit: "contain",
+                      borderRadius: 1,
+                    }}
+                    onError={(e) => {
+                      // Hide broken image preview
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </Box>
               ) : (
                 <Box
                   sx={{
@@ -312,29 +399,49 @@ export default function ImageFormSection({ mode, image, onBack, onSuccess }: Ima
                       textAlign: "center",
                     }}
                   >
-                    <UploadIcon sx={{ fontSize: 48, color: "grey.400", mb: 1 }} />
+                    <UploadIcon
+                      sx={{ fontSize: 48, color: "grey.400", mb: 1 }}
+                    />
                     <Typography variant="body2" color="text.secondary">
                       Image preview will appear here
                     </Typography>
                   </Box>
                 </Box>
               )}
-              
+
               {/* Assignment Info */}
               <Box sx={{ mt: 2 }}>
                 <Typography variant="body2" color="text.secondary">
                   <strong>Assignment:</strong> {formData.assignmentType}
                 </Typography>
                 {formData.assignmentType === "robot" && formData.robotId && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                    <strong>Robot:</strong> {robots.data?.items.find(r => r.id === formData.robotId)?.name}
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mt: 0.5 }}
+                  >
+                    <strong>Robot:</strong>{" "}
+                    {
+                      robots.data?.items.find((r) => r.id === formData.robotId)
+                        ?.name
+                    }
                   </Typography>
                 )}
-                {formData.assignmentType === "component" && formData.componentId && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                    <strong>Component:</strong> {components.data?.items.find(c => c.id === formData.componentId)?.name}
-                  </Typography>
-                )}
+                {formData.assignmentType === "component" &&
+                  formData.componentId && (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mt: 0.5 }}
+                    >
+                      <strong>Component:</strong>{" "}
+                      {
+                        components.data?.items.find(
+                          (c) => c.id === formData.componentId
+                        )?.name
+                      }
+                    </Typography>
+                  )}
               </Box>
             </CardContent>
           </Card>

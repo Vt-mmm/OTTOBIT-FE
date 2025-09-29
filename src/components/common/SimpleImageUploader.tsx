@@ -153,14 +153,31 @@ export const SimpleImageUploader: React.FC<SimpleImageUploaderProps> = ({
               justifyContent: "center",
               borderRadius: 1,
               overflow: "hidden",
-              backgroundColor: previewUrl ? "transparent" : "grey.100",
-              backgroundImage: previewUrl ? `url(${previewUrl})` : "none",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
+              backgroundColor: "grey.100",
               cursor: disabled || uploading ? "default" : "pointer",
             }}
             onClick={handleUploadClick}
           >
+            {/* Actual Image Element */}
+            {previewUrl && !uploading && (
+              <Box
+                component="img"
+                src={previewUrl}
+                alt="Preview"
+                sx={{
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                  width: "auto",
+                  height: "auto",
+                  objectFit: "contain",
+                  borderRadius: 1,
+                }}
+                onError={(e) => {
+                  // Hide broken image
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            )}
             {/* Empty State */}
             {!previewUrl && !uploading && (
               <Box sx={{ textAlign: "center", color: "text.secondary" }}>

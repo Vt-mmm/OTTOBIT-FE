@@ -18,6 +18,11 @@ import {
   TableCell,
   TableBody,
   Paper,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Pagination,
 } from "@mui/material";
 import {
   Search as SearchIcon,
@@ -47,19 +52,27 @@ export default function StudentListSection({
   const { students } = useAppSelector((state) => state.student);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [committedSearch, setCommittedSearch] = useState("");
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
 
   useEffect(() => {
     dispatch(
       getStudents({
-        searchTerm: searchTerm || undefined,
-        pageNumber: 1,
-        pageSize: 50,
+        searchTerm: committedSearch || undefined,
+        pageNumber,
+        pageSize,
       })
     );
-  }, [dispatch, searchTerm]);
+  }, [dispatch, committedSearch, pageNumber, pageSize]);
 
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+  };
+
+  const triggerSearch = () => {
+    setCommittedSearch(searchTerm.trim());
+    setPageNumber(1);
   };
 
   if (students.isLoading && !students.data) {
@@ -101,11 +114,26 @@ export default function StudentListSection({
             fullWidth
             placeholder="Search students by name or email..."
             value={searchTerm}
-            onChange={handleSearch}
+            onChange={handleSearchInput}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") triggerSearch();
+            }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
                   <SearchIcon />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    edge="end"
+                    onClick={triggerSearch}
+                    sx={{ mr: 0 }}
+                  >
+                    <SearchIcon />
+                  </IconButton>
                 </InputAdornment>
               ),
             }}
@@ -210,12 +238,50 @@ export default function StudentListSection({
               No Students Found
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              {searchTerm
+              {committedSearch
                 ? "Try adjusting your search criteria"
                 : "No students have joined yet"}
             </Typography>
           </Box>
         )}
+
+        {/* Pagination */}
+        {students.data?.totalPages ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              p: 2,
+            }}
+          >
+            <FormControl size="small">
+              <InputLabel>Page Size</InputLabel>
+              <Select
+                label="Page Size"
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPageNumber(1);
+                }}
+                sx={{ minWidth: 120 }}
+              >
+                {[6, 12, 24, 48].map((n) => (
+                  <MenuItem key={n} value={n}>
+                    {n}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Pagination
+              count={students.data.totalPages}
+              page={pageNumber}
+              onChange={(_, v) => setPageNumber(v)}
+              shape="rounded"
+              color="primary"
+            />
+          </Box>
+        ) : null}
       </Paper>
     </Box>
   );

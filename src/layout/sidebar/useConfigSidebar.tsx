@@ -8,7 +8,6 @@ import MapIcon from "@mui/icons-material/Map";
 import PersonIcon from "@mui/icons-material/Person";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
 import SecurityIcon from "@mui/icons-material/Security";
-import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import { PATH_ADMIN, PATH_USER } from "routes/paths";
 
@@ -62,11 +61,6 @@ function useConfigSidebar() {
           title: "Quản lý Bản đồ",
           path: PATH_ADMIN.mapManagement,
           icon: <MapIcon fontSize="medium" />,
-        },
-        {
-          title: "Quản lý Hình ảnh",
-          path: PATH_ADMIN.imageManagement,
-          icon: <PhotoLibraryIcon fontSize="small" />,
         },
         {
           title: "Quản lý Robot",

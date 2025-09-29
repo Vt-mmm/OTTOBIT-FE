@@ -17,6 +17,7 @@ import {
   CircularProgress,
   Alert,
   Avatar,
+  Pagination,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -47,7 +48,7 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
   const [filterStock, setFilterStock] = useState<string>("all");
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
-  const pageSize = 12;
+  const [pageSize, setPageSize] = useState(12);
 
   // Fetch robots on component mount and when filters change
   useEffect(() => {
@@ -252,15 +253,40 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
                 <Box
                   sx={{
                     position: "relative",
-                    paddingTop: "60%", // 5:3 aspect ratio
+                    height: 200, // Fixed height for consistency
                     backgroundColor: "grey.100",
-                    backgroundImage: robot.imageUrl ? `url(${robot.imageUrl})` : "none",
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
                     cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    borderRadius: "4px 4px 0 0",
                   }}
                   onClick={() => onViewModeChange("details", robot)}
                 >
+                  {/* Actual Image Element */}
+                  {robot.imageUrl && (
+                    <Box
+                      component="img"
+                      src={robot.imageUrl}
+                      alt={`${robot.name} - ${robot.brand}`}
+                      sx={{
+                        maxWidth: "100%",
+                        maxHeight: "100%",
+                        width: "auto",
+                        height: "auto",
+                        objectFit: "contain",
+                        transition: "transform 0.3s ease",
+                        "&:hover": {
+                          transform: robot.isDeleted ? "none" : "scale(1.05)",
+                        },
+                      }}
+                      onError={(e) => {
+                        // Hide broken image and show fallback
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  )}
                   {/* Price Tag */}
                   <Chip
                     label={`$${robot.price.toFixed(2)}`}
@@ -459,18 +485,44 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
         </Grid>
       )}
 
-      {/* Load More Button */}
-      {robots.data && robots.data.totalPages > pageNumber && (
-        <Box textAlign="center" mt={4}>
-          <Button
-            variant="outlined"
-            onClick={() => setPageNumber(prev => prev + 1)}
-            disabled={robots.isLoading}
-          >
-            {robots.isLoading ? <CircularProgress size={20} /> : "Load More"}
-          </Button>
+      {/* Pagination */}
+      {robots.data?.totalPages ? (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mt: 4,
+            p: 2,
+          }}
+        >
+          <FormControl size="small">
+            <InputLabel>Page Size</InputLabel>
+            <Select
+              label="Page Size"
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setPageNumber(1);
+              }}
+              sx={{ minWidth: 120 }}
+            >
+              {[6, 12, 24, 48].map((n) => (
+                <MenuItem key={n} value={n}>
+                  {n}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Pagination
+            count={robots.data.totalPages}
+            page={pageNumber}
+            onChange={(_, v) => setPageNumber(v)}
+            shape="rounded"
+            color="primary"
+          />
         </Box>
-      )}
+      ) : null}
     </Box>
   );
 }
