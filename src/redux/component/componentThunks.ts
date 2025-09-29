@@ -185,7 +185,7 @@ export const updateComponentThunk = createAsyncThunk<
   }
 });
 
-// Delete component
+// Delete component (soft delete)
 export const deleteComponentThunk = createAsyncThunk<
   string,
   string,
@@ -213,3 +213,4 @@ export const deleteComponentThunk = createAsyncThunk<
     return rejectWithValue(errorMessage);
   }
 });
+

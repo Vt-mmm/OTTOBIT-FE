@@ -214,24 +214,3 @@ export const deleteRobotThunk = createAsyncThunk<
   }
 });
 
-// Restore robot
-export const restoreRobotThunk = createAsyncThunk<
-  RobotResult,
-  string,
-  { rejectValue: string }
->("robot/restore", async (id, { rejectWithValue }) => {
-  try {
-    const response = await callApiWithRetry(() =>
-      axiosClient.post<RobotResult>(ROUTES_API_ROBOT.RESTORE(id))
-    );
-
-    // API restore trả về trực tiếp RobotResult, không wrap trong ApiResponse
-    return response.data;
-  } catch (error: any) {
-    const errorMessage = extractApiErrorMessage(
-      error,
-      "Failed to restore robot"
-    );
-    return rejectWithValue(errorMessage);
-  }
-});
