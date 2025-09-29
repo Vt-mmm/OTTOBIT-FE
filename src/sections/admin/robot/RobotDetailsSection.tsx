@@ -1,0 +1,550 @@
+import { useState } from "react";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  Chip,
+  Dialog,
+  DialogContent,
+  IconButton,
+  Alert,
+  Divider,
+  Avatar,
+  CircularProgress,
+} from "@mui/material";
+import {
+  ArrowBack as ArrowBackIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Restore as RestoreIcon,
+  Close as CloseIcon,
+  ZoomIn as ZoomInIcon,
+  Link as LinkIcon,
+  SmartToy as RobotIcon,
+  AttachMoney as PriceIcon,
+  Inventory as StockIcon,
+  Group as AgeIcon,
+} from "@mui/icons-material";
+import { useAppDispatch, useAppSelector } from "../../../redux/config";
+import { deleteRobotThunk, restoreRobotThunk } from "../../../redux/robot/robotThunks";
+import { RobotResult } from "../../../common/@types/robot";
+
+interface RobotDetailsSectionProps {
+  robot: RobotResult | null;
+  onBack: () => void;
+  onEdit: (robot: RobotResult) => void;
+  onDelete: () => void;
+  onRestore: () => void;
+}
+
+export default function RobotDetailsSection({ 
+  robot, 
+  onBack, 
+  onEdit, 
+  onDelete,
+  onRestore 
+}: RobotDetailsSectionProps) {
+  const dispatch = useAppDispatch();
+  const { operations } = useAppSelector((state) => state.robot);
+  
+  const [fullScreenOpen, setFullScreenOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
+
+  if (!robot) {
+    return (
+      <Alert severity="error">
+        Robot product not found
+      </Alert>
+    );
+  }
+
+  const handleDelete = async () => {
+    await dispatch(deleteRobotThunk(robot.id));
+    setShowDeleteConfirm(false);
+    onDelete();
+  };
+
+  const handleRestore = async () => {
+    await dispatch(restoreRobotThunk(robot.id));
+    setShowRestoreConfirm(false);
+    onRestore();
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+  };
+
+  const getStockStatusColor = (stock: number) => {
+    if (stock === 0) return "error";
+    if (stock < 10) return "warning";
+    return "success";
+  };
+
+  const getStockStatusText = (stock: number) => {
+    if (stock === 0) return "Out of Stock";
+    if (stock < 10) return "Low Stock";
+    return "In Stock";
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString();
+  };
+
+  return (
+    <Box>
+      {/* Header */}
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={onBack}
+        >
+          Back to List
+        </Button>
+        
+        <Box sx={{ display: "flex", gap: 1 }}>
+          {!robot.isDeleted && (
+            <>
+              <Button
+                variant="outlined"
+                startIcon={<EditIcon />}
+                onClick={() => onEdit(robot)}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={operations.isDeleting}
+              >
+                Delete
+              </Button>
+            </>
+          )}
+          
+          {robot.isDeleted && (
+            <Button
+              variant="outlined"
+              color="success"
+              startIcon={<RestoreIcon />}
+              onClick={() => setShowRestoreConfirm(true)}
+              disabled={operations.isRestoring}
+            >
+              Restore
+            </Button>
+          )}
+        </Box>
+      </Box>
+
+      <Grid container spacing={4}>
+        {/* Product Image & Description */}
+        <Grid item xs={12} md={8}>
+          <Card>
+            <CardContent>
+              {/* Product Image */}
+              <Box sx={{ position: "relative", mb: 3 }}>
+                {robot.imageUrl ? (
+                  <Box
+                    sx={{
+                      width: "100%",
+                      paddingTop: "50%", // 2:1 aspect ratio
+                      position: "relative",
+                      borderRadius: 2,
+                      overflow: "hidden",
+                      backgroundColor: "grey.100",
+                      backgroundImage: `url(${robot.imageUrl})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => setFullScreenOpen(true)}
+                  >
+                    {/* Zoom Icon */}
+                    <IconButton
+                      sx={{
+                        position: "absolute",
+                        top: 8,
+                        right: 8,
+                        backgroundColor: "background.paper",
+                        "&:hover": { backgroundColor: "grey.100" },
+                      }}
+                    >
+                      <ZoomInIcon />
+                    </IconButton>
+
+                    {/* Status Chips */}
+                    <Box sx={{ position: "absolute", top: 8, left: 8, display: "flex", gap: 1 }}>
+                      <Chip
+                        label={`$${robot.price.toFixed(2)}`}
+                        color="primary"
+                        sx={{ fontWeight: "bold" }}
+                      />
+                      <Chip
+                        label={getStockStatusText(robot.stockQuantity)}
+                        color={getStockStatusColor(robot.stockQuantity)}
+                      />
+                      {robot.isDeleted && (
+                        <Chip label="DELETED" color="error" />
+                      )}
+                    </Box>
+                  </Box>
+                ) : (
+                  <Box
+                    sx={{
+                      width: "100%",
+                      paddingTop: "50%",
+                      position: "relative",
+                      borderRadius: 2,
+                      backgroundColor: "grey.100",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        textAlign: "center",
+                      }}
+                    >
+                      <Avatar sx={{ width: 80, height: 80, backgroundColor: "primary.main", mx: "auto", mb: 2 }}>
+                        <RobotIcon sx={{ fontSize: 40 }} />
+                      </Avatar>
+                      <Typography variant="body2" color="text.secondary">
+                        No product image available
+                      </Typography>
+                    </Box>
+                    
+                    {/* Status Chips */}
+                    <Box sx={{ position: "absolute", top: 8, left: 8, display: "flex", gap: 1 }}>
+                      <Chip
+                        label={`$${robot.price.toFixed(2)}`}
+                        color="primary"
+                        sx={{ fontWeight: "bold" }}
+                      />
+                      <Chip
+                        label={getStockStatusText(robot.stockQuantity)}
+                        color={getStockStatusColor(robot.stockQuantity)}
+                      />
+                      {robot.isDeleted && (
+                        <Chip label="DELETED" color="error" />
+                      )}
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+
+              {/* Product Name & Details */}
+              <Typography variant="h4" gutterBottom>
+                {robot.name}
+              </Typography>
+              
+              <Typography variant="h6" color="primary.main" gutterBottom>
+                {robot.brand} - {robot.model}
+              </Typography>
+              
+              <Typography variant="body1" color="text.secondary" paragraph>
+                {robot.description || "No description available"}
+              </Typography>
+
+              {/* Technical Specifications */}
+              {robot.technicalSpecs && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Technical Specifications
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      whiteSpace: "pre-line",
+                      backgroundColor: "grey.50",
+                      p: 2,
+                      borderRadius: 1,
+                    }}
+                  >
+                    {robot.technicalSpecs}
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Requirements */}
+              {robot.requirements && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Requirements
+                  </Typography>
+                  <Typography 
+                    variant="body2"
+                    sx={{ 
+                      whiteSpace: "pre-line",
+                      backgroundColor: "grey.50",
+                      p: 2,
+                      borderRadius: 1,
+                    }}
+                  >
+                    {robot.requirements}
+                  </Typography>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Product Information Panel */}
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Product Information
+              </Typography>
+
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {/* Basic Info */}
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Product ID
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontFamily: "monospace", fontSize: "0.875rem" }}>
+                    {robot.id}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Brand & Model
+                  </Typography>
+                  <Typography variant="body1">
+                    {robot.brand} - {robot.model}
+                  </Typography>
+                </Box>
+
+                <Divider />
+
+                {/* Pricing & Inventory */}
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Price
+                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <PriceIcon color="primary" />
+                    <Typography variant="h6" color="primary.main">
+                      ${robot.price.toFixed(2)}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Stock Status
+                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <StockIcon color={getStockStatusColor(robot.stockQuantity)} />
+                    <Typography variant="body1">
+                      {robot.stockQuantity} units
+                    </Typography>
+                    <Chip
+                      label={getStockStatusText(robot.stockQuantity)}
+                      color={getStockStatusColor(robot.stockQuantity)}
+                      size="small"
+                    />
+                  </Box>
+                </Box>
+
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Age Range
+                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <AgeIcon color="info" />
+                    <Typography variant="body1">
+                      {robot.minAge} - {robot.maxAge} years
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Status
+                  </Typography>
+                  <Chip
+                    label={robot.isDeleted ? "Deleted" : "Active"}
+                    color={robot.isDeleted ? "error" : "success"}
+                    size="small"
+                  />
+                </Box>
+
+                {/* Image URL */}
+                {robot.imageUrl && (
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Image URL
+                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          wordBreak: "break-all", 
+                          flexGrow: 1,
+                          fontSize: "0.75rem"
+                        }}
+                      >
+                        {robot.imageUrl.length > 50 
+                          ? `${robot.imageUrl.substring(0, 50)}...` 
+                          : robot.imageUrl
+                        }
+                      </Typography>
+                      <IconButton
+                        size="small"
+                        onClick={() => copyToClipboard(robot.imageUrl!)}
+                        title="Copy URL"
+                      >
+                        <LinkIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                )}
+
+                <Divider />
+
+                {/* Timestamps */}
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Created
+                  </Typography>
+                  <Typography variant="body2">
+                    {formatDate(robot.createdAt)}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Last Updated
+                  </Typography>
+                  <Typography variant="body2">
+                    {formatDate(robot.updatedAt)}
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Full Screen Image Dialog */}
+      {robot.imageUrl && (
+        <Dialog
+          open={fullScreenOpen}
+          onClose={() => setFullScreenOpen(false)}
+          maxWidth={false}
+          PaperProps={{
+            sx: {
+              width: "90vw",
+              height: "90vh",
+              maxWidth: "none",
+              maxHeight: "none",
+            },
+          }}
+        >
+          <DialogContent sx={{ p: 0, position: "relative" }}>
+            <IconButton
+              onClick={() => setFullScreenOpen(false)}
+              sx={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                zIndex: 1,
+                backgroundColor: "rgba(0,0,0,0.5)",
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "rgba(0,0,0,0.7)",
+                },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+            <Box
+              sx={{
+                width: "100%",
+                height: "100%",
+                backgroundImage: `url(${robot.imageUrl})`,
+                backgroundSize: "contain",
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "center",
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+      >
+        <DialogContent>
+          <Typography variant="h6" gutterBottom>
+            Delete Robot Product
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 3 }}>
+            Are you sure you want to delete "{robot.name}"? This will soft-delete the product and it can be restored later.
+          </Typography>
+          <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
+            <Button
+              variant="outlined"
+              onClick={() => setShowDeleteConfirm(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={handleDelete}
+              disabled={operations.isDeleting}
+            >
+              {operations.isDeleting ? <CircularProgress size={20} /> : "Delete"}
+            </Button>
+          </Box>
+        </DialogContent>
+      </Dialog>
+
+      {/* Restore Confirmation Dialog */}
+      <Dialog
+        open={showRestoreConfirm}
+        onClose={() => setShowRestoreConfirm(false)}
+      >
+        <DialogContent>
+          <Typography variant="h6" gutterBottom>
+            Restore Robot Product
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 3 }}>
+            Are you sure you want to restore "{robot.name}"? This will make the product available again.
+          </Typography>
+          <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
+            <Button
+              variant="outlined"
+              onClick={() => setShowRestoreConfirm(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={handleRestore}
+              disabled={operations.isRestoring}
+            >
+              {operations.isRestoring ? <CircularProgress size={20} /> : "Restore"}
+            </Button>
+          </Box>
+        </DialogContent>
+      </Dialog>
+    </Box>
+  );
+}

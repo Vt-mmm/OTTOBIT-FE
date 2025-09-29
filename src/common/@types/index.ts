@@ -10,3 +10,7 @@ export * from "./lesson";
 export * from "./challenge";
 export * from "./enrollment";
 export * from "./submission";
+export * from "./image";
+export * from "./component";
+export * from "./robot";
+export * from "./courseMap";

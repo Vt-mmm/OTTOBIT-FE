@@ -11,6 +11,10 @@ import challengeReducer from "./challenge/challengeSlice";
 import mapReducer from "./map/mapSlice";
 import challengeProcessReducer from "./challengeProcess/challengeProcessSlice";
 import lessonProgressReducer from "./lessonProgress/lessonProgressSlice";
+import imageReducer from "./image/imageSlice";
+import componentReducer from "./component/componentSlice";
+import robotReducer from "./robot/robotSlice";
+import courseMapReducer from "./courseMap/courseMapSlice";
 
 export const ottobit = configureStore({
   reducer: {
@@ -25,6 +29,10 @@ export const ottobit = configureStore({
     map: mapReducer, // ⭐️ NEW: Map management
     challengeProcess: challengeProcessReducer, // ⭐️ NEW: Challenge progress tracking
     lessonProgress: lessonProgressReducer, // ⭐️ NEW: Lesson progress tracking
+    image: imageReducer, // ⭐️ NEW: Image management
+    component: componentReducer, // ⭐️ NEW: Component management
+    robot: robotReducer, // ⭐️ NEW: Robot management
+    courseMap: courseMapReducer, // ⭐️ NEW: CourseMap management
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

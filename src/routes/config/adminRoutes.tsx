@@ -24,6 +24,8 @@ const EnrollmentManagementPage = lazy(
   () => import("pages/admin/EnrollmentManagementPage")
 );
 const MapManagementPage = lazy(() => import("pages/admin/MapManagementPage"));
+const ImageManagementPage = lazy(() => import("pages/admin/ImageManagementPage"));
+const RobotManagementPage = lazy(() => import("pages/admin/RobotManagementPage"));
 const AdminTestPage = lazy(() => import("pages/admin/AdminTestPage"));
 
 export const adminRoutes: Route[] = [
@@ -70,6 +72,16 @@ export const adminRoutes: Route[] = [
   {
     path: PATH_ADMIN.enrollmentManagement,
     component: <EnrollmentManagementPage />,
+    index: false,
+  },
+  {
+    path: PATH_ADMIN.imageManagement,
+    component: <ImageManagementPage />,
+    index: false,
+  },
+  {
+    path: PATH_ADMIN.robotManagement,
+    component: <RobotManagementPage />,
     index: false,
   },
   {
