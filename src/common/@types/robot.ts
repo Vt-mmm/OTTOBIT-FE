@@ -65,7 +65,6 @@ export interface GetRobotsRequest {
   minAge?: number;
   maxAge?: number;
   inStock?: boolean;
-  includeDeleted?: boolean;
   pageNumber?: number;
   pageSize?: number;
   sortBy?: number;

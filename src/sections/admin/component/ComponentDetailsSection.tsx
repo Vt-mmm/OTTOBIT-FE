@@ -24,50 +24,110 @@ import {
   Close as CloseIcon,
   ZoomIn as ZoomInIcon,
   Link as LinkIcon,
-  SmartToy as RobotIcon,
+  Memory as ComponentIcon,
   AttachMoney as PriceIcon,
   Inventory as StockIcon,
-  Group as AgeIcon,
+  Category as TypeIcon,
 } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
-import { deleteRobotThunk } from "../../../redux/robot/robotThunks";
-import { RobotResult } from "../../../common/@types/robot";
+import { deleteComponentThunk } from "../../../redux/component/componentThunks";
+import {
+  ComponentResult,
+  ComponentType,
+} from "../../../common/@types/component";
 import ImageManagement from "../../../components/admin/ImageManagement";
 
-interface RobotDetailsSectionProps {
-  robot: RobotResult | null;
+interface ComponentDetailsSectionProps {
+  component: ComponentResult | null;
   onBack: () => void;
-  onEdit: (robot: RobotResult) => void;
+  onEdit: (component: ComponentResult) => void;
   onDelete: () => void;
 }
 
-export default function RobotDetailsSection({
-  robot,
+export default function ComponentDetailsSection({
+  component,
   onBack,
   onEdit,
   onDelete,
-}: RobotDetailsSectionProps) {
+}: ComponentDetailsSectionProps) {
   const dispatch = useAppDispatch();
-  const { operations } = useAppSelector((state) => state.robot);
+  const { operations } = useAppSelector((state) => state.component);
 
   const [currentTab, setCurrentTab] = useState(0);
   const [fullScreenOpen, setFullScreenOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  if (!robot) {
-    return <Alert severity="error">Robot product not found</Alert>;
+  if (!component) {
+    return <Alert severity="error">Component not found</Alert>;
   }
 
   const handleDelete = async () => {
-    await dispatch(deleteRobotThunk(robot.id));
+    await dispatch(deleteComponentThunk(component.id));
     setShowDeleteConfirm(false);
     onDelete();
   };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
+  const getComponentTypeLabel = (type: ComponentType) => {
+    const typeLabels = {
+      [ComponentType.SENSOR]: "Sensor",
+      [ComponentType.ACTUATOR]: "Actuator",
+      [ComponentType.CONTROLLER]: "Controller",
+      [ComponentType.POWER_SUPPLY]: "Power Supply",
+      [ComponentType.CONNECTIVITY]: "Connectivity",
+      [ComponentType.MECHANICAL]: "Mechanical",
+      [ComponentType.DISPLAY]: "Display",
+      [ComponentType.AUDIO]: "Audio",
+      [ComponentType.OTHER]: "Other",
+    };
+    return typeLabels[type] || "Unknown";
+  };
 
-  const getStockStatusColor = (stock: number): "default" | "primary" | "secondary" | "success" | "warning" | "info" | "error" => {
+  const getComponentTypeColor = (
+    type: ComponentType
+  ):
+    | "default"
+    | "primary"
+    | "secondary"
+    | "success"
+    | "warning"
+    | "info"
+    | "error" => {
+    const typeColors: Record<
+      ComponentType,
+      | "default"
+      | "primary"
+      | "secondary"
+      | "success"
+      | "warning"
+      | "info"
+      | "error"
+    > = {
+      [ComponentType.SENSOR]: "primary",
+      [ComponentType.ACTUATOR]: "secondary",
+      [ComponentType.CONTROLLER]: "success",
+      [ComponentType.POWER_SUPPLY]: "warning",
+      [ComponentType.CONNECTIVITY]: "info",
+      [ComponentType.MECHANICAL]: "default",
+      [ComponentType.DISPLAY]: "secondary",
+      [ComponentType.AUDIO]: "success",
+      [ComponentType.OTHER]: "default",
+    };
+    return typeColors[type] || "default";
+  };
+
+  const getStockStatusColor = (
+    stock: number
+  ):
+    | "default"
+    | "primary"
+    | "secondary"
+    | "success"
+    | "warning"
+    | "info"
+    | "error" => {
     if (stock === 0) return "error";
     if (stock < 10) return "warning";
     return "success";
@@ -108,7 +168,7 @@ export default function RobotDetailsSection({
           <Button
             variant="outlined"
             startIcon={<EditIcon />}
-            onClick={() => onEdit(robot)}
+            onClick={() => onEdit(component)}
           >
             Edit
           </Button>
@@ -118,7 +178,7 @@ export default function RobotDetailsSection({
             startIcon={<DeleteIcon />}
             onClick={() => setShowDeleteConfirm(true)}
             disabled={operations.isDeleting}
-            >
+          >
             Delete
           </Button>
         </Box>
@@ -150,7 +210,7 @@ export default function RobotDetailsSection({
             }
           }}
         >
-          <Tab label="Robot Information" />
+          <Tab label="Component Information" />
           <Tab label="Images" />
         </Tabs>
       </Box>
@@ -158,17 +218,17 @@ export default function RobotDetailsSection({
       {/* Tab Content */}
       {currentTab === 0 && (
         <Grid container spacing={4}>
-          {/* Product Image & Description */}
+          {/* Component Image & Description */}
           <Grid item xs={12} md={8}>
             <Card>
               <CardContent>
-                {/* Product Image */}
+                {/* Component Image */}
                 <Box sx={{ position: "relative", mb: 3 }}>
-                  {robot.imageUrl ? (
+                  {component.imageUrl ? (
                     <Box
                       sx={{
                         width: "100%",
-                        height: 300, // Fixed height instead of aspect ratio
+                        height: 300,
                         position: "relative",
                         borderRadius: 2,
                         overflow: "hidden",
@@ -183,8 +243,8 @@ export default function RobotDetailsSection({
                       {/* Actual Image Element */}
                       <Box
                         component="img"
-                        src={robot.imageUrl}
-                        alt={`${robot.name} - ${robot.brand}`}
+                        src={component.imageUrl}
+                        alt={`${component.name} - ${getComponentTypeLabel(component.type)}`}
                         sx={{
                           maxWidth: "100%",
                           maxHeight: "100%",
@@ -197,7 +257,6 @@ export default function RobotDetailsSection({
                           },
                         }}
                         onError={(e) => {
-                          // Hide broken image and show fallback
                           e.currentTarget.style.display = 'none';
                         }}
                       />
@@ -225,13 +284,13 @@ export default function RobotDetailsSection({
                         }}
                       >
                         <Chip
-                          label={`$${robot.price.toFixed(2)}`}
+                          label={`$${component.price.toFixed(2)}`}
                           color="primary"
                           sx={{ fontWeight: "bold" }}
                         />
                         <Chip
-                          label={getStockStatusText(robot.stockQuantity)}
-                          color={getStockStatusColor(robot.stockQuantity)}
+                          label={getStockStatusText(component.stockQuantity)}
+                          color={getStockStatusColor(component.stockQuantity)}
                         />
                       </Box>
                     </Box>
@@ -266,10 +325,10 @@ export default function RobotDetailsSection({
                             mb: 2,
                           }}
                         >
-                          <RobotIcon sx={{ fontSize: 40 }} />
+                          <ComponentIcon sx={{ fontSize: 40 }} />
                         </Avatar>
                         <Typography variant="body2" color="text.secondary">
-                          No product image available
+                          No component image available
                         </Typography>
                       </Box>
 
@@ -284,35 +343,40 @@ export default function RobotDetailsSection({
                         }}
                       >
                         <Chip
-                          label={`$${robot.price.toFixed(2)}`}
+                          label={`$${component.price.toFixed(2)}`}
                           color="primary"
                           sx={{ fontWeight: "bold" }}
                         />
                         <Chip
-                          label={getStockStatusText(robot.stockQuantity)}
-                          color={getStockStatusColor(robot.stockQuantity)}
+                          label={getStockStatusText(component.stockQuantity)}
+                          color={getStockStatusColor(component.stockQuantity)}
                         />
                       </Box>
                     </Box>
                   )}
                 </Box>
 
-                {/* Product Name & Details */}
+                {/* Component Name & Details */}
                 <Typography variant="h4" gutterBottom>
-                  {robot.name}
+                  {component.name}
                 </Typography>
 
-                <Typography variant="h6" color="primary.main" gutterBottom>
-                  {robot.brand} - {robot.model}
-                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+                  <TypeIcon color="action" />
+                  <Chip
+                    label={getComponentTypeLabel(component.type)}
+                    color={getComponentTypeColor(component.type)}
+                    size="medium"
+                  />
+                </Box>
 
                 <Typography variant="body1" color="text.secondary" paragraph>
-                  {robot.description || "No description available"}
+                  {component.description || "No description available"}
                 </Typography>
 
                 {/* Technical Specifications */}
-                {robot.technicalSpecs && (
-                  <Box sx={{ mb: 3 }}>
+                {component.specifications && (
+                  <Box sx={{ mb: 2 }}>
                     <Typography variant="h6" gutterBottom>
                       Technical Specifications
                     </Typography>
@@ -325,27 +389,7 @@ export default function RobotDetailsSection({
                         borderRadius: 1,
                       }}
                     >
-                      {robot.technicalSpecs}
-                    </Typography>
-                  </Box>
-                )}
-
-                {/* Requirements */}
-                {robot.requirements && (
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="h6" gutterBottom>
-                      Requirements
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        whiteSpace: "pre-line",
-                        backgroundColor: "grey.50",
-                        p: 2,
-                        borderRadius: 1,
-                      }}
-                    >
-                      {robot.requirements}
+                      {component.specifications}
                     </Typography>
                   </Box>
                 )}
@@ -353,34 +397,34 @@ export default function RobotDetailsSection({
             </Card>
           </Grid>
 
-          {/* Product Information Panel */}
+          {/* Component Information Panel */}
           <Grid item xs={12} md={4}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Product Information
+                  Component Information
                 </Typography>
 
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   {/* Basic Info */}
                   <Box>
                     <Typography variant="body2" color="text.secondary">
-                      Product ID
+                      Component ID
                     </Typography>
                     <Typography
                       variant="body1"
                       sx={{ fontFamily: "monospace", fontSize: "0.875rem" }}
                     >
-                      {robot.id}
+                      {component.id}
                     </Typography>
                   </Box>
 
                   <Box>
                     <Typography variant="body2" color="text.secondary">
-                      Brand & Model
+                      Type
                     </Typography>
                     <Typography variant="body1">
-                      {robot.brand} - {robot.model}
+                      {getComponentTypeLabel(component.type)}
                     </Typography>
                   </Box>
 
@@ -394,7 +438,7 @@ export default function RobotDetailsSection({
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <PriceIcon color="primary" />
                       <Typography variant="h6" color="primary.main">
-                        ${robot.price.toFixed(2)}
+                        ${component.price.toFixed(2)}
                       </Typography>
                     </Box>
                   </Box>
@@ -405,34 +449,21 @@ export default function RobotDetailsSection({
                     </Typography>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <StockIcon
-                        color={getStockStatusIconColor(robot.stockQuantity)}
+                        color={getStockStatusIconColor(component.stockQuantity)}
                       />
                       <Typography variant="body1">
-                        {robot.stockQuantity} units
+                        {component.stockQuantity} units
                       </Typography>
                       <Chip
-                        label={getStockStatusText(robot.stockQuantity)}
-                        color={getStockStatusColor(robot.stockQuantity)}
+                        label={getStockStatusText(component.stockQuantity)}
+                        color={getStockStatusColor(component.stockQuantity)}
                         size="small"
                       />
                     </Box>
                   </Box>
 
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Age Range
-                    </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <AgeIcon color="info" />
-                      <Typography variant="body1">
-                        {robot.minAge} - {robot.maxAge} years
-                      </Typography>
-                    </Box>
-                  </Box>
-
-
                   {/* Image URL */}
-                  {robot.imageUrl && (
+                  {component.imageUrl && (
                     <Box>
                       <Typography variant="body2" color="text.secondary">
                         Image URL
@@ -448,13 +479,13 @@ export default function RobotDetailsSection({
                             fontSize: "0.75rem",
                           }}
                         >
-                          {robot.imageUrl.length > 50
-                            ? `${robot.imageUrl.substring(0, 50)}...`
-                            : robot.imageUrl}
+                          {component.imageUrl.length > 50
+                            ? `${component.imageUrl.substring(0, 50)}...`
+                            : component.imageUrl}
                         </Typography>
                         <IconButton
                           size="small"
-                          onClick={() => copyToClipboard(robot.imageUrl!)}
+                          onClick={() => copyToClipboard(component.imageUrl!)}
                           title="Copy URL"
                         >
                           <LinkIcon fontSize="small" />
@@ -471,7 +502,7 @@ export default function RobotDetailsSection({
                       Created
                     </Typography>
                     <Typography variant="body2">
-                      {formatDate(robot.createdAt)}
+                      {formatDate(component.createdAt)}
                     </Typography>
                   </Box>
 
@@ -480,7 +511,7 @@ export default function RobotDetailsSection({
                       Last Updated
                     </Typography>
                     <Typography variant="body2">
-                      {formatDate(robot.updatedAt)}
+                      {formatDate(component.updatedAt)}
                     </Typography>
                   </Box>
                 </Box>
@@ -493,15 +524,15 @@ export default function RobotDetailsSection({
       {/* Images Tab */}
       {currentTab === 1 && (
         <ImageManagement
-          robotId={robot.id}
-          title="Robot Images"
-          description={`Manage images for ${robot.name}`}
+          componentId={component.id}
+          title="Component Images"
+          description={`Manage images for ${component.name}`}
           showHeader={false}
         />
       )}
 
       {/* Full Screen Image Dialog */}
-      {robot.imageUrl && (
+      {component.imageUrl && (
         <Dialog
           open={fullScreenOpen}
           onClose={() => setFullScreenOpen(false)}
@@ -536,7 +567,7 @@ export default function RobotDetailsSection({
               sx={{
                 width: "100%",
                 height: "100%",
-                backgroundImage: `url(${robot.imageUrl})`,
+                backgroundImage: `url(${component.imageUrl})`,
                 backgroundSize: "contain",
                 backgroundRepeat: "no-repeat",
                 backgroundPosition: "center",
@@ -553,10 +584,10 @@ export default function RobotDetailsSection({
       >
         <DialogContent>
           <Typography variant="h6" gutterBottom>
-            Delete Robot Product
+            Delete Component
           </Typography>
           <Typography variant="body1" sx={{ mb: 3 }}>
-            Are you sure you want to delete "{robot.name}"? This action cannot be undone.
+            Are you sure you want to delete "{component.name}"? This action cannot be undone.
           </Typography>
           <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
             <Button

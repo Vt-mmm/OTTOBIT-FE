@@ -9,6 +9,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
 import SecurityIcon from "@mui/icons-material/Security";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
+import MemoryIcon from "@mui/icons-material/Memory";
 import { PATH_ADMIN, PATH_USER } from "routes/paths";
 
 function useConfigSidebar() {
@@ -66,6 +67,11 @@ function useConfigSidebar() {
           title: "Quản lý Robot",
           path: PATH_ADMIN.robotManagement,
           icon: <SmartToyIcon fontSize="small" />,
+        },
+        {
+          title: "Quản lý Linh kiện",
+          path: PATH_ADMIN.componentManagement,
+          icon: <MemoryIcon fontSize="small" />,
         },
       ],
     },

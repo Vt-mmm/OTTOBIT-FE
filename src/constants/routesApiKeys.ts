@@ -169,7 +169,6 @@ export const ROUTES_API_ROBOT = {
   CREATE: ROOTS_ROBOT, // POST /api/v1/robots (Admin)
   UPDATE: (id: string) => path(ROOTS_ROBOT, `/${id}`), // PUT /api/v1/robots/{id} (Admin)
   DELETE: (id: string) => path(ROOTS_ROBOT, `/${id}`), // DELETE /api/v1/robots/{id} (Admin)
-  RESTORE: (id: string) => path(ROOTS_ROBOT, `/${id}/restore`), // POST /api/v1/robots/{id}/restore (Admin)
 };
 
 // New: Course-Robot endpoints

@@ -17,7 +17,6 @@ import {
   CircularProgress,
   Alert,
   Avatar,
-  Pagination,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -25,45 +24,48 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as ViewIcon,
-  SmartToy as RobotIcon,
+  Memory as ComponentIcon,
   AttachMoney as PriceIcon,
   Inventory as StockIcon,
 } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
-import { getRobotsThunk, deleteRobotThunk } from "../../../redux/robot/robotThunks";
-import { clearSuccessFlags } from "../../../redux/robot/robotSlice";
-import { RobotResult } from "../../../common/@types/robot";
+import { getComponentsThunk, deleteComponentThunk } from "../../../redux/component/componentThunks";
+import { clearSuccessFlags } from "../../../redux/component/componentSlice";
+import { ComponentResult, ComponentType } from "../../../common/@types/component";
+import PaginationFooter from "components/common/PaginationFooter";
 import ConfirmDialog from "components/common/ConfirmDialog";
 
-interface RobotListSectionProps {
-  onViewModeChange: (mode: "create" | "edit" | "details", robot?: RobotResult) => void;
+interface ComponentListSectionProps {
+  onViewModeChange: (mode: "create" | "edit" | "details", component?: ComponentResult) => void;
 }
 
-export default function RobotListSection({ onViewModeChange }: RobotListSectionProps) {
+export default function ComponentListSection({ onViewModeChange }: ComponentListSectionProps) {
   const dispatch = useAppDispatch();
-  const { robots, operations } = useAppSelector((state) => state.robot);
+  const { components, operations } = useAppSelector((state) => state.component);
   
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterBrand, setFilterBrand] = useState<string>("all");
+  const [filterType, setFilterType] = useState<ComponentType | "all">("all");
   const [filterStock, setFilterStock] = useState<string>("all");
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(12);
   
   // Dialog state
-  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; robotId?: string; robotName?: string }>({ open: false });
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; componentId?: string; componentName?: string }>({ open: false });
 
-  // Fetch robots on component mount and when filters change
+  // Fetch components on component mount and when filters change
   useEffect(() => {
     const filters = {
+      page: pageNumber,
+      size: pageSize,
       searchTerm: searchTerm.trim() || undefined,
-      brand: filterBrand !== "all" ? filterBrand : undefined,
+      type: filterType !== "all" ? filterType : undefined,
       inStock: filterStock === "inStock" ? true : filterStock === "outOfStock" ? false : undefined,
-      pageNumber,
-      pageSize,
+      orderBy: "CreatedAt",
+      orderDirection: "DESC" as const,
     };
     
-    dispatch(getRobotsThunk(filters));
-  }, [dispatch, searchTerm, filterBrand, filterStock, pageNumber]);
+    dispatch(getComponentsThunk(filters));
+  }, [dispatch, searchTerm, filterType, filterStock, pageNumber, pageSize]);
 
   // Clear success flags after operations
   useEffect(() => {
@@ -72,17 +74,17 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
     }
   }, [operations.deleteSuccess, dispatch]);
 
-  const handleDeleteClick = (robot: RobotResult) => {
+  const handleDeleteClick = (component: ComponentResult) => {
     setDeleteDialog({
       open: true,
-      robotId: robot.id,
-      robotName: robot.name,
+      componentId: component.id,
+      componentName: component.name,
     });
   };
 
   const handleDeleteConfirm = async () => {
-    if (deleteDialog.robotId) {
-      await dispatch(deleteRobotThunk(deleteDialog.robotId));
+    if (deleteDialog.componentId) {
+      await dispatch(deleteComponentThunk(deleteDialog.componentId));
       setDeleteDialog({ open: false });
     }
   };
@@ -93,15 +95,42 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
     setPageNumber(1); // Reset to first page when searching
   };
 
-  const handleBrandFilterChange = (brand: string) => {
-    setFilterBrand(brand);
+  const handleTypeFilterChange = (type: ComponentType | "all") => {
+    setFilterType(type);
     setPageNumber(1); // Reset to first page when filtering
   };
 
-  const robotList = robots.data?.items || [];
+  const componentList = components.data?.items || [];
 
-  // Get unique brands for filter
-  const uniqueBrands = Array.from(new Set(robotList.map(robot => robot.brand))).filter(Boolean);
+  const getComponentTypeLabel = (type: ComponentType) => {
+    const typeLabels = {
+      [ComponentType.SENSOR]: "Sensor",
+      [ComponentType.ACTUATOR]: "Actuator", 
+      [ComponentType.CONTROLLER]: "Controller",
+      [ComponentType.POWER_SUPPLY]: "Power Supply",
+      [ComponentType.CONNECTIVITY]: "Connectivity",
+      [ComponentType.MECHANICAL]: "Mechanical",
+      [ComponentType.DISPLAY]: "Display",
+      [ComponentType.AUDIO]: "Audio",
+      [ComponentType.OTHER]: "Other",
+    };
+    return typeLabels[type] || "Unknown";
+  };
+
+  const getComponentTypeColor = (type: ComponentType): "default" | "primary" | "secondary" | "success" | "warning" | "info" | "error" => {
+    const typeColors: Record<ComponentType, "default" | "primary" | "secondary" | "success" | "warning" | "info" | "error"> = {
+      [ComponentType.SENSOR]: "primary",
+      [ComponentType.ACTUATOR]: "secondary",
+      [ComponentType.CONTROLLER]: "success", 
+      [ComponentType.POWER_SUPPLY]: "warning",
+      [ComponentType.CONNECTIVITY]: "info",
+      [ComponentType.MECHANICAL]: "default",
+      [ComponentType.DISPLAY]: "secondary",
+      [ComponentType.AUDIO]: "success",
+      [ComponentType.OTHER]: "default",
+    };
+    return typeColors[type] || "default";
+  };
 
   const getStockStatusColor = (stock: number): "default" | "primary" | "secondary" | "success" | "warning" | "info" | "error" => {
     if (stock === 0) return "error";
@@ -121,7 +150,7 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
     return "In Stock";
   };
 
-  if (robots.isLoading && !robots.data) {
+  if (components.isLoading && !components.data) {
     return (
       <Box display="flex" justifyContent="center" py={4}>
         <CircularProgress />
@@ -134,7 +163,7 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
       {/* Search and Filters */}
       <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
         <TextField
-          placeholder="Search robots..."
+          placeholder="Search components..."
           value={searchTerm}
           onChange={(e) => handleSearch(e.target.value)}
           InputProps={{
@@ -148,16 +177,16 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
         />
         
         <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>Brand</InputLabel>
+          <InputLabel>Type</InputLabel>
           <Select
-            value={filterBrand}
-            label="Brand"
-            onChange={(e) => handleBrandFilterChange(e.target.value)}
+            value={filterType}
+            label="Type"
+            onChange={(e) => handleTypeFilterChange(e.target.value as ComponentType | "all")}
           >
-            <MenuItem value="all">All Brands</MenuItem>
-            {uniqueBrands.map((brand) => (
-              <MenuItem key={brand} value={brand}>
-                {brand}
+            <MenuItem value="all">All Types</MenuItem>
+            {Object.values(ComponentType).filter(v => typeof v === "number").map((type) => (
+              <MenuItem key={type} value={type}>
+                {getComponentTypeLabel(type as ComponentType)}
               </MenuItem>
             ))}
           </Select>
@@ -170,7 +199,7 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
             label="Stock Status"
             onChange={(e) => setFilterStock(e.target.value)}
           >
-            <MenuItem value="all">All Products</MenuItem>
+            <MenuItem value="all">All Items</MenuItem>
             <MenuItem value="inStock">In Stock</MenuItem>
             <MenuItem value="outOfStock">Out of Stock</MenuItem>
           </Select>
@@ -182,39 +211,39 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
           onClick={() => onViewModeChange("create")}
           sx={{ ml: "auto" }}
         >
-          Add Product
+          Add Component
         </Button>
       </Box>
 
       {/* Success/Error Messages */}
       {operations.deleteSuccess && (
         <Alert severity="success" sx={{ mb: 2 }}>
-          Robot product deleted successfully!
+          Component deleted successfully!
         </Alert>
       )}
       
-      {robots.error && (
+      {components.error && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          {robots.error}
+          {components.error}
         </Alert>
       )}
 
       {/* Results Summary */}
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        {robots.data && `Showing ${robotList.length} of ${robots.data.total} robot products`}
+        {components.data && `Showing ${componentList.length} of ${components.data.total} components`}
       </Typography>
 
-      {/* Robots Grid */}
-      {robotList.length === 0 ? (
+      {/* Components Grid */}
+      {componentList.length === 0 ? (
         <Box textAlign="center" py={8}>
-          <RobotIcon sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
+          <ComponentIcon sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
           <Typography variant="h6" color="text.secondary" mb={2}>
-            No robot products found
+            No components found
           </Typography>
           <Typography variant="body2" color="text.secondary" mb={3}>
-            {searchTerm || filterBrand !== "all" || filterStock !== "all"
+            {searchTerm || filterType !== "all" || filterStock !== "all"
               ? "Try adjusting your search or filters"
-              : "Add your first robot product to get started"
+              : "Add your first component to get started"
             }
           </Typography>
           <Button
@@ -222,13 +251,13 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
             startIcon={<AddIcon />}
             onClick={() => onViewModeChange("create")}
           >
-            Add First Product
+            Add First Component
           </Button>
         </Box>
       ) : (
         <Grid container spacing={3}>
-          {robotList.map((robot) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={robot.id}>
+          {componentList.map((component) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={component.id}>
               <Card 
                 sx={{ 
                   height: "100%",
@@ -241,7 +270,7 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
                   },
                 }}
               >
-                {/* Product Image */}
+                {/* Component Image */}
                 <Box
                   sx={{
                     position: "relative",
@@ -254,14 +283,14 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
                     overflow: "hidden",
                     borderRadius: "4px 4px 0 0",
                   }}
-                  onClick={() => onViewModeChange("details", robot)}
+                  onClick={() => onViewModeChange("details", component)}
                 >
                   {/* Actual Image Element */}
-                  {robot.imageUrl && (
+                  {component.imageUrl && (
                     <Box
                       component="img"
-                      src={robot.imageUrl}
-                      alt={`${robot.name} - ${robot.brand}`}
+                      src={component.imageUrl}
+                      alt={`${component.name} - ${getComponentTypeLabel(component.type)}`}
                       sx={{
                         maxWidth: "100%",
                         maxHeight: "100%",
@@ -279,9 +308,10 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
                       }}
                     />
                   )}
+                  
                   {/* Price Tag */}
                   <Chip
-                    label={`$${robot.price.toFixed(2)}`}
+                    label={`$${component.price.toFixed(2)}`}
                     color="primary"
                     size="small"
                     sx={{
@@ -294,8 +324,8 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
 
                   {/* Stock Status */}
                   <Chip
-                    label={getStockStatusText(robot.stockQuantity)}
-                    color={getStockStatusColor(robot.stockQuantity)}
+                    label={getStockStatusText(component.stockQuantity)}
+                    color={getStockStatusColor(component.stockQuantity)}
                     size="small"
                     sx={{
                       position: "absolute",
@@ -304,7 +334,6 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
                     }}
                   />
 
-                  
                   {/* Action Buttons */}
                   <Box
                     sx={{
@@ -320,7 +349,7 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
                       sx={{ backgroundColor: "background.paper", "&:hover": { backgroundColor: "grey.100" } }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        onViewModeChange("details", robot);
+                        onViewModeChange("details", component);
                       }}
                     >
                       <ViewIcon fontSize="small" />
@@ -330,7 +359,7 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
                       sx={{ backgroundColor: "background.paper", "&:hover": { backgroundColor: "grey.100" } }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        onViewModeChange("edit", robot);
+                        onViewModeChange("edit", component);
                       }}
                     >
                       <EditIcon fontSize="small" />
@@ -341,7 +370,7 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
                       sx={{ backgroundColor: "background.paper", "&:hover": { backgroundColor: "error.light", color: "white" } }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDeleteClick(robot);
+                        handleDeleteClick(component);
                       }}
                       disabled={operations.isDeleting}
                     >
@@ -349,8 +378,8 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
                     </IconButton>
                   </Box>
 
-                  {/* Default Robot Icon if no image */}
-                  {!robot.imageUrl && (
+                  {/* Default Component Icon if no image */}
+                  {!component.imageUrl && (
                     <Box
                       sx={{
                         position: "absolute",
@@ -360,21 +389,24 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
                       }}
                     >
                       <Avatar sx={{ width: 60, height: 60, backgroundColor: "primary.main" }}>
-                        <RobotIcon sx={{ fontSize: 32 }} />
+                        <ComponentIcon sx={{ fontSize: 32 }} />
                       </Avatar>
                     </Box>
                   )}
                 </Box>
 
-                {/* Product Info */}
+                {/* Component Info */}
                 <CardContent sx={{ flexGrow: 1, pt: 2 }}>
                   <Typography variant="h6" noWrap sx={{ mb: 1 }}>
-                    {robot.name}
+                    {component.name}
                   </Typography>
                   
-                  <Typography variant="body2" color="primary.main" noWrap sx={{ mb: 1 }}>
-                    {robot.brand} - {robot.model}
-                  </Typography>
+                  <Chip
+                    label={getComponentTypeLabel(component.type)}
+                    color={getComponentTypeColor(component.type)}
+                    size="small"
+                    sx={{ mb: 1 }}
+                  />
                   
                   <Typography 
                     variant="body2" 
@@ -388,48 +420,40 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
                       minHeight: "2.5em",
                     }}
                   >
-                    {robot.description || "No description available"}
+                    {component.description || "No description available"}
                   </Typography>
 
-                  {/* Product Details */}
+                  {/* Component Details */}
                   <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                       <PriceIcon fontSize="small" color="primary" />
                       <Typography variant="body2" fontWeight="medium">
-                        ${robot.price.toFixed(2)}
+                        ${component.price.toFixed(2)}
                       </Typography>
                     </Box>
                     
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      <StockIcon fontSize="small" color={getStockStatusIconColor(robot.stockQuantity)} />
+                      <StockIcon fontSize="small" color={getStockStatusIconColor(component.stockQuantity)} />
                       <Typography variant="body2">
-                        {robot.stockQuantity} units
+                        {component.stockQuantity} units
                       </Typography>
                       <Chip 
-                        label={getStockStatusText(robot.stockQuantity)}
-                        color={getStockStatusColor(robot.stockQuantity)}
+                        label={getStockStatusText(component.stockQuantity)}
+                        color={getStockStatusColor(component.stockQuantity)}
                         size="small"
                         sx={{ ml: 0.5, height: 16, fontSize: "0.7rem" }}
                       />
                     </Box>
 
                     <Typography variant="caption" color="text.secondary">
-                      <strong>Age:</strong> {robot.minAge}-{robot.maxAge} years
+                      <strong>Added:</strong> {new Date(component.createdAt).toLocaleDateString()}
                     </Typography>
 
-                    <Typography variant="caption" color="text.secondary">
-                      <strong>Status:</strong> 
-                      <Chip 
-                        label="Active"
-                        color="success"
-                        size="small"
-                        sx={{ ml: 0.5, height: 16, fontSize: "0.7rem" }}
-                      />
-                    </Typography>
-
-                    <Typography variant="caption" color="text.secondary">
-                      <strong>Added:</strong> {new Date(robot.createdAt).toLocaleDateString()}
-                    </Typography>
+                    {component.imagesCount > 0 && (
+                      <Typography variant="caption" color="primary.main">
+                        <strong>Images:</strong> {component.imagesCount}
+                      </Typography>
+                    )}
                   </Box>
                 </CardContent>
               </Card>
@@ -439,49 +463,24 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
       )}
 
       {/* Pagination */}
-      {robots.data?.totalPages ? (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mt: 4,
-            p: 2,
-          }}
-        >
-          <FormControl size="small">
-            <InputLabel>Page Size</InputLabel>
-            <Select
-              label="Page Size"
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPageNumber(1);
-              }}
-              sx={{ minWidth: 120 }}
-            >
-              {[6, 12, 24, 48].map((n) => (
-                <MenuItem key={n} value={n}>
-                  {n}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Pagination
-            count={robots.data.totalPages}
-            page={pageNumber}
-            onChange={(_, v) => setPageNumber(v)}
-            shape="rounded"
-            color="primary"
-          />
-        </Box>
-      ) : null}
+      <PaginationFooter
+        totalPages={components.data?.totalPages || 0}
+        currentPage={pageNumber}
+        pageSize={pageSize}
+        totalItems={components.data?.total}
+        onPageChange={setPageNumber}
+        onPageSizeChange={(newSize) => {
+          setPageSize(newSize);
+          setPageNumber(1);
+        }}
+        showTotalInfo={true}
+      />
       
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         open={deleteDialog.open}
-        title="Delete Robot Product"
-        message={`Are you sure you want to delete "${deleteDialog.robotName}"? This action cannot be undone.`}
+        title="Delete Component"
+        message={`Are you sure you want to delete "${deleteDialog.componentName}"? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
         confirmColor="error"

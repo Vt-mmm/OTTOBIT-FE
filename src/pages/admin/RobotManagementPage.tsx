@@ -48,7 +48,6 @@ export default function RobotManagementPage() {
             onBack={handleBackToList}
             onEdit={(robot) => handleViewModeChange("edit", robot)}
             onDelete={handleBackToList}
-            onRestore={handleBackToList}
           />
         );
       default:
