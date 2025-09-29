@@ -6,7 +6,6 @@ import {
   createRobotThunk,
   updateRobotThunk,
   deleteRobotThunk,
-  restoreRobotThunk,
 } from "./robotThunks";
 
 interface RobotState {
@@ -28,15 +27,12 @@ interface RobotState {
     isCreating: boolean;
     isUpdating: boolean;
     isDeleting: boolean;
-    isRestoring: boolean;
     createError: string | null;
     updateError: string | null;
     deleteError: string | null;
-    restoreError: string | null;
     createSuccess: boolean;
     updateSuccess: boolean;
     deleteSuccess: boolean;
-    restoreSuccess: boolean;
   };
 }
 
@@ -56,15 +52,12 @@ const initialState: RobotState = {
     isCreating: false,
     isUpdating: false,
     isDeleting: false,
-    isRestoring: false,
     createError: null,
     updateError: null,
     deleteError: null,
-    restoreError: null,
     createSuccess: false,
     updateSuccess: false,
     deleteSuccess: false,
-    restoreSuccess: false,
   },
 };
 
@@ -79,14 +72,12 @@ const robotSlice = createSlice({
       state.operations.createError = null;
       state.operations.updateError = null;
       state.operations.deleteError = null;
-      state.operations.restoreError = null;
     },
     // Clear success flags
     clearSuccessFlags: (state) => {
       state.operations.createSuccess = false;
       state.operations.updateSuccess = false;
       state.operations.deleteSuccess = false;
-      state.operations.restoreSuccess = false;
     },
     // Clear current robot
     clearCurrentRobot: (state) => {
@@ -202,19 +193,20 @@ const robotSlice = createSlice({
         state.operations.deleteSuccess = true;
         state.operations.deleteError = null;
         
-        // Mark as deleted in the list instead of removing (soft delete)
+        // Hard delete - remove from list completely
         if (state.robots.data?.items) {
           const index = state.robots.data.items.findIndex(
             (robot) => robot.id === action.payload
           );
           if (index !== -1) {
-            state.robots.data.items[index].isDeleted = true;
+            state.robots.data.items.splice(index, 1);
+            state.robots.data.total -= 1;
           }
         }
         
-        // Mark current robot as deleted if it matches
+        // Clear current robot if it matches deleted robot
         if (state.currentRobot.data?.id === action.payload) {
-          state.currentRobot.data.isDeleted = true;
+          state.currentRobot.data = null;
         }
       })
       .addCase(deleteRobotThunk.rejected, (state, action) => {
@@ -223,38 +215,6 @@ const robotSlice = createSlice({
         state.operations.deleteSuccess = false;
       });
 
-    // Restore Robot
-    builder
-      .addCase(restoreRobotThunk.pending, (state) => {
-        state.operations.isRestoring = true;
-        state.operations.restoreError = null;
-        state.operations.restoreSuccess = false;
-      })
-      .addCase(restoreRobotThunk.fulfilled, (state, action) => {
-        state.operations.isRestoring = false;
-        state.operations.restoreSuccess = true;
-        state.operations.restoreError = null;
-        
-        // Update current robot if it matches
-        if (state.currentRobot.data?.id === action.payload.id) {
-          state.currentRobot.data = action.payload;
-        }
-        
-        // Update robot in the list if list exists
-        if (state.robots.data?.items) {
-          const index = state.robots.data.items.findIndex(
-            (robot) => robot.id === action.payload.id
-          );
-          if (index !== -1) {
-            state.robots.data.items[index] = action.payload;
-          }
-        }
-      })
-      .addCase(restoreRobotThunk.rejected, (state, action) => {
-        state.operations.isRestoring = false;
-        state.operations.restoreError = action.payload as string;
-        state.operations.restoreSuccess = false;
-      });
   },
 });
 

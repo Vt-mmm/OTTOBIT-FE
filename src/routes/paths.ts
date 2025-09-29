@@ -53,4 +53,5 @@ export const PATH_ADMIN = {
   enrollmentManagement: path(ROOTS_ADMIN_DASHBOARD, "/enrollment-management"),
   studentManagement: path(ROOTS_ADMIN_DASHBOARD, "/student-management"),
   robotManagement: path(ROOTS_ADMIN_DASHBOARD, "/robot-management"),
+  componentManagement: path(ROOTS_ADMIN_DASHBOARD, "/component-management"),
 };

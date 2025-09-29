@@ -193,12 +193,15 @@ const componentSlice = createSlice({
         state.operations.deleteSuccess = true;
         state.operations.deleteError = null;
         
-        // Remove component from the list if list exists
+        // Hard delete - remove from list completely
         if (state.components.data?.items) {
-          state.components.data.items = state.components.data.items.filter(
-            (component) => component.id !== action.payload
+          const index = state.components.data.items.findIndex(
+            (component) => component.id === action.payload
           );
-          state.components.data.total -= 1;
+          if (index !== -1) {
+            state.components.data.items.splice(index, 1);
+            state.components.data.total -= 1;
+          }
         }
         
         // Clear current component if it matches deleted component
@@ -211,6 +214,7 @@ const componentSlice = createSlice({
         state.operations.deleteError = action.payload as string;
         state.operations.deleteSuccess = false;
       });
+
   },
 });
 
