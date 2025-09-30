@@ -100,6 +100,9 @@ export default function BestSellingProductSection() {
         : isAuthenticated
         ? PATH_USER.components
         : PATH_PUBLIC.components;
+    
+    // Scroll to top before navigation
+    window.scrollTo({ top: 0, behavior: 'instant' });
     navigate(targetPath);
   };
 

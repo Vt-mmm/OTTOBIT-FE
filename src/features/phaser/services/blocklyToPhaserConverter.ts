@@ -2,7 +2,7 @@ import { ProgramData, ProgramAction } from "../types/phaser.js";
 
 export class BlocklyToPhaserConverter {
   /**
-   * Convert Blockly workspace to Phaser program
+   * Convert Blockly workspace to Phaser program (full format with version & programName)
    */
   static convertWorkspace(workspace: any): ProgramData {
     if (!workspace) {
@@ -42,6 +42,50 @@ export class BlocklyToPhaserConverter {
       }
 
       return program;
+    } catch (error) {
+      throw new Error(`Failed to convert workspace: ${error}`);
+    }
+  }
+
+  /**
+   * Convert Blockly workspace to simple format for solutionJson (only actions & functions)
+   * Format: {"actions":[...],"functions":[...]}
+   */
+  static convertWorkspaceToSimpleFormat(workspace: any): { actions: ProgramAction[], functions: any[] } {
+    if (!workspace) {
+      throw new Error("Workspace is required");
+    }
+
+    const result = {
+      actions: [] as ProgramAction[],
+      functions: [] as any[],
+    };
+
+    try {
+      // Get all blocks from workspace
+      const blocks = workspace.getAllBlocks();
+
+      // Find function definition blocks first
+      const functionBlocks = blocks.filter(
+        (block: any) =>
+          block.type === "procedures_defnoreturn" ||
+          block.type === "ottobit_function_def"
+      );
+
+      if (functionBlocks.length > 0) {
+        result.functions = this.parseFunctionDefinitions(functionBlocks);
+      }
+
+      // Find start block
+      const startBlock = blocks.find(
+        (block: any) => block.type === "ottobit_start"
+      );
+
+      if (startBlock) {
+        result.actions = this.parseBlocksToActions(startBlock);
+      }
+
+      return result;
     } catch (error) {
       throw new Error(`Failed to convert workspace: ${error}`);
     }
