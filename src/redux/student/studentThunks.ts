@@ -48,17 +48,19 @@ async function callApiWithRetry<T>(
   throw lastError;
 }
 
-// Get current user's student profile
+// Get current user's student profile - OPTIMIZED: No retry, fast fail
 export const getStudentByUserThunk = createAsyncThunk<
   StudentResult,
   void,
   { rejectValue: string }
 >("student/getByUser", async (_, { rejectWithValue }) => {
   try {
-    const response = await callApiWithRetry(() =>
-      axiosClient.get<ApiResponse<StudentResult>>(
-        ROUTES_API_STUDENT.GET_BY_USER
-      )
+    // Direct call without retry - fast fail for 404
+    const response = await axiosClient.get<ApiResponse<StudentResult>>(
+      ROUTES_API_STUDENT.GET_BY_USER,
+      {
+        timeout: 3000, // 3s timeout
+      }
     );
 
     if (response.data.errors || response.data.errorCode) {

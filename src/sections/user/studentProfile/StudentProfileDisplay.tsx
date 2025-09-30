@@ -1,11 +1,8 @@
 import { useState, useEffect } from "react";
-import { Box, Grid } from "@mui/material";
+import { Box } from "@mui/material";
 
-import ProfileHeaderCard from "sections/user/studentProfile/parts/ProfileHeaderCard";
-import StatsRow from "sections/user/studentProfile/parts/StatsRow";
-// import BadgeCard from "sections/user/studentProfile/parts/BadgeCard";
-import LearningProgressCard from "sections/user/studentProfile/parts/LearningProgressCard";
-import RecentChallengesCard from "sections/user/studentProfile/parts/RecentChallengesCard";
+import ProfileSidebar from "sections/user/studentProfile/parts/ProfileSidebar";
+import ProfileContentTabs from "sections/user/studentProfile/parts/ProfileContentTabs";
 
 import { useAppDispatch, useAppSelector } from "store/config";
 import { getMyEnrollmentsThunk } from "store/enrollment/enrollmentThunks";
@@ -126,32 +123,37 @@ export default function StudentProfileDisplay() {
   }
 
   return (
-    <Box sx={{ 
-      bgcolor: "transparent",
-      minHeight: "100vh", 
-      p: { xs: 2, md: 3 },
-      borderRadius: 4,
-      background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)"
-    }}>
-      <ProfileHeaderCard student={student} onEdit={() => setIsEditing(true)} />
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", lg: "350px 1fr" },
+        gap: 4,
+        p: { xs: 2, md: 3 },
+      }}
+    >
+      {/* Sidebar - Profile Info */}
+      <Box sx={{ display: { xs: "none", lg: "block" } }}>
+        <ProfileSidebar student={student} onEdit={() => setIsEditing(true)} />
+      </Box>
 
-      <StatsRow
-        totalEnrollments={realData.totalEnrollments}
-        totalSubmissions={realData.totalSubmissions}
-        completedCourses={realData.completedCourses}
-        totalPoints={realData.totalPoints}
-        loading={isLoading}
-      />
+      {/* Mobile Profile Card (visible on small screens) */}
+      <Box sx={{ display: { xs: "block", lg: "none" }, mb: 3 }}>
+        <ProfileSidebar student={student} onEdit={() => setIsEditing(true)} />
+      </Box>
 
-      <Grid container spacing={3}>
-        {/* Removed Excellent Badge section */}
-        <Grid item xs={12}>
-          <LearningProgressCard items={realData.learningProgress} loading={isLoading} activityCount={submissionsArray.length} />
-        </Grid>
-        <Grid item xs={12}>
-          <RecentChallengesCard items={challengeProcessesArray} starBuckets={starBuckets} />
-        </Grid>
-      </Grid>
+      {/* Main Content - Tabs */}
+      <Box sx={{ gridColumn: { xs: "1", lg: "2" } }}>
+        <ProfileContentTabs
+          stats={realData}
+          learningProgress={realData.learningProgress}
+          enrollments={enrollmentsArray}
+          lessonProgress={lessonProgressArray}
+          submissions={submissionsArray}
+          challengeProcesses={challengeProcessesArray}
+          starBuckets={starBuckets}
+          loading={isLoading}
+        />
+      </Box>
     </Box>
   );
 }
