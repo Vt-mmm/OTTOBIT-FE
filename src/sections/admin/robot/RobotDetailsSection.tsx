@@ -33,6 +33,7 @@ import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { deleteRobotThunk } from "../../../redux/robot/robotThunks";
 import { RobotResult } from "../../../common/@types/robot";
 import ImageManagement from "../../../components/admin/ImageManagement";
+import { formatVND } from "../../../utils/utils";
 
 interface RobotDetailsSectionProps {
   robot: RobotResult | null;
@@ -225,9 +226,9 @@ export default function RobotDetailsSection({
                         }}
                       >
                         <Chip
-                          label={`$${robot.price.toFixed(2)}`}
+                          label={formatVND(robot.price)}
                           color="primary"
-                          sx={{ fontWeight: "bold" }}
+                          sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
                         />
                         <Chip
                           label={getStockStatusText(robot.stockQuantity)}
@@ -284,9 +285,9 @@ export default function RobotDetailsSection({
                         }}
                       >
                         <Chip
-                          label={`$${robot.price.toFixed(2)}`}
+                          label={formatVND(robot.price)}
                           color="primary"
-                          sx={{ fontWeight: "bold" }}
+                          sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
                         />
                         <Chip
                           label={getStockStatusText(robot.stockQuantity)}
@@ -394,7 +395,7 @@ export default function RobotDetailsSection({
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <PriceIcon color="primary" />
                       <Typography variant="h6" color="primary.main">
-                        ${robot.price.toFixed(2)}
+                        {formatVND(robot.price)}
                       </Typography>
                     </Box>
                   </Box>
@@ -425,7 +426,7 @@ export default function RobotDetailsSection({
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <AgeIcon color="info" />
                       <Typography variant="body1">
-                        {robot.minAge} - {robot.maxAge} years
+                        {robot.minAge} - {robot.maxAge} tuổi
                       </Typography>
                     </Box>
                   </Box>

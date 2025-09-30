@@ -27,6 +27,7 @@ import {
   CreateRobotRequest, 
   UpdateRobotRequest
 } from "../../../common/@types/robot";
+import { formatVND } from "../../../utils/utils";
 
 interface RobotFormSectionProps {
   mode: "create" | "edit";
@@ -402,7 +403,7 @@ export default function RobotFormSection({ mode, robot, onBack, onSuccess }: Rob
                   </Typography>
 
                   <Typography variant="body2">
-                    <strong>Price:</strong> ${formData.price.toFixed(2)}
+                    <strong>Price:</strong> {formatVND(formData.price)}
                   </Typography>
 
                   <Typography variant="body2">
@@ -410,7 +411,7 @@ export default function RobotFormSection({ mode, robot, onBack, onSuccess }: Rob
                   </Typography>
 
                   <Typography variant="body2">
-                    <strong>Age Range:</strong> {formData.minAge} - {formData.maxAge} years
+                    <strong>Age Range:</strong> {formData.minAge} - {formData.maxAge} tuổi
                   </Typography>
 
                   {/* Inventory Status */}

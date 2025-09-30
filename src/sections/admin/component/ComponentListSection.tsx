@@ -34,6 +34,7 @@ import { clearSuccessFlags } from "../../../redux/component/componentSlice";
 import { ComponentResult, ComponentType } from "../../../common/@types/component";
 import PaginationFooter from "components/common/PaginationFooter";
 import ConfirmDialog from "components/common/ConfirmDialog";
+import { formatVND } from "../../../utils/utils";
 
 interface ComponentListSectionProps {
   onViewModeChange: (mode: "create" | "edit" | "details", component?: ComponentResult) => void;
@@ -311,7 +312,7 @@ export default function ComponentListSection({ onViewModeChange }: ComponentList
                   
                   {/* Price Tag */}
                   <Chip
-                    label={`$${component.price.toFixed(2)}`}
+                    label={formatVND(component.price)}
                     color="primary"
                     size="small"
                     sx={{
@@ -319,6 +320,7 @@ export default function ComponentListSection({ onViewModeChange }: ComponentList
                       top: 8,
                       left: 8,
                       fontWeight: "bold",
+                      fontSize: "0.7rem",
                     }}
                   />
 
@@ -428,7 +430,7 @@ export default function ComponentListSection({ onViewModeChange }: ComponentList
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                       <PriceIcon fontSize="small" color="primary" />
                       <Typography variant="body2" fontWeight="medium">
-                        ${component.price.toFixed(2)}
+                        {formatVND(component.price)}
                       </Typography>
                     </Box>
                     
