@@ -563,7 +563,7 @@ export default function WinConditionsSection({
         </Box>
 
         {/* Course Selection */}
-        <FormControl fullWidth size="small" error={!courseId}>
+        <FormControl fullWidth size="small" error={hasTriedSave && !courseId}>
           <InputLabel>Course</InputLabel>
           <Select
             label="Course"
@@ -591,7 +591,7 @@ export default function WinConditionsSection({
         <FormControl
           fullWidth
           size="small"
-          error={!lessonId}
+          error={hasTriedSave && !lessonId}
           disabled={!courseId}
         >
           <InputLabel>Lesson</InputLabel>
@@ -1104,7 +1104,7 @@ export default function WinConditionsSection({
                     placeholder="Describe the victory condition. Example: Collect all yellow batteries using if statements."
                     size="small"
                     value={victoryDescription}
-                    error={!victoryDescription.trim()}
+                    error={hasTriedSave && !victoryDescription.trim()}
                     onChange={(e) => setVictoryDescription(e.target.value)}
                     sx={{ mt: 1 }}
                   />
@@ -1342,7 +1342,7 @@ export default function WinConditionsSection({
                       placeholder="Describe the victory condition. Example: Take 2 from the warehouse and place 2 at target locations."
                       size="small"
                       value={boxVictoryDescription}
-                      error={!boxVictoryDescription.trim()}
+                      error={hasTriedSave && !boxVictoryDescription.trim()}
                       onChange={(e) => setBoxVictoryDescription(e.target.value)}
                     />
                   </Box>

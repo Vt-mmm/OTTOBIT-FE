@@ -45,7 +45,7 @@ const MapDesignerPage = () => {
 
   const [selectedAsset, setSelectedAsset] = useState<string>("robot_east");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [mapName, setMapName] = useState<string>("New Map");
+  const [mapName, setMapName] = useState<string>("New Challenge");
   const [mapDescription, setMapDescription] = useState<string>("");
   // Removed solutionJsonRef; we rely on initialSolutionJsonRef for workspace init and
   // always rebuild JSON from workspace when saving
