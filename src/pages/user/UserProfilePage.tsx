@@ -12,7 +12,7 @@ import {
 } from "sections/user/profile";
 import { UpdateProfileForm } from "common/@types";
 import { useAppDispatch } from "store/config";
-import { getMyProfileThunk } from "store/account/accountSlice";
+import { getMyProfileThunk, updateMyProfileThunk } from "store/account/accountSlice";
 
 // Simple placeholders for future sections
 function CoursesSection() {
@@ -54,8 +54,18 @@ const UserProfilePage: React.FC = () => {
 
   const handleEditProfile = () => setEditDialogOpen(true);
   const handleCloseEditDialog = () => setEditDialogOpen(false);
-  const handleSaveProfile = (_data: UpdateProfileForm) =>
-    setEditDialogOpen(false);
+  
+  const handleSaveProfile = async (data: UpdateProfileForm) => {
+    try {
+      await dispatch(updateMyProfileThunk({ data })).unwrap();
+      // Refresh profile data after successful update
+      await dispatch(getMyProfileThunk());
+      setEditDialogOpen(false);
+    } catch (error) {
+      // Error is handled by Redux thunk
+      console.error("Failed to update profile:", error);
+    }
+  };
 
   const renderContent = () => {
     switch (section) {

@@ -53,6 +53,9 @@ export default function StudentListSection({
 
   const [searchTerm, setSearchTerm] = useState("");
   const [committedSearch, setCommittedSearch] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [state, setState] = useState("");
+  const [city, setCity] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(12);
 
@@ -60,11 +63,14 @@ export default function StudentListSection({
     dispatch(
       getStudents({
         searchTerm: committedSearch || undefined,
+        phoneNumber: phoneNumber || undefined,
+        state: state || undefined,
+        city: city || undefined,
         pageNumber,
         pageSize,
       })
     );
-  }, [dispatch, committedSearch, pageNumber, pageSize]);
+  }, [dispatch, committedSearch, phoneNumber, state, city, pageNumber, pageSize]);
 
   const handleSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -107,37 +113,59 @@ export default function StudentListSection({
         </Button>
       </Box>
 
-      {/* Search */}
+      {/* Search & Filters */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <TextField
-            fullWidth
-            placeholder="Search students by name or email..."
-            value={searchTerm}
-            onChange={handleSearchInput}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") triggerSearch();
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    size="small"
-                    edge="end"
-                    onClick={triggerSearch}
-                    sx={{ mr: 0 }}
-                  >
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr 1fr' }, gap: 2 }}>
+            <TextField
+              fullWidth
+              placeholder="Tìm kiếm theo tên hoặc địa chỉ..."
+              value={searchTerm}
+              onChange={handleSearchInput}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") triggerSearch();
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
                     <SearchIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <TextField
+              fullWidth
+              placeholder="Số điện thoại"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") triggerSearch();
+              }}
+            />
+            <TextField
+              fullWidth
+              placeholder="Tỉnh/Thành phố"
+              value={state}
+              onChange={(e) => setState(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") triggerSearch();
+              }}
+            />
+            <TextField
+              fullWidth
+              placeholder="Quận/Huyện"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") triggerSearch();
+              }}
+            />
+          </Box>
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button variant="contained" onClick={triggerSearch} startIcon={<SearchIcon />}>
+              Tìm kiếm
+            </Button>
+          </Box>
         </CardContent>
       </Card>
 
@@ -154,7 +182,8 @@ export default function StudentListSection({
           <TableHead>
             <TableRow>
               <TableCell>Student</TableCell>
-              <TableCell>Email</TableCell>
+              <TableCell>Phone</TableCell>
+              <TableCell>Location</TableCell>
               <TableCell align="center">Age</TableCell>
               <TableCell align="center">Enrollments</TableCell>
               <TableCell align="center">Submissions</TableCell>
@@ -180,7 +209,12 @@ export default function StudentListSection({
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell>{student.email}</TableCell>
+                <TableCell>{student.phoneNumber || '-'}</TableCell>
+                <TableCell>
+                  <Typography variant="body2">
+                    {[student.city, student.state].filter(Boolean).join(', ') || '-'}
+                  </Typography>
+                </TableCell>
                 <TableCell align="center">
                   {student.dateOfBirth
                     ? dayjs().diff(dayjs(student.dateOfBirth), "year")

@@ -7,7 +7,7 @@ import {
   ResetPasswordForm,
   Params,
 } from "common/@types";
-import { UserProfileData } from "common/@types/account";
+import { UserProfileData, UpdateProfileForm } from "common/@types/account";
 
 // Define local action creator functions to avoid circular dependency
 const setMessageSuccess = (message: string) => ({
@@ -48,6 +48,45 @@ export const getMyProfileThunk = createAsyncThunk<
   } catch (error: any) {
     const errorMessage =
       error.response?.data?.message || error.message || "Lấy hồ sơ thất bại";
+    return thunkAPI.rejectWithValue(errorMessage);
+  }
+});
+
+// Update my account profile
+export const updateMyProfileThunk = createAsyncThunk<
+  UserProfileData,
+  Params<UpdateProfileForm>,
+  { rejectValue: string }
+>("account/updateMyProfile", async (params, thunkAPI) => {
+  const data = params?.data;
+
+  if (!data) {
+    return thunkAPI.rejectWithValue("Dữ liệu không hợp lệ");
+  }
+
+  try {
+    // Only send fields BE allows to update: fullName and avatarUrl
+    const response = await axiosClient.put<ApiResponse<UserProfileData>>(
+      ROUTES_API_ACCOUNT.PROFILE,
+      {
+        fullName: data.fullName,
+        avatarUrl: data.avatarUrl,
+      }
+    );
+
+    if (!response.data || !response.data.data) {
+      return thunkAPI.rejectWithValue("Không nhận được dữ liệu hồ sơ sau khi cập nhật");
+    }
+
+    const message = response.data.message || "Cập nhật hồ sơ thành công!";
+    thunkAPI.dispatch(setMessageSuccess(message));
+    return response.data.data;
+  } catch (error: any) {
+    const errorMessage =
+      error.response?.data?.message ||
+      error.message ||
+      "Cập nhật hồ sơ thất bại. Vui lòng thử lại!";
+    thunkAPI.dispatch(setMessageError(errorMessage));
     return thunkAPI.rejectWithValue(errorMessage);
   }
 });
