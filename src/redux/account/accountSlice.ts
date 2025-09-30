@@ -6,6 +6,7 @@ import {
   forgotPasswordThunk,
   resetPasswordThunk,
   getMyProfileThunk,
+  updateMyProfileThunk,
 } from './accountThunks';
 
 // Account state interface
@@ -72,6 +73,22 @@ const accountSlice = createSlice({
         state.profile.data = null;
       })
 
+      // Update my profile cases
+      .addCase(updateMyProfileThunk.pending, (state) => {
+        state.profile.isLoading = true;
+        state.profile.error = null;
+      })
+      .addCase(updateMyProfileThunk.fulfilled, (state, action) => {
+        state.profile.isLoading = false;
+        state.profile.data = action.payload;
+        state.isSuccess = true;
+      })
+      .addCase(updateMyProfileThunk.rejected, (state, action) => {
+        state.profile.isLoading = false;
+        state.profile.error = (action.payload as string) || 'Lỗi cập nhật hồ sơ';
+        state.isError = true;
+      })
+
       // Change password cases
       .addCase(changePasswordThunk.pending, (state) => {
         state.isLoading = true;
@@ -134,6 +151,7 @@ export {
   forgotPasswordThunk,
   resetPasswordThunk,
   getMyProfileThunk,
+  updateMyProfileThunk,
 } from './accountThunks';
 
 // Export actions

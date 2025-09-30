@@ -23,7 +23,6 @@ import { motion } from "framer-motion";
 import { useAppDispatch, useAppSelector } from "store/config";
 import { updateStudentThunk } from "store/student/studentThunks";
 import { UpdateStudentRequest } from "common/@types/student";
-import { alpha } from "@mui/material/styles";
 
 interface StudentProfileEditProps {
   onEditComplete: () => void;
@@ -41,11 +40,16 @@ export default function StudentProfileEdit({
 
   const [formData, setFormData] = useState({
     fullname: "",
+    phoneNumber: "",
+    address: "",
+    state: "",
+    city: "",
     dateOfBirth: null as Dayjs | null,
   });
 
   const [errors, setErrors] = useState({
     fullname: "",
+    phoneNumber: "",
     dateOfBirth: "",
   });
 
@@ -56,6 +60,10 @@ export default function StudentProfileEdit({
       const student = currentStudent.data;
       const initialData = {
         fullname: student.fullname,
+        phoneNumber: student.phoneNumber || "",
+        address: student.address || "",
+        state: student.state || "",
+        city: student.city || "",
         dateOfBirth: dayjs(student.dateOfBirth),
       };
       setFormData(initialData);
@@ -66,16 +74,21 @@ export default function StudentProfileEdit({
     if (currentStudent?.data) {
       const student = currentStudent.data;
       const hasNameChange = formData.fullname !== student.fullname;
+      const hasPhoneChange = formData.phoneNumber !== (student.phoneNumber || "");
+      const hasAddressChange = formData.address !== (student.address || "");
+      const hasStateChange = formData.state !== (student.state || "");
+      const hasCityChange = formData.city !== (student.city || "");
       const hasDateChange = formData.dateOfBirth && 
         !formData.dateOfBirth.isSame(dayjs(student.dateOfBirth), 'day');
       
-      setHasChanges(!!(hasNameChange || hasDateChange));
+      setHasChanges(!!(hasNameChange || hasPhoneChange || hasAddressChange || hasStateChange || hasCityChange || hasDateChange));
     }
   }, [formData, currentStudent]);
 
   const validateForm = () => {
     const newErrors = {
       fullname: "",
+      phoneNumber: "",
       dateOfBirth: "",
     };
 
@@ -83,6 +96,10 @@ export default function StudentProfileEdit({
       newErrors.fullname = "Vui lòng nhập họ và tên";
     } else if (formData.fullname.trim().length < 2) {
       newErrors.fullname = "Họ và tên phải có ít nhất 2 ký tự";
+    }
+
+    if (formData.phoneNumber && !/^[0-9]{10,11}$/.test(formData.phoneNumber)) {
+      newErrors.phoneNumber = "Số điện thoại phải có 10-11 chữ số";
     }
 
     if (!formData.dateOfBirth) {
@@ -94,7 +111,7 @@ export default function StudentProfileEdit({
     }
 
     setErrors(newErrors);
-    return !newErrors.fullname && !newErrors.dateOfBirth;
+    return !newErrors.fullname && !newErrors.phoneNumber && !newErrors.dateOfBirth;
   };
 
   const handleSubmit = async () => {
@@ -105,6 +122,10 @@ export default function StudentProfileEdit({
     try {
       const updateData: UpdateStudentRequest = {
         fullname: formData.fullname.trim(),
+        phoneNumber: formData.phoneNumber.trim(),
+        address: formData.address.trim(),
+        state: formData.state.trim(),
+        city: formData.city.trim(),
         dateOfBirth: formData.dateOfBirth!.toISOString(),
       };
 
@@ -124,10 +145,15 @@ export default function StudentProfileEdit({
       const student = currentStudent.data;
       setFormData({
         fullname: student.fullname,
+        phoneNumber: student.phoneNumber || "",
+        address: student.address || "",
+        state: student.state || "",
+        city: student.city || "",
         dateOfBirth: dayjs(student.dateOfBirth),
       });
       setErrors({
         fullname: "",
+        phoneNumber: "",
         dateOfBirth: "",
       });
     }
@@ -136,8 +162,6 @@ export default function StudentProfileEdit({
   if (!currentStudent?.data) {
     return null;
   }
-
-  const student = currentStudent.data;
 
   return (
     <Box sx={{
@@ -225,6 +249,60 @@ export default function StudentProfileEdit({
               placeholder="Ví dụ: Nguyễn Văn An"
             />
 
+            <TextField
+              fullWidth
+              label="Số điện thoại"
+              value={formData.phoneNumber}
+              onChange={(e) => {
+                setFormData(prev => ({ 
+                  ...prev, 
+                  phoneNumber: e.target.value 
+                }));
+                if (errors.phoneNumber) {
+                  setErrors(prev => ({ ...prev, phoneNumber: "" }));
+                }
+              }}
+              margin="normal"
+              error={!!errors.phoneNumber}
+              helperText={errors.phoneNumber || "Tùy chọn"}
+              placeholder="Nhập số điện thoại"
+            />
+
+            <TextField
+              fullWidth
+              label="Địa chỉ"
+              value={formData.address}
+              onChange={(e) =>
+                setFormData(prev => ({ ...prev, address: e.target.value }))
+              }
+              margin="normal"
+              placeholder="Nhập địa chỉ (Tùy chọn)"
+            />
+
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField
+                fullWidth
+                label="Tỉnh/Thành phố"
+                value={formData.state}
+                onChange={(e) =>
+                  setFormData(prev => ({ ...prev, state: e.target.value }))
+                }
+                margin="normal"
+                placeholder="Tùy chọn"
+              />
+
+              <TextField
+                fullWidth
+                label="Quận/Huyện"
+                value={formData.city}
+                onChange={(e) =>
+                  setFormData(prev => ({ ...prev, city: e.target.value }))
+                }
+                margin="normal"
+                placeholder="Tùy chọn"
+              />
+            </Box>
+
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DatePicker
                 label="Ngày sinh"
@@ -251,34 +329,6 @@ export default function StudentProfileEdit({
                 minDate={dayjs().subtract(100, 'year')}
               />
             </LocalizationProvider>
-
-            {hasChanges && (
-              <Box 
-                sx={{ 
-                  mt: 3, 
-                  p: 2, 
-                  bgcolor: alpha("#f59e0b", 0.1),
-                  borderRadius: 2,
-                  border: `1px solid ${alpha("#f59e0b", 0.3)}`,
-                }}
-              >
-                <Typography variant="subtitle2" sx={{ mb: 1, color: "#f59e0b" }}>
-                  Những thay đổi sẽ được áp dụng:
-                </Typography>
-                <Box sx={{ pl: 2 }}>
-                  {formData.fullname !== student.fullname && (
-                    <Typography variant="body2" color="text.secondary">
-                      • Họ tên: "{student.fullname}" → "{formData.fullname}"
-                    </Typography>
-                  )}
-                  {formData.dateOfBirth && !formData.dateOfBirth.isSame(dayjs(student.dateOfBirth), 'day') && (
-                    <Typography variant="body2" color="text.secondary">
-                      • Ngày sinh: {dayjs(student.dateOfBirth).format("DD/MM/YYYY")} → {formData.dateOfBirth.format("DD/MM/YYYY")}
-                    </Typography>
-                  )}
-                </Box>
-              </Box>
-            )}
 
             {updateError && (
               <Alert severity="error" sx={{ mt: 2 }}>

@@ -42,17 +42,23 @@ export default function StudentProfileCreate({
 
   const [formData, setFormData] = useState({
     fullname: "",
+    phoneNumber: "",
+    address: "",
+    state: "",
+    city: "",
     dateOfBirth: null as Dayjs | null,
   });
 
   const [errors, setErrors] = useState({
     fullname: "",
+    phoneNumber: "",
     dateOfBirth: "",
   });
 
   const validateForm = () => {
     const newErrors = {
       fullname: "",
+      phoneNumber: "",
       dateOfBirth: "",
     };
 
@@ -60,6 +66,10 @@ export default function StudentProfileCreate({
       newErrors.fullname = "Vui lòng nhập họ và tên";
     } else if (formData.fullname.trim().length < 2) {
       newErrors.fullname = "Họ và tên phải có ít nhất 2 ký tự";
+    }
+
+    if (formData.phoneNumber && !/^[0-9]{10,11}$/.test(formData.phoneNumber)) {
+      newErrors.phoneNumber = "Số điện thoại phải có 10-11 chữ số";
     }
 
     if (!formData.dateOfBirth) {
@@ -71,7 +81,7 @@ export default function StudentProfileCreate({
     }
 
     setErrors(newErrors);
-    return !newErrors.fullname && !newErrors.dateOfBirth;
+    return !newErrors.fullname && !newErrors.phoneNumber && !newErrors.dateOfBirth;
   };
 
   const handleSubmit = async () => {
@@ -82,6 +92,10 @@ export default function StudentProfileCreate({
     try {
       const studentData: CreateStudentRequest = {
         fullname: formData.fullname.trim(),
+        phoneNumber: formData.phoneNumber.trim(),
+        address: formData.address.trim(),
+        state: formData.state.trim(),
+        city: formData.city.trim(),
         dateOfBirth: formData.dateOfBirth!.toISOString(),
       };
 
@@ -163,6 +177,60 @@ export default function StudentProfileCreate({
               }}
               placeholder="Nhập họ và tên đầy đủ"
             />
+
+            <TextField
+              fullWidth
+              label="Số điện thoại"
+              value={formData.phoneNumber}
+              onChange={(e) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  phoneNumber: e.target.value,
+                }));
+                if (errors.phoneNumber) {
+                  setErrors((prev) => ({ ...prev, phoneNumber: "" }));
+                }
+              }}
+              margin="normal"
+              error={!!errors.phoneNumber}
+              helperText={errors.phoneNumber || "Tùy chọn"}
+              placeholder="Nhập số điện thoại"
+            />
+
+            <TextField
+              fullWidth
+              label="Địa chỉ"
+              value={formData.address}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, address: e.target.value }))
+              }
+              margin="normal"
+              placeholder="Nhập địa chỉ (Tùy chọn)"
+            />
+
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField
+                fullWidth
+                label="Tỉnh/Thành phố"
+                value={formData.state}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, state: e.target.value }))
+                }
+                margin="normal"
+                placeholder="Tùy chọn"
+              />
+
+              <TextField
+                fullWidth
+                label="Quận/Huyện"
+                value={formData.city}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, city: e.target.value }))
+                }
+                margin="normal"
+                placeholder="Tùy chọn"
+              />
+            </Box>
 
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DatePicker
