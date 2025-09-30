@@ -27,6 +27,7 @@ import GroupIcon from "@mui/icons-material/Group";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getLessons } from "../../../redux/lesson/lessonSlice";
 import { CourseResult } from "../../../common/@types/course";
+import CourseRobotManagementSection from "./CourseRobotManagementSection";
 
 interface Props {
   course: CourseResult | null;
@@ -248,6 +249,18 @@ export default function CourseDetailsSection({
                   />
                 </Box>
               </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Course Robots Management */}
+        <Grid item xs={12}>
+          <Card>
+            <CardContent>
+              <CourseRobotManagementSection
+                courseId={course.id}
+                courseName={course.title}
+              />
             </CardContent>
           </Card>
         </Grid>

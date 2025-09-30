@@ -273,9 +273,7 @@ const Header: React.FC = () => {
           backdropFilter: "blur(15px)",
           borderBottom: "1px solid rgba(0, 0, 0, 0.08)",
           transition: "all 0.3s ease-in-out",
-          boxShadow: mobileMenuOpen
-            ? "none"
-            : "0 2px 10px rgba(0, 0, 0, 0.08)",
+          boxShadow: mobileMenuOpen ? "none" : "0 2px 10px rgba(0, 0, 0, 0.08)",
         }}
       >
         <Toolbar

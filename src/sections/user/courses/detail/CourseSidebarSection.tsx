@@ -1,13 +1,17 @@
-import {
-  Box,
-  Typography,
-  Chip,
-} from "@mui/material";
+import { useState, useEffect } from "react";
+import { Box, Typography, Chip, Alert } from "@mui/material";
 import {
   School as SchoolIcon,
   AccessTime as AccessTimeIcon,
   WorkspacePremium as CertificateIcon,
+  SmartToy as RobotIcon,
 } from "@mui/icons-material";
+import { useAppDispatch, useAppSelector } from "store/config";
+import { getCourseRobotsThunk } from "store/courseRobot/courseRobotThunks";
+import { getMyRobotsThunk } from "store/studentRobot/studentRobotThunks";
+import RobotRequirementCard from "components/robot/RobotRequirementCard";
+import ActivateRobotDialog from "components/robot/ActivateRobotDialog";
+import { StudentRobotResult } from "common/@types/studentRobot";
 
 interface CourseSidebarSectionProps {
   course: {
@@ -16,88 +20,189 @@ interface CourseSidebarSectionProps {
     imageUrl?: string;
   };
   lessons: any[];
+  isEnrolled?: boolean;
 }
 
 export default function CourseSidebarSection({
   course,
   lessons,
 }: CourseSidebarSectionProps) {
+  const dispatch = useAppDispatch();
+  const { courseRobots } = useAppSelector((state) => state.courseRobot);
+  const { myRobots } = useAppSelector((state) => state.studentRobot);
+  const [activateDialogOpen, setActivateDialogOpen] = useState(false);
+
+  // Use courseRobots.data from GET_ALL endpoint
+  const courseRobotsList = courseRobots.data?.items || [];
+  // Handle both array and object response formats
+  const myRobotsList = Array.isArray(myRobots.data)
+    ? myRobots.data
+    : myRobots.data &&
+      typeof myRobots.data === "object" &&
+      "items" in myRobots.data
+    ? (myRobots.data as any).items || []
+    : [];
+
+  useEffect(() => {
+    // Fetch robots required for this course
+    dispatch(getCourseRobotsThunk({ courseId: course.id, pageSize: 100 }));
+    // Fetch user's robots
+    dispatch(getMyRobotsThunk());
+  }, [dispatch, course.id]);
+
+  const handleActivateSuccess = () => {
+    dispatch(getMyRobotsThunk());
+  };
+
+  // Check if user owns a specific robot
+  const isRobotOwned = (robotId: string): boolean => {
+    return myRobotsList.some(
+      (sr: StudentRobotResult) => sr.robotId === robotId
+    );
+  };
+
+  // Check if all required robots are owned
+  const hasAllRequiredRobots = courseRobotsList
+    .filter((cr) => cr.isRequired)
+    .every((cr) => isRobotOwned(cr.robotId));
+
+  const requiredRobots = courseRobotsList.filter((cr) => cr.isRequired);
+  const missingRequiredRobots = requiredRobots.filter(
+    (cr) => !isRobotOwned(cr.robotId)
+  );
   return (
-    <Box sx={{ position: "sticky", top: 100 }}>
-      {/* Course Preview Card */}
-      <Box sx={{ bgcolor: "white", border: "1px solid #e0e0e0", borderRadius: 1, mb: 3 }}>
-        <Box sx={{ position: "relative", height: 200 }}>
-          <Box
-            component="img"
-            src={course.imageUrl || "/asset/OttobitCar.png"}
-            alt={course.title}
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = "/asset/BlockLy.png";
-            }}
-            sx={{
-              width: "100%",
-              height: "100%",
-              objectFit: "contain",
-              p: 2,
-              bgcolor: "#f8f9fa"
-            }}
-          />
-          
-          {/* Free badge */}
-          <Chip
-            label="Miễn phí"
-            sx={{
-              position: "absolute",
-              top: 12,
-              left: 12,
-              bgcolor: "#4caf50",
-              color: "white",
-              fontWeight: 600,
-              fontSize: "0.75rem"
-            }}
-          />
-        </Box>
-        
-        <Box sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-            Nội dung khóa học
-          </Typography>
-          
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+    <Box sx={{ position: "sticky", top: 80 }}>
+      {/* Course Info Card - Compact */}
+      <Box
+        sx={{
+          bgcolor: "white",
+          border: "1px solid #e0e0e0",
+          borderRadius: 2,
+          overflow: "hidden",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          mb: 2,
+        }}
+      >
+        {/* Remove image preview, just show info */}
+        <Box sx={{ p: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+              Nội dung khóa học
+            </Typography>
+            <Chip
+              label="Miễn phí"
+              size="small"
+              sx={{
+                bgcolor: "#4caf50",
+                color: "white",
+                fontWeight: 600,
+                fontSize: "0.7rem",
+                height: 24,
+              }}
+            />
+          </Box>
+
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <SchoolIcon fontSize="small" sx={{ color: "#1976d2" }} />
-              <Typography variant="body2">
-                {lessons.length} bài học
-              </Typography>
+              <Typography variant="body2">{lessons.length} bài học</Typography>
             </Box>
-            
+
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <AccessTimeIcon fontSize="small" sx={{ color: "#1976d2" }} />
-              <Typography variant="body2">
-                Khoảng 4-6 giờ
-              </Typography>
+              <Typography variant="body2">Khoảng 4-6 giờ</Typography>
             </Box>
-            
+
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <CertificateIcon fontSize="small" sx={{ color: "#1976d2" }} />
-              <Typography variant="body2">
-                Chứng chỉ hoàn thành
-              </Typography>
+              <Typography variant="body2">Chứng chỉ hoàn thành</Typography>
             </Box>
           </Box>
         </Box>
       </Box>
 
-      {/* Skills Card */}
-      <Box sx={{ bgcolor: "white", border: "1px solid #e0e0e0", borderRadius: 1 }}>
-        <Box sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+      {/* Robot Requirements Section */}
+      {courseRobotsList.length > 0 && (
+        <Box
+          sx={{
+            bgcolor: "white",
+            border: "1px solid #e0e0e0",
+            borderRadius: 2,
+            mb: 2,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          }}
+        >
+          <Box sx={{ p: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+              <RobotIcon sx={{ color: "#1976d2", fontSize: 20 }} />
+              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                Robots Yêu cầu
+              </Typography>
+            </Box>
+
+            {/* Warning if missing required robots */}
+            {missingRequiredRobots.length > 0 && (
+              <Alert severity="warning" sx={{ mb: 1.5, py: 0.5 }}>
+                <Typography variant="caption">
+                  Cần {missingRequiredRobots.length} robot bắt buộc
+                </Typography>
+              </Alert>
+            )}
+
+            {/* Success message if has all required robots */}
+            {requiredRobots.length > 0 && hasAllRequiredRobots && (
+              <Alert severity="success" sx={{ mb: 1.5, py: 0.5 }}>
+                <Typography variant="caption">
+                  Đủ robots ✓
+                </Typography>
+              </Alert>
+            )}
+
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+              {courseRobotsList.map((courseRobot) => (
+                <RobotRequirementCard
+                  key={courseRobot.id}
+                  robotName={courseRobot.robotName || "Robot"}
+                  robotModel={courseRobot.robotModel || ""}
+                  robotBrand={courseRobot.robotBrand || ""}
+                  robotImageUrl={undefined}
+                  robotPrice={courseRobot.robotPrice || 0}
+                  isRequired={courseRobot.isRequired}
+                  isOwned={isRobotOwned(courseRobot.robotId)}
+                  onActivate={() => setActivateDialogOpen(true)}
+                />
+              ))}
+            </Box>
+          </Box>
+        </Box>
+      )}
+
+
+      {/* Skills Section */}
+      <Box
+        sx={{
+          bgcolor: "white",
+          border: "1px solid #e0e0e0",
+          borderRadius: 2,
+          mt: 2,
+          overflow: "hidden",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+        }}
+      >
+        <Box sx={{ p: 2.5 }}>
+          <Typography variant="subtitle1" sx={{ mb: 1.5, fontWeight: 600 }}>
             Kỹ năng bạn sẽ học được
           </Typography>
-          
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-            {["Lập trình Blockly", "Điều khiển Robot", "Tư duy logic", "Giải quyết vấn đề", "STEM"].map((skill) => (
+
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+            {[
+              "Lập trình Blockly",
+              "Điều khiển Robot",
+              "Tư duy logic",
+              "Giải quyết vấn đề",
+              "STEM",
+            ].map((skill) => (
               <Chip
                 key={skill}
                 label={skill}
@@ -106,13 +211,20 @@ export default function CourseSidebarSection({
                 sx={{
                   borderColor: "#1976d2",
                   color: "#1976d2",
-                  fontSize: "0.75rem"
+                  fontSize: "0.75rem",
                 }}
               />
             ))}
           </Box>
         </Box>
       </Box>
+
+      {/* Activate Robot Dialog */}
+      <ActivateRobotDialog
+        open={activateDialogOpen}
+        onClose={() => setActivateDialogOpen(false)}
+        onSuccess={handleActivateSuccess}
+      />
     </Box>
   );
 }

@@ -48,6 +48,8 @@ const RobotListPage = lazy(() => import("pages/user/store/RobotListPage"));
 const ComponentListPage = lazy(() => import("pages/user/store/ComponentListPage"));
 const RobotDetailPage = lazy(() => import("pages/user/store/RobotDetailPage"));
 const ComponentDetailPage = lazy(() => import("pages/user/store/ComponentDetailPage"));
+// My Robots page
+const MyRobotsPage = lazy(() => import("pages/user/MyRobotsPage"));
 // Error pages
 const Page404 = lazy(() => import("pages/error/Page404"));
 const Page500 = lazy(() => import("pages/error/Page500"));
@@ -194,6 +196,7 @@ function AppRouter() {
           {/* Other User Routes */}
           <ReactRoute path={PATH_USER.courses} element={<CoursesPage />} />
           <ReactRoute path={PATH_USER.myCourses} element={<MyCoursesPage />} />
+          <ReactRoute path={PATH_USER.myRobots} element={<MyRobotsPage />} />
 
           <ReactRoute
             path={PATH_USER.courseDetail}
