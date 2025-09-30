@@ -204,7 +204,7 @@ function MiniIsometricMapGrid({
                   sx={{
                     position: "absolute",
                     left: left - halfW,
-                    top: top - halfH - stackShift,
+                    top: top - halfH,
                     width: w,
                     height: h,
                     cursor: "pointer",
@@ -240,7 +240,7 @@ function MiniIsometricMapGrid({
                       }`}
                       sx={{
                         position: "absolute",
-                        top: -12,
+                        top: -12 - stackShift,
                         left: 0,
                         width: "100%",
                         height: "100%",
@@ -257,37 +257,32 @@ function MiniIsometricMapGrid({
                     <Box
                       sx={{
                         position: "absolute",
-                        top: -4,
-                        right: -4,
-                        backgroundColor: THEME_COLORS.primary,
-                        color: "white",
-                        borderRadius: "50%",
-                        width: 14,
-                        height: 14,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "0.5rem",
-                        fontWeight: "bold",
+                        top: -4 - stackShift,
+                        right: -6,
+                        bgcolor: "rgba(0,0,0,0.7)",
+                        color: "#fff",
+                        fontSize: 10,
+                        px: 0.5,
+                        py: 0.25,
+                        borderRadius: 1,
                         zIndex: 2,
-                        border: "2px solid white",
                       }}
                     >
-                      {itemCount}
+                      ×{itemCount}
                     </Box>
                   )}
 
-                  {/* Empty cell frame - hidden for mini map */}
-                  {false && isEmpty && (
+                  {/* Empty tile frame overlay (only for empty cells) */}
+                  {isEmpty && (
                     <Box
                       sx={{
                         position: "absolute",
-                        top: co.top,
-                        right: co.right,
-                        bottom: co.bottom,
-                        left: co.left,
-                        border: `1px solid ${THEME_COLORS.border}`,
-                        borderRadius: 0.5,
+                        inset: 0,
+                        borderTop: `${1}px solid ${THEME_COLORS.frame}`,
+                        borderRight: `${1}px solid ${THEME_COLORS.frame}`,
+                        borderBottom: `${1}px solid ${THEME_COLORS.frame}`,
+                        borderLeft: `${1}px solid ${THEME_COLORS.frame}`,
+                        borderRadius: `${co.top}px ${co.right}px ${co.bottom}px ${co.left}px`,
                         opacity: 0.3,
                       }}
                     />

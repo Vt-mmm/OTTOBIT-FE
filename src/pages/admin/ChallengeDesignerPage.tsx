@@ -47,9 +47,7 @@ const MapDesignerPage = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [mapName, setMapName] = useState<string>("New Challenge");
   const [mapDescription, setMapDescription] = useState<string>("");
-  // Removed solutionJsonRef; we rely on initialSolutionJsonRef for workspace init and
-  // always rebuild JSON from workspace when saving
-  // Keep the original solution JSON fetched from API for initializing the workspace only
+  // Keep original solution JSON only for save conversion; render uses dedicated state to avoid side effects
   const initialSolutionJsonRef = useRef<string | null>(null);
   // Buffer new solution JSON here so UI state doesn't change and won't disturb map
   // pendingSolutionJsonRef removed; we build from workspace at save time
@@ -63,7 +61,6 @@ const MapDesignerPage = () => {
   const [hasTriedSave, setHasTriedSave] = useState(false);
   const [mapPickerOpen, setMapPickerOpen] = useState(false);
   const [solutionDialogOpen] = useState(false);
-  // Isometric map renders with fixed viewport; no readiness gating needed
   const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
   const [selectedMapTitle, setSelectedMapTitle] =
     useState<string>("No map selected");
@@ -79,7 +76,7 @@ const MapDesignerPage = () => {
           .map((_, col) => ({
             row,
             col,
-            terrain: null, // Start with empty cells
+            terrain: null,
             object: null,
           }))
       )
@@ -625,7 +622,19 @@ const MapDesignerPage = () => {
         const program = BlocklyToPhaserConverter.convertWorkspace(
           solutionWorkspaceRef.current
         );
-        solutionJsonToSave = JSON.stringify(program);
+        // Remove version/programName before sending
+        const sanitizedProgram = (() => {
+          try {
+            const { actions, functions } = (program as any) || {};
+            const result: any = {};
+            if (Array.isArray(actions)) result.actions = actions;
+            if (Array.isArray(functions)) result.functions = functions;
+            return result;
+          } catch {
+            return program;
+          }
+        })();
+        solutionJsonToSave = JSON.stringify(sanitizedProgram);
       }
     } catch {}
     // Validate required fields
@@ -1331,7 +1340,20 @@ const MapDesignerPage = () => {
                     const program = BlocklyToPhaserConverter.convertWorkspace(
                       solutionWorkspaceRef.current
                     );
-                    solutionJsonToSave = JSON.stringify(program);
+                    // Remove version/programName before sending
+                    const sanitizedProgram = (() => {
+                      try {
+                        const { actions, functions } = (program as any) || {};
+                        const result: any = {};
+                        if (Array.isArray(actions)) result.actions = actions;
+                        if (Array.isArray(functions))
+                          result.functions = functions;
+                        return result;
+                      } catch {
+                        return program;
+                      }
+                    })();
+                    solutionJsonToSave = JSON.stringify(sanitizedProgram);
                   }
                 } catch {}
                 if (
