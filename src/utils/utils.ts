@@ -277,6 +277,19 @@ export const getErrorMessage = (
   }
 };
 
+// Format currency to VND
+export const formatVND = (amount: number): string => {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(amount);
+};
+
+// Format number with thousand separators for VND (without currency symbol)
+export const formatVNDNumber = (amount: number): string => {
+  return new Intl.NumberFormat("vi-VN").format(amount);
+};
+
 // appendData
 export const appendData = (data: Record<string, unknown>): FormData => {
   const formData = new FormData();

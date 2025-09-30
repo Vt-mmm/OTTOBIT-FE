@@ -22,10 +22,21 @@ export const PATH_AUTH = {
 };
 export const PATH_PUBLIC = {
   homepage: "/", // Đường dẫn gốc cho người dùng không cần đăng nhập
+  store: "/store",
+  robots: "/store/robots",
+  robotDetail: "/store/robots/:id",
+  components: "/store/components",
+  componentDetail: "/store/components/:id",
 };
 
 export const PATH_USER = {
   homepage: path(ROOTS_USER, "/homepage"),
+  // Store pages
+  store: path(ROOTS_USER, "/store"),
+  robots: path(ROOTS_USER, "/store/robots"),
+  robotDetail: path(ROOTS_USER, "/store/robots/:id"),
+  components: path(ROOTS_USER, "/store/components"),
+  componentDetail: path(ROOTS_USER, "/store/components/:id"),
   // Public listing pages
   courses: path(ROOTS_USER, "/courses"),
   courseDetail: path(ROOTS_USER, "/courses/:id"),

@@ -80,8 +80,10 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
 
   // Fetch current lesson info (for gating: courseId, lessonOrder)
   const dispatch = useAppDispatch();
-  const currentLesson = useAppSelector((s) => s.lesson.currentLesson.data);
-  const userId = useAppSelector((s) => s.account.profile.data?.id);
+  const currentLesson = useAppSelector(
+    (state) => state.lesson.currentLesson.data
+  );
+  const userId = useAppSelector((state) => state.account.profile.data?.id);
 
   useEffect(() => {
     const nav = getStoredNavigationData();
