@@ -80,8 +80,10 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
 
   // Fetch current lesson info (for gating: courseId, lessonOrder)
   const dispatch = useAppDispatch();
-  const currentLesson = useAppSelector((s) => s.lesson.currentLesson.data);
-  const userId = useAppSelector((s) => s.account.profile.data?.id);
+  const currentLesson = useAppSelector(
+    (state) => state.lesson.currentLesson.data
+  );
+  const userId = useAppSelector((state) => state.account.profile.data?.id);
 
   useEffect(() => {
     const nav = getStoredNavigationData();
@@ -177,7 +179,7 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
 
     try {
       // Clear existing blocks completely
-      if (typeof workspace.clear === 'function') {
+      if (typeof workspace.clear === "function") {
         workspace.clear();
       }
 
@@ -186,18 +188,18 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
         const toolbox = workspace.getToolbox && workspace.getToolbox();
         toolbox?.clearSelection?.();
         const flyout = workspace.getFlyout && workspace.getFlyout();
-        if (flyout && typeof flyout.setVisible === 'function') {
+        if (flyout && typeof flyout.setVisible === "function") {
           flyout.setVisible(false);
         }
         // Also update to an empty toolbox (prevents flicker)
-        if (typeof workspace.updateToolbox === 'function') {
-          workspace.updateToolbox({ kind: 'flyoutToolbox', contents: [] });
+        if (typeof workspace.updateToolbox === "function") {
+          workspace.updateToolbox({ kind: "flyoutToolbox", contents: [] });
         }
       } catch {}
 
       // Ensure a fresh start block exists for new challenge
       try {
-        const start = workspace.newBlock && workspace.newBlock('ottobit_start');
+        const start = workspace.newBlock && workspace.newBlock("ottobit_start");
         if (start) {
           start.initSvg && start.initSvg();
           start.render && start.render();

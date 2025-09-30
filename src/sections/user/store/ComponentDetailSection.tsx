@@ -2,28 +2,22 @@ import { useEffect, useState } from "react";
 import {
   Box,
   Container,
-  Grid,
   Typography,
   Button,
   Chip,
-  Card,
-  CardContent,
   Alert,
   CircularProgress,
-  Dialog,
-  DialogContent,
-  IconButton,
   Breadcrumbs,
   Link,
+  IconButton,
+  Divider,
 } from "@mui/material";
 import {
-  ArrowBack as ArrowBackIcon,
-  ShoppingCart as CartIcon,
+  Add as AddIcon,
+  Remove as RemoveIcon,
   FavoriteBorder as FavoriteIcon,
   Share as ShareIcon,
-  ZoomIn as ZoomInIcon,
-  Close as CloseIcon,
-  Category as TypeIcon,
+  Notifications as NotificationsIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "store/config";
@@ -42,7 +36,8 @@ export default function ComponentDetailSection({ componentId }: ComponentDetailS
   const { currentComponent } = useAppSelector((state) => state.component);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
-  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     if (componentId) {
@@ -53,6 +48,11 @@ export default function ComponentDetailSection({ componentId }: ComponentDetailS
   const handleBack = () => {
     const path = isAuthenticated ? PATH_USER.components : PATH_PUBLIC.components;
     navigate(path);
+  };
+
+  const handleQuantityChange = (delta: number) => {
+    const component = currentComponent.data;
+    setQuantity((prev) => Math.max(1, Math.min(prev + delta, component?.stockQuantity || 1)));
   };
 
   const getComponentTypeLabel = (type: ComponentType) => {
@@ -85,26 +85,13 @@ export default function ComponentDetailSection({ componentId }: ComponentDetailS
     return typeColors[type] || "default";
   };
 
-  const getStockStatusColor = (stock: number): "default" | "primary" | "secondary" | "success" | "warning" | "info" | "error" => {
-    if (stock === 0) return "error";
-    if (stock < 10) return "warning";
-    return "success";
-  };
-
-  const getStockStatusText = (stock: number) => {
-    if (stock === 0) return "Out of Stock";
-    if (stock < 10) return "Low Stock";
-    return "In Stock";
-  };
-
-  // Get data from Redux state with correct structure
   const component = currentComponent.data;
   const isLoading = currentComponent.isLoading;
   const error = currentComponent.error;
 
   if (isLoading) {
     return (
-      <Container maxWidth="xl" sx={{ bgcolor: "white", minHeight: "100vh" }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
           <CircularProgress />
         </Box>
@@ -114,7 +101,7 @@ export default function ComponentDetailSection({ componentId }: ComponentDetailS
 
   if (error || !component) {
     return (
-      <Container maxWidth="xl" sx={{ bgcolor: "white", minHeight: "100vh" }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         <Alert severity="error" sx={{ mt: 4 }}>
           {error || "Component not found"}
         </Alert>
@@ -122,59 +109,58 @@ export default function ComponentDetailSection({ componentId }: ComponentDetailS
     );
   }
 
+  // Thumbnail images
+  const thumbnails = component.imageUrl ? [component.imageUrl] : [];
+
   return (
-    <Container maxWidth="xl" sx={{ bgcolor: "white", minHeight: "100vh" }}>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Breadcrumbs */}
-      <Breadcrumbs sx={{ mb: 3 }}>
+      <Breadcrumbs sx={{ mb: 3, fontSize: "0.875rem" }}>
         <Link
           color="inherit"
-          href={isAuthenticated ? PATH_USER.store : PATH_PUBLIC.store}
+          href="#"
           onClick={(e) => {
             e.preventDefault();
             navigate(isAuthenticated ? PATH_USER.store : PATH_PUBLIC.store);
           }}
+          sx={{ textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
         >
-          Store
+          Home
         </Link>
         <Link
           color="inherit"
-          href={isAuthenticated ? PATH_USER.components : PATH_PUBLIC.components}
+          href="#"
           onClick={(e) => {
             e.preventDefault();
             handleBack();
           }}
+          sx={{ textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
         >
           Components
         </Link>
-        <Typography color="text.primary">{component.name}</Typography>
+        <Typography color="text.primary" fontSize="0.875rem">{component.name}</Typography>
       </Breadcrumbs>
 
-      {/* Back Button */}
-      <Button
-        startIcon={<ArrowBackIcon />}
-        onClick={handleBack}
-        sx={{ mb: 3 }}
-      >
-        Back to Components
-      </Button>
-
-      <Grid container spacing={6}>
-        {/* Product Images */}
-        <Grid item xs={12} md={6}>
-          <Card sx={{ position: "relative", overflow: "hidden" }}>
-            {component.imageUrl ? (
-              <Box
-                sx={{
-                  position: "relative",
-                  height: 500,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  bgcolor: "grey.50",
-                }}
-                onClick={() => setImageDialogOpen(true)}
-              >
+      {/* Main Product Section */}
+      <Box sx={{ display: "flex", gap: 6, flexDirection: { xs: "column", md: "row" } }}>
+        {/* Left Side - Image Gallery */}
+        <Box sx={{ flex: 1, maxWidth: { md: "50%" } }}>
+          <Box sx={{ position: "relative" }}>
+            {/* Main Image */}
+            <Box
+              sx={{
+                bgcolor: "grey.50",
+                borderRadius: 2,
+                height: 600,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                mb: 2,
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              {component.imageUrl ? (
                 <Box
                   component="img"
                   src={component.imageUrl}
@@ -183,211 +169,258 @@ export default function ComponentDetailSection({ componentId }: ComponentDetailS
                     maxWidth: "100%",
                     maxHeight: "100%",
                     objectFit: "contain",
-                    transition: "transform 0.3s ease",
-                    "&:hover": {
-                      transform: "scale(1.05)",
-                    },
                   }}
                 />
-                <IconButton
-                  sx={{
-                    position: "absolute",
-                    top: 16,
-                    right: 16,
-                    bgcolor: "rgba(0,0,0,0.6)",
-                    color: "white",
-                    "&:hover": {
-                      bgcolor: "rgba(0,0,0,0.8)",
-                    },
-                  }}
-                >
-                  <ZoomInIcon />
-                </IconButton>
-              </Box>
-            ) : (
-              <Box
-                sx={{
-                  height: 500,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  bgcolor: "grey.100",
-                  fontSize: "4rem",
-                }}
-              >
-                🔧
+              ) : (
+                <Typography variant="h1" sx={{ fontSize: "8rem" }}>🔧</Typography>
+              )}
+            </Box>
+
+            {/* Thumbnail Gallery */}
+            {thumbnails.length > 0 && (
+              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                {thumbnails.map((thumb, index) => (
+                  <Box
+                    key={index}
+                    onClick={() => setSelectedImage(index)}
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      border: selectedImage === index ? 2 : 1,
+                      borderColor: selectedImage === index ? "primary.main" : "grey.300",
+                      borderRadius: 1,
+                      cursor: "pointer",
+                      overflow: "hidden",
+                      bgcolor: "grey.50",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      "&:hover": {
+                        borderColor: "primary.main",
+                      },
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src={thumb}
+                      alt={`${component.name} ${index + 1}`}
+                      sx={{
+                        maxWidth: "100%",
+                        maxHeight: "100%",
+                        objectFit: "contain",
+                      }}
+                    />
+                  </Box>
+                ))}
               </Box>
             )}
-          </Card>
-        </Grid>
+          </Box>
+        </Box>
 
-        {/* Product Info */}
-        <Grid item xs={12} md={6}>
-          <Box>
-            <Typography variant="h3" component="h1" sx={{ fontWeight: 700, mb: 2 }}>
+        {/* Right Side - Product Info */}
+        <Box sx={{ flex: 1 }}>
+          {/* Title & Category */}
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
               {component.name}
             </Typography>
-
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-              <TypeIcon color="action" />
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
               <Chip
                 label={getComponentTypeLabel(component.type)}
                 color={getComponentTypeColor(component.type)}
-                size="medium"
-              />
-            </Box>
-
-            <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
-              <Chip
-                label={formatVND(component.price || 0)}
-                color="primary"
-                size="medium"
-                sx={{ fontSize: "1.1rem", fontWeight: "bold", px: 2 }}
+                size="small"
+                sx={{ fontWeight: 600 }}
               />
               <Chip
-                label={getStockStatusText(component.stockQuantity || 0)}
-                color={getStockStatusColor(component.stockQuantity || 0)}
-                size="medium"
+                label={component.stockQuantity > 500 ? "Sold 500+" : "Popular"}
+                size="small"
+                sx={{ bgcolor: "success.light", color: "success.dark", fontWeight: 600 }}
               />
-            </Box>
-
-            <Typography variant="body1" sx={{ mb: 4, lineHeight: 1.7 }}>
-              {component.description || "No description available"}
-            </Typography>
-
-            {/* Key Information */}
-            <Card variant="outlined" sx={{ mb: 4 }}>
-              <CardContent>
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  Component Details
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      Type
-                    </Typography>
-                    <Typography variant="body1" fontWeight="medium">
-                      {getComponentTypeLabel(component.type)}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      Stock Available
-                    </Typography>
-                    <Typography variant="body1" fontWeight="medium">
-                      {component.stockQuantity || 0} units
-                    </Typography>
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-
-            {/* Action Buttons */}
-            <Box sx={{ display: "flex", gap: 2, mb: 4 }}>
-              <Button
-                variant="contained"
-                size="large"
-                startIcon={<CartIcon />}
-                disabled={(component.stockQuantity || 0) === 0}
-                sx={{
-                  px: 4,
-                  py: 1.5,
-                  fontSize: "1.1rem",
-                  fontWeight: 600,
-                }}
-              >
-                {(component.stockQuantity || 0) > 0 ? "Add to Cart" : "Out of Stock"}
-              </Button>
-              <Button
-                variant="outlined"
-                size="large"
-                startIcon={<FavoriteIcon />}
-                sx={{ px: 3 }}
-              >
-                Wishlist
-              </Button>
-              <Button
-                variant="outlined"
-                size="large"
-                startIcon={<ShareIcon />}
-                sx={{ px: 3 }}
-              >
-                Share
-              </Button>
             </Box>
           </Box>
-        </Grid>
-      </Grid>
 
-      {/* Technical Specifications */}
-      {component.specifications && (
-        <Box sx={{ mt: 6 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
-                Technical Specifications
-              </Typography>
-              <Typography
-                variant="body1"
+          {/* Price */}
+          <Typography variant="h3" sx={{ fontWeight: 700, mb: 3, color: "text.primary" }}>
+            {formatVND(component.price)}
+          </Typography>
+
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            (or starting from {formatVND(Math.round(component.price / 12))}/month with 0% installment)
+          </Typography>
+
+          <Divider sx={{ my: 3 }} />
+
+          {/* Component Type */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2 }}>
+              Component Type
+            </Typography>
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Chip
+                label={getComponentTypeLabel(component.type)}
+                variant="outlined"
                 sx={{
-                  whiteSpace: "pre-line",
-                  bgcolor: "grey.50",
-                  p: 3,
-                  borderRadius: 2,
-                  lineHeight: 1.7,
+                  borderColor: "primary.main",
+                  color: "primary.main",
+                  fontWeight: 600,
+                  "&:hover": {
+                    bgcolor: "primary.50",
+                  },
+                }}
+              />
+            </Box>
+          </Box>
+
+          <Divider sx={{ my: 3 }} />
+
+          {/* Quantity */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2 }}>
+              Quantity
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  border: 1,
+                  borderColor: "grey.300",
+                  borderRadius: 1,
                 }}
               >
-                {component.specifications}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
-      )}
+                <IconButton
+                  onClick={() => handleQuantityChange(-1)}
+                  disabled={quantity <= 1}
+                  sx={{ borderRadius: 0 }}
+                >
+                  <RemoveIcon />
+                </IconButton>
+                <Typography sx={{ px: 3, minWidth: 60, textAlign: "center", fontWeight: 600 }}>
+                  {quantity}
+                </Typography>
+                <IconButton
+                  onClick={() => handleQuantityChange(1)}
+                  disabled={quantity >= component.stockQuantity}
+                  sx={{ borderRadius: 0 }}
+                >
+                  <AddIcon />
+                </IconButton>
+              </Box>
+            </Box>
+          </Box>
 
-      {/* Full Screen Image Dialog */}
-      {component.imageUrl && (
-        <Dialog
-          open={imageDialogOpen}
-          onClose={() => setImageDialogOpen(false)}
-          maxWidth={false}
-          PaperProps={{
-            sx: {
-              width: "90vw",
-              height: "90vh",
-              maxWidth: "none",
-              maxHeight: "none",
-            },
-          }}
-        >
-          <DialogContent sx={{ p: 0, position: "relative" }}>
-            <IconButton
-              onClick={() => setImageDialogOpen(false)}
+          {/* Product Description */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+              Product Description
+            </Typography>
+            <Typography variant="body1" sx={{ lineHeight: 1.8, color: "text.secondary" }}>
+              {component.description || "No description available"}
+            </Typography>
+          </Box>
+
+          {/* Key Features */}
+          {component.specifications && (
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                Key Features
+              </Typography>
+              <Box component="ul" sx={{ pl: 2, m: 0 }}>
+                {component.specifications.split("\n").filter(Boolean).slice(0, 5).map((spec, idx) => (
+                  <Typography
+                    key={idx}
+                    component="li"
+                    variant="body2"
+                    sx={{ mb: 1, color: "text.secondary" }}
+                  >
+                    {spec}
+                  </Typography>
+                ))}
+              </Box>
+            </Box>
+          )}
+
+          {/* Availability */}
+          <Box sx={{ mb: 4, p: 2, bgcolor: "success.50", borderRadius: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "success.dark" }}>
+              {component.stockQuantity > 0 ? "In Stock" : "Out of Stock"} —{" "}
+              {component.stockQuantity > 0
+                ? `Ships in 1-2 business days (${component.stockQuantity} units available)`
+                : "Currently unavailable"}
+            </Typography>
+          </Box>
+
+          {/* Action Buttons */}
+          <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+            <Button
+              variant="contained"
+              size="large"
+              fullWidth
+              disabled={component.stockQuantity === 0}
               sx={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                zIndex: 1,
-                bgcolor: "rgba(0,0,0,0.6)",
-                color: "white",
-                "&:hover": {
-                  bgcolor: "rgba(0,0,0,0.8)",
-                },
+                py: 1.5,
+                fontSize: "1rem",
+                fontWeight: 600,
+                textTransform: "none",
               }}
             >
-              <CloseIcon />
-            </IconButton>
-            <Box
+              Add to Cart
+            </Button>
+            <Button
+              variant="outlined"
+              size="large"
+              fullWidth
               sx={{
-                width: "100%",
-                height: "100%",
-                backgroundImage: `url(${component.imageUrl})`,
-                backgroundSize: "contain",
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "center",
+                py: 1.5,
+                fontSize: "1rem",
+                fontWeight: 600,
+                textTransform: "none",
               }}
-            />
-          </DialogContent>
-        </Dialog>
+            >
+              Buy Now
+            </Button>
+          </Box>
+
+          {/* Secondary Actions */}
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button
+              variant="text"
+              startIcon={<NotificationsIcon />}
+              sx={{ textTransform: "none", color: "text.secondary" }}
+            >
+              Get Price Drop Alert
+            </Button>
+            <IconButton>
+              <FavoriteIcon />
+            </IconButton>
+            <IconButton>
+              <ShareIcon />
+            </IconButton>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Technical Specifications Section */}
+      {component.specifications && (
+        <Box sx={{ mt: 8 }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
+            Technical Specifications
+          </Typography>
+          <Box
+            sx={{
+              bgcolor: "grey.50",
+              borderRadius: 2,
+              p: 4,
+            }}
+          >
+            <Typography
+              variant="body1"
+              sx={{ whiteSpace: "pre-line", lineHeight: 1.8 }}
+            >
+              {component.specifications}
+            </Typography>
+          </Box>
+        </Box>
       )}
     </Container>
   );

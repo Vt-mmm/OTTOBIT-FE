@@ -1,9 +1,13 @@
+import { useEffect } from "react";
 import { Box, Container, Typography } from "@mui/material";
 import Header from "layout/components/header/Header";
 import Footer from "layout/components/footer/Footer";
 import ComponentListingSection from "sections/user/store/ComponentListingSection";
 
 export default function ComponentListPage() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", bgcolor: "white" }}>
       <Header />
