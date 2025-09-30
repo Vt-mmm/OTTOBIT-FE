@@ -143,7 +143,7 @@ export default function CourseHeroSection({
             bgcolor: "#e8f5e9", 
             border: "1px solid #4caf50",
             borderRadius: 2,
-            mb: 4 
+            mb: 2 
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>

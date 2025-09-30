@@ -15,6 +15,9 @@ import imageReducer from "./image/imageSlice";
 import componentReducer from "./component/componentSlice";
 import robotReducer from "./robot/robotSlice";
 import courseMapReducer from "./courseMap/courseMapSlice";
+import courseRobotReducer from "./courseRobot/courseRobotSlice";
+import studentRobotReducer from "./studentRobot/studentRobotSlice";
+import activationCodeReducer from "./activationCode/activationCodeSlice";
 
 export const ottobit = configureStore({
   reducer: {
@@ -33,6 +36,9 @@ export const ottobit = configureStore({
     component: componentReducer, // ⭐️ NEW: Component management
     robot: robotReducer, // ⭐️ NEW: Robot management
     courseMap: courseMapReducer, // ⭐️ NEW: CourseMap management
+    courseRobot: courseRobotReducer, // ⭐️ NEW: CourseRobot (Course-Robot relationship)
+    studentRobot: studentRobotReducer, // ⭐️ NEW: StudentRobot (Student's activated robots)
+    activationCode: activationCodeReducer, // ⭐️ NEW: ActivationCode (Robot activation codes)
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

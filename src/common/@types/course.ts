@@ -11,6 +11,21 @@ export interface Course {
   lessonsCount?: number;
   enrollmentsCount?: number;
   createdByName?: string;
+  
+  // Robot requirements (populated by BE if requested)
+  courseRobots?: CourseRobotInfo[];
+}
+
+// Helper interface for robot info in course
+export interface CourseRobotInfo {
+  robotId: string;
+  robotName: string;
+  robotModel: string;
+  robotBrand: string;
+  robotImageUrl?: string;
+  robotPrice: number;
+  isRequired: boolean;
+  order?: number;
 }
 
 // Request types

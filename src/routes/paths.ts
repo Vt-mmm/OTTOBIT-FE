@@ -44,6 +44,7 @@ export const PATH_USER = {
   lessonDetail: path(ROOTS_USER, "/lessons/:id"),
   // User management pages
   myCourses: path(ROOTS_USER, "/my-courses"),
+  myRobots: path(ROOTS_USER, "/my-robots"),
   challenges: path(ROOTS_USER, "/challenges"),
   challengeDetail: path(ROOTS_USER, "/challenges/:id"),
   studio: "/studio",
@@ -65,4 +66,5 @@ export const PATH_ADMIN = {
   studentManagement: path(ROOTS_ADMIN_DASHBOARD, "/student-management"),
   robotManagement: path(ROOTS_ADMIN_DASHBOARD, "/robot-management"),
   componentManagement: path(ROOTS_ADMIN_DASHBOARD, "/component-management"),
+  activationCodeManagement: path(ROOTS_ADMIN_DASHBOARD, "/activation-code-management"),
 };
