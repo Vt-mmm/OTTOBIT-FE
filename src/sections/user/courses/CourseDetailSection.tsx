@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -11,7 +11,10 @@ import {
 } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getCourseById } from "../../../redux/course/courseSlice";
-import { getLessonsPreview, getLessonProgress } from "../../../redux/lesson/lessonSlice";
+import {
+  getLessonsPreview,
+  getLessonProgress,
+} from "../../../redux/lesson/lessonSlice";
 import { isLessonAccessible } from "../../../utils/lessonUtils";
 import {
   createEnrollment,
@@ -41,10 +44,10 @@ export default function CourseDetailSection({
     message: "",
     severity: "success" as "success" | "error" | "warning",
   });
-  const [profileDialog, setProfileDialog] = useState({ 
-    open: false, 
-    courseName: "", 
-    courseId: "" 
+  const [profileDialog, setProfileDialog] = useState({
+    open: false,
+    courseName: "",
+    courseId: "",
   });
 
   const {
@@ -53,16 +56,15 @@ export default function CourseDetailSection({
     error: courseError,
   } = useAppSelector((state) => state.course.currentCourse);
 
-
   const {
     data: lessonsPreviewData,
     isLoading: lessonsPreviewLoading,
     error: lessonsPreviewError,
   } = useAppSelector((state) => state.lesson.lessonsPreview);
 
-  const {
-    data: lessonProgressData,
-  } = useAppSelector((state) => state.lesson.lessonProgress);
+  const { data: lessonProgressData } = useAppSelector(
+    (state) => state.lesson.lessonProgress
+  );
 
   const { myEnrollments, operations } = useAppSelector(
     (state) => state.enrollment
@@ -96,43 +98,50 @@ export default function CourseDetailSection({
   useEffect(() => {
     if (isUserEnrolled) {
       // Ensure backend receives correct paging params (PageNumber/PageSize)
-      dispatch(getLessonProgress({ courseId, pageNumber: 1, pageSize: 50 } as any));
+      dispatch(
+        getLessonProgress({ courseId, pageNumber: 1, pageSize: 50 } as any)
+      );
     }
   }, [dispatch, courseId, isUserEnrolled]);
 
-  // Check if user has student profile
-  const checkStudentProfile = async (): Promise<boolean> => {
+  // Check if user has student profile - with cache
+  const checkStudentProfile = useCallback(async (): Promise<boolean> => {
     try {
+      // If already have data in Redux, use it immediately
       if (studentData) {
         return true;
       }
-      
+
+      // Only call API if we don't have data yet
       const result = await dispatch(getStudentByUserThunk()).unwrap();
       return !!result;
     } catch (error: any) {
       // If 404 or NO_STUDENT_PROFILE, user doesn't have profile
-      if (error.includes?.("404") || error === "NO_STUDENT_PROFILE" || 
-          (typeof error === "string" && error.toLowerCase().includes("not found"))) {
+      if (
+        error.includes?.("404") ||
+        error === "NO_STUDENT_PROFILE" ||
+        (typeof error === "string" && error.toLowerCase().includes("not found"))
+      ) {
         return false;
       }
       // For other errors, assume no profile to be safe
       return false;
     }
-  };
+  }, [studentData, dispatch]);
 
   const handleEnrollCourse = async () => {
     const courseName = course?.title || "khóa học này";
-    
+
     try {
       // First check if user has student profile
       const hasProfile = await checkStudentProfile();
-      
+
       if (!hasProfile) {
         // Show dialog to prompt user to create profile
         setProfileDialog({
           open: true,
           courseName,
-          courseId
+          courseId,
         });
         return;
       }
@@ -150,19 +159,19 @@ export default function CourseDetailSection({
       dispatch(getMyEnrollments({ pageSize: 100 }));
     } catch (error: any) {
       // Check if error indicates missing student profile
-      const requiresProfile = typeof error === "string" && (
-        error.toLowerCase().includes("student not found") ||
-        error.toLowerCase().includes("student profile required") ||
-        error.toLowerCase().includes("no student profile") || 
-        error.toLowerCase().includes("create student profile") ||
-        error.toLowerCase().includes("missing student profile")
-      );
-      
+      const requiresProfile =
+        typeof error === "string" &&
+        (error.toLowerCase().includes("student not found") ||
+          error.toLowerCase().includes("student profile required") ||
+          error.toLowerCase().includes("no student profile") ||
+          error.toLowerCase().includes("create student profile") ||
+          error.toLowerCase().includes("missing student profile"));
+
       if (requiresProfile) {
         setProfileDialog({
           open: true,
           courseName,
-          courseId
+          courseId,
         });
       } else {
         setSnackbar({
@@ -190,8 +199,8 @@ export default function CourseDetailSection({
 
     // For enrolled users, check lesson accessibility based on lesson progress
     const lessonProgresses = lessonProgressData?.items || [];
-    const currentLesson = lessons.find(l => l.id === lessonId);
-    
+    const currentLesson = lessons.find((l) => l.id === lessonId);
+
     if (!currentLesson) {
       setSnackbar({
         open: true,
@@ -203,14 +212,17 @@ export default function CourseDetailSection({
 
     // Import lesson utils to check accessibility - we'll add this after checking if the lesson is accessible
     // Kiểm tra khả năng truy cập lesson dựa trên lessonProgress
-    const accessible = isLessonAccessible(currentLesson as any, lessonProgresses as any);
+    const accessible = isLessonAccessible(
+      currentLesson as any,
+      lessonProgresses as any
+    );
     if (!accessible) {
-    setSnackbar({
-    open: true,
-    message: `Vui lòng hoàn thành bài học trước đó để mở khóa "${currentLesson.title}".`,
-    severity: "warning",
-    });
-    return;
+      setSnackbar({
+        open: true,
+        message: `Vui lòng hoàn thành bài học trước đó để mở khóa "${currentLesson.title}".`,
+        severity: "warning",
+      });
+      return;
     }
 
     // If accessible, navigate to lesson detail

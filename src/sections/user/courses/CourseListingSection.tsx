@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -102,13 +102,15 @@ export default function CourseListingSection({ searchQuery }: CourseListingSecti
     navigate(PATH_USER.courseDetail.replace(":id", courseId));
   };
 
-  // Check if user has student profile
-  const checkStudentProfile = async (): Promise<boolean> => {
+  // Check if user has student profile - with cache
+  const checkStudentProfile = useCallback(async (): Promise<boolean> => {
     try {
+      // If already have data in Redux, use it immediately
       if (studentData) {
         return true;
       }
       
+      // Only call API if we don't have data yet
       const result = await dispatch(getStudentByUserThunk()).unwrap();
       return !!result;
     } catch (error: any) {
@@ -120,7 +122,7 @@ export default function CourseListingSection({ searchQuery }: CourseListingSecti
       // For other errors, assume no profile to be safe
       return false;
     }
-  };
+  }, [studentData, dispatch]);
 
   const handleEnrollCourse = async (courseId: string) => {
     // Find course name for better UX

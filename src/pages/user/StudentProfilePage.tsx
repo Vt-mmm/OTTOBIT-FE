@@ -11,29 +11,39 @@ const StudentProfilePage: React.FC = () => {
   };
 
   return (
-    <>
+    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header />
       <Box
         sx={{
-          minHeight: "100vh",
-          background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+          flex: 1,
+          background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
           pt: { xs: 10, md: 12 },
-          pb: 6,
+          pb: 8,
+          position: "relative",
+          overflow: "hidden",
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: "300px",
+            background: "linear-gradient(180deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%)",
+            pointerEvents: "none",
+          },
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="xl" sx={{ position: "relative", zIndex: 1 }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}      
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
           >
-
-            {/* Student Profile Section */}
             <StudentProfileSection onStudentCreated={handleStudentCreated} />
           </motion.div>
         </Container>
       </Box>
-    </>
+    </Box>
   );
 };
 

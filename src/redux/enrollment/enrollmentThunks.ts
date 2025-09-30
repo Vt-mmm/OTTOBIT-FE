@@ -74,6 +74,18 @@ export const getMyEnrollmentsThunk = createAsyncThunk<
     return response.data.data;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
+    
+    // If 404, return empty data instead of error (user has no enrollments yet)
+    if (err.response?.status === 404) {
+      return {
+        items: [],
+        page: 1,
+        size: request.pageSize || 10,
+        total: 0,
+        totalPages: 0,
+      };
+    }
+    
     return rejectWithValue(
       err.response?.data?.message || "Failed to fetch my enrollments"
     );
