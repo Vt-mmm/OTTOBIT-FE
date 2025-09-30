@@ -25,6 +25,7 @@ import {
   Dashboard as DashboardIcon,
   School as SchoolIcon,
   AdminPanelSettings as AdminIcon,
+  Store as StoreIcon,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -93,6 +94,13 @@ const Header: React.FC = () => {
           isPage: true,
         },
         {
+          name: "Cửa hàng",
+          icon: <StoreIcon sx={{ mr: 1, fontSize: "1rem" }} />,
+          href: PATH_USER.store,
+          id: "store",
+          isPage: true,
+        },
+        {
           name: "Khóa học",
           icon: <SchoolIcon sx={{ mr: 1, fontSize: "1rem" }} />,
           href: PATH_USER.courses,
@@ -114,6 +122,13 @@ const Header: React.FC = () => {
           icon: <HomeIcon sx={{ mr: 1, fontSize: "1rem" }} />,
           href: PATH_PUBLIC.homepage,
           id: "home",
+          isPage: true,
+        },
+        {
+          name: "Cửa hàng",
+          icon: <StoreIcon sx={{ mr: 1, fontSize: "1rem" }} />,
+          href: PATH_PUBLIC.store,
+          id: "store",
           isPage: true,
         },
       ]);

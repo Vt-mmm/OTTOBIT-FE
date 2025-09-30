@@ -38,6 +38,7 @@ import {
   UpdateComponentRequest,
 } from "../../../common/@types/component";
 import { SimpleImageUploader } from "../../../components/common/SimpleImageUploader";
+import { formatVND } from "../../../utils/utils";
 
 interface ComponentFormSectionProps {
   mode: "create" | "edit";
@@ -395,7 +396,7 @@ export default function ComponentFormSection({
                   </Typography>
 
                   <Typography variant="body2">
-                    <strong>Price:</strong> ${formData.price.toFixed(2)}
+                    <strong>Price:</strong> {formatVND(formData.price)}
                   </Typography>
 
                   <Typography variant="body2">

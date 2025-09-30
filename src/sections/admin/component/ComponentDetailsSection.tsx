@@ -36,6 +36,7 @@ import {
   ComponentType,
 } from "../../../common/@types/component";
 import ImageManagement from "../../../components/admin/ImageManagement";
+import { formatVND } from "../../../utils/utils";
 
 interface ComponentDetailsSectionProps {
   component: ComponentResult | null;
@@ -284,9 +285,9 @@ export default function ComponentDetailsSection({
                         }}
                       >
                         <Chip
-                          label={`$${component.price.toFixed(2)}`}
+                          label={formatVND(component.price)}
                           color="primary"
-                          sx={{ fontWeight: "bold" }}
+                          sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
                         />
                         <Chip
                           label={getStockStatusText(component.stockQuantity)}
@@ -343,9 +344,9 @@ export default function ComponentDetailsSection({
                         }}
                       >
                         <Chip
-                          label={`$${component.price.toFixed(2)}`}
+                          label={formatVND(component.price)}
                           color="primary"
-                          sx={{ fontWeight: "bold" }}
+                          sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
                         />
                         <Chip
                           label={getStockStatusText(component.stockQuantity)}
@@ -438,7 +439,7 @@ export default function ComponentDetailsSection({
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <PriceIcon color="primary" />
                       <Typography variant="h6" color="primary.main">
-                        ${component.price.toFixed(2)}
+                        {formatVND(component.price)}
                       </Typography>
                     </Box>
                   </Box>

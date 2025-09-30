@@ -34,6 +34,7 @@ import { getRobotsThunk, deleteRobotThunk } from "../../../redux/robot/robotThun
 import { clearSuccessFlags } from "../../../redux/robot/robotSlice";
 import { RobotResult } from "../../../common/@types/robot";
 import ConfirmDialog from "components/common/ConfirmDialog";
+import { formatVND } from "../../../utils/utils";
 
 interface RobotListSectionProps {
   onViewModeChange: (mode: "create" | "edit" | "details", robot?: RobotResult) => void;
@@ -281,7 +282,7 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
                   )}
                   {/* Price Tag */}
                   <Chip
-                    label={`$${robot.price.toFixed(2)}`}
+                    label={formatVND(robot.price)}
                     color="primary"
                     size="small"
                     sx={{
@@ -289,6 +290,7 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
                       top: 8,
                       left: 8,
                       fontWeight: "bold",
+                      fontSize: "0.7rem",
                     }}
                   />
 
@@ -396,7 +398,7 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                       <PriceIcon fontSize="small" color="primary" />
                       <Typography variant="body2" fontWeight="medium">
-                        ${robot.price.toFixed(2)}
+                        {formatVND(robot.price)}
                       </Typography>
                     </Box>
                     
@@ -414,7 +416,7 @@ export default function RobotListSection({ onViewModeChange }: RobotListSectionP
                     </Box>
 
                     <Typography variant="caption" color="text.secondary">
-                      <strong>Age:</strong> {robot.minAge}-{robot.maxAge} years
+                      <strong>Age:</strong> {robot.minAge}-{robot.maxAge} tuổi
                     </Typography>
 
                     <Typography variant="caption" color="text.secondary">

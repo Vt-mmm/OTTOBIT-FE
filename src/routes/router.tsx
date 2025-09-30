@@ -42,6 +42,12 @@ const RobotStudioPage = lazy(() => import("pages/studio/RobotStudioPage"));
 const UserProfilePage = lazy(() => import("pages/user/UserProfilePage"));
 const StudentProfilePage = lazy(() => import("pages/user/StudentProfilePage"));
 const SecuritySettingsPage = lazy(() => import("pages/user/SecuritySettingsPage"));
+// Store pages
+const StorePage = lazy(() => import("pages/user/store/StorePage"));
+const RobotListPage = lazy(() => import("pages/user/store/RobotListPage"));
+const ComponentListPage = lazy(() => import("pages/user/store/ComponentListPage"));
+const RobotDetailPage = lazy(() => import("pages/user/store/RobotDetailPage"));
+const ComponentDetailPage = lazy(() => import("pages/user/store/ComponentDetailPage"));
 // Error pages
 const Page404 = lazy(() => import("pages/error/Page404"));
 const Page500 = lazy(() => import("pages/error/Page500"));
@@ -141,6 +147,12 @@ function AppRouter() {
                 index={route.index}
               />
             ))}
+          {/* Public Store Routes */}
+          <ReactRoute path="/store" element={<StorePage />} />
+          <ReactRoute path="/store/robots" element={<RobotListPage />} />
+          <ReactRoute path="/store/robots/:id" element={<RobotDetailPage />} />
+          <ReactRoute path="/store/components" element={<ComponentListPage />} />
+          <ReactRoute path="/store/components/:id" element={<ComponentDetailPage />} />
         </ReactRoute>
 
         {/* Admin Routes - Protected */}
@@ -173,6 +185,13 @@ function AppRouter() {
         <ReactRoute element={<UserRouter />}>
           {/* Các trang dành riêng cho user */}
           <ReactRoute path={PATH_USER.homepage} element={<SharedHomePage />} />
+          {/* User Store Routes */}
+          <ReactRoute path={PATH_USER.store} element={<StorePage />} />
+          <ReactRoute path={PATH_USER.robots} element={<RobotListPage />} />
+          <ReactRoute path={PATH_USER.robotDetail} element={<RobotDetailPage />} />
+          <ReactRoute path={PATH_USER.components} element={<ComponentListPage />} />
+          <ReactRoute path={PATH_USER.componentDetail} element={<ComponentDetailPage />} />
+          {/* Other User Routes */}
           <ReactRoute path={PATH_USER.courses} element={<CoursesPage />} />
           <ReactRoute path={PATH_USER.myCourses} element={<MyCoursesPage />} />
 
