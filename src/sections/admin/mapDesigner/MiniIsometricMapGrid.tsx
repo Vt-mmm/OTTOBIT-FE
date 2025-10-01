@@ -252,41 +252,30 @@ function MiniIsometricMapGrid({
                     />
                   )}
 
-                  {/* Item count badge for stacked items */}
-                  {itemCount > 1 && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: -4 - stackShift,
-                        right: -6,
-                        bgcolor: "rgba(0,0,0,0.7)",
-                        color: "#fff",
-                        fontSize: 10,
-                        px: 0.5,
-                        py: 0.25,
-                        borderRadius: 1,
-                        zIndex: 2,
-                      }}
-                    >
-                      ×{itemCount}
-                    </Box>
-                  )}
+                  {/* Item count badge for stacked items - only show for items, not robots */}
+                  {objectAsset &&
+                    ((objectAsset as any).category === "item" ||
+                      (objectAsset as any).id === "box") &&
+                    itemCount > 1 && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: -4 - stackShift,
+                          right: -6,
+                          bgcolor: "rgba(0,0,0,0.7)",
+                          color: "#fff",
+                          fontSize: 10,
+                          px: 0.5,
+                          py: 0.25,
+                          borderRadius: 1,
+                          zIndex: 2,
+                        }}
+                      >
+                        ×{itemCount}
+                      </Box>
+                    )}
 
-                  {/* Empty tile frame overlay (only for empty cells) */}
-                  {isEmpty && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        inset: 0,
-                        borderTop: `${1}px solid ${THEME_COLORS.frame}`,
-                        borderRight: `${1}px solid ${THEME_COLORS.frame}`,
-                        borderBottom: `${1}px solid ${THEME_COLORS.frame}`,
-                        borderLeft: `${1}px solid ${THEME_COLORS.frame}`,
-                        borderRadius: `${co.top}px ${co.right}px ${co.bottom}px ${co.left}px`,
-                        opacity: 0.3,
-                      }}
-                    />
-                  )}
+                  {/* Empty tile frame overlay removed for cleaner mini-map */}
                 </Box>
               );
             })

@@ -48,12 +48,10 @@ import { useNavigate } from "react-router-dom";
 export default function LessonResourceListSection({
   onCreateNew,
   onEditItem,
-  onViewDetail,
   onNotify,
 }: {
   onCreateNew?: () => void;
   onEditItem?: (id: string) => void;
-  onViewDetail?: (id: string) => void;
   onNotify?: (message: string) => void;
 }) {
   const dispatch = useAppDispatch();
@@ -95,16 +93,7 @@ export default function LessonResourceListSection({
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  const resetForm = () => {
-    setForm({
-      lessonId: lessonId || "",
-      title: "",
-      description: "",
-      type: "1",
-      fileUrl: "",
-    });
-    setFormErrors({});
-  };
+  // removed unused resetForm
 
   const isValidUrl = (url: string) => {
     try {

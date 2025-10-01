@@ -10,7 +10,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import LinkIcon from "@mui/icons-material/Link";
+// unused import removed
 import LessonResourceListSection from "sections/admin/lessonResource/LessonResourceListSection";
 import LessonResourceFormSection from "sections/admin/lessonResource/LessonResourceFormSection";
 import { axiosClient } from "axiosClient";

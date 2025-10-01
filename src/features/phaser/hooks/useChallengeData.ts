@@ -247,9 +247,6 @@ export function useChallengeData() {
           // Wait longer for Redux state to properly update
           await new Promise((resolve) => setTimeout(resolve, 200));
 
-          // Verify that the challenge is now findable in Redux store
-          const verifyChallenge = findChallengeById(challengeId);
-
           // Return the challenge data regardless of verification
           // because we have the fresh data from API
           return challengeData;

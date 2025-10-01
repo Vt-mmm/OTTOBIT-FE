@@ -347,9 +347,6 @@ export function usePhaserSimulator(
   const runProgramFromWorkspace = useCallback(
     async (workspace: any) => {
       try {
-        // Log workspace details
-        const allBlocks = workspace.getAllBlocks();
-
         const program = BlocklyToPhaserConverter.convertWorkspace(workspace);
 
         console.log("📋 [usePhaserSimulator] Program structure:", {

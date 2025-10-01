@@ -200,7 +200,7 @@ function TopBarContent({
     async (stars: number) => {
       // Prevent duplicate submissions
       if (submissionInProgress.current) {
-        console.warn("🚫 Submission already in progress, skipping duplicate");
+        // prevent duplicate
         return;
       }
 
@@ -218,7 +218,7 @@ function TopBarContent({
         const codeJson = JSON.stringify(programData);
 
         // Submit to backend
-        const result = await dispatch(
+        await dispatch(
           createSubmissionThunk({
             challengeId: currentChallengeId,
             codeJson,
@@ -231,7 +231,7 @@ function TopBarContent({
           "success"
         );
       } catch (error: any) {
-        console.error("❌ Submission failed:", error);
+        // swallow error; UI will show notification
 
         showNotification(
           `Hoàn thành challenge nhưng không thể lưu kết quả: ${error}`,

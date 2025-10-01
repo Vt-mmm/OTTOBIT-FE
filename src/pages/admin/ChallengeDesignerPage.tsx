@@ -18,8 +18,8 @@ import {
   WorkspaceSection,
   MapGridSection,
   WinConditionsSection,
+  IsometricMapGridV2,
 } from "sections/admin/mapDesigner";
-import SimpleIsometricMapGrid from "sections/admin/mapDesigner/SimpleIsometricMapGrid";
 import MiniIsometricMapGrid from "sections/admin/mapDesigner/MiniIsometricMapGrid";
 import { GRID_CONFIG } from "sections/admin/mapDesigner/theme.config";
 import { MAP_ASSETS } from "sections/admin/mapDesigner/mapAssets.config";
@@ -1064,10 +1064,16 @@ const MapDesignerPage = () => {
                 <Box
                   sx={{ height: "100%", width: "100%", position: "relative" }}
                 >
-                  <SimpleIsometricMapGrid
+                  <IsometricMapGridV2
                     mapGrid={mapGrid}
-                    selectedAsset={selectedAsset}
                     onCellClick={handleCellClick}
+                    diagonalLift={15.5}
+                    diagonalSpacing={4.5}
+                    offsetX={60}
+                    offsetY={60}
+                    robotLift={8}
+                    itemLift={8}
+                    itemStackStep={0}
                   />
                 </Box>
               )}
