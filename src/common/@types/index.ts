@@ -14,3 +14,6 @@ export * from "./image";
 export * from "./component";
 export * from "./robot";
 export * from "./courseMap";
+export * from "./courseRobot";
+export * from "./studentRobot";
+export * from "./activationCode";

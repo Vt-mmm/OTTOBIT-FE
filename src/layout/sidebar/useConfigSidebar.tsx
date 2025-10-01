@@ -10,6 +10,7 @@ import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
 import SecurityIcon from "@mui/icons-material/Security";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import MemoryIcon from "@mui/icons-material/Memory";
+import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import { PATH_ADMIN, PATH_USER } from "routes/paths";
 import CollectionsBookmarkIcon from "@mui/icons-material/CollectionsBookmark";
 
@@ -79,6 +80,11 @@ function useConfigSidebar() {
           path: PATH_ADMIN.componentManagement,
           icon: <MemoryIcon fontSize="small" />,
         },
+        {
+          title: "Quản lý Mã kích hoạt",
+          path: PATH_ADMIN.activationCodeManagement,
+          icon: <ConfirmationNumberIcon fontSize="small" />,
+        },
       ],
     },
     {
@@ -121,6 +127,11 @@ function useConfigSidebar() {
           title: "Khóa học",
           path: PATH_USER.myCourses,
           icon: <SchoolIcon fontSize="small" />,
+        },
+        {
+          title: "Robots của tôi",
+          path: PATH_USER.myRobots,
+          icon: <SmartToyIcon fontSize="small" />,
         },
       ],
     },

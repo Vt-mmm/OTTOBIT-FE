@@ -22,6 +22,7 @@ const ROOTS_STUDENT_ROBOT = "/api/v1/student-robots";
 const ROOTS_COURSE_MAP = "/api/v1/course-maps";
 const ROOTS_LESSON_RESOURCE = "/api/v1/lesson-resources";
 const ROOTS_LESSON_NOTE = "/api/v1/lesson-notes";
+const ROOTS_ACTIVATION_CODE = "/api/v1/activation-codes";
 
 export const ROUTES_API_AUTH = {
   // Authentication endpoints
@@ -174,6 +175,7 @@ export const ROUTES_API_ROBOT = {
 // New: Course-Robot endpoints
 export const ROUTES_API_COURSE_ROBOT = {
   GET_ALL: ROOTS_COURSE_ROBOT, // GET /api/v1/course-robots
+  GET_BY_COURSE: (courseId: string) => path(ROOTS_COURSE_ROBOT, `/course/${courseId}`), // GET /api/v1/course-robots/course/{courseId}
   GET_BY_ID: (id: string) => path(ROOTS_COURSE_ROBOT, `/${id}`), // GET /api/v1/course-robots/{id}
   CREATE: ROOTS_COURSE_ROBOT, // POST /api/v1/course-robots (Admin)
   UPDATE: (id: string) => path(ROOTS_COURSE_ROBOT, `/${id}`), // PUT /api/v1/course-robots/{id} (Admin)
@@ -183,6 +185,9 @@ export const ROUTES_API_COURSE_ROBOT = {
 // New: Student-Robot endpoints
 export const ROUTES_API_STUDENT_ROBOT = {
   MY_ROBOTS: path(ROOTS_STUDENT_ROBOT, `/my-robots`), // GET /api/v1/student-robots/my-robots (User)
+  ACTIVATE: path(ROOTS_STUDENT_ROBOT, `/activate`), // POST /api/v1/student-robots/activate (User)
+  UPDATE_SETTINGS: (id: string) => path(ROOTS_STUDENT_ROBOT, `/${id}/settings`), // PUT /api/v1/student-robots/{id}/settings (User)
+  GET_BY_ID: (id: string) => path(ROOTS_STUDENT_ROBOT, `/${id}`), // GET /api/v1/student-robots/{id} (User)
 };
 
 // New: Course-Map endpoints
@@ -216,4 +221,19 @@ export const ROUTES_API_LESSON_NOTE = {
   MY_NOTES: path(ROOTS_LESSON_NOTE, `/my-notes`), // GET /api/v1/lesson-notes/my-notes (User)
   UPDATE: (id: string) => path(ROOTS_LESSON_NOTE, `/${id}`), // PUT /api/v1/lesson-notes/{id} (User)
   DELETE: (id: string) => path(ROOTS_LESSON_NOTE, `/${id}`), // DELETE /api/v1/lesson-notes/{id} (User)
+};
+
+// New: Activation-Code endpoints
+export const ROUTES_API_ACTIVATION_CODE = {
+  // User endpoints
+  VALIDATE: path(ROOTS_ACTIVATION_CODE, `/validate`), // POST /api/v1/activation-codes/validate (User) - kiểm tra mã có hợp lệ không (NOT IMPLEMENTED YET)
+  REDEEM: path(ROOTS_ACTIVATION_CODE, `/redeem`), // POST /api/v1/activation-codes/redeem (User) - kích hoạt robot với mã
+  // Admin endpoints
+  ADMIN_GET_ALL: ROOTS_ACTIVATION_CODE, // GET /api/v1/activation-codes (Admin)
+  ADMIN_GET_BY_ID: (id: string) => path(ROOTS_ACTIVATION_CODE, `/${id}`), // GET /api/v1/activation-codes/{id} (Admin)
+  ADMIN_CREATE_BATCH: path(ROOTS_ACTIVATION_CODE, `/batch`), // POST /api/v1/activation-codes/batch (Admin) - Tạo nhiều mã cùng lúc
+  ADMIN_DELETE: (id: string) => path(ROOTS_ACTIVATION_CODE, `/${id}`), // DELETE /api/v1/activation-codes/{id} (Admin - NOT IMPLEMENTED YET)
+  ADMIN_REVOKE: path(ROOTS_ACTIVATION_CODE, `/revoke`), // POST /api/v1/activation-codes/revoke (Admin)
+  ADMIN_EXPORT_CSV: path(ROOTS_ACTIVATION_CODE, `/export-csv`), // GET /api/v1/activation-codes/export-csv (Admin)
+  ADMIN_UPDATE_STATUS: (id: string) => path(ROOTS_ACTIVATION_CODE, `/${id}/status`), // PUT /api/v1/activation-codes/{id}/status (Admin)
 };

@@ -4,14 +4,15 @@ import {
   CardContent,
   Typography,
   Button,
-  Avatar,
 } from "@mui/material";
 import {
   School as SchoolIcon,
   PersonAdd as PersonAddIcon,
 } from "@mui/icons-material";
+import TrackChangesOutlinedIcon from "@mui/icons-material/TrackChangesOutlined";
+import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
+import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import { motion } from "framer-motion";
-import { alpha } from "@mui/material/styles";
 
 interface StudentProfileEmptyProps {
   onCreateProfile: () => void;
@@ -22,121 +23,168 @@ export default function StudentProfileEmpty({
 }: StudentProfileEmptyProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
     >
       <Card
         sx={{
-          borderRadius: 3,
-          boxShadow: "0 8px 32px rgba(59, 130, 246, 0.15)",
-          border: `1px solid ${alpha("#3b82f6", 0.2)}`,
+          borderRadius: 4,
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+          border: "1px solid",
+          borderColor: "divider",
           textAlign: "center",
+          bgcolor: "white",
+          overflow: "hidden",
         }}
       >
-        <CardContent sx={{ p: 6 }}>
-          <Avatar
+        {/* Top accent bar */}
+        <Box
+          sx={{
+            height: 4,
+            bgcolor: "primary.main",
+          }}
+        />
+        
+        <CardContent sx={{ p: { xs: 4, md: 6 } }}>
+          <Box
             sx={{
-              width: 120,
-              height: 120,
-              bgcolor: alpha("#3b82f6", 0.1),
-              color: "#3b82f6",
-              mx: "auto",
-              mb: 3,
-            }}
-          >
-            <SchoolIcon sx={{ fontSize: 60 }} />
-          </Avatar>
-
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: "bold",
-              mb: 2,
-              color: "#1e293b",
+              width: 140,
+              height: 140,
+              borderRadius: "50%",
+              bgcolor: "primary.main",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: 1,
+              mx: "auto",
+              mb: 4,
+              boxShadow: "0 8px 24px rgba(0, 0, 0, 0.1)",
             }}
           >
-            Không có hồ sơ
+            <SchoolIcon sx={{ fontSize: 70, color: "white" }} />
+          </Box>
+
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: 700,
+              mb: 2,
+              color: "text.primary",
+              fontSize: { xs: "1.75rem", md: "2.5rem" },
+            }}
+          >
+            Chào mừng đến với OttoBit!
           </Typography>
 
           <Typography
-            variant="body1"
+            variant="h6"
             color="text.secondary"
-            sx={{ mb: 4, maxWidth: 400, mx: "auto" }}
+            sx={{ mb: 5, maxWidth: 500, mx: "auto", fontWeight: 400, lineHeight: 1.6 }}
           >
-            Tạo hồ sơ để bắt đầu hành trình học tập cùng OttoBit!
+            Tạo hồ sơ học sinh để bắt đầu hành trình khám phá lập trình và robot học
           </Typography>
 
           <Box
             sx={{
-              display: "flex",
-              flexDirection: { xs: "column", sm: "row" },
-              gap: { xs: 2, sm: 4 },
-              mb: 4,
-              justifyContent: "center",
-              alignItems: "center",
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
+              gap: 3,
+              mb: 5,
+              maxWidth: 700,
+              mx: "auto",
             }}
           >
-            <Box sx={{ textAlign: "center" }}>
-              <Typography variant="h5" sx={{ mb: 0.5, color: "#22c55e" }}>
-                🎯
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Theo dõi tiến độ
-              </Typography>
-            </Box>
-            <Box sx={{ textAlign: "center" }}>
-              <Typography variant="h5" sx={{ mb: 0.5, color: "#22c55e" }}>
-                🏆
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Lưu thành tích
-              </Typography>
-            </Box>
-            <Box sx={{ textAlign: "center" }}>
-              <Typography variant="h5" sx={{ mb: 0.5, color: "#22c55e" }}>
-                📊
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Phân tích năng lực
-              </Typography>
-            </Box>
+            {[
+              { 
+                IconComponent: TrackChangesOutlinedIcon, 
+                title: "Theo dõi tiến độ", 
+                desc: "Lịch sử học tập chi tiết",
+                colorKey: "primary"
+              },
+              { 
+                IconComponent: EmojiEventsOutlinedIcon, 
+                title: "Lưu thành tích", 
+                desc: "Nhận huy hiệu và chứng chỉ",
+                colorKey: "warning"
+              },
+              { 
+                IconComponent: BarChartOutlinedIcon, 
+                title: "Phân tích", 
+                desc: "Biết điểm mạnh của bạn",
+                colorKey: "success"
+              },
+            ].map((item, index) => (
+              <Box
+                key={index}
+                sx={{
+                  p: 3,
+                  borderRadius: 3,
+                  bgcolor: "white",
+                  border: "2px solid",
+                  borderColor: "divider",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    transform: "translateY(-4px)",
+                    boxShadow: "0 12px 24px rgba(0,0,0,0.08)",
+                    borderColor: `${item.colorKey}.main`,
+                    bgcolor: `${item.colorKey}.50`,
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 2,
+                    bgcolor: `${item.colorKey}.50`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    mb: 2,
+                  }}
+                >
+                  <item.IconComponent sx={{ fontSize: 28, color: `${item.colorKey}.main` }} />
+                </Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                  {item.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.875rem" }}>
+                  {item.desc}
+                </Typography>
+              </Box>
+            ))}
           </Box>
 
           <Button
             variant="contained"
             size="large"
+            color="primary"
             onClick={onCreateProfile}
             startIcon={<PersonAddIcon />}
             sx={{
-              py: 1.5,
-              px: 4,
-              fontSize: "1.1rem",
-              fontWeight: "bold",
-              borderRadius: 2,
-              background: "linear-gradient(45deg, #22c55e, #16a34a)",
-              boxShadow: "0 4px 20px rgba(34, 197, 94, 0.3)",
+              py: 2,
+              px: 5,
+              fontSize: "1.125rem",
+              fontWeight: 700,
+              borderRadius: 3,
+              textTransform: "none",
+              boxShadow: "0 4px 14px rgba(0, 0, 0, 0.1)",
               "&:hover": {
-                background: "linear-gradient(45deg, #16a34a, #15803d)",
-                boxShadow: "0 6px 25px rgba(34, 197, 94, 0.4)",
+                boxShadow: "0 6px 20px rgba(0, 0, 0, 0.15)",
                 transform: "translateY(-2px)",
               },
-              transition: "all 0.3s ease-in-out",
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
             }}
           >
-            Tạo hồ sơ ngay
+            Bắt đầu ngay
           </Button>
 
           <Typography
-            variant="caption"
+            variant="body2"
             color="text.secondary"
-            sx={{ display: "block", mt: 2, opacity: 0.7 }}
+            sx={{ display: "block", mt: 3, opacity: 0.8, fontStyle: "italic" }}
           >
-            Chỉ mất vài giây để thiết lập
+            ✨ Chỉ mất 2 phút để thiết lập hồ sơ của bạn
           </Typography>
         </CardContent>
       </Card>

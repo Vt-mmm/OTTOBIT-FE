@@ -1,9 +1,13 @@
 // Student entity interfaces based on BE models
+// Matched with BE StudentResult model
 export interface Student {
   id: string;
   userId: string;
   fullname: string;
-  email: string;
+  phoneNumber: string; // Added from BE
+  address: string; // Added from BE
+  state: string; // Added from BE
+  city: string; // Added from BE
   dateOfBirth: string; // ISO date string
   createdAt: string;
   updatedAt: string;
@@ -11,21 +15,32 @@ export interface Student {
   submissionsCount?: number;
 }
 
-// Request types
+// Request types - Matched with BE Commands
 export interface CreateStudentRequest {
   fullname: string;
+  phoneNumber?: string; // Added from BE
+  address?: string; // Added from BE
+  state?: string; // Added from BE
+  city?: string; // Added from BE
   dateOfBirth: string; // ISO date string
 }
 
 export interface UpdateStudentRequest {
-  fullname: string;
-  dateOfBirth: string; // ISO date string
+  fullname?: string;
+  phoneNumber?: string; // Added from BE
+  address?: string; // Added from BE
+  state?: string; // Added from BE
+  city?: string; // Added from BE
+  dateOfBirth?: string; // ISO date string
 }
 
 export interface GetStudentsRequest {
   pageNumber?: number;
   pageSize?: number;
   searchTerm?: string;
+  phoneNumber?: string; // Added from BE filter
+  state?: string; // Added from BE filter
+  city?: string; // Added from BE filter
   dateOfBirthFrom?: string; // ISO date string
   dateOfBirthTo?: string; // ISO date string
 }

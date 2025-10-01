@@ -9,15 +9,12 @@ import {
   Typography,
   IconButton,
   Box,
-  Avatar,
-  MenuItem,
   Alert,
   CircularProgress,
   Grid,
 } from "@mui/material";
 import {
   Close as CloseIcon,
-  PhotoCamera as PhotoCameraIcon,
   Edit as EditIcon,
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
@@ -25,6 +22,7 @@ import { useForm, Controller } from "react-hook-form";
 import { UpdateProfileForm } from "common/@types";
 import { useAppSelector } from "store/config";
 import { alpha } from "@mui/material/styles";
+import { AvatarUploader } from "components/common/AvatarUploader";
 
 interface EditProfileDialogProps {
   open: boolean;
@@ -32,20 +30,11 @@ interface EditProfileDialogProps {
   onSave: (data: UpdateProfileForm) => void;
 }
 
-// Local form interface
+// Local form interface - Matched with BE UpdateUserProfileCommand
 interface ProfileFormData {
   fullName?: string;
-  phoneNumber?: string;
-  dateOfBirth?: string;
-  gender?: string;
+  avatarUrl?: string;
 }
-
-const genderOptions = [
-  { value: "", label: "Chọn giới tính" },
-  { value: "male", label: "Nam" },
-  { value: "female", label: "Nữ" },
-  { value: "other", label: "Khác" },
-];
 
 const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
   open,
@@ -54,26 +43,34 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
 }) => {
   const { userAuth } = useAppSelector((state) => state.auth);
   const [isLoading, setIsLoading] = useState(false);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
+  const { profile } = useAppSelector((state) => state.account);
+  const [uploadedAvatarUrl, setUploadedAvatarUrl] = useState<string | null>(
+    profile.data?.avatarUrl || null
+  );
 
   const {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<ProfileFormData>({
     defaultValues: {
-      fullName: userAuth?.username || "",
-      phoneNumber: "",
-      dateOfBirth: "",
-      gender: "",
+      fullName: profile.data?.fullName || userAuth?.username || "",
+      avatarUrl: profile.data?.avatarUrl || "",
     },
   });
 
   const handleSave = async (data: ProfileFormData) => {
     setIsLoading(true);
     try {
-      await onSave(data);
+      // Include uploaded avatar URL in the form data
+      const formDataWithAvatar = {
+        ...data,
+        avatarUrl: uploadedAvatarUrl || undefined,
+      };
+      await onSave(formDataWithAvatar);
       onClose();
     } catch (error) {
       // Error handling
@@ -84,19 +81,13 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
 
   const handleClose = () => {
     reset();
-    setAvatarPreview(null);
+    setUploadedAvatarUrl(profile.data?.avatarUrl || null);
     onClose();
   };
 
-  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setAvatarPreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleAvatarChange = (avatarUrl: string | null) => {
+    setUploadedAvatarUrl(avatarUrl);
+    setValue('avatarUrl', avatarUrl || '');
   };
 
   return (
@@ -139,57 +130,18 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            {/* Avatar Section */}
+            {/* Avatar Section with Firebase Upload */}
             <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
-              <Box sx={{ position: "relative" }}>
-                <Avatar
-                  sx={{
-                    width: 120,
-                    height: 120,
-                    border: "4px solid white",
-                    boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
-                    background: avatarPreview
-                      ? "none"
-                      : "linear-gradient(45deg, #8BC34A, #4CAF50)",
-                    fontSize: "2.5rem",
-                    fontWeight: 600,
-                  }}
-                  src={avatarPreview || undefined}
-                >
-                  {!avatarPreview &&
-                    (userAuth?.username?.charAt(0)?.toUpperCase() || "U")}
-                </Avatar>
-
-                <input
-                  accept="image/*"
-                  style={{ display: "none" }}
-                  id="avatar-upload"
-                  type="file"
-                  onChange={handleAvatarChange}
-                />
-                <label htmlFor="avatar-upload">
-                  <IconButton
-                    component="span"
-                    sx={{
-                      position: "absolute",
-                      bottom: -5,
-                      right: -5,
-                      bgcolor: "#8BC34A",
-                      color: "white",
-                      width: 40,
-                      height: 40,
-                      "&:hover": {
-                        bgcolor: "#689F38",
-                        transform: "scale(1.1)",
-                      },
-                      transition: "all 0.2s ease",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-                    }}
-                  >
-                    <PhotoCameraIcon fontSize="small" />
-                  </IconButton>
-                </label>
-              </Box>
+              <AvatarUploader
+                userId={userAuth?.userId || profile.data?.id || "user"}
+                currentAvatarUrl={uploadedAvatarUrl || undefined}
+                onAvatarChange={handleAvatarChange}
+                size={120}
+                disabled={isLoading}
+                folder="avatars/profiles"
+                enableCrop={true}
+                aspectRatio={1}
+              />
             </Box>
 
             {/* Form Fields */}
@@ -198,102 +150,15 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
                 <Controller
                   name="fullName"
                   control={control}
+                  rules={{ required: "Vui lòng nhập họ và tên" }}
                   render={({ field }) => (
                     <TextField
                       {...field}
                       fullWidth
                       label="Họ và tên"
+                      placeholder="Nhập họ và tên của bạn"
                       error={!!errors.fullName}
                       helperText={errors.fullName?.message}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#8BC34A",
-                          },
-                        },
-                        "& .MuiInputLabel-root.Mui-focused": {
-                          color: "#2E7D32",
-                        },
-                      }}
-                    />
-                  )}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Controller
-                  name="phoneNumber"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      label="Số điện thoại"
-                      error={!!errors.phoneNumber}
-                      helperText={errors.phoneNumber?.message}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#8BC34A",
-                          },
-                        },
-                        "& .MuiInputLabel-root.Mui-focused": {
-                          color: "#2E7D32",
-                        },
-                      }}
-                    />
-                  )}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Controller
-                  name="gender"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      select
-                      label="Giới tính"
-                      error={!!errors.gender}
-                      helperText={errors.gender?.message}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#8BC34A",
-                          },
-                        },
-                        "& .MuiInputLabel-root.Mui-focused": {
-                          color: "#2E7D32",
-                        },
-                      }}
-                    >
-                      {genderOptions.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  )}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <Controller
-                  name="dateOfBirth"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      label="Ngày sinh"
-                      type="date"
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
-                      error={!!errors.dateOfBirth}
-                      helperText={errors.dateOfBirth?.message}
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           "&.Mui-focused fieldset": {
@@ -323,9 +188,7 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
               }}
             >
               <Typography variant="body2">
-                Thông tin cá nhân sẽ được sử dụng để cải thiện trải nghiệm học
-                tập của bạn. Chúng tôi cam kết bảo mật thông tin theo chính sách
-                riêng tư.
+                Bạn có thể thay đổi họ tên và ảnh đại diện. Số điện thoại chỉ có thể xem, không thể chỉnh sửa.
               </Typography>
             </Alert>
           </motion.div>
