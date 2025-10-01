@@ -38,6 +38,8 @@ import {
 } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getChallenges } from "../../../redux/challenge/challengeSlice";
+import { getCoursesForAdmin } from "../../../redux/course/courseSlice";
+import { getLessons } from "../../../redux/lesson/lessonSlice";
 import { ChallengeMode } from "common/@types/challenge";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
@@ -58,6 +60,10 @@ export default function ChallengeListSection({
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { challenges } = useAppSelector((state) => state.challenge);
+  const adminCourses = useAppSelector(
+    (s) => (s as any).course.adminCourses?.data
+  );
+  const lessonsState = useAppSelector((s) => (s as any).lesson.lessons?.data);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
   const [totalPages, setTotalPages] = useState(1);
@@ -70,6 +76,8 @@ export default function ChallengeListSection({
 
   const [searchTerm, setSearchTerm] = useState("");
   const [committedSearch, setCommittedSearch] = useState<string>("");
+  const [courseId, setCourseId] = useState<string>("");
+  const [lessonId, setLessonId] = useState<string>("");
 
   useEffect(() => {
     dispatch(
@@ -78,9 +86,35 @@ export default function ChallengeListSection({
         pageNumber: page,
         pageSize,
         includeDeleted: true,
-      })
+        courseId: courseId || undefined,
+        lessonId: lessonId || undefined,
+      }) as any
     );
-  }, [dispatch, committedSearch, page, pageSize]);
+  }, [dispatch, committedSearch, page, pageSize, courseId, lessonId]);
+
+  // Load courses once
+  useEffect(() => {
+    dispatch(
+      getCoursesForAdmin({
+        pageNumber: 1,
+        pageSize: 100,
+        includeDeleted: true,
+      }) as any
+    );
+  }, [dispatch]);
+
+  // Load lessons when course changes
+  useEffect(() => {
+    if (!courseId) return;
+    dispatch(
+      getLessons({
+        pageNumber: 1,
+        pageSize: 100,
+        includeDeleted: true,
+        courseId,
+      }) as any
+    );
+  }, [dispatch, courseId]);
 
   useEffect(() => {
     const meta = (challenges as any)?.data;
@@ -106,7 +140,9 @@ export default function ChallengeListSection({
         pageNumber: page,
         pageSize,
         includeDeleted: true,
-      })
+        courseId: courseId || undefined,
+        lessonId: lessonId || undefined,
+      }) as any
     );
   };
 
@@ -211,6 +247,43 @@ export default function ChallengeListSection({
                 ),
               }}
             />
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel>Course</InputLabel>
+              <Select
+                label="Course"
+                value={courseId}
+                onChange={(e) => {
+                  setCourseId(e.target.value as string);
+                  setLessonId("");
+                }}
+              >
+                <MenuItem value="">All courses</MenuItem>
+                {(adminCourses?.items || []).map((c: any) => (
+                  <MenuItem key={c.id} value={c.id}>
+                    {c.title}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl
+              size="small"
+              sx={{ minWidth: 200 }}
+              disabled={!courseId}
+            >
+              <InputLabel>Lesson</InputLabel>
+              <Select
+                label="Lesson"
+                value={lessonId}
+                onChange={(e) => setLessonId(e.target.value as string)}
+              >
+                <MenuItem value="">All lessons</MenuItem>
+                {((lessonsState?.items as any[]) || []).map((l: any) => (
+                  <MenuItem key={l.id} value={l.id}>
+                    {l.title}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -248,6 +321,7 @@ export default function ChallengeListSection({
               <TableCell align="center">Mode</TableCell>
               <TableCell align="center">Difficulty</TableCell>
               <TableCell align="center">Order</TableCell>
+              <TableCell>Status</TableCell>
               <TableCell>Created</TableCell>
               <TableCell align="center">Actions</TableCell>
             </TableRow>
@@ -261,9 +335,11 @@ export default function ChallengeListSection({
                   bgcolor: challenge.isDeleted
                     ? "rgba(255,0,0,0.04)"
                     : undefined,
-                  border: challenge.isDeleted
-                    ? "1px dashed rgba(244,67,54,0.5)"
+                  // Use outline for table rows to ensure visible dashed border
+                  outline: challenge.isDeleted
+                    ? "1px dashed rgba(244,67,54,0.6)"
                     : undefined,
+                  outlineOffset: challenge.isDeleted ? "-1px" : undefined,
                 }}
               >
                 <TableCell>
@@ -281,15 +357,7 @@ export default function ChallengeListSection({
                     >
                       {challenge.title}
                     </Typography>
-                    {challenge.isDeleted && (
-                      <Chip
-                        size="small"
-                        label="Deleted"
-                        color="error"
-                        variant="outlined"
-                        sx={{ mt: 0.5 }}
-                      />
-                    )}
+                    {/* status chip moved to dedicated Status column */}
                     <Typography
                       variant="caption"
                       color="text.secondary"
@@ -337,6 +405,23 @@ export default function ChallengeListSection({
                 </TableCell>
                 <TableCell align="center">
                   <Typography variant="body2">{challenge.order}</Typography>
+                </TableCell>
+                <TableCell>
+                  {challenge.isDeleted ? (
+                    <Chip
+                      size="small"
+                      label="Deleted"
+                      color="error"
+                      variant="outlined"
+                    />
+                  ) : (
+                    <Chip
+                      size="small"
+                      label="Active"
+                      color="success"
+                      variant="outlined"
+                    />
+                  )}
                 </TableCell>
                 <TableCell>
                   {dayjs(challenge.createdAt).format("DD/MM/YYYY")}

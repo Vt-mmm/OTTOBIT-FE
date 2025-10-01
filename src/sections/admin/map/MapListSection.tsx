@@ -86,6 +86,19 @@ export default function MapListSection() {
     );
   }, [dispatch, committedSearch, sortBy, sortDirection, pageNumber, pageSize]);
 
+  const refreshList = () => {
+    dispatch(
+      getMaps({
+        searchTerm: committedSearch || undefined,
+        sortBy,
+        sortDirection,
+        includeDeleted: true,
+        pageNumber,
+        pageSize,
+      })
+    );
+  };
+
   const handleSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
@@ -140,6 +153,7 @@ export default function MapListSection() {
         const ok = action?.meta?.requestStatus === "fulfilled";
         if (ok) {
           showToast("Map deleted successfully.", "success");
+          refreshList();
         } else {
           showToast(action?.payload || "Failed to delete map.", "error");
         }
@@ -157,16 +171,7 @@ export default function MapListSection() {
     try {
       await axiosClient.post(`/api/v1/maps/${mapId}/restore`);
       showToast("Map restored successfully.", "success");
-      dispatch(
-        getMaps({
-          searchTerm: searchTerm || undefined,
-          sortBy,
-          sortDirection,
-          pageNumber: 1,
-          pageSize: 50,
-          includeDeleted: true,
-        })
-      );
+      refreshList();
     } catch (e) {
       // Swallow; Map slice may handle global errors/toasts elsewhere
       console.error("Restore map failed", e);
@@ -370,10 +375,13 @@ export default function MapListSection() {
               {/* Actions */}
               <Box
                 sx={{
-                  p: 1,
-                  pt: 0,
+                  p: 1.5,
                   display: "flex",
                   justifyContent: "flex-end",
+                  gap: 0.5,
+                  borderTop: "1px solid",
+                  borderColor: "divider",
+                  bgcolor: "grey.50",
                 }}
               >
                 <IconButton

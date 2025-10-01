@@ -60,7 +60,8 @@ export default function LessonListSection({
   const [pageSize, setPageSize] = useState(12);
   const [totalPages, setTotalPages] = useState(1);
   const [courseId, setCourseId] = useState("");
-  const [sortDirection, setSortDirection] = useState(1); // 0 = oldest first, 1 = newest first (default)
+  const [sortDirection, setSortDirection] = useState(1); // 0 = asc, 1 = desc
+  const [sortBy, setSortBy] = useState(3); // Default: CreatedAt (0..4)
   const [confirmDelete, setConfirmDelete] = useState<LessonResult | null>(null);
   const [confirmRestore, setConfirmRestore] = useState<LessonResult | null>(
     null
@@ -83,12 +84,20 @@ export default function LessonListSection({
         pageSize,
         courseId: courseId || undefined,
         includeDeleted: true,
-        sortBy: 1, // Mặc định sortBy = 1
-        sortDirection, // 0 = oldest first, 1 = newest first (default)
+        sortBy,
+        sortDirection,
       })
     );
     dispatch(getCoursesForAdmin({ pageSize: 100 } as any));
-  }, [dispatch, committedSearch, page, pageSize, courseId, sortDirection]);
+  }, [
+    dispatch,
+    committedSearch,
+    page,
+    pageSize,
+    courseId,
+    sortBy,
+    sortDirection,
+  ]);
 
   useEffect(() => {
     const meta = data;
@@ -99,6 +108,20 @@ export default function LessonListSection({
 
   const items = data?.items || [];
   const courses = coursesData?.items || [];
+
+  const refreshList = () => {
+    dispatch(
+      getLessons({
+        searchTerm: committedSearch || undefined,
+        pageNumber: page,
+        pageSize,
+        courseId: courseId || undefined,
+        includeDeleted: true,
+        sortBy,
+        sortDirection,
+      })
+    );
+  };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -118,6 +141,7 @@ export default function LessonListSection({
         message: "Xóa bài học thành công",
         severity: "success",
       });
+      refreshList();
     } catch (e: any) {
       setSnackbar({
         open: true,
@@ -138,6 +162,7 @@ export default function LessonListSection({
         message: "Khôi phục bài học thành công",
         severity: "success",
       });
+      refreshList();
     } catch (e: any) {
       setSnackbar({
         open: true,
@@ -170,9 +195,7 @@ export default function LessonListSection({
               onKeyDown={(e) => {
                 if (e.key === "Enter") triggerSearch();
               }}
-              sx={{
-                "& .MuiInputBase-root": { pr: 4 },
-              }}
+              sx={{ "& .MuiInputBase-root": { pr: 4 } }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -204,25 +227,35 @@ export default function LessonListSection({
               </Select>
             </FormControl>
             <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>Sắp xếp</InputLabel>
+              <InputLabel>Sort by</InputLabel>
               <Select
-                label="Sắp xếp"
+                label="Sort by"
+                value={sortBy}
+                onChange={(e) => setSortBy(Number(e.target.value))}
+              >
+                <MenuItem value={0}>Title</MenuItem>
+                <MenuItem value={1}>Order</MenuItem>
+                <MenuItem value={2}>Duration</MenuItem>
+                <MenuItem value={3}>CreatedAt</MenuItem>
+                <MenuItem value={4}>UpdatedAt</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel>Direction</InputLabel>
+              <Select
+                label="Direction"
                 value={sortDirection}
                 onChange={(e) => setSortDirection(Number(e.target.value))}
               >
-                <MenuItem value={0}>Cũ nhất trước</MenuItem>
-                <MenuItem value={1}>Mới nhất trước</MenuItem>
+                <MenuItem value={0}>Asc</MenuItem>
+                <MenuItem value={1}>Desc</MenuItem>
               </Select>
             </FormControl>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => onCreateNew(courseId)}
-              sx={{
-                flexShrink: 0,
-                whiteSpace: "nowrap",
-                minWidth: "auto",
-              }}
+              sx={{ flexShrink: 0, whiteSpace: "nowrap", minWidth: "auto" }}
             >
               Tạo bài học
             </Button>
@@ -327,11 +360,7 @@ export default function LessonListSection({
 
                     {/* Duration */}
                     <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 0.5,
-                      }}
+                      sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
                     >
                       <AccessTimeIcon
                         sx={{ fontSize: 16, color: "text.secondary" }}
@@ -346,10 +375,13 @@ export default function LessonListSection({
                 {/* Actions */}
                 <Box
                   sx={{
-                    p: 1,
-                    pt: 0,
+                    p: 1.5,
                     display: "flex",
                     justifyContent: "flex-end",
+                    gap: 0.5,
+                    borderTop: "1px solid",
+                    borderColor: "divider",
+                    bgcolor: "grey.50",
                   }}
                 >
                   <IconButton
@@ -399,8 +431,8 @@ export default function LessonListSection({
         <Box
           sx={{
             display: "flex",
-            justifyContent: "space-between",
             alignItems: "center",
+            justifyContent: "space-between",
             p: 2,
           }}
         >
@@ -409,7 +441,10 @@ export default function LessonListSection({
             <Select
               label="Page size"
               value={pageSize}
-              onChange={(e) => setPageSize(Number(e.target.value))}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setPage(1);
+              }}
               sx={{ minWidth: 120 }}
             >
               {[6, 12, 24, 48].map((n) => (
@@ -429,7 +464,7 @@ export default function LessonListSection({
         </Box>
       )}
 
-      {/* Delete Confirm Dialog */}
+      {/* Dialogs */}
       <Dialog open={!!confirmDelete} onClose={() => setConfirmDelete(null)}>
         <DialogTitle>Xác nhận xóa</DialogTitle>
         <DialogContent>
@@ -443,7 +478,6 @@ export default function LessonListSection({
         </DialogActions>
       </Dialog>
 
-      {/* Restore Confirm Dialog */}
       <Dialog open={!!confirmRestore} onClose={() => setConfirmRestore(null)}>
         <DialogTitle>Xác nhận khôi phục</DialogTitle>
         <DialogContent>

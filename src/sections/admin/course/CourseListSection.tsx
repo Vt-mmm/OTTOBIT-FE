@@ -93,6 +93,19 @@ export default function CourseListSection({
 
   const items = data?.items || [];
 
+  const refreshList = () => {
+    dispatch(
+      getCoursesForAdmin({
+        searchTerm: committedSearch || undefined,
+        pageNumber: page,
+        pageSize,
+        includeDeleted: true,
+        sortBy: 1,
+        sortDirection,
+      })
+    );
+  };
+
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
@@ -111,6 +124,7 @@ export default function CourseListSection({
         message: "Xóa khóa học thành công",
         severity: "success",
       });
+      refreshList();
     } catch (e: any) {
       setSnackbar({
         open: true,
@@ -131,6 +145,7 @@ export default function CourseListSection({
         message: "Khôi phục khóa học thành công",
         severity: "success",
       });
+      refreshList();
     } catch (e: any) {
       setSnackbar({
         open: true,
@@ -331,10 +346,13 @@ export default function CourseListSection({
                 {/* Actions */}
                 <Box
                   sx={{
-                    p: 1,
-                    pt: 0,
+                    p: 1.5,
                     display: "flex",
                     justifyContent: "flex-end",
+                    gap: 0.5,
+                    borderTop: "1px solid",
+                    borderColor: "divider",
+                    bgcolor: "grey.50",
                   }}
                 >
                   <IconButton

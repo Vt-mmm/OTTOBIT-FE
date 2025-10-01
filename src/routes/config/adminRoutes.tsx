@@ -24,8 +24,24 @@ const EnrollmentManagementPage = lazy(
   () => import("pages/admin/EnrollmentManagementPage")
 );
 const MapManagementPage = lazy(() => import("pages/admin/MapManagementPage"));
-const RobotManagementPage = lazy(() => import("pages/admin/RobotManagementPage"));
-const ComponentManagementPage = lazy(() => import("pages/admin/ComponentManagementPage"));
+const RobotManagementPage = lazy(
+  () => import("pages/admin/RobotManagementPage")
+);
+const ComponentManagementPage = lazy(
+  () => import("pages/admin/ComponentManagementPage")
+);
+const LessonResourceManagementPage = lazy(
+  () => import("pages/admin/LessonResourceManagementPage")
+);
+const LessonResourceCreatePage = lazy(
+  () => import("pages/admin/LessonResourceCreatePage")
+);
+const LessonResourceEditPage = lazy(
+  () => import("pages/admin/LessonResourceEditPage")
+);
+const LessonResourceDetailPage = lazy(
+  () => import("pages/admin/LessonResourceDetailPage")
+);
 const AdminTestPage = lazy(() => import("pages/admin/AdminTestPage"));
 const ActivationCodeManagementPage = lazy(
   () => import("pages/admin/ActivationCodeManagementPage")
@@ -85,6 +101,26 @@ export const adminRoutes: Route[] = [
   {
     path: PATH_ADMIN.componentManagement,
     component: <ComponentManagementPage />,
+    index: false,
+  },
+  {
+    path: PATH_ADMIN.lessonResourceManagement,
+    component: <LessonResourceManagementPage />,
+    index: false,
+  },
+  {
+    path: `${PATH_ADMIN.lessonResourceManagement}/create`,
+    component: <LessonResourceCreatePage />,
+    index: false,
+  },
+  {
+    path: `${PATH_ADMIN.lessonResourceManagement}/:id/edit`,
+    component: <LessonResourceEditPage />,
+    index: false,
+  },
+  {
+    path: `${PATH_ADMIN.lessonResourceManagement}/:id`,
+    component: <LessonResourceDetailPage />,
     index: false,
   },
   {

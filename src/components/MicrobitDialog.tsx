@@ -27,6 +27,13 @@ import {
 import { microbitBoardId } from "@microbit/microbit-universal-hex";
 import { MicropythonFsHex } from "@microbit/microbit-fs";
 import MicrobitConnectionGuide from "./MicrobitConnectionGuide";
+// Raw import full MicroPython template to flash (includes Robot runtime)
+// Vite supports ?raw to import file contents as string
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import ottobitTemplate from "../../ottobit_full.py?raw";
+import { useAppSelector } from "../redux/config";
+import { generatePythonCode } from "../components/block/generators/python";
 
 interface MicrobitDialogProps {
   open: boolean;
@@ -37,7 +44,11 @@ interface MicrobitDialogProps {
 const V1_URL = "/microbit-micropython-v1.hex";
 const V2_URL = "/microbit-micropython-v2.hex";
 
-export default function MicrobitDialog({ open, onClose }: MicrobitDialogProps) {
+export default function MicrobitDialog({
+  open,
+  onClose,
+  workspace,
+}: MicrobitDialogProps) {
   const [isConnected, setIsConnected] = useState(false);
   const [isFlashing, setIsFlashing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -50,27 +61,96 @@ export default function MicrobitDialog({ open, onClose }: MicrobitDialogProps) {
   const deviceRef = useRef(createWebUSBConnection());
   const flashingRef = useRef(false);
 
-  // Initialize with default Python code when dialog opens
+  // Current challenge from Redux (for challengeJson)
+  const currentChallenge = useAppSelector(
+    (s) => (s as any)?.challenge?.currentChallenge?.data
+  );
+
+  const jsonToPythonLiteral = (value: any): string => {
+    if (value === null || value === undefined) return "None";
+    const t = typeof value;
+    if (t === "number") return String(value);
+    if (t === "boolean") return value ? "True" : "False";
+    if (t === "string")
+      return `"${String(value).replace(/\\/g, "\\\\").replace(/\"/g, '\\"')}"`;
+    if (Array.isArray(value)) {
+      return `[${value.map(jsonToPythonLiteral).join(",")}]`;
+    }
+    if (t === "object") {
+      return `{${Object.keys(value)
+        .map(
+          (k) =>
+            `${jsonToPythonLiteral(k)}:${jsonToPythonLiteral(
+              (value as any)[k]
+            )}`
+        )
+        .join(",")}}`;
+    }
+    return "None";
+  };
+
+  const buildUserRoute = (userBody: string) => {
+    // Ensure proper indentation for body lines
+    const lines = (userBody || "")
+      .split("\n")
+      .filter((l) => l.trim().length > 0);
+    const indented = lines
+      .map((l) => (l.endsWith("\n") ? `    ${l}` : `    ${l}\n`))
+      .join("");
+    return (
+      `def user_route(forward, turnLeft, turnRight, turnBack, collect, startSound, finishSound):\n` +
+      `    startSound()\n` +
+      indented +
+      `    if _check_victory():\n` +
+      `        display.show(Image.YES)\n` +
+      `    else:\n` +
+      `        display.show(Image.NO)\n` +
+      `    finishSound()\n`
+    );
+  };
+
+  const buildPythonBundle = (): string => {
+    // User code from workspace using Blockly python generator
+    const userPy = workspace ? generatePythonCode(workspace) : "";
+    const userRoute = buildUserRoute(userPy);
+
+    // Challenge JSON from current challenge (string) -> object -> python literal
+    let challengePy = "{}";
+    try {
+      const raw = currentChallenge?.challengeJson;
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw || {};
+      challengePy = jsonToPythonLiteral(parsed);
+    } catch {}
+
+    // Full bundle: take ottobit_full.py and replace challengeJson and user_route sections
+    let code = String(ottobitTemplate || "");
+    try {
+      code = code.replace(
+        /(challengeJson\s*=)[\s\S]*?(\nrobot_state\s*=)/,
+        (_m, p1, p2) => `${p1} ${challengePy}\n\n${p2}`
+      );
+    } catch {}
+    try {
+      code = code.replace(
+        /(def\s+user_route[\s\S]*?)(?=\nr\s*=\s*Robot\s*\()/,
+        (_m) => userRoute
+      );
+    } catch {}
+    return code;
+  };
+
+  // Initialize with generated Python code when dialog opens
   useEffect(() => {
     if (open) {
-      const defaultCode = `from microbit import *
-import time
-
-# Enter your Python code here
-def main():
-    # Example: Blink LED
-    while True:
-        display.show(Image.HEART)
-        sleep(500)
-        display.clear()
-        sleep(500)
-
-# Run the main function
-if __name__ == "__main__":
-    main()`;
-
-      setPythonCode(defaultCode);
-      addLog("Ready to enter Python code");
+      try {
+        const code = buildPythonBundle();
+        setPythonCode(code);
+        addLog(
+          "Prepared MicroPython code bundle with challengeJson and user_route"
+        );
+      } catch {
+        setPythonCode("");
+      }
     }
   }, [open]);
 

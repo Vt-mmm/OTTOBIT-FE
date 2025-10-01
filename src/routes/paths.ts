@@ -66,5 +66,12 @@ export const PATH_ADMIN = {
   studentManagement: path(ROOTS_ADMIN_DASHBOARD, "/student-management"),
   robotManagement: path(ROOTS_ADMIN_DASHBOARD, "/robot-management"),
   componentManagement: path(ROOTS_ADMIN_DASHBOARD, "/component-management"),
-  activationCodeManagement: path(ROOTS_ADMIN_DASHBOARD, "/activation-code-management"),
+  lessonResourceManagement: path(
+    ROOTS_ADMIN_DASHBOARD,
+    "/lesson-resource-management"
+  ),
+  activationCodeManagement: path(
+    ROOTS_ADMIN_DASHBOARD,
+    "/activation-code-management"
+  ),
 };

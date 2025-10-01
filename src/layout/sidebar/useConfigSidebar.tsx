@@ -12,6 +12,7 @@ import SmartToyIcon from "@mui/icons-material/SmartToy";
 import MemoryIcon from "@mui/icons-material/Memory";
 import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import { PATH_ADMIN, PATH_USER } from "routes/paths";
+import CollectionsBookmarkIcon from "@mui/icons-material/CollectionsBookmark";
 
 function useConfigSidebar() {
   const navAdmin = [
@@ -52,6 +53,11 @@ function useConfigSidebar() {
           title: "Quản lý Bài học",
           path: PATH_ADMIN.lessonManagement,
           icon: <MenuBookIcon fontSize="small" />,
+        },
+        {
+          title: "Quản lý Tài nguyên Học Tập",
+          path: PATH_ADMIN.lessonResourceManagement,
+          icon: <CollectionsBookmarkIcon fontSize="small" />,
         },
         {
           title: "Quản lý thử thách",

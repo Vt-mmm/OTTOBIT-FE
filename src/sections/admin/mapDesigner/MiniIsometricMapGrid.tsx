@@ -3,7 +3,6 @@ import { Box } from "@mui/material";
 import { useNotification } from "hooks/useNotification";
 import { MapCell } from "common/models";
 import { MAP_ASSETS } from "./mapAssets.config";
-import { THEME_COLORS } from "./theme.config";
 import {
   gridToIsometric,
   getIsometricGridDimensions,
@@ -34,9 +33,6 @@ function MiniIsometricMapGrid({
   //   row: number;
   //   col: number;
   // } | null>(null);
-  const [cornerOffsetsByCell] = useState<
-    Record<string, { top: number; right: number; bottom: number; left: number }>
-  >({});
   const gridRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPanning, setIsPanning] = useState(false);
@@ -59,14 +55,6 @@ function MiniIsometricMapGrid({
     actualCols,
     MINI_ISOMETRIC_CONFIG
   );
-
-  // Frame offsets for empty cell diamonds (half of main map)
-  const FRAME_OFFSET_DEFAULT = {
-    top: 5, // Half of main map (10 / 2)
-    right: 0, // Same as main map
-    bottom: -5, // Half of main map (-10 / 2)
-    left: 0, // Same as main map
-  };
 
   // const terrainCount = countTerrainCells(mapGrid);
 
@@ -175,20 +163,7 @@ function MiniIsometricMapGrid({
               const halfW = w / 2;
               const halfH = h / 2;
 
-              const isEmpty = !terrainAsset && !objectAsset;
               const key = `${cell.row}-${cell.col}`;
-              const saved = cornerOffsetsByCell[key] || {
-                top: 0,
-                right: 0,
-                bottom: 0,
-                left: 0,
-              };
-              const co = {
-                top: FRAME_OFFSET_DEFAULT.top + saved.top,
-                right: FRAME_OFFSET_DEFAULT.right + saved.right,
-                bottom: FRAME_OFFSET_DEFAULT.bottom + saved.bottom,
-                left: FRAME_OFFSET_DEFAULT.left + saved.left,
-              };
 
               // Stack shift: lift object/robot when there are items stacked in this cell
               const isRobot =
@@ -204,7 +179,7 @@ function MiniIsometricMapGrid({
                   sx={{
                     position: "absolute",
                     left: left - halfW,
-                    top: top - halfH - stackShift,
+                    top: top - halfH,
                     width: w,
                     height: h,
                     cursor: "pointer",
@@ -240,7 +215,7 @@ function MiniIsometricMapGrid({
                       }`}
                       sx={{
                         position: "absolute",
-                        top: -12,
+                        top: -12 - stackShift,
                         left: 0,
                         width: "100%",
                         height: "100%",
@@ -252,46 +227,30 @@ function MiniIsometricMapGrid({
                     />
                   )}
 
-                  {/* Item count badge for stacked items */}
-                  {itemCount > 1 && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: -4,
-                        right: -4,
-                        backgroundColor: THEME_COLORS.primary,
-                        color: "white",
-                        borderRadius: "50%",
-                        width: 14,
-                        height: 14,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "0.5rem",
-                        fontWeight: "bold",
-                        zIndex: 2,
-                        border: "2px solid white",
-                      }}
-                    >
-                      {itemCount}
-                    </Box>
-                  )}
+                  {/* Item count badge for stacked items - only show for items, not robots */}
+                  {objectAsset &&
+                    ((objectAsset as any).category === "item" ||
+                      (objectAsset as any).id === "box") &&
+                    itemCount > 1 && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: -4 - stackShift,
+                          right: -6,
+                          bgcolor: "rgba(0,0,0,0.7)",
+                          color: "#fff",
+                          fontSize: 10,
+                          px: 0.5,
+                          py: 0.25,
+                          borderRadius: 1,
+                          zIndex: 2,
+                        }}
+                      >
+                        ×{itemCount}
+                      </Box>
+                    )}
 
-                  {/* Empty cell frame - hidden for mini map */}
-                  {false && isEmpty && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: co.top,
-                        right: co.right,
-                        bottom: co.bottom,
-                        left: co.left,
-                        border: `1px solid ${THEME_COLORS.border}`,
-                        borderRadius: 0.5,
-                        opacity: 0.3,
-                      }}
-                    />
-                  )}
+                  {/* Empty tile frame overlay removed for cleaner mini-map */}
                 </Box>
               );
             })

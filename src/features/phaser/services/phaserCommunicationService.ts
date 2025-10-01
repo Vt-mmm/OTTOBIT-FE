@@ -92,7 +92,7 @@ export class PhaserCommunicationService {
 
     // Log score from victory message for debugging
     if (message.type === "VICTORY") {
-      console.log("🏆 [Victory] Received score from Phaser:", message.data?.score);
+      // no-op debug log removed
     }
 
     // Notify handlers
@@ -112,40 +112,27 @@ export class PhaserCommunicationService {
    * Send message to Phaser
    */
   async sendMessage(message: PhaserMessage): Promise<void> {
-    console.log("📨 [sendMessage] Attempting to send message:", {
-      type: message.type,
-      source: message.source,
-      hasData: !!message.data
-    });
-    
     // Auto-connect if not connected yet
     if (!this.isConnected) {
-      console.log("🔗 [sendMessage] Not connected, attempting auto-connect...");
       try {
         this.initialize("robot-game-iframe"); // Use default iframe ID
-        console.log("✅ [sendMessage] Auto-connect successful");
       } catch (error) {
         console.error("❌ [sendMessage] Auto-connect failed:", error);
         throw new Error("Not connected to Phaser");
       }
     }
 
-    console.log("🔍 [sendMessage] Checking iframe contentWindow...");
-    
     // Ensure we have a valid iframe with contentWindow
     let attempts = 0;
     const maxAttempts = 3;
 
     while (!this.iframe?.contentWindow && attempts < maxAttempts) {
-      console.log(`⏳ [sendMessage] Attempt ${attempts + 1}/${maxAttempts} to find iframe contentWindow...`);
-      
       // Try to find iframe element directly
       const iframeElement = document.getElementById(
         "robot-game-iframe"
       ) as HTMLIFrameElement;
 
       if (iframeElement && iframeElement.contentWindow) {
-        console.log("✅ [sendMessage] Found iframe contentWindow");
         this.iframe = iframeElement;
         break;
       }
@@ -157,16 +144,14 @@ export class PhaserCommunicationService {
 
     // Final check
     if (!this.iframe?.contentWindow) {
-      console.error("❌ [sendMessage] Failed to get iframe contentWindow after retries");
+      console.error(
+        "❌ [sendMessage] Failed to get iframe contentWindow after retries"
+      );
       throw new Error("Iframe contentWindow not available after retries");
     }
 
-    console.log("📦 [sendMessage] Ready to send message, iframe contentWindow available");
-    console.log("📜 [sendMessage] Complete message being sent:", JSON.stringify(message, null, 2));
-
     try {
       this.iframe!.contentWindow!.postMessage(message, "*");
-      console.log("✅ [sendMessage] Message sent successfully via postMessage");
     } catch (error) {
       console.error("❌ [sendMessage] Error sending message:", error);
       throw error;
@@ -213,7 +198,7 @@ export class PhaserCommunicationService {
         challengeJson,
       },
     };
-    
+
     await this.sendMessage(message);
   }
 
@@ -244,7 +229,7 @@ export class PhaserCommunicationService {
         challengeJson,
       },
     };
-    
+
     await this.sendMessage(message);
   }
 
@@ -270,7 +255,7 @@ export class PhaserCommunicationService {
         },
       },
     };
-    
+
     await this.sendMessage(message);
   }
 
@@ -278,27 +263,13 @@ export class PhaserCommunicationService {
    * Run program in Phaser
    */
   async runProgram(program: any): Promise<void> {
-    console.log("📡 [PhaserCommunicationService] Preparing to run program...");
-    
     const message: PhaserMessage = {
       source: "parent-website" as const,
       type: "RUN_PROGRAM" as const,
       data: { program },
     };
-    
-    console.log("📦 [PhaserCommunicationService] Message structure:");
-    console.log("- Source:", message.source);
-    console.log("- Type:", message.type);
-    console.log("- Program actions count:", program?.actions?.length || 0);
-    console.log("- Program functions count:", program?.functions?.length || 0);
-    console.log("📜 [PhaserCommunicationService] Complete program data:");
-    console.log(JSON.stringify(program, null, 2));
-    
-    console.log("🚀 [PhaserCommunicationService] Sending RUN_PROGRAM message to Phaser...");
-    
+
     await this.sendMessage(message);
-    
-    console.log("✅ [PhaserCommunicationService] RUN_PROGRAM message sent successfully");
   }
 
   /**
@@ -310,7 +281,7 @@ export class PhaserCommunicationService {
       type: "PAUSE_PROGRAM" as const,
       data: {},
     };
-    
+
     await this.sendMessage(message);
   }
 
@@ -323,7 +294,7 @@ export class PhaserCommunicationService {
       type: "STOP_PROGRAM" as const,
       data: {},
     };
-    
+
     await this.sendMessage(message);
   }
 
@@ -343,13 +314,13 @@ export class PhaserCommunicationService {
       };
 
       this.onMessage("STATUS", handler);
-      
+
       const message: PhaserMessage = {
         source: "parent-website" as const,
         type: "GET_STATUS" as const,
         data: {},
       };
-      
+
       this.sendMessage(message);
     });
   }
@@ -358,19 +329,13 @@ export class PhaserCommunicationService {
    * Restart current scene (reload map with existing data)
    */
   async restartScene(): Promise<void> {
-    console.log("🔄 [PhaserCommunicationService] Restarting scene...");
-    
     const message: PhaserMessage = {
       source: "parent-website" as const,
       type: "RESTART_SCENE" as const,
       data: {},
     };
-    
-    console.log("🚀 [PhaserCommunicationService] Sending RESTART_SCENE message to Phaser...");
-    
+
     await this.sendMessage(message);
-    
-    console.log("✅ [PhaserCommunicationService] RESTART_SCENE message sent successfully");
   }
 
   /**

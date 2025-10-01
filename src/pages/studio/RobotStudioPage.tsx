@@ -335,12 +335,9 @@ const RobotStudioPage = () => {
     const navData = parseStudioNavigation(challengeId, searchParams);
 
     if (navData) {
-      console.log("🚀 Studio navigation detected:", navData);
-
       // Store navigation data
       storeStudioNavigationData(navData);
       // TODO: Re-implement navigation data if needed
-      console.log("Navigation data:", navData);
       setSelectedChallengeId(navData.challengeId);
       setShowChallengeSelector(false);
     } else {
