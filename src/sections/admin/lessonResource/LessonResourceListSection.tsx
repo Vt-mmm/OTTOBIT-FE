@@ -49,10 +49,14 @@ export default function LessonResourceListSection({
   onCreateNew,
   onEditItem,
   onNotify,
+  selectedId,
+  onViewDetail,
 }: {
   onCreateNew?: () => void;
   onEditItem?: (id: string) => void;
   onNotify?: (message: string) => void;
+  selectedId?: string | null;
+  onViewDetail?: (id: string) => void;
 }) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -83,7 +87,6 @@ export default function LessonResourceListSection({
   // Create / Edit / Detail states
   const [createOpen, setCreateOpen] = useState(false);
   const [editItem, setEditItem] = useState<any | null>(null);
-  const [detailItem, setDetailItem] = useState<any | null>(null);
   const [form, setForm] = useState({
     lessonId: "",
     title: "",
@@ -270,6 +273,20 @@ export default function LessonResourceListSection({
       setConfirmRestore(null);
     }
   };
+
+  // If viewing detail, show detail component instead of list
+  if (selectedId) {
+    return (
+      <Box sx={{ p: 3, textAlign: "center" }}>
+        <Typography variant="h6" color="text.secondary">
+          Inline detail view has been removed
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          Selected ID: {selectedId}
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -503,8 +520,11 @@ export default function LessonResourceListSection({
                 >
                   <IconButton
                     size="small"
-                    title="Xem"
-                    onClick={() => window.open(it.fileUrl, "_blank")}
+                    title="Xem chi tiết"
+                    onClick={() => {
+                      console.log("Click view detail for ID:", it.id);
+                      onViewDetail?.(it.id);
+                    }}
                   >
                     <VisibilityIcon />
                   </IconButton>
@@ -764,50 +784,6 @@ export default function LessonResourceListSection({
           >
             {editItem ? "Lưu thay đổi" : "Tạo mới"}
           </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Detail dialog */}
-      <Dialog
-        open={!!detailItem}
-        onClose={() => setDetailItem(null)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>Chi tiết tài nguyên</DialogTitle>
-        <DialogContent dividers>
-          {detailItem ? (
-            <Box sx={{ display: "grid", gap: 1.5 }}>
-              <Typography>
-                <strong>Tiêu đề:</strong> {detailItem.title}
-              </Typography>
-              <Typography>
-                <strong>Mô tả:</strong> {detailItem.description}
-              </Typography>
-              <Typography>
-                <strong>Loại:</strong> {getTypeLabel(detailItem.type)}
-              </Typography>
-              <Typography>
-                <strong>Bài học:</strong>{" "}
-                {detailItem.lessonTitle || detailItem.lessonId}
-              </Typography>
-              <Typography>
-                <strong>Khóa học:</strong> {detailItem.courseTitle || "-"}
-              </Typography>
-              <Typography>
-                <strong>URL:</strong> {detailItem.fileUrl}
-              </Typography>
-              <Typography>
-                <strong>Ngày tạo:</strong>{" "}
-                {detailItem.createdAt
-                  ? new Date(detailItem.createdAt).toLocaleString("vi-VN")
-                  : "-"}
-              </Typography>
-            </Box>
-          ) : null}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDetailItem(null)}>Đóng</Button>
         </DialogActions>
       </Dialog>
 

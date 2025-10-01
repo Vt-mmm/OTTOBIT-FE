@@ -3,7 +3,6 @@ import { Box } from "@mui/material";
 import { useNotification } from "hooks/useNotification";
 import { MapCell } from "common/models";
 import { MAP_ASSETS } from "./mapAssets.config";
-import { THEME_COLORS } from "./theme.config";
 import {
   gridToIsometric,
   getIsometricGridDimensions,
@@ -34,9 +33,6 @@ function MiniIsometricMapGrid({
   //   row: number;
   //   col: number;
   // } | null>(null);
-  const [cornerOffsetsByCell] = useState<
-    Record<string, { top: number; right: number; bottom: number; left: number }>
-  >({});
   const gridRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPanning, setIsPanning] = useState(false);
@@ -59,14 +55,6 @@ function MiniIsometricMapGrid({
     actualCols,
     MINI_ISOMETRIC_CONFIG
   );
-
-  // Frame offsets for empty cell diamonds (half of main map)
-  const FRAME_OFFSET_DEFAULT = {
-    top: 5, // Half of main map (10 / 2)
-    right: 0, // Same as main map
-    bottom: -5, // Half of main map (-10 / 2)
-    left: 0, // Same as main map
-  };
 
   // const terrainCount = countTerrainCells(mapGrid);
 
@@ -175,20 +163,7 @@ function MiniIsometricMapGrid({
               const halfW = w / 2;
               const halfH = h / 2;
 
-              const isEmpty = !terrainAsset && !objectAsset;
               const key = `${cell.row}-${cell.col}`;
-              const saved = cornerOffsetsByCell[key] || {
-                top: 0,
-                right: 0,
-                bottom: 0,
-                left: 0,
-              };
-              const co = {
-                top: FRAME_OFFSET_DEFAULT.top + saved.top,
-                right: FRAME_OFFSET_DEFAULT.right + saved.right,
-                bottom: FRAME_OFFSET_DEFAULT.bottom + saved.bottom,
-                left: FRAME_OFFSET_DEFAULT.left + saved.left,
-              };
 
               // Stack shift: lift object/robot when there are items stacked in this cell
               const isRobot =

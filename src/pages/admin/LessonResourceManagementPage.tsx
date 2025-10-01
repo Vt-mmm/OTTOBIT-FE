@@ -9,6 +9,11 @@ import {
   Chip,
   Snackbar,
   Alert,
+  Grid,
+  Divider,
+  Link,
+  Stack,
+  CircularProgress,
 } from "@mui/material";
 // unused import removed
 import LessonResourceListSection from "sections/admin/lessonResource/LessonResourceListSection";
@@ -16,6 +21,14 @@ import LessonResourceFormSection from "sections/admin/lessonResource/LessonResou
 import { axiosClient } from "axiosClient";
 import { ROUTES_API_LESSON_RESOURCE as LR } from "constants/routesApiKeys";
 import AdminLayout from "layout/admin/AdminLayout";
+import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
+import DescriptionIcon from "@mui/icons-material/Description";
+import ImageIcon from "@mui/icons-material/Image";
+import AudioFileIcon from "@mui/icons-material/AudioFile";
+import LinkIcon from "@mui/icons-material/Link";
+import ExtensionIcon from "@mui/icons-material/Extension";
+import SlideshowIcon from "@mui/icons-material/Slideshow";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 export default function LessonResourceManagementPage() {
   const [ready, setReady] = useState(false);
@@ -32,36 +45,49 @@ export default function LessonResourceManagementPage() {
     severity: "success" | "error";
   }>({ open: false, message: "", severity: "success" });
   useEffect(() => setReady(true), []);
+
+  // Update header subtitle based on mode
+  useEffect(() => {
+    if (selectedId) {
+      setHeaderSubtitle(`Chi tiết tài nguyên #${selectedId}`);
+    } else {
+      setHeaderSubtitle("Danh sách tài nguyên theo bài học/khoá học");
+    }
+  }, [selectedId]);
   return (
     <AdminLayout>
       <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box
-          sx={{
-            mb: 2,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <Box>
-            <Typography
-              variant="h4"
-              component="h1"
-              sx={{ fontWeight: 700, color: "#1a1a1a" }}
-            >
-              Quản lý Tài nguyên Bài học
-            </Typography>
-            <Typography variant="body1" sx={{ color: "#666", mt: 1 }}>
-              {headerSubtitle}
-            </Typography>
+        <Box sx={{ mb: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Box>
+              <Typography
+                variant="h4"
+                component="h1"
+                sx={{ fontWeight: 700, color: "#1a1a1a" }}
+              >
+                Quản lý Tài nguyên Bài học
+              </Typography>
+              <Typography variant="body1" sx={{ color: "#666", mt: 1 }}>
+                {headerSubtitle}
+              </Typography>
+            </Box>
           </Box>
-          {mode !== "list" && (
+          {selectedId && (
             <Button
-              variant="outlined"
+              startIcon={<ArrowBackIcon />}
               onClick={() => {
+                setSelectedId(null);
                 setMode("list");
-                setHeaderSubtitle("Danh sách tài nguyên theo bài học/khoá học");
               }}
+              sx={{ mt: 1, alignSelf: "flex-start" }}
+              variant="text"
+              color="inherit"
             >
               Quay lại
             </Button>
@@ -86,21 +112,12 @@ export default function LessonResourceManagementPage() {
                         setHeaderSubtitle(`Chỉnh sửa tài nguyên #${id}`);
                       }}
                       // @ts-ignore
-                      onViewDetail={async (id: string) => {
+                      onViewDetail={(id: string) => {
                         setSelectedId(id);
                         setMode("detail");
-                        try {
-                          const res = await axiosClient.get(
-                            LR.ADMIN_GET_BY_ID(id)
-                          );
-                          const title = res?.data?.data?.title || "";
-                          setHeaderSubtitle(
-                            `Chi tiết tài nguyên${title ? `: ${title}` : ""}`
-                          );
-                        } catch {
-                          setHeaderSubtitle(`Chi tiết tài nguyên`);
-                        }
                       }}
+                      // @ts-ignore
+                      selectedId={selectedId}
                       // show parent toast for delete/restore
                       // @ts-ignore
                       onNotify={(message: string) =>
@@ -156,17 +173,7 @@ export default function LessonResourceManagementPage() {
                     />
                   )}
                   {mode === "detail" && selectedId && (
-                    <Box
-                      sx={{
-                        p: 2,
-                        border: "1px solid",
-                        borderColor: "divider",
-                        borderRadius: 1,
-                        bgcolor: "grey.50",
-                      }}
-                    >
-                      <InlineLessonResourceDetail id={selectedId} />
-                    </Box>
+                    <InlineLessonResourceDetailCard id={selectedId} />
                   )}
                 </>
               )}
@@ -187,11 +194,13 @@ export default function LessonResourceManagementPage() {
   );
 }
 
-function InlineLessonResourceDetail({ id }: { id: string }) {
+// Inline detail component fully removed
+function InlineLessonResourceDetailCard({ id }: { id: string }) {
   const [data, setData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
+
   useEffect(() => {
-    const run = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
         const res = await axiosClient.get(LR.ADMIN_GET_BY_ID(id));
@@ -200,90 +209,261 @@ function InlineLessonResourceDetail({ id }: { id: string }) {
         setLoading(false);
       }
     };
-    run();
+    fetchData();
   }, [id]);
-  if (loading) return <Box sx={{ p: 4, textAlign: "center" }}>Đang tải...</Box>;
-  if (!data) return <Typography>Không tìm thấy tài nguyên</Typography>;
 
-  const getTypeLabel = (type: number) => {
-    switch (type) {
-      case 1:
-        return "Video";
-      case 2:
-        return "Document";
-      case 3:
-        return "Image";
-      case 4:
-        return "Audio";
-      case 5:
-        return "External Link";
-      case 6:
-        return "Interactive";
-      case 7:
-        return "Slides";
+  const getTypeIcon = (type: any) => {
+    if (type === null || type === undefined) return <ExtensionIcon />;
+    const typeStr = String(type).toLowerCase();
+    switch (typeStr) {
+      case "video":
+      case "1":
+        return <VideoLibraryIcon />;
+      case "document":
+      case "pdf":
+      case "2":
+        return <DescriptionIcon />;
+      case "image":
+      case "3":
+        return <ImageIcon />;
+      case "audio":
+      case "4":
+        return <AudioFileIcon />;
+      case "link":
+      case "5":
+        return <LinkIcon />;
+      case "presentation":
+      case "6":
+        return <SlideshowIcon />;
       default:
-        return "Unknown";
+        return <ExtensionIcon />;
     }
   };
 
+  const getTypeName = (type: any) => {
+    if (type === null || type === undefined) return "Chưa xác định";
+    const typeStr = String(type).toLowerCase();
+    switch (typeStr) {
+      case "video":
+      case "1":
+        return "Video";
+      case "document":
+      case "pdf":
+      case "2":
+        return "Tài liệu";
+      case "image":
+      case "3":
+        return "Hình ảnh";
+      case "audio":
+      case "4":
+        return "Âm thanh";
+      case "link":
+      case "5":
+        return "Liên kết";
+      case "presentation":
+      case "6":
+        return "Trình bày";
+      default:
+        return "Chưa xác định";
+    }
+  };
+
+  if (loading) {
+    return (
+      <Box sx={{ p: 4, display: "flex", justifyContent: "center" }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!data) {
+    return (
+      <Card sx={{ boxShadow: 2, mt: 2 }}>
+        <CardContent sx={{ textAlign: "center", py: 4 }}>
+          <Typography variant="h6" color="text.secondary">
+            Không tìm thấy tài nguyên
+          </Typography>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Box sx={{ display: "grid", gap: 2, maxWidth: 880 }}>
-      <Box
-        sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}
-      >
-        <Typography variant="h6" sx={{ fontWeight: 700 }}>
-          {data.title}
-        </Typography>
-        <Chip
-          size="small"
-          label={getTypeLabel(Number(data.type))}
-          color="primary"
-          variant="outlined"
-        />
-      </Box>
+    <Card sx={{ boxShadow: 2 }}>
+      <CardContent sx={{ p: 3 }}>
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={8}>
+            <Card sx={{ boxShadow: 2, height: "fit-content" }}>
+              <CardContent sx={{ p: 3 }}>
+                <Stack spacing={3}>
+                  <Box>
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      spacing={1}
+                      mb={1}
+                    >
+                      {getTypeIcon(data.type)}
+                      <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                        {data.title}
+                      </Typography>
+                    </Stack>
+                    {data.description && (
+                      <Typography color="text.secondary">
+                        {data.description}
+                      </Typography>
+                    )}
+                  </Box>
 
-      {data.description && (
-        <Typography color="text.secondary">{data.description}</Typography>
-      )}
+                  <Divider />
 
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-          gap: 2,
-        }}
-      >
-        <Box>
-          <Typography variant="caption" color="text.secondary">
-            Bài học
-          </Typography>
-          <Typography>{data.lessonTitle || data.lessonId || "-"}</Typography>
-        </Box>
-        <Box>
-          <Typography variant="caption" color="text.secondary">
-            Khóa học
-          </Typography>
-          <Typography>{data.courseTitle || "-"}</Typography>
-        </Box>
-        <Box sx={{ gridColumn: { xs: "auto", sm: "1 / span 2" } }}>
-          <Typography variant="caption" color="text.secondary">
-            URL
-          </Typography>
-          <Typography sx={{ wordBreak: "break-all" }}>
-            {data.fileUrl}
-          </Typography>
-        </Box>
-        <Box>
-          <Typography variant="caption" color="text.secondary">
-            Ngày tạo
-          </Typography>
-          <Typography>
-            {data.createdAt
-              ? new Date(data.createdAt).toLocaleString("vi-VN")
-              : "-"}
-          </Typography>
-        </Box>
-      </Box>
-    </Box>
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                      Thông tin chi tiết
+                    </Typography>
+                    <Stack spacing={2}>
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ mb: 0.5 }}
+                        >
+                          Loại tài nguyên
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {getTypeName(data.type)}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ mb: 0.5 }}
+                        >
+                          Khóa học
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {data.courseTitle || "Chưa xác định"}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ mb: 0.5 }}
+                        >
+                          Bài học
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {data.lessonTitle || data.lessonId || "Chưa xác định"}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ mb: 0.5 }}
+                        >
+                          URL tài nguyên
+                        </Typography>
+                        <Link
+                          href={data.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          sx={{
+                            wordBreak: "break-all",
+                            display: "inline-block",
+                            maxWidth: "100%",
+                          }}
+                        >
+                          {data.fileUrl}
+                        </Link>
+                      </Box>
+                    </Stack>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Stack spacing={2}>
+              <Card sx={{ boxShadow: 2 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                    Thông tin hệ thống
+                  </Typography>
+                  <Stack spacing={2}>
+                    <Box>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mb: 0.5 }}
+                      >
+                        Ngày tạo
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {new Date(data.createdAt).toLocaleString("vi-VN", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </Typography>
+                    </Box>
+                    {data.updatedAt && (
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ mb: 0.5 }}
+                        >
+                          Ngày cập nhật
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {new Date(data.updatedAt).toLocaleString("vi-VN", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Stack>
+                </CardContent>
+              </Card>
+
+              <Card sx={{ boxShadow: 2 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                    Hành động
+                  </Typography>
+                  <Stack spacing={1}>
+                    <Link
+                      href={data.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{ textDecoration: "none" }}
+                    >
+                      <Chip
+                        label="Mở tài nguyên"
+                        color="primary"
+                        variant="outlined"
+                        clickable
+                        icon={<LinkIcon />}
+                        sx={{ width: "100%", justifyContent: "flex-start" }}
+                      />
+                    </Link>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Stack>
+          </Grid>
+        </Grid>
+      </CardContent>
+    </Card>
   );
 }
