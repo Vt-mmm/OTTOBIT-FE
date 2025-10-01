@@ -7,7 +7,6 @@ import {
   CardContent,
   CircularProgress,
   Alert,
-  IconButton,
   Chip,
   Table,
   TableBody,
@@ -75,7 +74,9 @@ export default function CourseRobotManagementSection({
   }, [operations.deleteSuccess, dispatch, courseId]);
 
   const handleAddSuccess = () => {
-    console.log("✅ CourseRobotManagementSection: handleAddSuccess called, reloading...");
+    console.log(
+      "✅ CourseRobotManagementSection: handleAddSuccess called, reloading..."
+    );
     dispatch(getCourseRobotsThunk({ courseId, pageSize: 100 }));
   };
 
@@ -161,29 +162,73 @@ export default function CourseRobotManagementSection({
           </CardContent>
         </Card>
       ) : (
-        <TableContainer component={Paper}>
-          <Table>
+        <TableContainer component={Paper} variant="outlined">
+          <Table size="small">
             <TableHead>
               <TableRow>
+                <TableCell align="center">Thứ tự</TableCell>
                 <TableCell>Robot</TableCell>
                 <TableCell>Model</TableCell>
                 <TableCell>Thương hiệu</TableCell>
                 <TableCell>Giá</TableCell>
                 <TableCell align="center">Bắt buộc</TableCell>
-                <TableCell align="center">Thứ tự</TableCell>
                 <TableCell align="right">Thao tác</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {items.map((courseRobot) => (
                 <TableRow key={courseRobot.id}>
+                  <TableCell align="center">
+                    <Chip
+                      label={courseRobot.order ?? "-"}
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                    />
+                  </TableCell>
                   <TableCell>
-                    <Typography variant="body2" fontWeight={500}>
+                    <Typography
+                      variant="body2"
+                      fontWeight={500}
+                      sx={{
+                        maxWidth: 220,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                      title={courseRobot.robotName || "N/A"}
+                    >
                       {courseRobot.robotName || "N/A"}
                     </Typography>
                   </TableCell>
-                  <TableCell>{courseRobot.robotModel || "N/A"}</TableCell>
-                  <TableCell>{courseRobot.robotBrand || "N/A"}</TableCell>
+                  <TableCell>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        maxWidth: 180,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                      title={courseRobot.robotModel || "N/A"}
+                    >
+                      {courseRobot.robotModel || "N/A"}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        maxWidth: 180,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                      title={courseRobot.robotBrand || "N/A"}
+                    >
+                      {courseRobot.robotBrand || "N/A"}
+                    </Typography>
+                  </TableCell>
                   <TableCell>
                     {courseRobot.robotPrice
                       ? `${courseRobot.robotPrice.toLocaleString()}đ`
@@ -196,13 +241,12 @@ export default function CourseRobotManagementSection({
                       <Chip label="Tùy chọn" color="default" size="small" />
                     )}
                   </TableCell>
-                  <TableCell align="center">
-                    {courseRobot.order || "-"}
-                  </TableCell>
                   <TableCell align="right">
-                    <IconButton
+                    <Button
                       size="small"
                       color="error"
+                      variant="outlined"
+                      startIcon={<DeleteIcon />}
                       onClick={() =>
                         handleDeleteClick(
                           courseRobot.id,
@@ -211,8 +255,8 @@ export default function CourseRobotManagementSection({
                       }
                       disabled={operations.isDeleting}
                     >
-                      <DeleteIcon />
-                    </IconButton>
+                      Xóa
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

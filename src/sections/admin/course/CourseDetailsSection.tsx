@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -18,16 +18,29 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  TextField,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import GroupIcon from "@mui/icons-material/Group";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getLessons } from "../../../redux/lesson/lessonSlice";
 import { CourseResult } from "../../../common/@types/course";
 import CourseRobotManagementSection from "./CourseRobotManagementSection";
+import { axiosClient } from "axiosClient";
+import { ROUTES_API_COURSE_MAP, ROUTES_API_MAP } from "constants/routesApiKeys";
 
 interface Props {
   course: CourseResult | null;
@@ -72,6 +85,63 @@ export default function CourseDetailsSection({
       );
     }
   }, [dispatch, course?.id]);
+
+  // Fetch course maps for this course
+  const [courseMaps, setCourseMaps] = useState<any[]>([]);
+  const [courseMapsLoading, setCourseMapsLoading] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [availableMaps, setAvailableMaps] = useState<any[]>([]);
+  const [selectedMapId, setSelectedMapId] = useState<string>("");
+  const [mapOrder, setMapOrder] = useState<number>(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    id: string | null;
+    mapTitle: string;
+  }>({ open: false, id: null, mapTitle: "" });
+  useEffect(() => {
+    const fetchCourseMaps = async () => {
+      if (!course?.id) return;
+      setCourseMapsLoading(true);
+      try {
+        const res = await axiosClient.get(ROUTES_API_COURSE_MAP.GET_ALL, {
+          params: { courseId: course.id },
+        });
+        const data = (res as any)?.data?.data;
+        // Support both paged and flat arrays just in case
+        const items = Array.isArray(data?.items)
+          ? data.items
+          : Array.isArray(data)
+          ? data
+          : data
+          ? [data]
+          : [];
+        setCourseMaps(items);
+      } catch (_e) {
+        setCourseMaps([]);
+      } finally {
+        setCourseMapsLoading(false);
+      }
+    };
+    fetchCourseMaps();
+  }, [course?.id]);
+
+  // Load available maps for add dialog
+  useEffect(() => {
+    const fetchMaps = async () => {
+      try {
+        const res = await axiosClient.get(ROUTES_API_MAP.GET_ALL, {
+          params: { PageNumber: 1, PageSize: 100 },
+        });
+        const data = (res as any)?.data?.data;
+        const items = Array.isArray(data?.items) ? data.items : [];
+        setAvailableMaps(items);
+      } catch (_) {
+        setAvailableMaps([]);
+      }
+    };
+    if (addDialogOpen) fetchMaps();
+  }, [addDialogOpen]);
 
   if (!course) {
     return (
@@ -264,6 +334,236 @@ export default function CourseDetailsSection({
             </CardContent>
           </Card>
         </Grid>
+
+        {/* Course Maps Management */}
+        <Grid item xs={12}>
+          <Card>
+            <CardContent>
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+                sx={{ mb: 3 }}
+              >
+                <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                  Course maps được sử dụng
+                </Typography>
+                <Button
+                  startIcon={<AddIcon />}
+                  variant="contained"
+                  size="small"
+                  onClick={() => setAddDialogOpen(true)}
+                >
+                  Thêm course map
+                </Button>
+              </Stack>
+
+              {courseMapsLoading ? (
+                <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                  <CircularProgress />
+                </Box>
+              ) : courseMaps.length === 0 ? (
+                <Box sx={{ textAlign: "center", py: 4 }}>
+                  <Typography variant="h6" color="text.secondary">
+                    Chưa gắn map nào cho khóa học này
+                  </Typography>
+                  <Typography variant="body2" color="text.disabled">
+                    Thêm course map để sắp xếp thứ tự bản đồ sử dụng trong khóa
+                    học
+                  </Typography>
+                </Box>
+              ) : (
+                <TableContainer component={Paper} variant="outlined">
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Thứ tự</TableCell>
+                        <TableCell>Tên map</TableCell>
+                        <TableCell>Mô tả</TableCell>
+                        <TableCell>Ngày tạo</TableCell>
+                        <TableCell align="right">Thao tác</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {[...courseMaps]
+                        .sort(
+                          (a: any, b: any) => (a.order || 0) - (b.order || 0)
+                        )
+                        .map((m: any) => (
+                          <TableRow key={m.id} hover>
+                            <TableCell>
+                              <Chip
+                                label={m.order ?? "-"}
+                                size="small"
+                                variant="outlined"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Typography
+                                variant="subtitle2"
+                                sx={{ fontWeight: 600 }}
+                              >
+                                {m.mapTitle || m.mapId}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                {m.mapDescription || "-"}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              {m.createdAt
+                                ? new Date(m.createdAt).toLocaleString("vi-VN")
+                                : "-"}
+                            </TableCell>
+                            <TableCell align="right">
+                              <Button
+                                size="small"
+                                color="error"
+                                variant="outlined"
+                                startIcon={<DeleteIcon />}
+                                onClick={() =>
+                                  setDeleteDialog({
+                                    open: true,
+                                    id: m.id,
+                                    mapTitle: m.mapTitle || m.mapId,
+                                  })
+                                }
+                              >
+                                Xóa
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Add Course Map Dialog */}
+        <Dialog
+          open={addDialogOpen}
+          onClose={() => setAddDialogOpen(false)}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>Thêm course map</DialogTitle>
+          <DialogContent sx={{ pt: 2 }}>
+            <Stack spacing={2}>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Chọn map</InputLabel>
+                <Select
+                  label="Chọn map"
+                  value={selectedMapId}
+                  onChange={(e) => setSelectedMapId(e.target.value as string)}
+                >
+                  {availableMaps.map((m: any) => (
+                    <MenuItem key={m.id} value={m.id}>
+                      {m.title || m.id}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <TextField
+                size="small"
+                type="number"
+                label="Thứ tự (order)"
+                value={mapOrder}
+                onChange={(e) => setMapOrder(Number(e.target.value))}
+              />
+            </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setAddDialogOpen(false)}>Hủy</Button>
+            <Button
+              variant="contained"
+              disabled={!selectedMapId || submitting}
+              onClick={async () => {
+                if (!course?.id || !selectedMapId) return;
+                setSubmitting(true);
+                try {
+                  await axiosClient.post(ROUTES_API_COURSE_MAP.CREATE, {
+                    courseId: course.id,
+                    mapId: selectedMapId,
+                    order: Number(mapOrder) || 0,
+                  });
+                  setAddDialogOpen(false);
+                  setSelectedMapId("");
+                  setMapOrder(0);
+                  // refresh list
+                  const res = await axiosClient.get(
+                    ROUTES_API_COURSE_MAP.GET_ALL,
+                    {
+                      params: { courseId: course.id },
+                    }
+                  );
+                  const data = (res as any)?.data?.data;
+                  const items = Array.isArray(data?.items)
+                    ? data.items
+                    : Array.isArray(data)
+                    ? data
+                    : data
+                    ? [data]
+                    : [];
+                  setCourseMaps(items);
+                } finally {
+                  setSubmitting(false);
+                }
+              }}
+            >
+              Thêm
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Delete Course Map Confirmation */}
+        <Dialog
+          open={deleteDialog.open}
+          onClose={() =>
+            setDeleteDialog({ open: false, id: null, mapTitle: "" })
+          }
+        >
+          <DialogTitle>Xác nhận xóa</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Bạn có chắc muốn xóa course map "{deleteDialog.mapTitle}"?
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() =>
+                setDeleteDialog({ open: false, id: null, mapTitle: "" })
+              }
+            >
+              Hủy
+            </Button>
+            <Button
+              color="error"
+              variant="contained"
+              onClick={async () => {
+                if (!deleteDialog.id) return;
+                try {
+                  await axiosClient.delete(
+                    ROUTES_API_COURSE_MAP.DELETE(deleteDialog.id)
+                  );
+                  setCourseMaps((prev) =>
+                    prev.filter((x: any) => x.id !== deleteDialog.id)
+                  );
+                } finally {
+                  setDeleteDialog({ open: false, id: null, mapTitle: "" });
+                }
+              }}
+            >
+              Xóa
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         {/* Lessons List */}
         <Grid item xs={12}>

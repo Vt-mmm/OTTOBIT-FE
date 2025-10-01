@@ -1,4 +1,3 @@
-
 import { path } from "utils";
 
 // Backend sử dụng số nhiều (authentications, accounts, maps, lesson-processes)
@@ -75,7 +74,8 @@ export const ROUTES_API_LESSON = {
   GET_BY_ID: (id: string) => path(ROOTS_LESSON, `/${id}`), // GET /api/v1/lessons/{id} (User; returns preview if not enrolled)
   PREVIEW: path(ROOTS_LESSON, `/preview`), // GET /api/v1/lessons/preview
   // Legacy alias to fetch lessons by course via preview + courseId filter
-  BY_COURSE: (courseId: string) => path(ROOTS_LESSON, `/preview?courseId=${courseId}`),
+  BY_COURSE: (courseId: string) =>
+    path(ROOTS_LESSON, `/preview?courseId=${courseId}`),
   CREATE: ROOTS_LESSON, // POST /api/v1/lessons
   UPDATE: (id: string) => path(ROOTS_LESSON, `/${id}`), // PUT /api/v1/lessons/{id}
   DELETE: (id: string) => path(ROOTS_LESSON, `/${id}`), // DELETE /api/v1/lessons/{id}
@@ -120,7 +120,8 @@ export const ROUTES_API_SUBMISSION = {
   // Legacy endpoints kept for compatibility; backend may not implement anymore
   UPDATE: (id: string) => path(ROOTS_SUBMISSION, `/${id}`), // PUT /api/v1/submissions/{id}
   DELETE: (id: string) => path(ROOTS_SUBMISSION, `/${id}`), // DELETE /api/v1/submissions/{id}
-  BY_CHALLENGE: (challengeId: string) => path(ROOTS_SUBMISSION, `/by-challenge/${challengeId}`), // GET /api/v1/submissions/by-challenge/{challengeId}
+  BY_CHALLENGE: (challengeId: string) =>
+    path(ROOTS_SUBMISSION, `/by-challenge/${challengeId}`), // GET /api/v1/submissions/by-challenge/{challengeId}
   MY_SUBMISSIONS: path(ROOTS_SUBMISSION, `/my-submissions`), // GET /api/v1/submissions/my-submissions (User)
 };
 
@@ -141,7 +142,8 @@ export const ROUTES_API_CHALLENGE_PROCESS = {
 
 export const ROUTES_API_LESSON_PROGRESS = {
   // Lesson Progress endpoints
-  START_LESSON: (lessonId: string) => path(ROOTS_LESSON_PROGRESS, `/start-lesson/${lessonId}`), // POST /api/v1/lesson-process/start-lesson/{lessonId}
+  START_LESSON: (lessonId: string) =>
+    path(ROOTS_LESSON_PROGRESS, `/start-lesson/${lessonId}`), // POST /api/v1/lesson-process/start-lesson/{lessonId}
   MY_PROGRESS: path(ROOTS_LESSON_PROGRESS, `/my-progress`), // GET /api/v1/lesson-process/my-progress
 };
 
@@ -175,7 +177,8 @@ export const ROUTES_API_ROBOT = {
 // New: Course-Robot endpoints
 export const ROUTES_API_COURSE_ROBOT = {
   GET_ALL: ROOTS_COURSE_ROBOT, // GET /api/v1/course-robots
-  GET_BY_COURSE: (courseId: string) => path(ROOTS_COURSE_ROBOT, `/course/${courseId}`), // GET /api/v1/course-robots/course/{courseId}
+  GET_BY_COURSE: (courseId: string) =>
+    path(ROOTS_COURSE_ROBOT, `/course/${courseId}`), // GET /api/v1/course-robots/course/{courseId}
   GET_BY_ID: (id: string) => path(ROOTS_COURSE_ROBOT, `/${id}`), // GET /api/v1/course-robots/{id}
   CREATE: ROOTS_COURSE_ROBOT, // POST /api/v1/course-robots (Admin)
   UPDATE: (id: string) => path(ROOTS_COURSE_ROBOT, `/${id}`), // PUT /api/v1/course-robots/{id} (Admin)
@@ -203,7 +206,8 @@ export const ROUTES_API_COURSE_MAP = {
 // New: Lesson-Resource endpoints
 export const ROUTES_API_LESSON_RESOURCE = {
   GET_BY_ID: (id: string) => path(ROOTS_LESSON_RESOURCE, `/${id}`), // GET /api/v1/lesson-resources/{id} (User)
-  BY_LESSON: (lessonId: string) => path(ROOTS_LESSON_RESOURCE, `/lesson/${lessonId}`), // GET /api/v1/lesson-resources/lesson/{lessonId} (User)
+  BY_LESSON: (lessonId: string) =>
+    path(ROOTS_LESSON_RESOURCE, `/lesson/${lessonId}`), // GET /api/v1/lesson-resources/lesson/{lessonId} (User)
 
   // Admin
   ADMIN_GET_ALL: path(ROOTS_LESSON_RESOURCE, `/admin`), // GET /api/v1/lesson-resources/admin (Admin)
@@ -235,5 +239,6 @@ export const ROUTES_API_ACTIVATION_CODE = {
   ADMIN_DELETE: (id: string) => path(ROOTS_ACTIVATION_CODE, `/${id}`), // DELETE /api/v1/activation-codes/{id} (Admin - NOT IMPLEMENTED YET)
   ADMIN_REVOKE: path(ROOTS_ACTIVATION_CODE, `/revoke`), // POST /api/v1/activation-codes/revoke (Admin)
   ADMIN_EXPORT_CSV: path(ROOTS_ACTIVATION_CODE, `/export-csv`), // GET /api/v1/activation-codes/export-csv (Admin)
-  ADMIN_UPDATE_STATUS: (id: string) => path(ROOTS_ACTIVATION_CODE, `/${id}/status`), // PUT /api/v1/activation-codes/{id}/status (Admin)
+  ADMIN_UPDATE_STATUS: (id: string) =>
+    path(ROOTS_ACTIVATION_CODE, `/${id}/status`), // PUT /api/v1/activation-codes/{id}/status (Admin)
 };
