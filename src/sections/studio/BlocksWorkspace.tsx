@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Box } from "@mui/material";
 import * as Blockly from "blockly/core";
-import { registerottobitBlocks } from "../../components/block";
+import {
+  registerottobitBlocks,
+  setupShadowBlockRestoration,
+} from "../../components/block";
 import { CustomBlocklyRenderer } from "./customBlocklyRenderer";
 import { ThemeOttobit } from "../../theme/block/theme-ottobit";
 import {
@@ -99,6 +102,7 @@ export default function BlocksWorkspace({
       { kind: "block", type: "ottobit_is_red" },
       { kind: "block", type: "ottobit_is_yellow" },
       { kind: "block", type: "ottobit_bale_number" },
+      { kind: "block", type: "ottobit_pin_number" },
     ],
     actions: [
       { kind: "block", type: "ottobit_collect_green" },
@@ -229,6 +233,9 @@ export default function BlocksWorkspace({
 
       setBlocklyWorkspace(workspace);
       onWorkspaceChange?.(workspace);
+
+      // Setup shadow block restoration for copy-paste
+      setupShadowBlockRestoration(workspace);
 
       // Initialize FieldInputManager để giải quyết lỗi UI input bị ghim
       fieldInputManager.initialize(workspace);

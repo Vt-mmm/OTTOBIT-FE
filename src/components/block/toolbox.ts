@@ -91,6 +91,10 @@ export const ottobit_TOOLBOX = {
           kind: "block",
           type: "ottobit_bale_number",
         },
+        {
+          kind: "block",
+          type: "ottobit_pin_number",
+        },
       ],
     },
     {

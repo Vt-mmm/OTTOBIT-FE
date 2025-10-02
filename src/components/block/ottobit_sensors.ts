@@ -92,6 +92,18 @@ export const sensorBlocks = createBlockDefinitionsFromJsonArray([
     tooltip: "Kiểm tra có pin vàng không - trả về true/false",
     helpUrl: "",
   },
+  {
+    type: "ottobit_pin_number",
+    message0: "🔋 number",
+    args0: [],
+    output: "Number",
+    deletable: true,
+    movable: true,
+    editable: true,
+    style: "ottobit_sensor",
+    tooltip: "Lấy số lượng pin hiện tại tại ô hiện tại",
+    helpUrl: "",
+  },
 ]);
 
 /**

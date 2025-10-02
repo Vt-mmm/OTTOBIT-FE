@@ -19,6 +19,9 @@ import "./generators/python";
 // Import extensions
 import { registerIfElseMutator } from "./extensions/if_else_mutator";
 
+// Import shadow block restoration
+import { setupShadowBlockRestoration } from "./shadow_restoration";
+
 // Prevent duplicate mutator registration across multiple mounts/usages
 let isMutatorRegistered = false;
 
@@ -82,7 +85,9 @@ export function registerottobitBlocks(): void {
             if (timesInput?.connection && this.workspace) {
               const num = this.workspace.newBlock("ottobit_number");
               num.setShadow(true);
-              try { num.setFieldValue(2, "NUM"); } catch {}
+              try {
+                num.setFieldValue(2, "NUM");
+              } catch {}
               num.initSvg();
               num.render();
               if (!timesInput.connection.targetBlock()) {
@@ -118,7 +123,9 @@ export function registerottobitBlocks(): void {
               if (varInput?.connection && this.workspace) {
                 const varShadow = this.workspace.newBlock("ottobit_variable");
                 varShadow.setShadow(true);
-                try { varShadow.setFieldValue("i", "VAR"); } catch {}
+                try {
+                  varShadow.setFieldValue("i", "VAR");
+                } catch {}
                 varShadow.initSvg();
                 varShadow.render();
                 if (!varInput.connection.targetBlock()) {
@@ -130,7 +137,9 @@ export function registerottobitBlocks(): void {
               if (fromInput?.connection && this.workspace) {
                 const num = this.workspace.newBlock("ottobit_number");
                 num.setShadow(true);
-                try { num.setFieldValue(1, "NUM"); } catch {}
+                try {
+                  num.setFieldValue(1, "NUM");
+                } catch {}
                 num.initSvg();
                 num.render();
                 if (!fromInput.connection.targetBlock()) {
@@ -142,7 +151,9 @@ export function registerottobitBlocks(): void {
               if (toInput?.connection && this.workspace) {
                 const num = this.workspace.newBlock("ottobit_number");
                 num.setShadow(true);
-                try { num.setFieldValue(5, "NUM"); } catch {}
+                try {
+                  num.setFieldValue(5, "NUM");
+                } catch {}
                 num.initSvg();
                 num.render();
                 if (!toInput.connection.targetBlock()) {
@@ -154,7 +165,9 @@ export function registerottobitBlocks(): void {
               if (byInput?.connection && this.workspace) {
                 const num = this.workspace.newBlock("ottobit_number");
                 num.setShadow(true);
-                try { num.setFieldValue(1, "NUM"); } catch {}
+                try {
+                  num.setFieldValue(1, "NUM");
+                } catch {}
                 num.initSvg();
                 num.render();
                 if (!byInput.connection.targetBlock()) {
@@ -232,6 +245,7 @@ export const BLOCK_TYPES = {
 
   // Sensors (additional)
   ottobit_bale_number: "ottobit_bale_number",
+  ottobit_pin_number: "ottobit_pin_number",
 
   // Battery color checks
   ottobit_is_green: "ottobit_is_green",
@@ -244,3 +258,6 @@ export const BLOCK_TYPES = {
 } as const;
 
 export type BlockType = keyof typeof BLOCK_TYPES;
+
+// Re-export shadow block restoration function
+export { setupShadowBlockRestoration };

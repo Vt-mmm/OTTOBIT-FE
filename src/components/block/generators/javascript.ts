@@ -14,7 +14,8 @@ javascriptGenerator.forBlock["ottobit_move_forward"] = function (
   block: any
 ): string {
   // Lấy giá trị từ input value (có thể là số hoặc biến)
-  const steps = javascriptGenerator.valueToCode(block, "STEPS", Order.ATOMIC) || "1";
+  const steps =
+    javascriptGenerator.valueToCode(block, "STEPS", Order.ATOMIC) || "1";
   return `moveForward(${steps});\n`;
 };
 
@@ -72,7 +73,8 @@ javascriptGenerator.forBlock["ottobit_wait"] = function (block: any): string {
 };
 
 javascriptGenerator.forBlock["ottobit_repeat"] = function (block: any): string {
-  const times = javascriptGenerator.valueToCode(block, "TIMES", Order.ATOMIC) || "1";
+  const times =
+    javascriptGenerator.valueToCode(block, "TIMES", Order.ATOMIC) || "1";
   const statements = javascriptGenerator.statementToCode(block, "DO");
   const iter = "_i"; // fixed iterator name for clarity
   return `for (let ${iter} = 0; ${iter} < ${times}; ${iter}++) {loopstep();\n${statements}}\nloopend();\n`;
@@ -121,7 +123,6 @@ javascriptGenerator.forBlock["ottobit_if_condition"] = function (
 
 // Sensor blocks
 
-
 javascriptGenerator.forBlock["ottobit_comparison"] = function (
   block: any
 ): [string, number] {
@@ -142,8 +143,6 @@ javascriptGenerator.forBlock["ottobit_comparison"] = function (
   const code = `${valueA} ${operators[op]} ${valueB}`;
   return [code, Order.RELATIONAL];
 };
-
-
 
 // Action blocks
 javascriptGenerator.forBlock["ottobit_led_on"] = function (block: any): string {
@@ -185,30 +184,32 @@ javascriptGenerator.forBlock["ottobit_send_message"] = function (
 };
 
 // Collect blocks
-javascriptGenerator.forBlock["ottobit_collect_green"] = function(
+javascriptGenerator.forBlock["ottobit_collect_green"] = function (
   block: any
 ): string {
   // Lấy giá trị từ input value (có thể là số hoặc biến)
-  const count = javascriptGenerator.valueToCode(block, "COUNT", Order.ATOMIC) || "1";
+  const count =
+    javascriptGenerator.valueToCode(block, "COUNT", Order.ATOMIC) || "1";
   return `collectGreen(${count});\n`;
 };
 
-javascriptGenerator.forBlock["ottobit_collect_red"] = function(
+javascriptGenerator.forBlock["ottobit_collect_red"] = function (
   block: any
 ): string {
   // Lấy giá trị từ input value (có thể là số hoặc biến)
-  const count = javascriptGenerator.valueToCode(block, "COUNT", Order.ATOMIC) || "1";
+  const count =
+    javascriptGenerator.valueToCode(block, "COUNT", Order.ATOMIC) || "1";
   return `collectRed(${count});\n`;
 };
 
-javascriptGenerator.forBlock["ottobit_collect_yellow"] = function(
+javascriptGenerator.forBlock["ottobit_collect_yellow"] = function (
   block: any
 ): string {
   // Lấy giá trị từ input value (có thể là số hoặc biến)
-  const count = javascriptGenerator.valueToCode(block, "COUNT", Order.ATOMIC) || "1";
+  const count =
+    javascriptGenerator.valueToCode(block, "COUNT", Order.ATOMIC) || "1";
   return `collectYellow(${count});\n`;
 };
-
 // Bale handling blocks
 javascriptGenerator.forBlock["ottobit_take_bale"] = function (
   _block: any
@@ -224,33 +225,37 @@ javascriptGenerator.forBlock["ottobit_put_bale"] = function (
 
 // New control blocks generators
 
-
 // ottobit_if_expandable generator - Khối IF có thể mở rộng vô hạn
-javascriptGenerator.forBlock["ottobit_if_expandable"] = function (block: any): string {
+javascriptGenerator.forBlock["ottobit_if_expandable"] = function (
+  block: any
+): string {
   // Main IF condition - sử dụng IF0 thay vì CONDITION
   const condition =
     javascriptGenerator.valueToCode(block, "IF0", Order.NONE) || "false";
   const doStatements = javascriptGenerator.statementToCode(block, "DO0");
-  
+
   let code = `if (${condition}) {\n${doStatements}}`;
-  
+
   // Get number of ELSE IF branches from block state
   const elseifCount = block.elseifCount_ || 0;
-  
+
   // Add ELSE IF branches - kiểm tra input tồn tại
   for (let i = 1; i <= elseifCount; i++) {
     const hasIfInput = block.getInput(`IF${i}`) !== null;
     const hasDoInput = block.getInput(`DO${i}`) !== null;
-    
+
     if (hasIfInput && hasDoInput) {
       const elseifCondition =
         javascriptGenerator.valueToCode(block, `IF${i}`, Order.NONE) || "false";
-      const elseifStatements = javascriptGenerator.statementToCode(block, `DO${i}`);
-      
+      const elseifStatements = javascriptGenerator.statementToCode(
+        block,
+        `DO${i}`
+      );
+
       code += ` else if (${elseifCondition}) {\n${elseifStatements}}`;
     }
   }
-  
+
   // Add ELSE branch if exists - kiểm tra input tồn tại trước
   const hasElseInput = block.getInput("ELSE") !== null;
   if (hasElseInput) {
@@ -259,8 +264,8 @@ javascriptGenerator.forBlock["ottobit_if_expandable"] = function (block: any): s
       code += ` else {\n${elseStatements}}`;
     }
   }
-  
-  return code + '\n';
+
+  return code + "\n";
 };
 
 // Boolean blocks generators
@@ -275,15 +280,18 @@ javascriptGenerator.forBlock["ottobit_logic_operation"] = function (
   block: any
 ): [string, number] {
   const leftValue =
-    javascriptGenerator.valueToCode(block, "LEFT", Order.LOGICAL_AND) || "false";
+    javascriptGenerator.valueToCode(block, "LEFT", Order.LOGICAL_AND) ||
+    "false";
   const rightValue =
-    javascriptGenerator.valueToCode(block, "RIGHT", Order.LOGICAL_AND) || "false";
+    javascriptGenerator.valueToCode(block, "RIGHT", Order.LOGICAL_AND) ||
+    "false";
   const operator = block.getFieldValue("OP") || "AND";
-  
-  const code = operator === "AND" 
-    ? `(${leftValue}) && (${rightValue})`
-    : `(${leftValue}) || (${rightValue})`;
-  
+
+  const code =
+    operator === "AND"
+      ? `(${leftValue}) && (${rightValue})`
+      : `(${leftValue}) || (${rightValue})`;
+
   const order = operator === "AND" ? Order.LOGICAL_AND : Order.LOGICAL_OR;
   return [code, order];
 };
@@ -299,7 +307,9 @@ javascriptGenerator.forBlock["ottobit_if"] = function (block: any): string {
 };
 
 // ottobit_if_else generator - IF với ELSE cố định
-javascriptGenerator.forBlock["ottobit_if_else"] = function (block: any): string {
+javascriptGenerator.forBlock["ottobit_if_else"] = function (
+  block: any
+): string {
   const condition =
     javascriptGenerator.valueToCode(block, "CONDITION", Order.NONE) || "false";
   const doStatements = javascriptGenerator.statementToCode(block, "DO");
@@ -310,7 +320,9 @@ javascriptGenerator.forBlock["ottobit_if_else"] = function (block: any): string 
 };
 
 // ottobit_if_elseif_else generator - IF-ELSEIF-ELSE
-javascriptGenerator.forBlock["ottobit_if_elseif_else"] = function (block: any): string {
+javascriptGenerator.forBlock["ottobit_if_elseif_else"] = function (
+  block: any
+): string {
   const condition1 =
     javascriptGenerator.valueToCode(block, "CONDITION1", Order.NONE) || "false";
   const do1Statements = javascriptGenerator.statementToCode(block, "DO1");
@@ -324,7 +336,6 @@ javascriptGenerator.forBlock["ottobit_if_elseif_else"] = function (block: any): 
 };
 
 // Variable blocks
-
 
 javascriptGenerator.forBlock["ottobit_variable"] = function (
   block: any
@@ -378,7 +389,8 @@ javascriptGenerator.forBlock["ottobit_logic_not"] = function (
   block: any
 ): [string, number] {
   const value =
-    javascriptGenerator.valueToCode(block, "BOOL", Order.LOGICAL_NOT) || "false";
+    javascriptGenerator.valueToCode(block, "BOOL", Order.LOGICAL_NOT) ||
+    "false";
   const code = `!(${value})`;
   return [code, Order.LOGICAL_NOT];
 };
@@ -387,9 +399,15 @@ javascriptGenerator.forBlock["ottobit_logic_not"] = function (
 javascriptGenerator.forBlock["ottobit_bale_number"] = function (
   _block: any
 ): [string, number] {
-  return ["(getBaleNumber())", Order.FUNCTION_CALL]; // Frontend sử dụng getBaleNumber() -> Backend tự động map sang checkWarehouse()
+  return ["(getBaleNumber())", Order.FUNCTION_CALL]; // Frontend s? d?ng getBaleNumber() -> Backend t? d?ng map sang checkWarehouse()
 };
 
+// Pin number sensor
+javascriptGenerator.forBlock["ottobit_pin_number"] = function (
+  _block: any
+): [string, number] {
+  return ["(getPinNumber())", Order.FUNCTION_CALL];
+};
 // New blocks generators
 // Boolean dropdown block
 javascriptGenerator.forBlock["ottobit_boolean"] = function (
@@ -404,15 +422,18 @@ javascriptGenerator.forBlock["ottobit_logic_operation"] = function (
   block: any
 ): [string, number] {
   const leftValue =
-    javascriptGenerator.valueToCode(block, "LEFT", Order.LOGICAL_AND) || "false";
+    javascriptGenerator.valueToCode(block, "LEFT", Order.LOGICAL_AND) ||
+    "false";
   const rightValue =
-    javascriptGenerator.valueToCode(block, "RIGHT", Order.LOGICAL_AND) || "false";
+    javascriptGenerator.valueToCode(block, "RIGHT", Order.LOGICAL_AND) ||
+    "false";
   const operator = block.getFieldValue("OP") || "AND";
-  
-  const code = operator === "AND" 
-    ? `(${leftValue}) && (${rightValue})`
-    : `(${leftValue}) || (${rightValue})`;
-  
+
+  const code =
+    operator === "AND"
+      ? `(${leftValue}) && (${rightValue})`
+      : `(${leftValue}) || (${rightValue})`;
+
   const order = operator === "AND" ? Order.LOGICAL_AND : Order.LOGICAL_OR;
   return [code, order];
 };
@@ -424,7 +445,7 @@ javascriptGenerator.forBlock["ottobit_sensor_condition"] = function (
   const sensorType = block.getFieldValue("SENSOR_TYPE") || "DISTANCE";
   const operator = block.getFieldValue("OP") || "EQ";
   const value = block.getFieldValue("VALUE") || "0";
-  
+
   const operators: { [key: string]: string } = {
     EQ: "==",
     NEQ: "!=",
@@ -433,7 +454,7 @@ javascriptGenerator.forBlock["ottobit_sensor_condition"] = function (
     GT: ">",
     GTE: ">=",
   };
-  
+
   let sensorCall = "";
   switch (sensorType) {
     case "DISTANCE":
@@ -451,12 +472,10 @@ javascriptGenerator.forBlock["ottobit_sensor_condition"] = function (
     default:
       sensorCall = "readSensor('DISTANCE')";
   }
-  
+
   const code = `${sensorCall} ${operators[operator]} ${value}`;
   return [code, Order.RELATIONAL];
 };
-
-
 
 // Battery color check blocks - trả về Boolean
 javascriptGenerator.forBlock["ottobit_is_green"] = function (
@@ -500,16 +519,20 @@ javascriptGenerator.forBlock["ottobit_boolean_equals"] = function (
 
 // === CUSTOM FUNCTION BLOCKS ===
 // Custom Function Definition Block
-javascriptGenerator.forBlock['ottobit_function_def'] = function(block: any): string {
-  const functionName = block.getFieldValue('NAME') || 'myFunction';
-  const statements = javascriptGenerator.statementToCode(block, 'STACK');
+javascriptGenerator.forBlock["ottobit_function_def"] = function (
+  block: any
+): string {
+  const functionName = block.getFieldValue("NAME") || "myFunction";
+  const statements = javascriptGenerator.statementToCode(block, "STACK");
   const code = `function ${functionName}() {\n${statements}}\n`;
   return code;
 };
 
 // Custom Function Call Block
-javascriptGenerator.forBlock['ottobit_function_call'] = function(block: any): string {
-  const functionName = block.getFieldValue('NAME') || 'myFunction';
+javascriptGenerator.forBlock["ottobit_function_call"] = function (
+  block: any
+): string {
+  const functionName = block.getFieldValue("NAME") || "myFunction";
   const code = `${functionName}();\n`;
   return code;
 };
