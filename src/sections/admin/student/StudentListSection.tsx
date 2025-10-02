@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Card,
@@ -26,31 +26,25 @@ import {
 } from "@mui/material";
 import {
   Search as SearchIcon,
-  Add as AddIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon,
   Person as PersonIcon,
   School as SchoolIcon,
   Visibility as ViewIcon,
 } from "@mui/icons-material";
-import { useAppDispatch, useAppSelector } from "../../../redux/config";
-import { getStudents } from "../../../redux/student/studentSlice";
+import { useAppDispatch, useAppSelector } from "store/config";
+import { getStudents, updateStudent } from "store/student/studentSlice";
+import { StudentResult } from "common/@types/student";
 import dayjs from "dayjs";
+import StudentFormDialog from "./StudentFormDialog";
+import StudentDetailsDialog from "./StudentDetailsDialog";
 
-interface StudentListSectionProps {
-  onCreateNew?: () => void;
-  onEditStudent?: (student: any) => void;
-  onViewDetails?: (student: any) => void;
-}
+interface StudentListSectionProps {}
 
-export default function StudentListSection({
-  onCreateNew,
-  onEditStudent,
-  onViewDetails,
-}: StudentListSectionProps) {
+export default function StudentListSection({}: StudentListSectionProps) {
   const dispatch = useAppDispatch();
-  const { students } = useAppSelector((state) => state.student);
+  const { students, operations } = useAppSelector((state) => state.student);
 
+  // Search & Filter states
   const [searchTerm, setSearchTerm] = useState("");
   const [committedSearch, setCommittedSearch] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -59,6 +53,17 @@ export default function StudentListSection({
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(12);
 
+  // Dialog states
+  const [formDialog, setFormDialog] = useState<{
+    open: boolean;
+    mode: "create" | "edit";
+    student?: StudentResult;
+  }>({ open: false, mode: "create" });
+
+  const [detailsDialog, setDetailsDialog] = useState<{
+    open: boolean;
+    student?: StudentResult;
+  }>({ open: false }); // Fetch students on mount and when filters change
   useEffect(() => {
     dispatch(
       getStudents({
@@ -70,8 +75,17 @@ export default function StudentListSection({
         pageSize,
       })
     );
-  }, [dispatch, committedSearch, phoneNumber, state, city, pageNumber, pageSize]);
+  }, [
+    dispatch,
+    committedSearch,
+    phoneNumber,
+    state,
+    city,
+    pageNumber,
+    pageSize,
+  ]);
 
+  // Handlers
   const handleSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
@@ -81,6 +95,36 @@ export default function StudentListSection({
     setPageNumber(1);
   };
 
+  const handleEditStudent = (student: StudentResult) => {
+    setFormDialog({ open: true, mode: "edit", student });
+  };
+
+  const handleViewDetails = (student: StudentResult) => {
+    setDetailsDialog({ open: true, student });
+  };
+
+  const handleFormSubmit = async (data: any) => {
+    try {
+      if (formDialog.mode === "edit" && formDialog.student) {
+        await dispatch(
+          updateStudent({ id: formDialog.student.id, ...data })
+        ).unwrap();
+        setFormDialog({ open: false, mode: "create" });
+      }
+      // Create is disabled for admin (users create their own profile)
+    } catch (error) {
+      // Error is handled in Redux
+    }
+  };
+
+  const handleEditFromDetails = () => {
+    if (detailsDialog.student) {
+      setDetailsDialog({ open: false });
+      handleEditStudent(detailsDialog.student);
+    }
+  };
+
+  // Loading state
   if (students.isLoading && !students.data) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
@@ -92,31 +136,26 @@ export default function StudentListSection({
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 3,
-        }}
-      >
+      <Box sx={{ mb: 3 }}>
         <Typography variant="h4" sx={{ fontWeight: "bold" }}>
           👥 Students Management
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={onCreateNew}
-          disabled
-        >
-          Add Student
-        </Button>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          View and manage student profiles (Students register their own
+          accounts)
+        </Typography>
       </Box>
 
       {/* Search & Filters */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr 1fr' }, gap: 2 }}>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "2fr 1fr 1fr 1fr" },
+              gap: 2,
+            }}
+          >
             <TextField
               fullWidth
               placeholder="Tìm kiếm theo tên hoặc địa chỉ..."
@@ -161,8 +200,12 @@ export default function StudentListSection({
               }}
             />
           </Box>
-          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-            <Button variant="contained" onClick={triggerSearch} startIcon={<SearchIcon />}>
+          <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              variant="contained"
+              onClick={triggerSearch}
+              startIcon={<SearchIcon />}
+            >
               Tìm kiếm
             </Button>
           </Box>
@@ -209,10 +252,11 @@ export default function StudentListSection({
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell>{student.phoneNumber || '-'}</TableCell>
+                <TableCell>{student.phoneNumber || "-"}</TableCell>
                 <TableCell>
                   <Typography variant="body2">
-                    {[student.city, student.state].filter(Boolean).join(', ') || '-'}
+                    {[student.city, student.state].filter(Boolean).join(", ") ||
+                      "-"}
                   </Typography>
                 </TableCell>
                 <TableCell align="center">
@@ -244,19 +288,17 @@ export default function StudentListSection({
                   <IconButton
                     size="small"
                     title="View Student"
-                    onClick={() => onViewDetails?.(student)}
+                    onClick={() => handleViewDetails(student)}
                   >
                     <ViewIcon />
                   </IconButton>
                   <IconButton
                     size="small"
                     title="Edit Student"
-                    onClick={() => onEditStudent?.(student)}
+                    onClick={() => handleEditStudent(student)}
+                    color="secondary"
                   >
                     <EditIcon />
-                  </IconButton>
-                  <IconButton size="small" color="error" title="Delete Student">
-                    <DeleteIcon />
                   </IconButton>
                 </TableCell>
               </TableRow>
@@ -317,6 +359,25 @@ export default function StudentListSection({
           </Box>
         ) : null}
       </Paper>
+
+      {/* Form Dialog */}
+      <StudentFormDialog
+        open={formDialog.open}
+        mode={formDialog.mode}
+        initialData={formDialog.student}
+        onClose={() => setFormDialog({ open: false, mode: "create" })}
+        onSubmit={handleFormSubmit}
+        isLoading={operations.isUpdating}
+        error={operations.updateError}
+      />
+
+      {/* Details Dialog */}
+      <StudentDetailsDialog
+        open={detailsDialog.open}
+        student={detailsDialog.student || null}
+        onClose={() => setDetailsDialog({ open: false })}
+        onEdit={handleEditFromDetails}
+      />
     </Box>
   );
 }
