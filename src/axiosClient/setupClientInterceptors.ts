@@ -1,10 +1,6 @@
 import { AxiosResponse } from "axios";
 // redux
-import {
-  removeToken,
-  setIsLogout,
-  updateLocalAccessToken,
-} from "store/auth/authSlice";
+import { setIsLogout, updateLocalAccessToken } from "store/auth/authSlice";
 import { RootState } from "store/config";
 //
 import { ROUTES_API_AUTH } from "constants/routesApiKeys";
@@ -54,11 +50,33 @@ const setupAxiosClient = (store: Store<RootState>) => {
   // Intercept requests to add the authorization header
   axiosClient.interceptors.request.use(
     async (config) => {
+      console.log(`[Request] ${config.method?.toUpperCase()} ${config.url}`);
+
+      // Skip adding Authorization header for refresh token endpoint
+      // to avoid sending expired token that will be rejected by JWT middleware
+      if (config.url === ROUTES_API_AUTH.REFRESH_TOKEN) {
+        // Explicitly remove Authorization header if it exists
+        delete config.headers.Authorization;
+        console.log("[Request Interceptor] Refresh token request headers:", {
+          url: config.url,
+          headers: config.headers,
+          hasAuth: !!config.headers.Authorization,
+        });
+        return config;
+      }
+
       // Get a fresh token on each request to ensure we have the latest
       const accessToken = getAccessToken();
       if (accessToken) {
-        // Always set the Authorization header with the current token
+        // Set Authorization header with current token
+        console.log("[Request] Using access token from cookie");
         config.headers.Authorization = `Bearer ${accessToken}`;
+      } else {
+        // Clear Authorization header if no token exists
+        // This prevents using stale token from axios defaults
+        console.log("[Request] No access token - clearing headers");
+        delete config.headers.Authorization;
+        delete axiosClient.defaults.headers.common.Authorization;
       }
       return config;
     },
@@ -92,41 +110,41 @@ const setupAxiosClient = (store: Store<RootState>) => {
 
       // Handle 401 Unauthorized - token expired
       if (err.response?.status === 401) {
-        console.log("[Refresh Token] Received 401 error, starting token refresh", {
-          url: originalConfig?.url,
-          method: originalConfig?.method,
-          isRefreshing,
-        });
-        
+        console.log(
+          "[Refresh Token] Received 401 error, starting token refresh",
+          {
+            url: originalConfig?.url,
+            method: originalConfig?.method,
+            isRefreshing,
+          }
+        );
+
         // If we're not already refreshing
         if (!isRefreshing) {
           isRefreshing = true;
           originalConfig._retry = true;
 
           try {
-            const accessToken = getAccessToken();
             const refreshToken = getRefreshToken();
 
             console.log("[Refresh Token] Starting token refresh process...");
-            console.log("[Refresh Token] Has tokens:", {
-              hasAccessToken: !!accessToken,
-              hasRefreshToken: !!refreshToken,
-            });
+            console.log("[Refresh Token] Has refreshToken:", !!refreshToken);
 
-            if (!accessToken || !refreshToken) {
-              console.error("[Refresh Token] Missing tokens");
-              throw new Error("Missing tokens");
+            if (!refreshToken) {
+              console.error("[Refresh Token] Missing refresh token");
+              throw new Error("Missing refresh token");
             }
 
-            // Decode JWT to get userId (BE expects {userId, refreshToken})
-            let userId: string;
-            try {
-              const payload = JSON.parse(atob(accessToken.split('.')[1]));
-              userId = payload.sub; // 'sub' claim contains userId
-              console.log("[Refresh Token] Decoded userId from JWT:", userId);
-            } catch (decodeError) {
-              console.error("[Refresh Token] Failed to decode JWT:", decodeError);
-              throw new Error("Invalid access token format");
+            // Get userId from Redux store instead of decoding JWT
+            // This works even when access token is expired/deleted
+            const state = store.getState() as RootState;
+            const userId = state.auth.userAuth?.userId;
+
+            console.log("[Refresh Token] User ID from Redux:", userId);
+
+            if (!userId) {
+              console.error("[Refresh Token] Missing userId in Redux store");
+              throw new Error("User not authenticated");
             }
 
             const data = {
@@ -134,8 +152,15 @@ const setupAxiosClient = (store: Store<RootState>) => {
               refreshToken,
             };
 
-            console.log("[Refresh Token] Making request to:", ROUTES_API_AUTH.REFRESH_TOKEN);
-            console.log("[Refresh Token] Request data:", { userId: !!userId, hasRefreshToken: !!refreshToken });
+            console.log(
+              "[Refresh Token] Making request to:",
+              ROUTES_API_AUTH.REFRESH_TOKEN
+            );
+            console.log("[Refresh Token] Request data:", {
+              userId: !!userId,
+              hasRefreshToken: !!refreshToken,
+            });
+            console.log("[Refresh Token] Full request payload:", data);
 
             // Make token refresh request
             const response = await axiosClient.post(
@@ -146,16 +171,22 @@ const setupAxiosClient = (store: Store<RootState>) => {
             console.log("[Refresh Token] Full response received:", response);
             console.log("[Refresh Token] Response status:", response?.status);
             console.log("[Refresh Token] Response data:", response?.data);
-            
+
             // Now response is full AxiosResponse, so we need to check response.data
             const responseBody = response?.data;
-            
+
             if (responseBody && responseBody.data) {
               console.log("[Refresh Token] API response body:", responseBody);
-              console.log("[Refresh Token] User & tokens data:", responseBody.data);
-              
+              console.log(
+                "[Refresh Token] User & tokens data:",
+                responseBody.data
+              );
+
               if (responseBody.data.tokens) {
-                console.log("[Refresh Token] Found tokens:", responseBody.data.tokens);
+                console.log(
+                  "[Refresh Token] Found tokens:",
+                  responseBody.data.tokens
+                );
               } else {
                 console.log("[Refresh Token] No tokens in response");
               }
@@ -174,10 +205,27 @@ const setupAxiosClient = (store: Store<RootState>) => {
             ) {
               console.error("[Refresh Token] Validation failed:");
               console.error("[Refresh Token] - Has response:", !!response);
-              console.error("[Refresh Token] - Has response.data:", !!(response && response.data));
-              console.error("[Refresh Token] - Has response.data.data:", !!(response && response.data && response.data.data));
-              console.error("[Refresh Token] - Has tokens:", !!(response && response.data && response.data.data && response.data.data.tokens));
-              console.error("[Refresh Token] Full response:", JSON.stringify(response?.data, null, 2));
+              console.error(
+                "[Refresh Token] - Has response.data:",
+                !!(response && response.data)
+              );
+              console.error(
+                "[Refresh Token] - Has response.data.data:",
+                !!(response && response.data && response.data.data)
+              );
+              console.error(
+                "[Refresh Token] - Has tokens:",
+                !!(
+                  response &&
+                  response.data &&
+                  response.data.data &&
+                  response.data.data.tokens
+                )
+              );
+              console.error(
+                "[Refresh Token] Full response:",
+                JSON.stringify(response?.data, null, 2)
+              );
               throw new Error("Invalid token refresh response");
             }
 
@@ -186,17 +234,14 @@ const setupAxiosClient = (store: Store<RootState>) => {
               accessToken: response.data.data.tokens.accessToken,
               refreshToken: response.data.data.tokens.refreshToken,
             };
-            
+
             console.log("[Refresh Token] Extracted tokens:", {
               hasAccessToken: !!tokenResponse.accessToken,
               hasRefreshToken: !!tokenResponse.refreshToken,
             });
 
-            // First remove old tokens from headers
-            resetAuthHeaders();
-            await dispatch(removeToken());
-
-            // Then update with new tokens
+            // Update with new tokens directly (don't remove first to avoid Redux state reset)
+            // This prevents router from detecting auth loss and redirecting
             await dispatch(
               updateLocalAccessToken({
                 accessToken: tokenResponse.accessToken,
@@ -204,8 +249,12 @@ const setupAxiosClient = (store: Store<RootState>) => {
               })
             );
 
-            // Update authorization header
+            // Update authorization header for subsequent requests
             axiosClient.defaults.headers.common.Authorization = `Bearer ${tokenResponse.accessToken}`;
+
+            console.log(
+              "[Refresh Token] Updated axios default header with new token"
+            );
 
             // Process all queued requests with new token
             processQueue(null, tokenResponse.accessToken);

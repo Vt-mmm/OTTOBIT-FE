@@ -13,7 +13,7 @@ import { publicRoutes } from "routes/config/publicRoutes.tsx";
 import { adminRoutes } from "routes/config/adminRoutes.tsx";
 import type { Route } from "common/@types";
 import { Role } from "common/enums";
-import { getAccessToken } from "utils";
+import { getRefreshToken } from "utils";
 
 // Lazy load pages
 const LoginPage = lazy(() => import("pages/auth/LoginPage"));
@@ -41,13 +41,19 @@ const ChallengeDetailPage = lazy(
 const RobotStudioPage = lazy(() => import("pages/studio/RobotStudioPage"));
 const UserProfilePage = lazy(() => import("pages/user/UserProfilePage"));
 const StudentProfilePage = lazy(() => import("pages/user/StudentProfilePage"));
-const SecuritySettingsPage = lazy(() => import("pages/user/SecuritySettingsPage"));
+const SecuritySettingsPage = lazy(
+  () => import("pages/user/SecuritySettingsPage")
+);
 // Store pages
 const StorePage = lazy(() => import("pages/user/store/StorePage"));
 const RobotListPage = lazy(() => import("pages/user/store/RobotListPage"));
-const ComponentListPage = lazy(() => import("pages/user/store/ComponentListPage"));
+const ComponentListPage = lazy(
+  () => import("pages/user/store/ComponentListPage")
+);
 const RobotDetailPage = lazy(() => import("pages/user/store/RobotDetailPage"));
-const ComponentDetailPage = lazy(() => import("pages/user/store/ComponentDetailPage"));
+const ComponentDetailPage = lazy(
+  () => import("pages/user/store/ComponentDetailPage")
+);
 // My Robots page
 const MyRobotsPage = lazy(() => import("pages/user/MyRobotsPage"));
 // Error pages
@@ -93,21 +99,32 @@ function AppRouter() {
   const { isAuthenticated, userAuth } = useAppSelector((state) => state.auth);
   const isAdmin = userAuth?.roles?.includes(Role.OTTOBIT_ADMIN);
   const [isInitializing, setIsInitializing] = useState(true);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+
+  console.log("[AppRouter] Render with state:", {
+    isAuthenticated,
+    hasUserAuth: !!userAuth,
+    isAdmin,
+    isInitializing,
+    userId: userAuth?.userId,
+  });
 
   // Add a short delay to ensure auth state is fully loaded
   useEffect(() => {
-    // Đọc token từ localStorage
-    const token = getAccessToken();
-    setAccessToken(token || null);
-
+    console.log("[AppRouter] useEffect triggered - initializing");
     // Đặt một timeout để đảm bảo state được khởi tạo đầy đủ
     const timer = setTimeout(() => {
+      console.log("[AppRouter] Initialization complete");
       setIsInitializing(false);
     }, 1000);
 
-    return () => clearTimeout(timer);
-  }, [isAuthenticated, userAuth]);
+    return () => {
+      console.log("[AppRouter] Cleanup");
+      clearTimeout(timer);
+    };
+    // Empty dependency array - only run once on mount
+    // Don't react to isAuthenticated/userAuth changes to avoid loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Show loading screen during initialization
   if (isInitializing) {
@@ -116,10 +133,23 @@ function AppRouter() {
 
   // Root path redirect handler based on authentication status and role
   const RootRedirect = () => {
-    // Check both Redux state and token for more reliable authentication check
-    const hasValidAuth = isAuthenticated && accessToken && userAuth;
+    // Check Redux state and refreshToken (not accessToken) for authentication
+    // accessToken can expire but user is still authenticated if refreshToken exists
+    // Always get fresh value from cookies, not from stale state
+    const hasRefreshToken = !!getRefreshToken();
+    const hasValidAuth = isAuthenticated && hasRefreshToken && userAuth;
+
+    console.log("[RootRedirect] Checking auth state:", {
+      isAuthenticated,
+      hasRefreshToken,
+      hasUserAuth: !!userAuth,
+      hasValidAuth,
+      isAdmin,
+      userId: userAuth?.userId,
+    });
 
     if (hasValidAuth) {
+      console.log("[RootRedirect] Valid auth - redirecting to dashboard");
       if (isAdmin) {
         return <Navigate to={PATH_ADMIN.dashboard} replace />;
       }
@@ -127,6 +157,7 @@ function AppRouter() {
       return <Navigate to={PATH_USER.homepage} replace />;
     }
     // For non-authenticated users, always show the public homepage
+    console.log("[RootRedirect] No valid auth - showing public homepage");
     return <SharedHomePage />;
   };
 
@@ -153,8 +184,14 @@ function AppRouter() {
           <ReactRoute path="/store" element={<StorePage />} />
           <ReactRoute path="/store/robots" element={<RobotListPage />} />
           <ReactRoute path="/store/robots/:id" element={<RobotDetailPage />} />
-          <ReactRoute path="/store/components" element={<ComponentListPage />} />
-          <ReactRoute path="/store/components/:id" element={<ComponentDetailPage />} />
+          <ReactRoute
+            path="/store/components"
+            element={<ComponentListPage />}
+          />
+          <ReactRoute
+            path="/store/components/:id"
+            element={<ComponentDetailPage />}
+          />
         </ReactRoute>
 
         {/* Admin Routes - Protected */}
@@ -190,9 +227,18 @@ function AppRouter() {
           {/* User Store Routes */}
           <ReactRoute path={PATH_USER.store} element={<StorePage />} />
           <ReactRoute path={PATH_USER.robots} element={<RobotListPage />} />
-          <ReactRoute path={PATH_USER.robotDetail} element={<RobotDetailPage />} />
-          <ReactRoute path={PATH_USER.components} element={<ComponentListPage />} />
-          <ReactRoute path={PATH_USER.componentDetail} element={<ComponentDetailPage />} />
+          <ReactRoute
+            path={PATH_USER.robotDetail}
+            element={<RobotDetailPage />}
+          />
+          <ReactRoute
+            path={PATH_USER.components}
+            element={<ComponentListPage />}
+          />
+          <ReactRoute
+            path={PATH_USER.componentDetail}
+            element={<ComponentDetailPage />}
+          />
           {/* Other User Routes */}
           <ReactRoute path={PATH_USER.courses} element={<CoursesPage />} />
           <ReactRoute path={PATH_USER.myCourses} element={<MyCoursesPage />} />
@@ -211,7 +257,10 @@ function AppRouter() {
             element={<ChallengeDetailPage />}
           />
           <ReactRoute path={PATH_USER.profile} element={<UserProfilePage />} />
-          <ReactRoute path={PATH_USER.security} element={<SecuritySettingsPage />} />
+          <ReactRoute
+            path={PATH_USER.security}
+            element={<SecuritySettingsPage />}
+          />
           <ReactRoute
             path={PATH_USER.studentProfile}
             element={<StudentProfilePage />}
@@ -222,7 +271,7 @@ function AppRouter() {
         <ReactRoute
           path={PATH_AUTH.login}
           element={
-            isAuthenticated && accessToken ? (
+            isAuthenticated && getRefreshToken() ? (
               <Navigate
                 to={isAdmin ? PATH_ADMIN.dashboard : PATH_USER.homepage}
                 replace
@@ -235,7 +284,7 @@ function AppRouter() {
         <ReactRoute
           path={PATH_AUTH.register}
           element={
-            isAuthenticated && accessToken ? (
+            isAuthenticated && getRefreshToken() ? (
               <Navigate
                 to={isAdmin ? PATH_ADMIN.dashboard : PATH_USER.homepage}
                 replace
@@ -248,7 +297,7 @@ function AppRouter() {
         <ReactRoute
           path={PATH_AUTH.forgotPassword}
           element={
-            isAuthenticated && accessToken ? (
+            isAuthenticated && getRefreshToken() ? (
               <Navigate
                 to={isAdmin ? PATH_ADMIN.dashboard : PATH_USER.homepage}
                 replace
@@ -261,7 +310,7 @@ function AppRouter() {
         <ReactRoute
           path={PATH_AUTH.resetPassword}
           element={
-            isAuthenticated && accessToken ? (
+            isAuthenticated && getRefreshToken() ? (
               <Navigate
                 to={isAdmin ? PATH_ADMIN.dashboard : PATH_USER.homepage}
                 replace
@@ -282,7 +331,7 @@ function AppRouter() {
         <ReactRoute
           path={PATH_AUTH.resendEmailConfirmation}
           element={
-            isAuthenticated && accessToken ? (
+            isAuthenticated && getRefreshToken() ? (
               <Navigate
                 to={isAdmin ? PATH_ADMIN.dashboard : PATH_USER.homepage}
                 replace

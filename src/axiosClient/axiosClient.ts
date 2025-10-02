@@ -1,5 +1,4 @@
 import axios, { AxiosResponse } from "axios";
-import { getAccessToken } from "utils";
 
 // Set default configs
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
@@ -31,11 +30,9 @@ const resetAuthHeaders = () => {
   }
 };
 
-// Apply token if it exists during initialization - with more robust checking
-const accessToken = getAccessToken();
-if (accessToken) {
-  axiosClient.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
-}
+// NOTE: Authorization header is now set dynamically in setupClientInterceptors.ts
+// This ensures proper handling of refresh token flow
+// Do NOT set default Authorization header here during initialization
 
 const axiosServiceAddress = axios.create({
   baseURL: "https://vapi.vnappmob.com",
@@ -45,16 +42,15 @@ const axiosServiceAddress = axios.create({
 });
 
 const axiosFormData = axios.create({
-  baseURL: import.meta.env.VITE_APP_BASE_URL || "https://ottobit-be.felixtien.dev",
+  baseURL:
+    import.meta.env.VITE_APP_BASE_URL || "https://ottobit-be.felixtien.dev",
   headers: {
     "Content-Type": "multipart/form-data",
   },
 });
 
-// Apply token to form data client as well
-if (accessToken) {
-  axiosFormData.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
-}
+// NOTE: Authorization header for axiosFormData is also handled in setupFormDataInterceptors.ts
+// Do NOT set default Authorization header here during initialization
 
 const setHeaderAuth = (accessToken: string) => {
   // Ensure token is not empty before setting
@@ -87,21 +83,12 @@ axiosServiceAddress.interceptors.response.use(
 );
 
 // Basic request/response logging - actual interceptors are applied in setupClientInterceptors.ts
+// NOTE: Authorization header is now handled in setupClientInterceptors.ts
+// This prevents conflicts with refresh token logic
 axiosClient.interceptors.request.use(
   function (config) {
-    // Check for token on every request
-    const currentToken = getAccessToken();
-    if (currentToken) {
-      const authHeader = config.headers.Authorization;
-      // Check if Authorization is string type and doesn't contain the current token
-      if (
-        !authHeader ||
-        (typeof authHeader === "string" && !authHeader.includes(currentToken))
-      ) {
-        config.headers.Authorization = `Bearer ${currentToken}`;
-      }
-    }
-
+    // Token management is now handled by setupClientInterceptors.ts
+    // to properly support refresh token flow
     return config;
   },
   function (error) {
