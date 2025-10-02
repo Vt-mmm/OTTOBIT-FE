@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Role } from "common/enums/role.enum";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAppSelector } from "store/config";
-import { getAccessToken } from "utils/utils";
+import { getRefreshToken } from "utils/utils";
 import { PATH_AUTH, PATH_PUBLIC } from "routes/paths";
 
 // Loading component
@@ -43,17 +43,32 @@ const UserLoading = () => (
 function UserRouter() {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
-  const [localAccessToken, setLocalAccessToken] = useState<string | null>(null);
+  const [localRefreshToken, setLocalRefreshToken] = useState<string | null>(
+    null
+  );
   const { isAuthenticated, userAuth } = useAppSelector((state) => state.auth);
 
-  // Đảm bảo token được load từ localStorage mỗi khi component mount
-  // và khi url location thay đổi
+  console.log("[UserRouter] Render with location:", location.pathname);
+  console.log("[UserRouter] Auth state:", {
+    isAuthenticated,
+    hasUserAuth: !!userAuth,
+    localRefreshToken: !!localRefreshToken,
+  });
+
+  // Check refreshToken instead of accessToken
+  // accessToken can expire but user is still authenticated if refreshToken exists
   useEffect(() => {
-    const token = getAccessToken();
-    setLocalAccessToken(token || null);
+    console.log(
+      "[UserRouter] useEffect triggered for path:",
+      location.pathname
+    );
+    const token = getRefreshToken();
+    setLocalRefreshToken(token || null);
+    console.log("[UserRouter] Refresh token from cookie:", !!token);
 
     // Đặt một timeout ngắn để đảm bảo Redux store đã được hydrate
     const timer = setTimeout(() => {
+      console.log("[UserRouter] Loading complete");
       setIsLoading(false);
     }, 300);
 
@@ -84,18 +99,30 @@ function UserRouter() {
 
   // Hiển thị loading khi đang kiểm tra authentication
   if (isLoading) {
+    console.log("[UserRouter] Still loading...");
     return <UserLoading />;
   }
 
-  // Nếu có token trong localStorage và user có role user, hiển thị nội dung user
+  // Check refreshToken instead of accessToken
+  // User is authenticated as long as they have valid refreshToken
+  // AccessToken can expire and will be refreshed automatically by interceptor
   const hasUserAccess =
     isAuthenticated &&
-    localAccessToken &&
+    localRefreshToken &&
     userAuth?.roles?.includes(Role.OTTOBIT_USER);
 
+  console.log("[UserRouter] Access check:", {
+    hasUserAccess,
+    isAuthenticated,
+    hasRefreshToken: !!localRefreshToken,
+    hasRole: userAuth?.roles?.includes(Role.OTTOBIT_USER),
+  });
+
   if (hasUserAccess) {
+    console.log("[UserRouter] Access granted - rendering Outlet");
     return <Outlet />;
   } else {
+    console.log("[UserRouter] Access denied - redirecting to login");
     // Redirect to login
     return <Navigate to={PATH_AUTH.login} state={{ from: location }} replace />;
   }

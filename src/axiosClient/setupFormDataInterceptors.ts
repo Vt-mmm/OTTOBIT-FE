@@ -19,6 +19,13 @@ import { Store } from "@reduxjs/toolkit";
 const setupAxiosFormData = (store: Store) => {
   axiosFormData.interceptors.request.use(
     async (config) => {
+      // Skip adding Authorization header for refresh token endpoint
+      // to avoid sending expired token that will be rejected by JWT middleware
+      if (config.url === ROUTES_API_AUTH.REFRESH_TOKEN) {
+        delete config.headers.Authorization;
+        return config;
+      }
+
       const accessToken = getAccessToken();
       if (accessToken !== null) {
         config.headers.Authorization = `Bearer ${accessToken}`;
@@ -68,10 +75,13 @@ const setupAxiosFormData = (store: Store) => {
           // Decode JWT to get userId (BE expects {userId, refreshToken})
           let userId: string;
           try {
-            const payload = JSON.parse(atob(accessToken.split('.')[1]));
+            const payload = JSON.parse(atob(accessToken.split(".")[1]));
             userId = payload.sub; // 'sub' claim contains userId
           } catch (decodeError) {
-            console.error("[Form Data Refresh Token] Failed to decode JWT:", decodeError);
+            console.error(
+              "[Form Data Refresh Token] Failed to decode JWT:",
+              decodeError
+            );
             throw new Error("Invalid access token format");
           }
 
