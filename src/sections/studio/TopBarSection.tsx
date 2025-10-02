@@ -57,19 +57,22 @@ interface TopBarSectionProps {
   activeTab?: number;
   onTabChange?: (tab: number) => void;
   workspace?: any; // Blockly workspace for code generation
+  roomId?: string;
 }
 
 export default function TopBarSection({
   activeTab = 0,
   onTabChange,
   workspace,
+  roomId,
 }: TopBarSectionProps) {
   return (
-    <TopBarContent
-      activeTab={activeTab}
-      onTabChange={onTabChange}
-      workspace={workspace}
-    />
+      <TopBarContent
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        workspace={workspace}
+      roomId={roomId}
+      />
   );
 }
 
@@ -77,6 +80,7 @@ function TopBarContent({
   activeTab = 0,
   onTabChange,
   workspace,
+  roomId,
 }: TopBarSectionProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [showCameraDialog, setShowCameraDialog] = useState(false);
@@ -948,24 +952,24 @@ function TopBarContent({
           </Tooltip>
 
           <Tooltip title="Open Camera">
-            <IconButton
+                <IconButton
               id="tour-btn-camera"
               onClick={handleCamera}
-              sx={{
+                  sx={{
                 bgcolor: "#fff3e0",
                 color: "#f57c00",
-                width: 48,
-                height: 48,
-                "&:hover": {
+                    width: 48,
+                    height: 48,
+                    "&:hover": {
                   bgcolor: "#ffe0b2",
-                  transform: "translateY(-1px)",
+                      transform: "translateY(-1px)",
                   boxShadow: "0 4px 12px rgba(245, 124, 0, 0.3)",
-                },
-              }}
-            >
+                    },
+                  }}
+                >
               <CameraIcon sx={{ fontSize: 24 }} />
-            </IconButton>
-          </Tooltip>
+                </IconButton>
+              </Tooltip>
 
           <Tooltip title="Gợi ý lời giải">
             <IconButton
@@ -1017,55 +1021,55 @@ function TopBarContent({
           {/* Divider */}
           <Box sx={{ width: 1, height: 32, bgcolor: "#e2e8f0", mx: 0.8 }} />
 
-          <IconButton
+              <IconButton
             id="tour-btn-run"
             aria-label={isRunning ? "Stop Program" : "Run Program"}
-            onClick={isRunning ? handleStop : handleRun}
-            disabled={!workspace}
-            sx={{
-              bgcolor: isRunning ? "#ef4444" : "#10b981",
-              color: "white",
+                onClick={isRunning ? handleStop : handleRun}
+                disabled={!workspace}
+                sx={{
+                  bgcolor: isRunning ? "#ef4444" : "#10b981",
+                  color: "white",
               width: { xs: 36, sm: 42, md: 48 },
               height: { xs: 36, sm: 42, md: 48 },
-              "&:hover": {
-                bgcolor: isRunning ? "#dc2626" : "#059669",
-                transform: "translateY(-1px)",
-                boxShadow: isRunning
-                  ? "0 4px 12px rgba(239, 68, 68, 0.4)"
-                  : "0 4px 12px rgba(16, 185, 129, 0.4)",
-              },
-              "&:disabled": {
-                bgcolor: "#9ca3af",
-                color: "#6b7280",
-                "&:hover": {
-                  transform: "none",
-                  boxShadow: "none",
-                },
-              },
-            }}
-          >
-            {isRunning ? (
-              <StopIcon sx={{ fontSize: 24 }} />
-            ) : (
-              <RunIcon sx={{ fontSize: 24 }} />
-            )}
-          </IconButton>
+                  "&:hover": {
+                    bgcolor: isRunning ? "#dc2626" : "#059669",
+                    transform: "translateY(-1px)",
+                    boxShadow: isRunning
+                      ? "0 4px 12px rgba(239, 68, 68, 0.4)"
+                      : "0 4px 12px rgba(16, 185, 129, 0.4)",
+                  },
+                  "&:disabled": {
+                    bgcolor: "#9ca3af",
+                    color: "#6b7280",
+                    "&:hover": {
+                      transform: "none",
+                      boxShadow: "none",
+                    },
+                  },
+                }}
+              >
+                {isRunning ? (
+                  <StopIcon sx={{ fontSize: 24 }} />
+                ) : (
+                  <RunIcon sx={{ fontSize: 24 }} />
+                )}
+              </IconButton>
 
           <Tooltip title="Restart Map">
             <span id="tour-btn-restart-wrap">
-              <IconButton
+            <IconButton
                 id="tour-btn-restart"
                 onClick={handleRestart}
                 disabled={!phaserConnected || !phaserReady}
-                sx={{
+              sx={{
                   bgcolor: "#f3f4f6",
                   color: "#6b7280",
                   width: { xs: 36, sm: 42, md: 48 },
                   height: { xs: 36, sm: 42, md: 48 },
-                  "&:hover": {
+                "&:hover": {
                     bgcolor: "#ff9800",
-                    color: "white",
-                    transform: "translateY(-1px)",
+                  color: "white",
+                  transform: "translateY(-1px)",
                     boxShadow: "0 4px 12px rgba(255, 152, 0, 0.4)",
                   },
                   "&:disabled": {
@@ -1075,11 +1079,11 @@ function TopBarContent({
                       transform: "none",
                       boxShadow: "none",
                     },
-                  },
-                }}
-              >
+                },
+              }}
+            >
                 <RestartIcon sx={{ fontSize: 24 }} />
-              </IconButton>
+            </IconButton>
             </span>
           </Tooltip>
         </Box>
@@ -1090,6 +1094,7 @@ function TopBarContent({
         open={showMicrobitDialog}
         onClose={() => setShowMicrobitDialog(false)}
         workspace={workspace}
+        roomId={roomId}
       />
 
       {/* Solution Hint Dialog */}

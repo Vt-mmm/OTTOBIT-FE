@@ -39,6 +39,7 @@ interface MicrobitDialogProps {
   open: boolean;
   onClose: () => void;
   workspace?: any;
+  roomId?: string;
 }
 
 const V1_URL = "/microbit-micropython-v1.hex";
@@ -48,6 +49,7 @@ export default function MicrobitDialog({
   open,
   onClose,
   workspace,
+  roomId,
 }: MicrobitDialogProps) {
   const [isConnected, setIsConnected] = useState(false);
   const [isFlashing, setIsFlashing] = useState(false);
@@ -57,6 +59,8 @@ export default function MicrobitDialog({
   const [pythonCode, setPythonCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [showConnectionGuide, setShowConnectionGuide] = useState(false);
+  const [wifiSsid, setWifiSsid] = useState("");
+  const [wifiPass, setWifiPass] = useState("");
 
   const deviceRef = useRef(createWebUSBConnection());
   const flashingRef = useRef(false);
@@ -136,17 +140,69 @@ export default function MicrobitDialog({
         (_m) => userRoute
       );
     } catch {}
+
+    // Inject WiFi, Room ID, and Actions Server config
+    try {
+      if (wifiSsid) {
+        code = code.replace(/(WIFI_SSID\s*=\s*")[^"]*(")/, `$1${wifiSsid}$2`);
+      }
+      if (wifiPass) {
+        code = code.replace(/(WIFI_PASS\s*=\s*")[^"]*(")/, `$1${wifiPass}$2`);
+      }
+      if (roomId) {
+        code = code.replace(
+          /(ACTIONS_ROOM_ID\s*=\s*")[^"]*(")/,
+          `$1${roomId}$2`
+        );
+      }
+      // Inject Actions Server config from environment
+      const actionsHost = import.meta.env.VITE_ACTIONS_SERVER_HOST;
+      const actionsPort = import.meta.env.VITE_ACTIONS_SERVER_PORT;
+      if (actionsHost) {
+        code = code.replace(
+          /(ACTIONS_API_HOST\s*=\s*")[^"]*(")/,
+          `$1${actionsHost}$2`
+        );
+      }
+      if (actionsPort) {
+        code = code.replace(/(ACTIONS_API_PORT\s*=\s*)\d+/, `$1${actionsPort}`);
+      }
+    } catch {}
     return code;
   };
 
-  // Initialize with generated Python code when dialog opens
+  // Initialize with basic Python code when dialog opens (without WiFi injection)
   useEffect(() => {
     if (open) {
       try {
-        const code = buildPythonBundle();
+        // Build basic code without WiFi injection
+        const userPy = workspace ? generatePythonCode(workspace) : "";
+        const userRoute = buildUserRoute(userPy);
+
+        let challengePy = "{}";
+        try {
+          const raw = currentChallenge?.challengeJson;
+          const parsed = typeof raw === "string" ? JSON.parse(raw) : raw || {};
+          challengePy = jsonToPythonLiteral(parsed);
+        } catch {}
+
+        let code = String(ottobitTemplate || "");
+        try {
+          code = code.replace(
+            /(challengeJson\s*=)[\s\S]*?(\nrobot_state\s*=)/,
+            (_m, p1, p2) => `${p1} ${challengePy}\n\n${p2}`
+          );
+        } catch {}
+        try {
+          code = code.replace(
+            /(def\s+user_route[\s\S]*?)(?=\nr\s*=\s*Robot\s*\()/,
+            (_m) => userRoute
+          );
+        } catch {}
+
         setPythonCode(code);
         addLog(
-          "Prepared MicroPython code bundle with challengeJson and user_route"
+          "Prepared basic MicroPython code bundle (WiFi will be injected on flash)"
         );
       } catch {
         setPythonCode("");
@@ -280,8 +336,17 @@ export default function MicrobitDialog({
 
   const handleFlash = async () => {
     if (flashingRef.current) return;
+
+    // Validate WiFi fields before flashing
+    if (!wifiSsid || !wifiPass) {
+      setError("Vui lòng nhập đầy đủ WiFi SSID và Password trước khi flash!");
+      addLog("❌ Error: WiFi credentials required");
+      return;
+    }
+
     flashingRef.current = true;
     setIsFlashing(true);
+    setError(null); // Clear any previous errors
 
     const doFlash = async (
       dataSource: (_?: BoardVersion) => Promise<string>
@@ -328,7 +393,10 @@ export default function MicrobitDialog({
     };
 
     try {
+      // Build final code with WiFi injection when flashing
+      const finalCode = buildPythonBundle();
       const code =
+        finalCode ||
         pythonCode ||
         `from microbit import *
 while True:
@@ -358,7 +426,8 @@ while True:
         } catch {}
         await deviceRef.current.connect();
         try {
-          const dataSource = await buildHexFromPython(pythonCode);
+          const retryCode = buildPythonBundle();
+          const dataSource = await buildHexFromPython(retryCode);
           await doFlash(dataSource);
         } catch (err2: any) {
           setStatusMessage("Flash failed after reconnect");
@@ -405,6 +474,32 @@ while True:
 
       <DialogContent dividers>
         <Box sx={{ mb: 2 }}>
+          <Box display="flex" gap={1} sx={{ mb: 2 }}>
+            <TextField
+              label="WiFi SSID"
+              size="small"
+              value={wifiSsid}
+              onChange={(e) => setWifiSsid(e.target.value)}
+              sx={{ minWidth: 160 }}
+            />
+            <TextField
+              label="WiFi Password"
+              size="small"
+              type="password"
+              value={wifiPass}
+              onChange={(e) => setWifiPass(e.target.value)}
+              sx={{ minWidth: 160 }}
+            />
+            {roomId ? (
+              <TextField
+                label="Room ID"
+                size="small"
+                value={roomId}
+                disabled
+                sx={{ minWidth: 160 }}
+              />
+            ) : null}
+          </Box>
           <Box display="flex" gap={1} sx={{ mb: 2 }}>
             <Button
               variant="contained"
