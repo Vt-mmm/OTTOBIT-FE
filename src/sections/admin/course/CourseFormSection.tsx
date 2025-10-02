@@ -11,12 +11,21 @@ import {
   Stack,
   TextField,
   Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SaveIcon from "@mui/icons-material/Save";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { createCourse, updateCourse } from "../../../redux/course/courseSlice";
-import { CourseResult, CreateCourseRequest, UpdateCourseRequest } from "../../../common/@types/course";
+import {
+  CourseResult,
+  CreateCourseRequest,
+  UpdateCourseRequest,
+  CourseType,
+} from "../../../common/@types/course";
 
 interface Props {
   mode: "create" | "edit";
@@ -29,22 +38,37 @@ interface FormData {
   title: string;
   description: string;
   imageUrl: string;
+  price: number;
+  type: CourseType;
 }
 
-export default function CourseFormSection({ mode, course, onBack, onSuccess }: Props) {
+export default function CourseFormSection({
+  mode,
+  course,
+  onBack,
+  onSuccess,
+}: Props) {
   const dispatch = useAppDispatch();
-  const { isCreating, isUpdating, createError, updateError } = useAppSelector((s) => s.course.operations);
+  const { isCreating, isUpdating, createError, updateError } = useAppSelector(
+    (s) => s.course.operations
+  );
 
   const [formData, setFormData] = useState<FormData>({
     title: "",
     description: "",
     imageUrl: "",
+    price: 0,
+    type: CourseType.Free,
   });
 
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({ 
-    open: false, 
-    message: "", 
-    severity: "success" 
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({
+    open: false,
+    message: "",
+    severity: "success",
   });
 
   const isLoading = isCreating || isUpdating;
@@ -56,21 +80,40 @@ export default function CourseFormSection({ mode, course, onBack, onSuccess }: P
         title: course.title,
         description: course.description,
         imageUrl: course.imageUrl || "",
+        price: (course as any).price ?? 0,
+        type: (course as any).type ?? CourseType.Free,
       });
     }
   }, [mode, course]);
 
-  const handleInputChange = (field: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, [field]: e.target.value }));
-  };
+  const handleInputChange =
+    (field: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+    };
 
   const validate = (): boolean => {
     if (!formData.title.trim()) {
-      setSnackbar({ open: true, message: "Tên khóa học không được để trống", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Tên khóa học không được để trống",
+        severity: "error",
+      });
       return false;
     }
     if (!formData.description.trim()) {
-      setSnackbar({ open: true, message: "Mô tả khóa học không được để trống", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Mô tả khóa học không được để trống",
+        severity: "error",
+      });
+      return false;
+    }
+    if (formData.price < 0) {
+      setSnackbar({
+        open: true,
+        message: "Giá không hợp lệ",
+        severity: "error",
+      });
       return false;
     }
     return true;
@@ -86,24 +129,42 @@ export default function CourseFormSection({ mode, course, onBack, onSuccess }: P
           title: formData.title.trim(),
           description: formData.description.trim(),
           imageUrl: formData.imageUrl.trim() || undefined,
+          price: Number(formData.price) || 0,
+          type: formData.type,
         };
         await dispatch(createCourse(createData)).unwrap();
-        setSnackbar({ open: true, message: "Tạo khóa học thành công", severity: "success" });
+        setSnackbar({
+          open: true,
+          message: "Tạo khóa học thành công",
+          severity: "success",
+        });
       } else if (course) {
         const updateData: UpdateCourseRequest = {
           title: formData.title.trim(),
           description: formData.description.trim(),
           imageUrl: formData.imageUrl.trim() || undefined,
+          price: Number(formData.price) || 0,
+          type: formData.type,
         };
-        await dispatch(updateCourse({ id: course.id, data: updateData })).unwrap();
-        setSnackbar({ open: true, message: "Cập nhật khóa học thành công", severity: "success" });
+        await dispatch(
+          updateCourse({ id: course.id, data: updateData })
+        ).unwrap();
+        setSnackbar({
+          open: true,
+          message: "Cập nhật khóa học thành công",
+          severity: "success",
+        });
       }
-      
+
       setTimeout(() => {
         onSuccess();
       }, 1000);
     } catch (err: any) {
-      setSnackbar({ open: true, message: err?.message || "Có lỗi xảy ra", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: err?.message || "Có lỗi xảy ra",
+        severity: "error",
+      });
     }
   };
 
@@ -126,7 +187,7 @@ export default function CourseFormSection({ mode, course, onBack, onSuccess }: P
                 <Typography variant="h6" sx={{ mb: 2 }}>
                   Thông tin cơ bản
                 </Typography>
-                
+
                 <Stack spacing={3}>
                   <TextField
                     fullWidth
@@ -156,6 +217,32 @@ export default function CourseFormSection({ mode, course, onBack, onSuccess }: P
                     placeholder="https://example.com/image.jpg"
                     helperText="Link hình đại diện cho khóa học (tùy chọn)"
                   />
+
+                  <TextField
+                    fullWidth
+                    label="Giá (VND)"
+                    type="number"
+                    value={formData.price}
+                    onChange={handleInputChange("price")}
+                    inputProps={{ min: 0 }}
+                  />
+
+                  <FormControl fullWidth>
+                    <InputLabel>Loại khóa học</InputLabel>
+                    <Select
+                      label="Loại khóa học"
+                      value={formData.type}
+                      onChange={(e) =>
+                        setFormData((p) => ({
+                          ...p,
+                          type: Number(e.target.value) as CourseType,
+                        }))
+                      }
+                    >
+                      <MenuItem value={CourseType.Free}>Miễn phí</MenuItem>
+                      <MenuItem value={CourseType.Paid}>Trả phí</MenuItem>
+                    </Select>
+                  </FormControl>
                 </Stack>
               </Grid>
 
@@ -163,7 +250,7 @@ export default function CourseFormSection({ mode, course, onBack, onSuccess }: P
                 <Typography variant="h6" sx={{ mb: 2 }}>
                   Xem trước
                 </Typography>
-                
+
                 <Card variant="outlined">
                   <CardContent>
                     {formData.imageUrl && (
@@ -183,27 +270,37 @@ export default function CourseFormSection({ mode, course, onBack, onSuccess }: P
                         />
                       </Box>
                     )}
-                    
+
                     <Typography variant="h6" sx={{ mb: 1 }}>
                       {formData.title || "Tên khóa học"}
                     </Typography>
-                    
+
                     <Typography variant="body2" color="text.secondary">
-                      {formData.description || "Mô tả khóa học sẽ hiển thị ở đây"}
+                      {formData.description ||
+                        "Mô tả khóa học sẽ hiển thị ở đây"}
                     </Typography>
                   </CardContent>
                 </Card>
               </Grid>
             </Grid>
 
-            <Box sx={{ mt: 4, display: "flex", gap: 2, justifyContent: "flex-end" }}>
+            <Box
+              sx={{
+                mt: 4,
+                display: "flex",
+                gap: 2,
+                justifyContent: "flex-end",
+              }}
+            >
               <Button variant="outlined" onClick={onBack} disabled={isLoading}>
                 Hủy
               </Button>
               <Button
                 type="submit"
                 variant="contained"
-                startIcon={isLoading ? <CircularProgress size={16} /> : <SaveIcon />}
+                startIcon={
+                  isLoading ? <CircularProgress size={16} /> : <SaveIcon />
+                }
                 disabled={isLoading}
               >
                 {mode === "create" ? "Tạo khóa học" : "Cập nhật"}
@@ -213,10 +310,10 @@ export default function CourseFormSection({ mode, course, onBack, onSuccess }: P
         </CardContent>
       </Card>
 
-      <Snackbar 
-        open={snackbar.open} 
-        autoHideDuration={4000} 
-        onClose={() => setSnackbar(s => ({ ...s, open: false }))}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
       >
         <Alert severity={snackbar.severity} sx={{ width: "100%" }}>
           {snackbar.message}

@@ -67,6 +67,9 @@ export default function CourseDetailsSection({
     (sum, lesson) => sum + lesson.durationInMinutes,
     0
   );
+  const price = (course as any)?.price ?? 0;
+  const type = (course as any)?.type as number | undefined;
+  const typeLabel = type === 2 ? "Trả phí" : "Miễn phí";
 
   // Get challenges count for each lesson (using challengesCount field from lesson)
   const getChallengesCountForLesson = (lesson: any) => {
@@ -204,6 +207,21 @@ export default function CourseDetailsSection({
                       <Typography variant="body2">
                         {enrollmentsCount} học viên
                       </Typography>
+                    </Stack>
+
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Chip
+                        label={`Loại: ${typeLabel}`}
+                        size="small"
+                        color={type === 2 ? "warning" : "success"}
+                      />
+                    </Stack>
+
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Chip
+                        label={`Giá: ${price.toLocaleString()} VND`}
+                        size="small"
+                      />
                     </Stack>
                   </Stack>
                 </Box>

@@ -27,11 +27,6 @@ import {
 import { microbitBoardId } from "@microbit/microbit-universal-hex";
 import { MicropythonFsHex } from "@microbit/microbit-fs";
 import MicrobitConnectionGuide from "./MicrobitConnectionGuide";
-// Raw import full MicroPython template to flash (includes Robot runtime)
-// Vite supports ?raw to import file contents as string
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import ottobitTemplate from "../../ottobit_full.py?raw";
 import { useAppSelector } from "../redux/config";
 import { generatePythonCode } from "../components/block/generators/python";
 
@@ -64,6 +59,7 @@ export default function MicrobitDialog({
 
   const deviceRef = useRef(createWebUSBConnection());
   const flashingRef = useRef(false);
+  const templateRef = useRef<string>("");
 
   // Current challenge from Redux (for challengeJson)
   const currentChallenge = useAppSelector(
@@ -129,7 +125,7 @@ export default function MicrobitDialog({
     } catch {}
 
     // Full bundle: take ottobit_full.py and replace challengeJson and user_route sections
-    let code = String(ottobitTemplate || "");
+    let code = String(templateRef.current || "");
     try {
       code = code.replace(
         /(challengeJson\s*=)[\s\S]*?(\nrobot_state\s*=)/,
@@ -176,8 +172,14 @@ export default function MicrobitDialog({
 
   // Initialize with basic Python code when dialog opens (without WiFi injection)
   useEffect(() => {
-    if (open) {
+    if (!open) return;
+    (async () => {
       try {
+        if (!templateRef.current) {
+          const resp = await fetch("/ottobit_full.py", { cache: "no-store" });
+          templateRef.current = await resp.text();
+        }
+
         // Build basic code without WiFi injection
         const userPy = workspace ? generatePythonCode(workspace) : "";
         const userRoute = buildUserRoute(userPy);
@@ -189,7 +191,7 @@ export default function MicrobitDialog({
           challengePy = jsonToPythonLiteral(parsed);
         } catch {}
 
-        let code = String(ottobitTemplate || "");
+        let code = String(templateRef.current || "");
         try {
           code = code.replace(
             /(challengeJson\s*=)[\s\S]*?(\nrobot_state\s*=)/,
@@ -211,7 +213,7 @@ export default function MicrobitDialog({
       } catch {
         setPythonCode("");
       }
-    }
+    })();
   }, [open]);
 
   const addLog = (message: string) => {
