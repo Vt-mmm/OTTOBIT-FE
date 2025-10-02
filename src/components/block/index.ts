@@ -24,7 +24,7 @@ export {
 export { default as BlockToolbox } from "./BlockToolbox";
 
 // Export registration function
-export { registerottobitBlocks, BLOCK_TYPES, type BlockType } from "./register";
+export { registerottobitBlocks, setupShadowBlockRestoration, BLOCK_TYPES, type BlockType } from "./register";
 
 // Export toolbox configuration
 export { ottobit_TOOLBOX } from "./toolbox";

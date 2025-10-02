@@ -50,18 +50,11 @@ const setupAxiosClient = (store: Store<RootState>) => {
   // Intercept requests to add the authorization header
   axiosClient.interceptors.request.use(
     async (config) => {
-      console.log(`[Request] ${config.method?.toUpperCase()} ${config.url}`);
-
       // Skip adding Authorization header for refresh token endpoint
       // to avoid sending expired token that will be rejected by JWT middleware
       if (config.url === ROUTES_API_AUTH.REFRESH_TOKEN) {
         // Explicitly remove Authorization header if it exists
         delete config.headers.Authorization;
-        console.log("[Request Interceptor] Refresh token request headers:", {
-          url: config.url,
-          headers: config.headers,
-          hasAuth: !!config.headers.Authorization,
-        });
         return config;
       }
 
@@ -69,12 +62,10 @@ const setupAxiosClient = (store: Store<RootState>) => {
       const accessToken = getAccessToken();
       if (accessToken) {
         // Set Authorization header with current token
-        console.log("[Request] Using access token from cookie");
         config.headers.Authorization = `Bearer ${accessToken}`;
       } else {
         // Clear Authorization header if no token exists
         // This prevents using stale token from axios defaults
-        console.log("[Request] No access token - clearing headers");
         delete config.headers.Authorization;
         delete axiosClient.defaults.headers.common.Authorization;
       }
@@ -110,14 +101,14 @@ const setupAxiosClient = (store: Store<RootState>) => {
 
       // Handle 401 Unauthorized - token expired
       if (err.response?.status === 401) {
-        console.log(
-          "[Refresh Token] Received 401 error, starting token refresh",
-          {
-            url: originalConfig?.url,
-            method: originalConfig?.method,
-            isRefreshing,
-          }
-        );
+        // Check if user is authenticated - skip refresh for public pages
+        const state = store.getState() as RootState;
+        const isAuthenticated = state.auth.isAuthenticated;
+        const userId = state.auth.userAuth?.userId;
+
+        if (!isAuthenticated || !userId) {
+          return Promise.reject(err);
+        }
 
         // If we're not already refreshing
         if (!isRefreshing) {
@@ -127,24 +118,8 @@ const setupAxiosClient = (store: Store<RootState>) => {
           try {
             const refreshToken = getRefreshToken();
 
-            console.log("[Refresh Token] Starting token refresh process...");
-            console.log("[Refresh Token] Has refreshToken:", !!refreshToken);
-
             if (!refreshToken) {
-              console.error("[Refresh Token] Missing refresh token");
               throw new Error("Missing refresh token");
-            }
-
-            // Get userId from Redux store instead of decoding JWT
-            // This works even when access token is expired/deleted
-            const state = store.getState() as RootState;
-            const userId = state.auth.userAuth?.userId;
-
-            console.log("[Refresh Token] User ID from Redux:", userId);
-
-            if (!userId) {
-              console.error("[Refresh Token] Missing userId in Redux store");
-              throw new Error("User not authenticated");
             }
 
             const data = {
@@ -152,49 +127,13 @@ const setupAxiosClient = (store: Store<RootState>) => {
               refreshToken,
             };
 
-            console.log(
-              "[Refresh Token] Making request to:",
-              ROUTES_API_AUTH.REFRESH_TOKEN
-            );
-            console.log("[Refresh Token] Request data:", {
-              userId: !!userId,
-              hasRefreshToken: !!refreshToken,
-            });
-            console.log("[Refresh Token] Full request payload:", data);
-
             // Make token refresh request
             const response = await axiosClient.post(
               ROUTES_API_AUTH.REFRESH_TOKEN,
               data
             );
 
-            console.log("[Refresh Token] Full response received:", response);
-            console.log("[Refresh Token] Response status:", response?.status);
-            console.log("[Refresh Token] Response data:", response?.data);
-
-            // Now response is full AxiosResponse, so we need to check response.data
-            const responseBody = response?.data;
-
-            if (responseBody && responseBody.data) {
-              console.log("[Refresh Token] API response body:", responseBody);
-              console.log(
-                "[Refresh Token] User & tokens data:",
-                responseBody.data
-              );
-
-              if (responseBody.data.tokens) {
-                console.log(
-                  "[Refresh Token] Found tokens:",
-                  responseBody.data.tokens
-                );
-              } else {
-                console.log("[Refresh Token] No tokens in response");
-              }
-            } else {
-              console.log("[Refresh Token] No data in response body");
-            }
-
-            // Validate response - now we have full AxiosResponse
+            // Validate response
             if (
               !response ||
               !response.data ||
@@ -203,29 +142,6 @@ const setupAxiosClient = (store: Store<RootState>) => {
               !response.data.data.tokens.accessToken ||
               !response.data.data.tokens.refreshToken
             ) {
-              console.error("[Refresh Token] Validation failed:");
-              console.error("[Refresh Token] - Has response:", !!response);
-              console.error(
-                "[Refresh Token] - Has response.data:",
-                !!(response && response.data)
-              );
-              console.error(
-                "[Refresh Token] - Has response.data.data:",
-                !!(response && response.data && response.data.data)
-              );
-              console.error(
-                "[Refresh Token] - Has tokens:",
-                !!(
-                  response &&
-                  response.data &&
-                  response.data.data &&
-                  response.data.data.tokens
-                )
-              );
-              console.error(
-                "[Refresh Token] Full response:",
-                JSON.stringify(response?.data, null, 2)
-              );
               throw new Error("Invalid token refresh response");
             }
 
