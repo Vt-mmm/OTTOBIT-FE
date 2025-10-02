@@ -10,7 +10,7 @@ export interface Enrollment {
   id: string;
   studentId: string;
   courseId: string;
-  progress: number; // 0.0 to 1.0 (0% to 100%)
+  progress: number; // 0 to 100 (percentage from backend)
   enrollmentDate: string;
   isCompleted: boolean;
   status: EnrollmentStatus;
@@ -55,9 +55,9 @@ export interface CompleteEnrollmentRequest {
 export interface EnrollmentResult extends Enrollment {}
 
 export interface EnrollmentsResponse {
-  items: EnrollmentResult[];  // Backend trả về 'items' thay vì 'data'
-  page: number;               // Backend trả về 'page' thay vì 'pageNumber' 
-  size: number;               // Backend trả về 'size' thay vì 'pageSize'
-  total: number;              // Backend trả về 'total' thay vì 'totalCount'
+  items: EnrollmentResult[]; // Backend trả về 'items' thay vì 'data'
+  page: number; // Backend trả về 'page' thay vì 'pageNumber'
+  size: number; // Backend trả về 'size' thay vì 'pageSize'
+  total: number; // Backend trả về 'total' thay vì 'totalCount'
   totalPages: number;
 }

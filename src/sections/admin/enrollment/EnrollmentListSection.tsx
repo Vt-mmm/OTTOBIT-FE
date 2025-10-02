@@ -1,15 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Card,
   CardContent,
   Typography,
-  Button,
   TextField,
   InputAdornment,
   Chip,
   IconButton,
-  Avatar,
   CircularProgress,
   Alert,
   Table,
@@ -26,9 +24,6 @@ import {
 } from "@mui/material";
 import {
   Search as SearchIcon,
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
   SchoolOutlined as EnrollmentIcon,
   Person as PersonIcon,
   Book as CourseIcon,
@@ -36,47 +31,51 @@ import {
   Schedule as InProgressIcon,
   Visibility as ViewIcon,
 } from "@mui/icons-material";
-import { useAppDispatch, useAppSelector } from "../../../redux/config";
-import { getEnrollments } from "../../../redux/enrollment/enrollmentSlice";
-import { EnrollmentStatus } from "common/@types/enrollment";
+import { useAppDispatch, useAppSelector } from "store/config";
+import { getEnrollments } from "store/enrollment/enrollmentSlice";
+import { EnrollmentResult } from "common/@types/enrollment";
 import dayjs from "dayjs";
+import EnrollmentDetailsDialog from "./EnrollmentDetailsDialog";
 
-interface EnrollmentListSectionProps {
-  onCreateNew?: () => void;
-  onEditEnrollment?: (enrollment: any) => void;
-  onViewDetails?: (enrollment: any) => void;
-}
+interface EnrollmentListSectionProps {}
 
-export default function EnrollmentListSection({
-  onCreateNew,
-  onEditEnrollment,
-  onViewDetails,
-}: EnrollmentListSectionProps) {
+export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
   const dispatch = useAppDispatch();
   const { enrollments } = useAppSelector((state) => state.enrollment);
-  
+
+  // Search & Filter states
   const [searchTerm, setSearchTerm] = useState("");
   const [committedSearch, setCommittedSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<EnrollmentStatus | "">("");
+  const [statusFilter, setStatusFilter] = useState<
+    "" | "completed" | "in_progress"
+  >("");
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(12);
 
+  // Dialog state
+  const [detailsDialog, setDetailsDialog] = useState<{
+    open: boolean;
+    enrollment?: EnrollmentResult;
+  }>({ open: false }); // Fetch enrollments
   useEffect(() => {
     const isCompleted =
-      statusFilter === EnrollmentStatus.COMPLETED
+      statusFilter === "completed"
         ? true
-        : statusFilter === EnrollmentStatus.IN_PROGRESS
+        : statusFilter === "in_progress"
         ? false
         : undefined;
 
-    dispatch(getEnrollments({
-      searchTerm: committedSearch || undefined,
-      isCompleted,
-      pageNumber,
-      pageSize,
-    }));
+    dispatch(
+      getEnrollments({
+        searchTerm: committedSearch || undefined,
+        isCompleted,
+        pageNumber,
+        pageSize,
+      })
+    );
   }, [dispatch, committedSearch, statusFilter, pageNumber, pageSize]);
 
+  // Handlers
   const handleSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
@@ -89,6 +88,10 @@ export default function EnrollmentListSection({
   const handleStatusFilterChange = (event: any) => {
     setStatusFilter(event.target.value);
     setPageNumber(1);
+  };
+
+  const handleViewDetails = (enrollment: EnrollmentResult) => {
+    setDetailsDialog({ open: true, enrollment });
   };
 
   const getStatusIcon = (isCompleted: boolean) => {
@@ -114,18 +117,22 @@ export default function EnrollmentListSection({
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-          📚 Enrollments Management
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={onCreateNew}
-          disabled
-        >
-          Add Enrollment
-        </Button>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+            📚 Enrollments Management
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            View and manage student course enrollments
+          </Typography>
+        </Box>
       </Box>
 
       {/* Search and Filters */}
@@ -168,8 +175,8 @@ export default function EnrollmentListSection({
                 onChange={handleStatusFilterChange}
               >
                 <MenuItem value="">All</MenuItem>
-                <MenuItem value={EnrollmentStatus.IN_PROGRESS}>In Progress</MenuItem>
-                <MenuItem value={EnrollmentStatus.COMPLETED}>Completed</MenuItem>
+                <MenuItem value="in_progress">In Progress</MenuItem>
+                <MenuItem value="completed">Completed</MenuItem>
               </Select>
             </FormControl>
           </Box>
@@ -201,10 +208,8 @@ export default function EnrollmentListSection({
             {enrollments.data?.items?.map((enrollment) => (
               <TableRow key={enrollment.id} hover>
                 <TableCell>
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}>
-                      <PersonIcon />
-                    </Avatar>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <PersonIcon color="primary" />
                     <Box>
                       <Typography variant="body2" sx={{ fontWeight: "medium" }}>
                         {enrollment.studentName || "Unknown Student"}
@@ -238,36 +243,39 @@ export default function EnrollmentListSection({
                   />
                 </TableCell>
                 <TableCell align="center">
-                  <Typography variant="body2">
-                    {`${Math.round(enrollment.progress ?? 0)}%`}
-                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 0.5,
+                    }}
+                  >
+                    <Typography variant="body2" fontWeight="medium">
+                      {`${Math.round(enrollment.progress ?? 0)}%`}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {enrollment.completedLessonsCount}/
+                      {enrollment.totalLessonsCount} lessons
+                    </Typography>
+                  </Box>
                 </TableCell>
                 <TableCell>
-                  {dayjs(enrollment.enrollmentDate).format('DD/MM/YYYY')}
+                  {dayjs(enrollment.enrollmentDate).format("DD/MM/YYYY")}
                 </TableCell>
                 <TableCell>
-                  {enrollment.lastAccessedAt 
-                    ? dayjs(enrollment.lastAccessedAt).format('DD/MM/YYYY') 
-                    : 'Never'
-                  }
+                  {enrollment.lastAccessedAt
+                    ? dayjs(enrollment.lastAccessedAt).format("DD/MM/YYYY")
+                    : "Never"}
                 </TableCell>
                 <TableCell align="right">
-                  <IconButton 
-                    size="small" 
+                  <IconButton
+                    size="small"
                     title="View Details"
-                    onClick={() => onViewDetails?.(enrollment)}
+                    onClick={() => handleViewDetails(enrollment)}
+                    color="primary"
                   >
                     <ViewIcon />
-                  </IconButton>
-                  <IconButton 
-                    size="small" 
-                    title="Edit Enrollment"
-                    onClick={() => onEditEnrollment?.(enrollment)}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton size="small" color="error" title="Cancel Enrollment">
-                    <DeleteIcon />
                   </IconButton>
                 </TableCell>
               </TableRow>
@@ -278,7 +286,9 @@ export default function EnrollmentListSection({
         {/* Empty State */}
         {!enrollments.isLoading && enrollments.data?.items?.length === 0 && (
           <Box sx={{ textAlign: "center", py: 8 }}>
-            <EnrollmentIcon sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
+            <EnrollmentIcon
+              sx={{ fontSize: 64, color: "text.secondary", mb: 2 }}
+            />
             <Typography variant="h6" color="text.secondary" gutterBottom>
               No Enrollments Found
             </Typography>
@@ -328,6 +338,13 @@ export default function EnrollmentListSection({
           </Box>
         ) : null}
       </Paper>
+
+      {/* Details Dialog */}
+      <EnrollmentDetailsDialog
+        open={detailsDialog.open}
+        enrollment={detailsDialog.enrollment || null}
+        onClose={() => setDetailsDialog({ open: false })}
+      />
     </Box>
   );
 }
