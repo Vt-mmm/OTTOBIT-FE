@@ -1,4 +1,5 @@
 import { ACTIONS_SERVER_CONFIG } from "../../config/actionsServerConfig";
+import { io, Socket } from "socket.io-client";
 
 export type ActionSocketMessage = {
   type?: string;
@@ -19,80 +20,40 @@ export function connectActionSocket(
     (ACTIONS_SERVER_CONFIG.PROTOCOL as "ws" | "wss") ||
     "ws";
 
-  let ws: WebSocket | null = null;
-  let stopped = false;
-  let reconnectTimer: any = null;
-
-  const url = `${protocol}://${host}:${port}/`;
+  // NestJS Socket.IO default path is /socket.io
+  const url = `${protocol}://${host}:${port}`;
+  let socket: Socket | null = null;
 
   const connect = () => {
-    if (stopped) return;
-    try {
-      ws = new WebSocket(url);
-    } catch (e) {
-      scheduleReconnect();
-      return;
-    }
+    socket = io(url, {
+      path: "/socket.io",
+      transports: ["websocket"],
+      withCredentials: true,
+    });
 
-    ws.onopen = () => {
-      console.log("✅ WebSocket connected to:", url);
-      // Send a subscription payload so the server associates this socket with roomId
-      try {
-        const subscribeMsg = { type: "subscribe", id: roomId };
-        ws?.send(JSON.stringify(subscribeMsg));
-        console.log("📤 Sent subscription:", subscribeMsg);
-      } catch (e) {
-        console.error("❌ Failed to send subscription:", e);
-      }
-    };
+    socket.on("connect", () => {
+      socket?.emit("join", { id: roomId });
+    });
 
-    ws.onmessage = (evt) => {
-      console.log("🔌 WebSocket received data:", evt.data);
-      try {
-        const data =
-          typeof evt.data === "string" ? JSON.parse(evt.data) : evt.data;
-        console.log("📦 Parsed WebSocket message:", data);
-        onMessage && onMessage(data as ActionSocketMessage);
-      } catch {
-        // Non-JSON message
-        console.log("⚠️ Non-JSON WebSocket message:", evt.data);
-        onMessage && onMessage({ raw: evt.data } as any);
-      }
-    };
+    socket.on("connect_error", () => {});
 
-    ws.onerror = (error) => {
-      console.error("❌ WebSocket error:", error);
-      // wait for close to reconnect
-    };
+    socket.on("disconnect", () => {});
 
-    ws.onclose = (event) => {
-      console.log("🔌 WebSocket closed:", event.code, event.reason);
-      scheduleReconnect();
-    };
-  };
+    socket.on("actions", (data: any) => {
+      console.log("📥 Actions event (socket.io):", data);
+      onMessage && onMessage({ ...(data || {}), type: "actions" });
+    });
 
-  const scheduleReconnect = () => {
-    if (stopped) return;
-    if (reconnectTimer) return;
-    console.log("🔄 Scheduling WebSocket reconnect in 1.5s...");
-    reconnectTimer = setTimeout(() => {
-      reconnectTimer = null;
-      console.log("🔄 Attempting WebSocket reconnect...");
-      connect();
-    }, 1500);
+    // Optional: handle error channel from server
+    socket.on("error", () => {});
   };
 
   connect();
 
   return () => {
-    stopped = true;
-    if (reconnectTimer) {
-      clearTimeout(reconnectTimer);
-      reconnectTimer = null;
-    }
     try {
-      ws?.close();
+      socket?.disconnect();
     } catch {}
-    ws = null;
+    socket = null;
   };
 }

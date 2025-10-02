@@ -21,6 +21,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  TextField as MuiTextField,
   Chip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -61,6 +62,9 @@ export default function CourseListSection({
   const [pageSize, setPageSize] = useState(12);
   const [totalPages, setTotalPages] = useState(1);
   const [sortDirection, setSortDirection] = useState(1); // 0 = oldest first, 1 = newest first
+  const [minPrice, setMinPrice] = useState<string>("");
+  const [maxPrice, setMaxPrice] = useState<string>("");
+  const [type, setType] = useState<number | "">("");
   const [confirmDelete, setConfirmDelete] = useState<CourseResult | null>(null);
   const [confirmRestore, setConfirmRestore] = useState<CourseResult | null>(
     null
@@ -80,9 +84,21 @@ export default function CourseListSection({
         includeDeleted: true,
         sortBy: 1, // Mặc định sortBy = 1
         sortDirection, // 0 = oldest first, 1 = newest first (default)
+        MinPrice: minPrice !== "" ? Number(minPrice) : undefined,
+        MaxPrice: maxPrice !== "" ? Number(maxPrice) : undefined,
+        Type: type === "" ? undefined : Number(type),
       })
     );
-  }, [dispatch, committedSearch, page, pageSize, sortDirection]);
+  }, [
+    dispatch,
+    committedSearch,
+    page,
+    pageSize,
+    sortDirection,
+    minPrice,
+    maxPrice,
+    type,
+  ]);
 
   useEffect(() => {
     const meta = data;
@@ -102,6 +118,9 @@ export default function CourseListSection({
         includeDeleted: true,
         sortBy: 1,
         sortDirection,
+        MinPrice: minPrice !== "" ? Number(minPrice) : undefined,
+        MaxPrice: maxPrice !== "" ? Number(maxPrice) : undefined,
+        Type: type === "" ? undefined : Number(type),
       })
     );
   };
@@ -167,7 +186,7 @@ export default function CourseListSection({
               display: "flex",
               gap: 2,
               alignItems: "center",
-              flexWrap: { xs: "wrap", sm: "nowrap" },
+              flexWrap: "wrap",
             }}
           >
             <TextField
@@ -205,6 +224,38 @@ export default function CourseListSection({
               >
                 <MenuItem value={0}>Cũ nhất trước</MenuItem>
                 <MenuItem value={1}>Mới nhất trước</MenuItem>
+              </Select>
+            </FormControl>
+
+            <MuiTextField
+              size="small"
+              label="Min price"
+              type="number"
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value)}
+              sx={{ width: 130 }}
+              inputProps={{ min: 0 }}
+            />
+            <MuiTextField
+              size="small"
+              label="Max price"
+              type="number"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+              sx={{ width: 130 }}
+              inputProps={{ min: 0 }}
+            />
+
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel>Type</InputLabel>
+              <Select
+                label="Type"
+                value={type}
+                onChange={(e) => setType(e.target.value as any)}
+              >
+                <MenuItem value="">Tất cả</MenuItem>
+                <MenuItem value={1}>Miễn phí</MenuItem>
+                <MenuItem value={2}>Trả phí</MenuItem>
               </Select>
             </FormControl>
             <Button
@@ -293,6 +344,40 @@ export default function CourseListSection({
                   >
                     {course.description || "No description"}
                   </Typography>
+
+                  {/* Price and Type */}
+                  <Box sx={{ mb: 2 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        mb: 1,
+                      }}
+                    >
+                      <Typography
+                        variant="h6"
+                        color="primary"
+                        sx={{ fontWeight: 600 }}
+                      >
+                        {((course as any)?.price ?? 0).toLocaleString()} VND
+                      </Typography>
+                      <Chip
+                        size="small"
+                        label={
+                          ((course as any)?.type ?? 1) === 2
+                            ? "Trả phí"
+                            : "Miễn phí"
+                        }
+                        color={
+                          ((course as any)?.type ?? 1) === 2
+                            ? "warning"
+                            : "success"
+                        }
+                        variant="filled"
+                      />
+                    </Box>
+                  </Box>
 
                   {/* Created Info */}
                   <Box sx={{ mb: 2 }}>
