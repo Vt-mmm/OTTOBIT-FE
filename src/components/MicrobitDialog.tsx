@@ -106,8 +106,10 @@ export default function MicrobitDialog({
       `    startSound()\n` +
       indented +
       `    if _check_victory():\n` +
+      `        append_action('victory')\n` +
       `        display.show(Image.YES)\n` +
       `    else:\n` +
+      `        append_action('defeat')\n` +
       `        display.show(Image.NO)\n` +
       `    finishSound()\n`
     );
@@ -135,8 +137,9 @@ export default function MicrobitDialog({
       );
     } catch {}
     try {
+      // Replace only the user_route block up to the next top-level (non-indented) line
       code = code.replace(
-        /(def\s+user_route[\s\S]*?)(?=\nr\s*=\s*Robot\s*\()/,
+        new RegExp("(def\\s+user_route[\\s\\S]*?)(?=^\\S)", "m"),
         (_m) => userRoute
       );
     } catch {}
@@ -194,8 +197,9 @@ export default function MicrobitDialog({
           );
         } catch {}
         try {
+          // Replace only the user_route block up to the next top-level (non-indented) line
           code = code.replace(
-            /(def\s+user_route[\s\S]*?)(?=\nr\s*=\s*Robot\s*\()/,
+            new RegExp("(def\\s+user_route[\\s\\S]*?)(?=^\\S)", "m"),
             (_m) => userRoute
           );
         } catch {}
