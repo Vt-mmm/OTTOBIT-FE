@@ -51,7 +51,10 @@ export class BlocklyToPhaserConverter {
    * Convert Blockly workspace to simple format for solutionJson (only actions & functions)
    * Format: {"actions":[...],"functions":[...]}
    */
-  static convertWorkspaceToSimpleFormat(workspace: any): { actions: ProgramAction[], functions: any[] } {
+  static convertWorkspaceToSimpleFormat(workspace: any): {
+    actions: ProgramAction[];
+    functions: any[];
+  } {
     if (!workspace) {
       throw new Error("Workspace is required");
     }
@@ -144,7 +147,10 @@ export class BlocklyToPhaserConverter {
       } else {
         try {
           // eslint-disable-next-line no-console
-          console.warn("[Converter] No actions produced for block:", currentBlock.type);
+          console.warn(
+            "[Converter] No actions produced for block:",
+            currentBlock.type
+          );
         } catch {}
       }
 
@@ -192,10 +198,13 @@ export class BlocklyToPhaserConverter {
       } catch {}
 
       // Fallback: handle any collect variant by prefix to avoid missing cases
-      if (typeof blockType === "string" && blockType.startsWith("ottobit_collect")) {
+      if (
+        typeof blockType === "string" &&
+        blockType.startsWith("ottobit_collect")
+      ) {
         return [this.convertCollect(block)];
       }
-      
+
       switch (blockType) {
         case "ottobit_move_forward":
           return [this.convertMoveForward(block)];
@@ -275,7 +284,10 @@ export class BlocklyToPhaserConverter {
     const inputBlock = block.getInputTargetBlock("STEPS");
     if (inputBlock) {
       // Nếu là số (custom hoặc mặc định của Blockly)
-      if (inputBlock.type === "ottobit_number" || inputBlock.type === "math_number") {
+      if (
+        inputBlock.type === "ottobit_number" ||
+        inputBlock.type === "math_number"
+      ) {
         const val = inputBlock.getFieldValue("NUM");
         countToken = String(val ?? "1");
       }
@@ -292,7 +304,10 @@ export class BlocklyToPhaserConverter {
       else if (inputBlock.type === "variables_get") {
         // Cố gắng lấy tên hiển thị của biến, fallback về giá trị trường VAR
         const field: any = inputBlock.getField && inputBlock.getField("VAR");
-        const varName = (field && typeof field.getText === "function" && field.getText()) || inputBlock.getFieldValue("VAR") || "i";
+        const varName =
+          (field && typeof field.getText === "function" && field.getText()) ||
+          inputBlock.getFieldValue("VAR") ||
+          "i";
         countToken = `{{${varName}}}`;
       }
     }
@@ -347,7 +362,10 @@ export class BlocklyToPhaserConverter {
     const inputBlock = block.getInputTargetBlock("COUNT");
     if (inputBlock) {
       // Nếu có khối gắn vào (số hoặc biến)
-      if (inputBlock.type === "ottobit_number" || inputBlock.type === "math_number") {
+      if (
+        inputBlock.type === "ottobit_number" ||
+        inputBlock.type === "math_number"
+      ) {
         const val = inputBlock.getFieldValue("NUM");
         countToken = String(val ?? "1");
       } else if (
@@ -355,11 +373,17 @@ export class BlocklyToPhaserConverter {
         inputBlock.type === "ottobit_variable"
       ) {
         // Sử dụng placeholder để ProgramExecutor thay thế theo vòng lặp
-        const varName = inputBlock.type === "ottobit_variable" ? (inputBlock.getFieldValue("VAR") || "i") : "i";
+        const varName =
+          inputBlock.type === "ottobit_variable"
+            ? inputBlock.getFieldValue("VAR") || "i"
+            : "i";
         countToken = `{{${varName}}}`;
       } else if (inputBlock.type === "variables_get") {
         const field: any = inputBlock.getField && inputBlock.getField("VAR");
-        const varName = (field && typeof field.getText === "function" && field.getText()) || inputBlock.getFieldValue("VAR") || "i";
+        const varName =
+          (field && typeof field.getText === "function" && field.getText()) ||
+          inputBlock.getFieldValue("VAR") ||
+          "i";
         countToken = `{{${varName}}}`;
       }
     }
@@ -423,7 +447,10 @@ export class BlocklyToPhaserConverter {
     let countToken: number | string = 1;
     if (inputBlock) {
       try {
-        if (inputBlock.type === "ottobit_number" || inputBlock.type === "math_number") {
+        if (
+          inputBlock.type === "ottobit_number" ||
+          inputBlock.type === "math_number"
+        ) {
           const v = inputBlock.getFieldValue("NUM");
           const n = parseInt(String(v));
           countToken = isNaN(n) ? 1 : n;
@@ -432,7 +459,10 @@ export class BlocklyToPhaserConverter {
           countToken = `{{${name}}}`;
         } else if (inputBlock.type === "variables_get") {
           const field: any = inputBlock.getField && inputBlock.getField("VAR");
-          const name = (field && typeof field.getText === "function" && field.getText()) || inputBlock.getFieldValue("VAR") || "i";
+          const name =
+            (field && typeof field.getText === "function" && field.getText()) ||
+            inputBlock.getFieldValue("VAR") ||
+            "i";
           countToken = `{{${name}}}`;
         }
       } catch {}
@@ -456,7 +486,10 @@ export class BlocklyToPhaserConverter {
    */
   private static convertRepeatRange(block: any): ProgramAction {
     // Helper to read token (number or variable placeholder) from an input socket
-    const readToken = (inputName: string, numFallback: number): number | string => {
+    const readToken = (
+      inputName: string,
+      numFallback: number
+    ): number | string => {
       const target = block.getInputTargetBlock(inputName);
       if (!target) return numFallback;
       try {
@@ -471,7 +504,10 @@ export class BlocklyToPhaserConverter {
         }
         if (target.type === "variables_get") {
           const field: any = target.getField && target.getField("VAR");
-          const name = (field && typeof field.getText === "function" && field.getText()) || target.getFieldValue("VAR") || "i";
+          const name =
+            (field && typeof field.getText === "function" && field.getText()) ||
+            target.getFieldValue("VAR") ||
+            "i";
           return `{{${name}}}`;
         }
       } catch {}
@@ -488,7 +524,9 @@ export class BlocklyToPhaserConverter {
         }
         if (target.type === "variables_get") {
           const field: any = target.getField && target.getField("VAR");
-          const name = (field && typeof field.getText === "function" && field.getText()) || target.getFieldValue("VAR");
+          const name =
+            (field && typeof field.getText === "function" && field.getText()) ||
+            target.getFieldValue("VAR");
           return name || "i";
         }
       } catch {}
@@ -501,7 +539,9 @@ export class BlocklyToPhaserConverter {
     const by = readToken("BY", 1);
 
     const doBlock = block.getInputTargetBlock("DO");
-    const bodyActions = doBlock ? this.parseBlocksToActionsFromBlock(doBlock) : [];
+    const bodyActions = doBlock
+      ? this.parseBlocksToActionsFromBlock(doBlock)
+      : [];
 
     return {
       type: "repeatRange",
@@ -805,7 +845,10 @@ export class BlocklyToPhaserConverter {
       case "ottobit_variable":
       case "variables_get": {
         const field: any = block.getField && block.getField("VAR");
-        const varName = (field && typeof field.getText === "function" && field.getText()) || block.getFieldValue("VAR") || "i";
+        const varName =
+          (field && typeof field.getText === "function" && field.getText()) ||
+          block.getFieldValue("VAR") ||
+          "i";
         return varName;
       }
       case "ottobit_number":
@@ -814,6 +857,9 @@ export class BlocklyToPhaserConverter {
       case "ottobit_bale_number":
         // When used in comparison, should return special function name
         return { type: "function", name: "warehouseCount" };
+      case "ottobit_pin_number":
+        // Battery count sensor - return as string variable name
+        return "batteryCount";
       case "text":
         return block.getFieldValue("TEXT") || "";
       default:
@@ -869,7 +915,8 @@ export class BlocklyToPhaserConverter {
 
       if (
         action.type === "forward" &&
-        (action.count === undefined || (typeof action.count === "number" && action.count < 1))
+        (action.count === undefined ||
+          (typeof action.count === "number" && action.count < 1))
       ) {
         errors.push(`Action ${index}: forward action requires count >= 1`);
       }

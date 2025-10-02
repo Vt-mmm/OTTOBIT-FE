@@ -13,7 +13,6 @@ import { publicRoutes } from "routes/config/publicRoutes.tsx";
 import { adminRoutes } from "routes/config/adminRoutes.tsx";
 import type { Route } from "common/@types";
 import { Role } from "common/enums";
-import { getRefreshToken } from "utils";
 
 // Lazy load pages
 const LoginPage = lazy(() => import("pages/auth/LoginPage"));
@@ -100,25 +99,14 @@ function AppRouter() {
   const isAdmin = userAuth?.roles?.includes(Role.OTTOBIT_ADMIN);
   const [isInitializing, setIsInitializing] = useState(true);
 
-  console.log("[AppRouter] Render with state:", {
-    isAuthenticated,
-    hasUserAuth: !!userAuth,
-    isAdmin,
-    isInitializing,
-    userId: userAuth?.userId,
-  });
-
   // Add a short delay to ensure auth state is fully loaded
   useEffect(() => {
-    console.log("[AppRouter] useEffect triggered - initializing");
     // Đặt một timeout để đảm bảo state được khởi tạo đầy đủ
     const timer = setTimeout(() => {
-      console.log("[AppRouter] Initialization complete");
       setIsInitializing(false);
     }, 1000);
 
     return () => {
-      console.log("[AppRouter] Cleanup");
       clearTimeout(timer);
     };
     // Empty dependency array - only run once on mount
@@ -133,31 +121,13 @@ function AppRouter() {
 
   // Root path redirect handler based on authentication status and role
   const RootRedirect = () => {
-    // Check Redux state and refreshToken (not accessToken) for authentication
-    // accessToken can expire but user is still authenticated if refreshToken exists
-    // Always get fresh value from cookies, not from stale state
-    const hasRefreshToken = !!getRefreshToken();
-    const hasValidAuth = isAuthenticated && hasRefreshToken && userAuth;
-
-    console.log("[RootRedirect] Checking auth state:", {
-      isAuthenticated,
-      hasRefreshToken,
-      hasUserAuth: !!userAuth,
-      hasValidAuth,
-      isAdmin,
-      userId: userAuth?.userId,
-    });
-
-    if (hasValidAuth) {
-      console.log("[RootRedirect] Valid auth - redirecting to dashboard");
+    if (isAuthenticated) {
       if (isAdmin) {
         return <Navigate to={PATH_ADMIN.dashboard} replace />;
       }
-      // Kiểm tra role Psychologist để redirect về dashboard tương ứng
       return <Navigate to={PATH_USER.homepage} replace />;
     }
-    // For non-authenticated users, always show the public homepage
-    console.log("[RootRedirect] No valid auth - showing public homepage");
+    // For non-authenticated users, show the public homepage
     return <SharedHomePage />;
   };
 
@@ -271,7 +241,7 @@ function AppRouter() {
         <ReactRoute
           path={PATH_AUTH.login}
           element={
-            isAuthenticated && getRefreshToken() ? (
+            isAuthenticated ? (
               <Navigate
                 to={isAdmin ? PATH_ADMIN.dashboard : PATH_USER.homepage}
                 replace
@@ -284,7 +254,7 @@ function AppRouter() {
         <ReactRoute
           path={PATH_AUTH.register}
           element={
-            isAuthenticated && getRefreshToken() ? (
+            isAuthenticated ? (
               <Navigate
                 to={isAdmin ? PATH_ADMIN.dashboard : PATH_USER.homepage}
                 replace
@@ -297,7 +267,7 @@ function AppRouter() {
         <ReactRoute
           path={PATH_AUTH.forgotPassword}
           element={
-            isAuthenticated && getRefreshToken() ? (
+            isAuthenticated ? (
               <Navigate
                 to={isAdmin ? PATH_ADMIN.dashboard : PATH_USER.homepage}
                 replace
@@ -310,7 +280,7 @@ function AppRouter() {
         <ReactRoute
           path={PATH_AUTH.resetPassword}
           element={
-            isAuthenticated && getRefreshToken() ? (
+            isAuthenticated ? (
               <Navigate
                 to={isAdmin ? PATH_ADMIN.dashboard : PATH_USER.homepage}
                 replace
@@ -331,7 +301,7 @@ function AppRouter() {
         <ReactRoute
           path={PATH_AUTH.resendEmailConfirmation}
           element={
-            isAuthenticated && getRefreshToken() ? (
+            isAuthenticated ? (
               <Navigate
                 to={isAdmin ? PATH_ADMIN.dashboard : PATH_USER.homepage}
                 replace
