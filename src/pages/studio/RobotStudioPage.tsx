@@ -14,6 +14,7 @@ import {
 import { useAppDispatch, useAppSelector } from "store/config";
 import { getLessonById } from "store/lesson/lessonSlice";
 import StudioTourGate from "../../features/onboarding/driver/components/StudioTourGate";
+import { connectActionSocket } from "../../features/socket/actionSocket";
 
 // Simple Challenge Selector - temporary implementation
 const ChallengeSelector = ({
@@ -62,6 +63,7 @@ const ChallengeSelector = ({
 const StudioContent = ({ challengeId }: { challengeId: string }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [workspace, setWorkspace] = useState<any>(null);
+  const [roomId, setRoomId] = useState<string>("");
   const [loadingChallengeId, setLoadingChallengeId] = useState<string | null>(
     null
   );
@@ -84,6 +86,20 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
     (state) => state.lesson.currentLesson.data
   );
   const userId = useAppSelector((state) => state.account.profile.data?.id);
+  // Init random room id once per entry
+  useEffect(() => {
+    if (!roomId) {
+      const rand = Math.floor(Math.random() * 1_000_000);
+      setRoomId(`room-${rand}`);
+    }
+  }, [roomId]);
+
+  // Connect socket to listen actions for this room
+  useEffect(() => {
+    if (!roomId) return;
+    const disconnect = connectActionSocket(roomId, undefined);
+    return () => disconnect && disconnect();
+  }, [roomId]);
 
   useEffect(() => {
     const nav = getStoredNavigationData();
@@ -244,6 +260,7 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         workspace={workspace}
+        roomId={roomId}
       />
 
       {/* Main Content Area - Optimized cho map full size */}
