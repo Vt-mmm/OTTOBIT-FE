@@ -11,6 +11,8 @@ import SecurityIcon from "@mui/icons-material/Security";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import MemoryIcon from "@mui/icons-material/Memory";
 import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
+import CardMembershipIcon from "@mui/icons-material/CardMembership";
+import DescriptionIcon from "@mui/icons-material/Description";
 import { PATH_ADMIN, PATH_USER } from "routes/paths";
 import CollectionsBookmarkIcon from "@mui/icons-material/CollectionsBookmark";
 
@@ -85,6 +87,16 @@ function useConfigSidebar() {
           path: PATH_ADMIN.activationCodeManagement,
           icon: <ConfirmationNumberIcon fontSize="small" />,
         },
+        {
+          title: "Quản lý Chứng chỉ",
+          path: PATH_ADMIN.certificateManagement,
+          icon: <CardMembershipIcon fontSize="small" />,
+        },
+        {
+          title: "Quản lý Mẫu Chứng chỉ",
+          path: PATH_ADMIN.certificateTemplateManagement,
+          icon: <DescriptionIcon fontSize="small" />,
+        },
       ],
     },
     {
@@ -120,21 +132,7 @@ function useConfigSidebar() {
         },
       ],
     },
-    {
-      missions: "Học tập",
-      listNav: [
-        {
-          title: "Khóa học",
-          path: PATH_USER.myCourses,
-          icon: <SchoolIcon fontSize="small" />,
-        },
-        {
-          title: "Robots của tôi",
-          path: PATH_USER.myRobots,
-          icon: <SmartToyIcon fontSize="small" />,
-        },
-      ],
-    },
+    // NOTE: "Học tập" section removed - myCourses moved to Student Profile tabs
   ];
 
   return { navAdmin, navUser };

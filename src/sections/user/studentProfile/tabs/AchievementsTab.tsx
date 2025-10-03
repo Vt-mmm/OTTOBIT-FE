@@ -9,35 +9,29 @@ import {
 import { motion } from "framer-motion";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEventsOutlined";
 
-interface ChallengeProcessItem {
-  id: string;
-  challengeTitle: string;
-  bestStar?: number;
-  completedAt?: string;
-}
-
 interface StarBucket {
   star: number;
   count: number;
 }
 
 interface AchievementsTabProps {
-  challengeProcesses: ChallengeProcessItem[];
+  submissions?: any[]; // Optional for future use
+  challengeBestStars: Map<string, number>;
   starBuckets: StarBucket[];
   loading?: boolean;
 }
 
 export default function AchievementsTab({
-  challengeProcesses,
+  challengeBestStars,
   starBuckets,
   loading,
 }: AchievementsTabProps) {
-  const totalChallenges = challengeProcesses.length;
-  const totalStars = challengeProcesses.reduce(
-    (sum, cp) => sum + (cp.bestStar || 0),
+  const totalChallenges = challengeBestStars.size;
+  const totalStars = Array.from(challengeBestStars.values()).reduce(
+    (sum, star) => sum + star,
     0
   );
-  const maxPossibleStars = totalChallenges * 3;
+  const maxPossibleStars = totalChallenges * 5;
   const starPercentage =
     maxPossibleStars > 0
       ? Math.round((totalStars / maxPossibleStars) * 100)

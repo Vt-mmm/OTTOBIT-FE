@@ -1,18 +1,13 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { axiosClient } from "axiosClient/axiosClient";
-import {
-  ROUTES_API_CHALLENGE,
-  ROUTES_API_CHALLENGE_PROCESS,
-} from "constants/routesApiKeys";
+import { ROUTES_API_CHALLENGE } from "constants/routesApiKeys";
 import {
   ChallengeResult,
   ChallengesResponse,
   CreateChallengeRequest,
   UpdateChallengeRequest,
   GetChallengesRequest,
-  ChallengeProcessesResponse,
-  GetChallengeProcessesRequest,
 } from "common/@types/challenge";
 import { extractApiErrorMessage } from "utils/errorHandler";
 
@@ -112,7 +107,7 @@ export const getChallengeByIdThunk = createAsyncThunk<
     }
 
     // Debug: Log the complete challenge response
-    console.log("📊 Challenge API Response Debug:", {
+    console.log("📋 Challenge API Response Debug:", {
       challengeId: id,
       responseStatus: response.status,
       hasData: !!response.data.data,
@@ -122,6 +117,12 @@ export const getChallengeByIdThunk = createAsyncThunk<
       mapJsonLength: (response.data.data as any)?.mapJson?.length || 0,
       mapJsonSample:
         (response.data.data as any)?.mapJson?.substring(0, 100) || "N/A",
+      hasAllowedBlocks: !!(response.data.data as any)?.allowedBlocks,
+      allowedBlocksType: typeof (response.data.data as any)?.allowedBlocks,
+      allowedBlocksCount: Array.isArray((response.data.data as any)?.allowedBlocks)
+        ? (response.data.data as any)?.allowedBlocks.length
+        : 0,
+      allowedBlocksSample: (response.data.data as any)?.allowedBlocks || "N/A",
       fullResponse: response.data,
     });
 
@@ -357,44 +358,6 @@ export const restoreChallengeThunk = createAsyncThunk<
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to restore challenge"
-    );
-    return rejectWithValue(errorMessage);
-  }
-});
-
-// Get challenge processes (user progress)
-export const getChallengeProcessesThunk = createAsyncThunk<
-  ChallengeProcessesResponse,
-  GetChallengeProcessesRequest,
-  { rejectValue: string }
->("challenge/getChallengeProcesses", async (request, { rejectWithValue }) => {
-  try {
-    const response = await callApiWithRetry(() =>
-      axiosClient.get<ApiResponse<ChallengeProcessesResponse>>(
-        ROUTES_API_CHALLENGE_PROCESS.MY_CHALLENGES,
-        {
-          params: request,
-        }
-      )
-    );
-
-    if (response.data.errors || response.data.errorCode) {
-      const errorMessage = extractApiErrorMessage(
-        { response: { data: response.data } },
-        "Failed to fetch challenge processes"
-      );
-      throw new Error(errorMessage);
-    }
-
-    if (!response.data.data) {
-      throw new Error("No challenge process data received");
-    }
-
-    return response.data.data;
-  } catch (error: any) {
-    const errorMessage = extractApiErrorMessage(
-      error,
-      "Failed to fetch challenge processes"
     );
     return rejectWithValue(errorMessage);
   }

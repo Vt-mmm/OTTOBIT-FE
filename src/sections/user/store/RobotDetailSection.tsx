@@ -23,7 +23,7 @@ import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "store/config";
 import { getRobotByIdThunk } from "store/robot/robotThunks";
 import { PATH_PUBLIC, PATH_USER } from "routes/paths";
-import { formatVND } from "utils/utils";
+import RobotBOMSection from "sections/user/robot/RobotBOMSection";
 
 interface RobotDetailSectionProps {
   robotId: string;
@@ -53,9 +53,7 @@ export default function RobotDetailSection({
   };
 
   const handleQuantityChange = (delta: number) => {
-    setQuantity((prev) =>
-      Math.max(1, Math.min(prev + delta, robotData?.stockQuantity || 1))
-    );
+    setQuantity((prev) => Math.max(1, prev + delta));
   };
 
   if (isLoading) {
@@ -215,9 +213,7 @@ export default function RobotDetailSection({
                 {robotData.brand} • {robotData.model}
               </Typography>
               <Chip
-                label={
-                  robotData.stockQuantity > 500 ? "Sold 500+" : "Best Seller"
-                }
+                label="Best Seller"
                 size="small"
                 sx={{
                   bgcolor: "success.light",
@@ -228,18 +224,7 @@ export default function RobotDetailSection({
             </Box>
           </Box>
 
-          {/* Price */}
-          <Typography
-            variant="h3"
-            sx={{ fontWeight: 700, mb: 3, color: "text.primary" }}
-          >
-            {formatVND(robotData.price)}
-          </Typography>
-
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            (or starting from {formatVND(Math.round(robotData.price / 12))}
-            /month with 0% installment)
-          </Typography>
+          {/* Note: Price removed from Robot entity */}
 
           <Divider sx={{ my: 3 }} />
 
@@ -300,7 +285,6 @@ export default function RobotDetailSection({
                 </Typography>
                 <IconButton
                   onClick={() => handleQuantityChange(1)}
-                  disabled={quantity >= robotData.stockQuantity}
                   sx={{ borderRadius: 0 }}
                 >
                   <AddIcon />
@@ -347,26 +331,12 @@ export default function RobotDetailSection({
             </Box>
           )}
 
-          {/* Availability */}
-          <Box sx={{ mb: 4, p: 2, bgcolor: "success.50", borderRadius: 1 }}>
-            <Typography
-              variant="body2"
-              sx={{ fontWeight: 600, color: "success.dark" }}
-            >
-              {robotData.stockQuantity > 0 ? "In Stock" : "Out of Stock"} —{" "}
-              {robotData.stockQuantity > 0
-                ? `Ships in 1-2 business days (${robotData.stockQuantity} units available)`
-                : "Currently unavailable"}
-            </Typography>
-          </Box>
-
           {/* Action Buttons */}
           <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
             <Button
               variant="contained"
               size="large"
               fullWidth
-              disabled={robotData.stockQuantity === 0}
               sx={{
                 py: 1.5,
                 fontSize: "1rem",
@@ -455,6 +425,11 @@ export default function RobotDetailSection({
           </Box>
         </Box>
       )}
+
+      {/* Bill of Materials (BOM) Section */}
+      <Box sx={{ mt: 6 }}>
+        <RobotBOMSection robotId={robotId} robotName={robotData.name} />
+      </Box>
     </Container>
   );
 }

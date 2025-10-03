@@ -18,12 +18,14 @@ interface BlocksWorkspaceProps {
   onWorkspaceChange?: (workspace: any) => void;
   initialProgramActionsJson?: any; // optional structured program to load
   detectionsFromExecute?: any[]; // optional detections array to render blocks after Execute
+  allowedBlocks?: string[]; // optional list of allowed block types from challenge
 }
 
 export default function BlocksWorkspace({
   onWorkspaceChange,
   initialProgramActionsJson,
   detectionsFromExecute,
+  // allowedBlocks, // Unused parameter
 }: BlocksWorkspaceProps) {
   const workspaceRef = useRef<HTMLDivElement>(null);
   const [blocklyWorkspace, setBlocklyWorkspace] = useState<any>(null);

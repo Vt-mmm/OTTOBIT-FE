@@ -36,6 +36,10 @@ export interface GetEnrollmentsRequest {
   courseId?: string;
   status?: EnrollmentStatus;
   isCompleted?: boolean;
+  minProgress?: number; // NEW: Filter by minimum progress
+  maxProgress?: number; // NEW: Filter by maximum progress
+  dateFrom?: string; // NEW: Filter enrollments from date (ISO string)
+  dateTo?: string; // NEW: Filter enrollments to date (ISO string)
   includeDeleted?: boolean;
   pageNumber?: number;
   pageSize?: number;

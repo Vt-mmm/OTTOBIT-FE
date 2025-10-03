@@ -53,10 +53,8 @@ export default function FeaturedComponentsSection() {
                   <ProductCard
                     id={c.id}
                     name={c.name}
-                    price={c.price}
                     imageUrl={c.imageUrl}
                     description={c.description}
-                    stockQuantity={c.stockQuantity}
                     onClick={() => handleClick(c.id)}
                     type="component"
                     componentType={c.type}

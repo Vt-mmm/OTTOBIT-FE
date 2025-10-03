@@ -1,3 +1,4 @@
+export * from "./certificate.enum";
 export * from "./challenge.enum";
 export * from "./component.enum";
 export * from "./error.enum";

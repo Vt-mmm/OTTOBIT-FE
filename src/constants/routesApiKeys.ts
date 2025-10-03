@@ -10,18 +10,19 @@ const ROOTS_CHALLENGE = "/api/v1/challenges";
 const ROOTS_ENROLLMENT = "/api/v1/enrollments";
 const ROOTS_SUBMISSION = "/api/v1/submissions";
 const ROOTS_MAP = "/api/v1/maps";
-const ROOTS_CHALLENGE_PROCESS = "/api/v1/challenge-process";
 const ROOTS_LESSON_PROGRESS = "/api/v1/lesson-process";
 // New roots based on backend controllers/constants
 const ROOTS_COMPONENT = "/api/v1/components";
 const ROOTS_IMAGE = "/api/v1/images";
 const ROOTS_ROBOT = "/api/v1/robots";
 const ROOTS_COURSE_ROBOT = "/api/v1/course-robots";
-const ROOTS_STUDENT_ROBOT = "/api/v1/student-robots";
 const ROOTS_COURSE_MAP = "/api/v1/course-maps";
 const ROOTS_LESSON_RESOURCE = "/api/v1/lesson-resources";
 const ROOTS_LESSON_NOTE = "/api/v1/lesson-notes";
 const ROOTS_ACTIVATION_CODE = "/api/v1/activation-codes";
+const ROOTS_ROBOT_COMPONENT = "/api/v1/robot-components";
+const ROOTS_CERTIFICATE = "/api/v1/certificates";
+const ROOTS_CERTIFICATE_TEMPLATE = "/api/v1/certificate-templates";
 
 export const ROUTES_API_AUTH = {
   // Authentication endpoints
@@ -135,11 +136,6 @@ export const ROUTES_API_MAP = {
   RESTORE: (id: string) => path(ROOTS_MAP, `/${id}/restore`), // POST /api/v1/maps/{id}/restore
 };
 
-export const ROUTES_API_CHALLENGE_PROCESS = {
-  // Challenge Process endpoints
-  MY_CHALLENGES: path(ROOTS_CHALLENGE_PROCESS, `/my-challenges`), // GET /api/v1/challenge-process/my-challenges
-};
-
 export const ROUTES_API_LESSON_PROGRESS = {
   // Lesson Progress endpoints
   START_LESSON: (lessonId: string) =>
@@ -176,21 +172,19 @@ export const ROUTES_API_ROBOT = {
 
 // New: Course-Robot endpoints
 export const ROUTES_API_COURSE_ROBOT = {
-  GET_ALL: ROOTS_COURSE_ROBOT, // GET /api/v1/course-robots
+  GET_ALL: ROOTS_COURSE_ROBOT, // GET /api/v1/course-robots (User only)
   GET_BY_COURSE: (courseId: string) =>
     path(ROOTS_COURSE_ROBOT, `/course/${courseId}`), // GET /api/v1/course-robots/course/{courseId}
   GET_BY_ID: (id: string) => path(ROOTS_COURSE_ROBOT, `/${id}`), // GET /api/v1/course-robots/{id}
+
+  // Admin endpoints
+  ADMIN_GET_ALL: path(ROOTS_COURSE_ROBOT, `/admin`), // GET /api/v1/course-robots/admin (Admin only)
+  ADMIN_GET_BY_ID: (id: string) => path(ROOTS_COURSE_ROBOT, `/admin/${id}`), // GET /api/v1/course-robots/admin/{id} (Admin only)
+
   CREATE: ROOTS_COURSE_ROBOT, // POST /api/v1/course-robots (Admin)
   UPDATE: (id: string) => path(ROOTS_COURSE_ROBOT, `/${id}`), // PUT /api/v1/course-robots/{id} (Admin)
   DELETE: (id: string) => path(ROOTS_COURSE_ROBOT, `/${id}`), // DELETE /api/v1/course-robots/{id} (Admin)
-};
-
-// New: Student-Robot endpoints
-export const ROUTES_API_STUDENT_ROBOT = {
-  MY_ROBOTS: path(ROOTS_STUDENT_ROBOT, `/my-robots`), // GET /api/v1/student-robots/my-robots (User)
-  ACTIVATE: path(ROOTS_STUDENT_ROBOT, `/activate`), // POST /api/v1/student-robots/activate (User)
-  UPDATE_SETTINGS: (id: string) => path(ROOTS_STUDENT_ROBOT, `/${id}/settings`), // PUT /api/v1/student-robots/{id}/settings (User)
-  GET_BY_ID: (id: string) => path(ROOTS_STUDENT_ROBOT, `/${id}`), // GET /api/v1/student-robots/{id} (User)
+  RESTORE: (id: string) => path(ROOTS_COURSE_ROBOT, `/${id}/restore`), // POST /api/v1/course-robots/{id}/restore (Admin)
 };
 
 // New: Course-Map endpoints
@@ -241,4 +235,44 @@ export const ROUTES_API_ACTIVATION_CODE = {
   ADMIN_EXPORT_CSV: path(ROOTS_ACTIVATION_CODE, `/export-csv`), // GET /api/v1/activation-codes/export-csv (Admin)
   ADMIN_UPDATE_STATUS: (id: string) =>
     path(ROOTS_ACTIVATION_CODE, `/${id}/status`), // PUT /api/v1/activation-codes/{id}/status (Admin)
+};
+
+// New: Robot-Component endpoints
+export const ROUTES_API_ROBOT_COMPONENT = {
+  // Public/User endpoints
+  GET_ALL: ROOTS_ROBOT_COMPONENT, // GET /api/v1/robot-components (Public)
+  GET_BY_ID: (id: string) => path(ROOTS_ROBOT_COMPONENT, `/${id}`), // GET /api/v1/robot-components/{id} (Public)
+
+  // Admin endpoints
+  ADMIN_GET_ALL: path(ROOTS_ROBOT_COMPONENT, `/admin`), // GET /api/v1/robot-components/admin (Admin)
+  ADMIN_GET_BY_ID: (id: string) => path(ROOTS_ROBOT_COMPONENT, `/admin/${id}`), // GET /api/v1/robot-components/admin/{id} (Admin)
+
+  CREATE: ROOTS_ROBOT_COMPONENT, // POST /api/v1/robot-components (Admin)
+  UPDATE: (id: string) => path(ROOTS_ROBOT_COMPONENT, `/${id}`), // PUT /api/v1/robot-components/{id} (Admin)
+  DELETE: (id: string) => path(ROOTS_ROBOT_COMPONENT, `/${id}`), // DELETE /api/v1/robot-components/{id} (Admin)
+  RESTORE: (id: string) => path(ROOTS_ROBOT_COMPONENT, `/${id}/restore`), // POST /api/v1/robot-components/{id}/restore (Admin)
+};
+
+// Certificate endpoints
+export const ROUTES_API_CERTIFICATE = {
+  // Admin endpoints
+  GET_ALL: ROOTS_CERTIFICATE, // GET /api/v1/certificates (Admin)
+  GET_BY_ID: (id: string) => path(ROOTS_CERTIFICATE, `/${id}`), // GET /api/v1/certificates/{id} (Admin)
+  DELETE: (id: string) => path(ROOTS_CERTIFICATE, `/${id}`), // DELETE /api/v1/certificates/{id} (Admin)
+  REVOKE: (id: string) => path(ROOTS_CERTIFICATE, `/${id}/revoke`), // POST /api/v1/certificates/{id}/revoke (Admin)
+
+  // User endpoints
+  MY_CERTIFICATES: path(ROOTS_CERTIFICATE, `/my`), // GET /api/v1/certificates/my (User)
+};
+
+// Certificate Template endpoints
+export const ROUTES_API_CERTIFICATE_TEMPLATE = {
+  // Admin endpoints
+  GET_ALL: ROOTS_CERTIFICATE_TEMPLATE, // GET /api/v1/certificate-templates (Admin)
+  CREATE: ROOTS_CERTIFICATE_TEMPLATE, // POST /api/v1/certificate-templates (Admin)
+  UPDATE: (id: string) => path(ROOTS_CERTIFICATE_TEMPLATE, `/${id}`), // PUT /api/v1/certificate-templates/{id} (Admin)
+  DELETE: (id: string) => path(ROOTS_CERTIFICATE_TEMPLATE, `/${id}`), // DELETE /api/v1/certificate-templates/{id} (Admin)
+
+  // User/Admin endpoints
+  GET_BY_ID: (id: string) => path(ROOTS_CERTIFICATE_TEMPLATE, `/${id}`), // GET /api/v1/certificate-templates/{id} (User,Admin)
 };

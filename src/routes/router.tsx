@@ -31,7 +31,6 @@ const ResendEmailConfirmationPage = lazy(
 // Define lazy-loaded components for user routes
 const SharedHomePage = lazy(() => import("pages/user/Homepage"));
 const CoursesPage = lazy(() => import("pages/user/CoursesPage"));
-const MyCoursesPage = lazy(() => import("pages/user/MyCoursesPage"));
 const CourseDetailPage = lazy(() => import("pages/user/CourseDetailPage"));
 const LessonDetailPage = lazy(() => import("pages/user/LessonDetailPage"));
 const ChallengeDetailPage = lazy(
@@ -53,8 +52,6 @@ const RobotDetailPage = lazy(() => import("pages/user/store/RobotDetailPage"));
 const ComponentDetailPage = lazy(
   () => import("pages/user/store/ComponentDetailPage")
 );
-// My Robots page
-const MyRobotsPage = lazy(() => import("pages/user/MyRobotsPage"));
 // Error pages
 const Page404 = lazy(() => import("pages/error/Page404"));
 const Page500 = lazy(() => import("pages/error/Page500"));
@@ -211,8 +208,7 @@ function AppRouter() {
           />
           {/* Other User Routes */}
           <ReactRoute path={PATH_USER.courses} element={<CoursesPage />} />
-          <ReactRoute path={PATH_USER.myCourses} element={<MyCoursesPage />} />
-          <ReactRoute path={PATH_USER.myRobots} element={<MyRobotsPage />} />
+          {/* myCourses and myRobots routes removed - now part of Student Profile tabs */}
 
           <ReactRoute
             path={PATH_USER.courseDetail}

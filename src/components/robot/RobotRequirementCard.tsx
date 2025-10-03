@@ -17,7 +17,6 @@ interface RobotRequirementCardProps {
   robotModel: string;
   robotBrand: string;
   robotImageUrl?: string;
-  robotPrice: number;
   isRequired: boolean;
   isOwned: boolean;
   onActivate?: () => void;
@@ -28,7 +27,6 @@ export default function RobotRequirementCard({
   robotModel,
   robotBrand,
   robotImageUrl,
-  robotPrice,
   isRequired,
   isOwned,
   onActivate,
@@ -93,10 +91,6 @@ export default function RobotRequirementCard({
             )}
           </Box>
         </Box>
-
-        <Typography variant="h6" color="primary" sx={{ mb: 2 }}>
-          {robotPrice.toLocaleString()}đ
-        </Typography>
 
         {!isOwned && (
           <Box sx={{ display: "flex", gap: 1 }}>

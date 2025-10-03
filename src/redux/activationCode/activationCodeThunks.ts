@@ -10,6 +10,8 @@ import {
   ActivationCodesResponse,
   ActivationCodeResult,
   CodeStatus,
+  RedeemActivationCodeRequest,
+  RedeemActivationCodeResponse,
 } from "common/@types/activationCode";
 
 interface ErrorResponse {
@@ -43,66 +45,57 @@ async function callApiWithRetry<T>(
 export const validateActivationCodeThunk = createAsyncThunk<
   ValidateActivationCodeResponse,
   ValidateActivationCodeRequest
->(
-  "activationCode/validate",
-  async (data, { rejectWithValue }) => {
-    try {
-      const response = await axiosClient.post(
-        ROUTES_API_ACTIVATION_CODE.VALIDATE,
-        data
-      );
-      return response.data.data || response.data;
-    } catch (error) {
-      const err = error as AxiosError<ErrorResponse>;
-      return rejectWithValue(
-        err.response?.data?.message || "Failed to validate activation code"
-      );
-    }
+>("activationCode/validate", async (data, { rejectWithValue }) => {
+  try {
+    const response = await axiosClient.post(
+      ROUTES_API_ACTIVATION_CODE.VALIDATE,
+      data
+    );
+    return response.data.data || response.data;
+  } catch (error) {
+    const err = error as AxiosError<ErrorResponse>;
+    return rejectWithValue(
+      err.response?.data?.message || "Failed to validate activation code"
+    );
   }
-);
+});
 
 // Get All Activation Codes (Admin)
 export const getActivationCodesThunk = createAsyncThunk<
   ActivationCodesResponse,
   any
->(
-  "activationCode/getAll",
-  async (params, { rejectWithValue }) => {
-    try {
-      const response = await callApiWithRetry(() =>
-        axiosClient.get(ROUTES_API_ACTIVATION_CODE.ADMIN_GET_ALL, { params })
-      );
-      return response.data.data || response.data;
-    } catch (error) {
-      const err = error as AxiosError<ErrorResponse>;
-      return rejectWithValue(
-        err.response?.data?.message || "Failed to fetch activation codes"
-      );
-    }
+>("activationCode/getAll", async (params, { rejectWithValue }) => {
+  try {
+    const response = await callApiWithRetry(() =>
+      axiosClient.get(ROUTES_API_ACTIVATION_CODE.ADMIN_GET_ALL, { params })
+    );
+    return response.data.data || response.data;
+  } catch (error) {
+    const err = error as AxiosError<ErrorResponse>;
+    return rejectWithValue(
+      err.response?.data?.message || "Failed to fetch activation codes"
+    );
   }
-);
+});
 
 // Create Activation Code Batch (Admin)
 export const createActivationCodeBatchThunk = createAsyncThunk<
   CreateActivationCodeBatchResponse,
   CreateActivationCodeBatchRequest
->(
-  "activationCode/createBatch",
-  async (data, { rejectWithValue }) => {
-    try {
-      const response = await axiosClient.post(
-        ROUTES_API_ACTIVATION_CODE.ADMIN_CREATE_BATCH,
-        data
-      );
-      return response.data.data || response.data;
-    } catch (error) {
-      const err = error as AxiosError<ErrorResponse>;
-      return rejectWithValue(
-        err.response?.data?.message || "Failed to create activation codes"
-      );
-    }
+>("activationCode/createBatch", async (data, { rejectWithValue }) => {
+  try {
+    const response = await axiosClient.post(
+      ROUTES_API_ACTIVATION_CODE.ADMIN_CREATE_BATCH,
+      data
+    );
+    return response.data.data || response.data;
+  } catch (error) {
+    const err = error as AxiosError<ErrorResponse>;
+    return rejectWithValue(
+      err.response?.data?.message || "Failed to create activation codes"
+    );
   }
-);
+});
 
 // Update Activation Code Status (Admin)
 export const updateActivationCodeStatusThunk = createAsyncThunk<
@@ -127,10 +120,7 @@ export const updateActivationCodeStatusThunk = createAsyncThunk<
 );
 
 // Export Activation Codes CSV (Admin)
-export const exportActivationCodesCsvThunk = createAsyncThunk<
-  void,
-  string
->(
+export const exportActivationCodesCsvThunk = createAsyncThunk<void, string>(
   "activationCode/exportCsv",
   async (batchId, { rejectWithValue }) => {
     try {
@@ -141,7 +131,7 @@ export const exportActivationCodesCsvThunk = createAsyncThunk<
           responseType: "blob", // Important for file download
         }
       );
-      
+
       // Create blob and download file
       const blob = new Blob([response.data], { type: "text/csv" });
       const url = window.URL.createObjectURL(blob);
@@ -176,3 +166,22 @@ export const deleteActivationCodeThunk = createAsyncThunk<string, string>(
     }
   }
 );
+
+// Redeem Activation Code (User)
+export const redeemActivationCodeThunk = createAsyncThunk<
+  RedeemActivationCodeResponse,
+  RedeemActivationCodeRequest
+>("activationCode/redeem", async (data, { rejectWithValue }) => {
+  try {
+    const response = await axiosClient.post(
+      ROUTES_API_ACTIVATION_CODE.REDEEM,
+      data
+    );
+    return response.data;
+  } catch (error) {
+    const err = error as AxiosError<ErrorResponse>;
+    return rejectWithValue(
+      err.response?.data?.message || "Failed to redeem activation code"
+    );
+  }
+});

@@ -1,154 +1,525 @@
-import { Box, Card, CardContent, Typography, LinearProgress, Chip, Skeleton } from "@mui/material";
-import { motion } from "framer-motion";
-import dayjs from "dayjs";
-import CheckCircleIcon from "@mui/icons-material/CheckCircleOutlined";
-import PlayCircleIcon from "@mui/icons-material/PlayCircleOutlined";
+import {
+  Box,
+  Stack,
+  Paper,
+  Typography,
+  LinearProgress,
+  Button,
+  Avatar,
+  Chip,
+  Divider,
+  IconButton,
+  Skeleton,
+  Tooltip,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { PATH_USER } from "routes/paths";
+import { useEffect, useMemo, useState } from "react";
+import { LessonStatus } from "common/@types/lessonProgress";
+import { axiosClient } from "axiosClient/axiosClient";
+import {
+  ROUTES_API_ENROLLMENT,
+  ROUTES_API_LESSON,
+  ROUTES_API_LESSON_PROGRESS,
+} from "constants/routesApiKeys";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
 
+// API response wrapper
+interface ApiResponse<T> {
+  message: string;
+  data: T;
+}
+
+// Enrollment item shape
 interface EnrollmentItem {
   id: string;
   courseId: string;
-  courseTitle: string;
-  enrollmentDate: string;
-  progress?: number;
-  totalLessonsCount?: number;
-  completedLessonsCount?: number;
-  isCompleted?: boolean;
+  courseTitle?: string;
+  courseDescription?: string;
+  courseImageUrl?: string;
+}
+
+// Lesson progress subset for rendering
+interface LessonProgItem {
+  id: string;
+  lessonId: string;
+  status: LessonStatus;
+  currentChallengeOrder?: number;
+  lesson?: { title?: string };
 }
 
 interface EnrolledCoursesTabProps {
-  enrollments: EnrollmentItem[];
+  enrollments?: EnrollmentItem[];
   loading?: boolean;
 }
 
-export default function EnrolledCoursesTab({ enrollments, loading }: EnrolledCoursesTabProps) {
+export default function EnrolledCoursesTab({
+  enrollments: propEnrollments,
+  loading: propLoading,
+}: EnrolledCoursesTabProps) {
+  const navigate = useNavigate();
+
+  const [tab, setTab] = useState<"IN_PROGRESS" | "COMPLETED">("IN_PROGRESS");
+  const [enrollments, setEnrollments] = useState<EnrollmentItem[]>(
+    propEnrollments || []
+  );
+  const [loading, setLoading] = useState<boolean>(propLoading !== undefined ? propLoading : true);
+  const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState<
+    Record<string, { total: number; completed: number; percent: number }>
+  >({});
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [lessonsMap, setLessonsMap] = useState<
+    Record<
+      string,
+      {
+        loading: boolean;
+        error: string | null;
+        items: LessonProgItem[];
+        page: number;
+        size: number;
+        total: number;
+      }
+    >
+  >({});
+
+  // Load all enrollments (both completed and in-progress) then compute per-course stats
+  useEffect(() => {
+    // Skip if parent provided enrollments
+    if (propEnrollments && propEnrollments.length > 0) {
+      setEnrollments(propEnrollments);
+      setLoading(false);
+      return;
+    }
+
+    let mounted = true;
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [rIn, rDone] = await Promise.all([
+          axiosClient.get<ApiResponse<any>>(
+            ROUTES_API_ENROLLMENT.MY_ENROLLMENTS,
+            { params: { pageNumber: 1, pageSize: 50, isCompleted: false } }
+          ),
+          axiosClient.get<ApiResponse<any>>(
+            ROUTES_API_ENROLLMENT.MY_ENROLLMENTS,
+            { params: { pageNumber: 1, pageSize: 50, isCompleted: true } }
+          ),
+        ]);
+        const list: EnrollmentItem[] = [
+          ...(rIn.data?.data?.items ?? []),
+          ...(rDone.data?.data?.items ?? []),
+        ];
+        if (!mounted) return;
+        setEnrollments(list);
+        // Fetch stats for each distinct course
+        const courseIds = Array.from(new Set(list.map((e) => e.courseId)));
+        const statsEntries = await Promise.all(
+          courseIds.map(async (courseId) => {
+            const [lessonsRes, completedRes] = await Promise.all([
+              axiosClient.get<ApiResponse<any>>(ROUTES_API_LESSON.PREVIEW, {
+                params: { courseId, pageNumber: 1, pageSize: 1 },
+              }),
+              axiosClient.get<ApiResponse<any>>(
+                ROUTES_API_LESSON_PROGRESS.MY_PROGRESS,
+                {
+                  params: {
+                    pageNumber: 1,
+                    pageSize: 1,
+                    courseId,
+                    status: LessonStatus.Completed,
+                  },
+                }
+              ),
+            ]);
+            const total =
+              lessonsRes.data?.data?.total ??
+              lessonsRes.data?.data?.items?.length ??
+              0;
+            const completed = completedRes.data?.data?.total ?? 0;
+            const percent =
+              total > 0 ? Math.min(100, Math.round((completed / total) * 100)) : 0;
+            return [courseId, { total, completed, percent }] as const;
+          })
+        );
+        if (!mounted) return;
+        setStats(Object.fromEntries(statsEntries));
+      } catch (e: any) {
+        if (!mounted) return;
+        setError(e?.message || "Bạn chưa tham gia khóa học nào");
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [propEnrollments]);
+
+  const items = enrollments;
+
+  const isComplete = (courseId: string) => {
+    const s = stats[courseId];
+    return s ? s.percent >= 100 && s.total > 0 : false;
+  };
+
+  const inProgress = useMemo(
+    () => items.filter((e) => !isComplete(e.courseId)),
+    [items, stats]
+  );
+  const completed = useMemo(
+    () => items.filter((e) => isComplete(e.courseId)),
+    [items, stats]
+  );
+  const visible = tab === "IN_PROGRESS" ? inProgress : completed;
+
+  // Loading state
   if (loading) {
     return (
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      <Stack spacing={2}>
+        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+          <Skeleton variant="text" width={200} height={40} />
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Skeleton variant="rounded" width={120} height={32} />
+            <Skeleton variant="rounded" width={120} height={32} />
+          </Box>
+        </Box>
+        <Divider />
         {[1, 2, 3].map((i) => (
-          <Skeleton key={i} variant="rectangular" height={120} sx={{ borderRadius: 3 }} />
+          <Skeleton key={i} variant="rectangular" height={120} sx={{ borderRadius: 2 }} />
         ))}
-      </Box>
-    );
-  }
-
-  if (enrollments.length === 0) {
-    return (
-      <Card
-        sx={{
-          borderRadius: 3,
-          boxShadow: "0 2px 12px rgba(0, 0, 0, 0.08)",
-          border: "1px solid",
-          borderColor: "divider",
-        }}
-      >
-        <CardContent sx={{ p: 6, textAlign: "center" }}>
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-            Chưa có khóa học nào
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Bạn chưa đăng ký khóa học nào. Hãy khám phá các khóa học của chúng tôi!
-          </Typography>
-        </CardContent>
-      </Card>
+      </Stack>
     );
   }
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      {enrollments.map((enrollment, index) => {
-        // Fix: Nếu progress là số thập phân 0..1, nhân 100; nếu đã là %, giữ nguyên
-        let progress = 0;
-        if (enrollment.totalLessonsCount && enrollment.completedLessonsCount) {
-          progress = Math.round((enrollment.completedLessonsCount / enrollment.totalLessonsCount) * 100);
-        } else if (typeof enrollment.progress === 'number') {
-          // Nếu progress <= 1 thì đây là tỷ lệ (0..1), nhân 100
-          // Nếu progress > 1 thì đây đã là % rồi
-          progress = enrollment.progress <= 1 
-            ? Math.round(enrollment.progress * 100) 
-            : Math.min(100, Math.round(enrollment.progress));
-        }
-        progress = Math.max(0, Math.min(100, progress)); // Clamp 0-100
+    <Stack spacing={2}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          Khóa học của tôi
+        </Typography>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Chip
+            label={`Đang học (${inProgress.length})`}
+            color={tab === "IN_PROGRESS" ? "primary" : "default"}
+            onClick={() => setTab("IN_PROGRESS")}
+            variant={tab === "IN_PROGRESS" ? "filled" : "outlined"}
+            size="small"
+          />
+          <Chip
+            label={`Hoàn thành (${completed.length})`}
+            color={tab === "COMPLETED" ? "primary" : "default"}
+            onClick={() => setTab("COMPLETED")}
+            variant={tab === "COMPLETED" ? "filled" : "outlined"}
+            size="small"
+          />
+        </Box>
+      </Box>
+      <Divider />
 
-        return (
-          <motion.div
-            key={enrollment.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-          >
-            <Card
+      {error && (
+        <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
+          <Typography color="error">{error}</Typography>
+        </Paper>
+      )}
+
+      {!loading && !error && visible.length === 0 && (
+        <Paper
+          variant="outlined"
+          sx={{
+            p: 6,
+            borderRadius: 2,
+            textAlign: "center",
+            bgcolor: "grey.50",
+            border: "1px dashed",
+            borderColor: "divider",
+          }}
+        >
+          <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
+            {tab === "IN_PROGRESS"
+              ? "Không có khóa học đang học"
+              : "Chưa hoàn thành khóa học nào"}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {tab === "IN_PROGRESS"
+              ? "Hãy đăng ký khóa học mới để bắt đầu học tập!"
+              : "Hoàn thành các khóa học để nhận chứng chỉ."}
+          </Typography>
+        </Paper>
+      )}
+
+      {!loading &&
+        !error &&
+        visible.map((enrollment) => {
+          const s = stats[enrollment.courseId];
+          const progressPct = s ? s.percent : 0;
+          const detailPath = PATH_USER.courseDetail.replace(
+            ":id",
+            enrollment.courseId
+          );
+          const isOpen = !!expanded[enrollment.courseId];
+          const lessonsState = lessonsMap[enrollment.courseId];
+
+          const toggle = async () => {
+            setExpanded((prev) => ({
+              ...prev,
+              [enrollment.courseId]: !prev[enrollment.courseId],
+            }));
+            const nowOpen = !isOpen;
+            if (nowOpen && !lessonsState) {
+              setLessonsMap((m) => ({
+                ...m,
+                [enrollment.courseId]: {
+                  loading: true,
+                  error: null,
+                  items: [],
+                  page: 1,
+                  size: 10,
+                  total: 0,
+                },
+              }));
+              try {
+                const page = 1;
+                const size = 20;
+                const res = await axiosClient.get<ApiResponse<any>>(
+                  ROUTES_API_LESSON_PROGRESS.MY_PROGRESS,
+                  {
+                    params: {
+                      courseId: enrollment.courseId,
+                      pageNumber: page,
+                      pageSize: size,
+                    },
+                  }
+                );
+                const rawItems: LessonProgItem[] = res.data?.data?.items ?? [];
+                const total: number = res.data?.data?.total ?? rawItems.length;
+
+                const dedupedMap = new Map<string, LessonProgItem>();
+                for (const it of rawItems) {
+                  if (!dedupedMap.has(it.lessonId))
+                    dedupedMap.set(it.lessonId, it);
+                }
+                let items = Array.from(dedupedMap.values());
+
+                // Load lesson titles
+                try {
+                  const lessonsRes = await axiosClient.get<ApiResponse<any>>(
+                    ROUTES_API_LESSON.PREVIEW,
+                    {
+                      params: {
+                        courseId: enrollment.courseId,
+                        pageNumber: 1,
+                        pageSize: 100,
+                      },
+                    }
+                  );
+                  const lessonsList: Array<{ id: string; title?: string }> =
+                    lessonsRes.data?.data?.items ?? [];
+                  const titleById = new Map<string, string>();
+                  for (const l of lessonsList) {
+                    if (l?.id) titleById.set(l.id, l.title ?? "");
+                  }
+                  items = items.map((it) => ({
+                    ...it,
+                    lesson: { title: titleById.get(it.lessonId) || undefined },
+                  }));
+                } catch {}
+
+                setLessonsMap((m) => ({
+                  ...m,
+                  [enrollment.courseId]: {
+                    loading: false,
+                    error: null,
+                    items,
+                    page,
+                    size,
+                    total,
+                  },
+                }));
+              } catch (e: any) {
+                setLessonsMap((m) => ({
+                  ...m,
+                  [enrollment.courseId]: {
+                    loading: false,
+                    error: e?.message || "Không thể tải bài học",
+                    items: [],
+                    page: 1,
+                    size: 10,
+                    total: 0,
+                  },
+                }));
+              }
+            }
+          };
+
+          return (
+            <Paper
+              key={enrollment.id}
+              variant="outlined"
               sx={{
-                borderRadius: 3,
-                boxShadow: "0 2px 12px rgba(0, 0, 0, 0.08)",
-                border: "1px solid",
-                borderColor: "divider",
-                transition: "all 0.3s ease",
+                p: 2.5,
+                borderRadius: 2,
+                transition: "all 0.2s ease",
                 "&:hover": {
-                  transform: "translateY(-4px)",
-                  boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
+                  boxShadow: 2,
                 },
               }}
             >
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", mb: 2 }}>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Avatar
+                  src={enrollment.courseImageUrl || undefined}
+                  variant="rounded"
+                  sx={{ width: 56, height: 56 }}
+                >
+                  {enrollment.courseTitle?.charAt(0) || "C"}
+                </Avatar>
+                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Typography noWrap sx={{ fontWeight: 700, flexGrow: 1 }}>
                       {enrollment.courseTitle || "Khóa học"}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                      Ngày đăng ký: {dayjs(enrollment.enrollmentDate).format("DD/MM/YYYY")}
-                    </Typography>
+                    <Tooltip
+                      title={isOpen ? "Thu gọn" : "Xem các bài học đã tham gia"}
+                    >
+                      <IconButton
+                        size="small"
+                        onClick={toggle}
+                        sx={{
+                          transform: isOpen ? "rotate(180deg)" : "rotate(0)",
+                          transition: "transform 0.2s",
+                        }}
+                      >
+                        <ExpandMoreIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
-                  <Chip
-                    icon={enrollment.isCompleted ? <CheckCircleIcon /> : <PlayCircleIcon />}
-                    label={enrollment.isCompleted ? "Hoàn thành" : "Đang học"}
-                    size="small"
-                    sx={{
-                      bgcolor: enrollment.isCompleted ? "success.50" : "info.50",
-                      color: enrollment.isCompleted ? "success.main" : "info.main",
-                      fontWeight: 600,
-                      border: "1px solid",
-                      borderColor: enrollment.isCompleted ? "success.200" : "info.200",
-                    }}
-                  />
-                </Box>
-
-                <Box sx={{ mb: 1 }}>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      Tiến độ học tập
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 700, color: "primary.main" }}>
-                      {progress}%
-                    </Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={progress}
-                    sx={{
-                      height: 10,
-                      borderRadius: 5,
-                      bgcolor: "grey.200",
-                      "& .MuiLinearProgress-bar": {
-                        bgcolor: enrollment.isCompleted ? "success.main" : "primary.main",
-                        borderRadius: 5,
-                      },
-                    }}
-                  />
-                </Box>
-
-                {enrollment.totalLessonsCount && (
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 2 }}>
+                  <Box sx={{ mt: 1 }}>
+                    <LinearProgress
+                      variant="determinate"
+                      value={progressPct}
+                      sx={{ height: 8, borderRadius: 1 }}
+                    />
                     <Typography variant="caption" color="text.secondary">
-                      Bài học: {enrollment.completedLessonsCount || 0}/{enrollment.totalLessonsCount}
+                      {progressPct}% hoàn thành
                     </Typography>
                   </Box>
+                </Box>
+                {tab === "COMPLETED" ? (
+                  <Button
+                    startIcon={<CheckCircleOutlineIcon />}
+                    variant="text"
+                    onClick={() => navigate(detailPath)}
+                    size="small"
+                  >
+                    Xem chi tiết
+                  </Button>
+                ) : (
+                  <Button
+                    startIcon={<PlayArrowIcon />}
+                    variant="contained"
+                    onClick={() => navigate(detailPath)}
+                    size="small"
+                  >
+                    Tiếp tục học
+                  </Button>
                 )}
-              </CardContent>
-            </Card>
-          </motion.div>
-        );
-      })}
-    </Box>
+              </Box>
+              {isOpen && (
+                <Box sx={{ mt: 2, pl: 7 }}>
+                  {(!lessonsState || lessonsState.loading) && (
+                    <Stack spacing={1.25}>
+                      {Array.from({ length: 2 }).map((_, i) => (
+                        <Skeleton key={i} variant="rounded" height={52} />
+                      ))}
+                    </Stack>
+                  )}
+                  {lessonsState?.error && (
+                    <Typography variant="body2" color="error">
+                      {lessonsState.error}
+                    </Typography>
+                  )}
+                  {lessonsState &&
+                    !lessonsState.loading &&
+                    !lessonsState.error && (
+                      <Stack spacing={1.25}>
+                        {lessonsState.items.length === 0 && (
+                          <Typography variant="body2" color="text.secondary">
+                            Chưa tham gia bài học nào.
+                          </Typography>
+                        )}
+                        {lessonsState.items.map((lp) => {
+                          const title =
+                            lp.lesson?.title || `Bài học ${lp.lessonId}`;
+                          const lsDetail = PATH_USER.lessonDetail.replace(
+                            ":id",
+                            lp.lessonId
+                          );
+                          const statusColor =
+                            lp.status === LessonStatus.Completed
+                              ? "success"
+                              : lp.status === LessonStatus.InProgress
+                              ? "warning"
+                              : "default";
+                          const statusText =
+                            lp.status === LessonStatus.Completed
+                              ? "Hoàn thành"
+                              : lp.status === LessonStatus.InProgress
+                              ? "Đang học"
+                              : "Chưa bắt đầu";
+                          return (
+                            <Paper
+                              key={lp.id}
+                              variant="outlined"
+                              sx={{
+                                p: 1.5,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1.5,
+                                cursor: "pointer",
+                                transition: "all 0.2s",
+                                "&:hover": {
+                                  bgcolor: "action.hover",
+                                },
+                              }}
+                              onClick={() => navigate(lsDetail)}
+                            >
+                              <MenuBookIcon
+                                fontSize="small"
+                                color={statusColor as any}
+                              />
+                              <Typography
+                                variant="body2"
+                                sx={{ flexGrow: 1, fontWeight: 500 }}
+                              >
+                                {title}
+                              </Typography>
+                              <Chip
+                                label={statusText}
+                                size="small"
+                                color={statusColor as any}
+                                variant="outlined"
+                              />
+                            </Paper>
+                          );
+                        })}
+                      </Stack>
+                    )}
+                </Box>
+              )}
+            </Paper>
+          );
+        })}
+    </Stack>
   );
 }

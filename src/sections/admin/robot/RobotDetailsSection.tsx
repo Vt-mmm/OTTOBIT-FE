@@ -6,7 +6,6 @@ import {
   CardContent,
   Typography,
   Grid,
-  Chip,
   Dialog,
   DialogContent,
   IconButton,
@@ -25,15 +24,13 @@ import {
   ZoomIn as ZoomInIcon,
   Link as LinkIcon,
   SmartToy as RobotIcon,
-  AttachMoney as PriceIcon,
-  Inventory as StockIcon,
   Group as AgeIcon,
 } from "@mui/icons-material";
-import { useAppDispatch, useAppSelector } from "../../../redux/config";
-import { deleteRobotThunk } from "../../../redux/robot/robotThunks";
+import { useAppDispatch, useAppSelector } from "store/config";
+import { deleteRobotThunk } from "store/robot/robotThunks";
 import { RobotResult } from "../../../common/@types/robot";
 import ImageManagement from "../../../components/admin/ImageManagement";
-import { formatVND } from "../../../utils/utils";
+import RobotComponentsTab from "./RobotComponentsTab";
 
 interface RobotDetailsSectionProps {
   robot: RobotResult | null;
@@ -66,24 +63,6 @@ export default function RobotDetailsSection({
   };
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-  };
-
-  const getStockStatusColor = (stock: number): "default" | "primary" | "secondary" | "success" | "warning" | "info" | "error" => {
-    if (stock === 0) return "error";
-    if (stock < 10) return "warning";
-    return "success";
-  };
-
-  const getStockStatusIconColor = (stock: number): "disabled" | "action" | "inherit" | "error" | "success" | "info" | "warning" | "primary" | "secondary" => {
-    if (stock === 0) return "error";
-    if (stock < 10) return "warning";
-    return "success";
-  };
-
-  const getStockStatusText = (stock: number) => {
-    if (stock === 0) return "Out of Stock";
-    if (stock < 10) return "Low Stock";
-    return "In Stock";
   };
 
   const formatDate = (dateString: string) => {
@@ -119,7 +98,7 @@ export default function RobotDetailsSection({
             startIcon={<DeleteIcon />}
             onClick={() => setShowDeleteConfirm(true)}
             disabled={operations.isDeleting}
-            >
+          >
             Delete
           </Button>
         </Box>
@@ -134,25 +113,26 @@ export default function RobotDetailsSection({
           textColor="primary"
           variant="standard"
           sx={{
-            '& .MuiTab-root': {
+            "& .MuiTab-root": {
               minWidth: 160,
               px: 3,
               py: 1.5,
-              fontSize: '0.95rem',
+              fontSize: "0.95rem",
               fontWeight: 500,
-              textTransform: 'none',
-              '&:not(:last-child)': {
-                mr: 2
-              }
+              textTransform: "none",
+              "&:not(:last-child)": {
+                mr: 2,
+              },
             },
-            '& .MuiTabs-indicator': {
+            "& .MuiTabs-indicator": {
               height: 3,
-              borderRadius: '3px 3px 0 0'
-            }
+              borderRadius: "3px 3px 0 0",
+            },
           }}
         >
           <Tab label="Robot Information" />
           <Tab label="Images" />
+          <Tab label="Components (BOM)" />
         </Tabs>
       </Box>
 
@@ -199,7 +179,7 @@ export default function RobotDetailsSection({
                         }}
                         onError={(e) => {
                           // Hide broken image and show fallback
-                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.style.display = "none";
                         }}
                       />
                       {/* Zoom Icon */}
@@ -214,27 +194,6 @@ export default function RobotDetailsSection({
                       >
                         <ZoomInIcon />
                       </IconButton>
-
-                      {/* Status Chips */}
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          top: 8,
-                          left: 8,
-                          display: "flex",
-                          gap: 1,
-                        }}
-                      >
-                        <Chip
-                          label={formatVND(robot.price)}
-                          color="primary"
-                          sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
-                        />
-                        <Chip
-                          label={getStockStatusText(robot.stockQuantity)}
-                          color={getStockStatusColor(robot.stockQuantity)}
-                        />
-                      </Box>
                     </Box>
                   ) : (
                     <Box
@@ -272,27 +231,6 @@ export default function RobotDetailsSection({
                         <Typography variant="body2" color="text.secondary">
                           No product image available
                         </Typography>
-                      </Box>
-
-                      {/* Status Chips */}
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          top: 8,
-                          left: 8,
-                          display: "flex",
-                          gap: 1,
-                        }}
-                      >
-                        <Chip
-                          label={formatVND(robot.price)}
-                          color="primary"
-                          sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
-                        />
-                        <Chip
-                          label={getStockStatusText(robot.stockQuantity)}
-                          color={getStockStatusColor(robot.stockQuantity)}
-                        />
                       </Box>
                     </Box>
                   )}
@@ -387,38 +325,6 @@ export default function RobotDetailsSection({
 
                   <Divider />
 
-                  {/* Pricing & Inventory */}
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Price
-                    </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <PriceIcon color="primary" />
-                      <Typography variant="h6" color="primary.main">
-                        {formatVND(robot.price)}
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Stock Status
-                    </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <StockIcon
-                        color={getStockStatusIconColor(robot.stockQuantity)}
-                      />
-                      <Typography variant="body1">
-                        {robot.stockQuantity} units
-                      </Typography>
-                      <Chip
-                        label={getStockStatusText(robot.stockQuantity)}
-                        color={getStockStatusColor(robot.stockQuantity)}
-                        size="small"
-                      />
-                    </Box>
-                  </Box>
-
                   <Box>
                     <Typography variant="body2" color="text.secondary">
                       Age Range
@@ -430,7 +336,6 @@ export default function RobotDetailsSection({
                       </Typography>
                     </Box>
                   </Box>
-
 
                   {/* Image URL */}
                   {robot.imageUrl && (
@@ -501,6 +406,11 @@ export default function RobotDetailsSection({
         />
       )}
 
+      {/* Components Tab */}
+      {currentTab === 2 && (
+        <RobotComponentsTab robotId={robot.id} robotName={robot.name} />
+      )}
+
       {/* Full Screen Image Dialog */}
       {robot.imageUrl && (
         <Dialog
@@ -557,7 +467,8 @@ export default function RobotDetailsSection({
             Delete Robot Product
           </Typography>
           <Typography variant="body1" sx={{ mb: 3 }}>
-            Are you sure you want to delete "{robot.name}"? This action cannot be undone.
+            Are you sure you want to delete "{robot.name}"? This action cannot
+            be undone.
           </Typography>
           <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
             <Button
@@ -581,7 +492,6 @@ export default function RobotDetailsSection({
           </Box>
         </DialogContent>
       </Dialog>
-
     </Box>
   );
 }

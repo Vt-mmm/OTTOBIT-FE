@@ -19,14 +19,12 @@ import { useAppDispatch, useAppSelector } from "store/config";
 import { getRobotsThunk } from "store/robot/robotThunks";
 import { getComponentsThunk } from "store/component/componentThunks";
 import { PATH_PUBLIC, PATH_USER } from "routes/paths";
-import { formatVND } from "utils/utils";
 
 const categories = ["Robots", "Components"];
 
 interface Product {
   id: string;
   name: string;
-  price: number;
   image?: string;
   type: "robot" | "component";
 }
@@ -68,7 +66,6 @@ export default function BestSellingProductSection() {
         robots.data?.items?.slice(0, 4).map((robot) => ({
           id: robot.id,
           name: robot.name,
-          price: robot.price || 0,
           image: robot.imageUrl || "/asset/OttobitCar.png",
           type: "robot" as const,
         })) || []
@@ -78,7 +75,6 @@ export default function BestSellingProductSection() {
         components.data?.items?.slice(0, 4).map((component) => ({
           id: component.id,
           name: component.name,
-          price: component.price || 0,
           image: component.imageUrl || "/asset/Microbitv2-removebg-preview.png",
           type: "component" as const,
         })) || []
@@ -100,9 +96,9 @@ export default function BestSellingProductSection() {
         : isAuthenticated
         ? PATH_USER.components
         : PATH_PUBLIC.components;
-    
+
     // Scroll to top before navigation
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo({ top: 0, behavior: "instant" });
     navigate(targetPath);
   };
 
@@ -128,7 +124,6 @@ export default function BestSellingProductSection() {
     ];
     return gradients[index % gradients.length];
   };
-
 
   return (
     <Box
@@ -370,26 +365,10 @@ export default function BestSellingProductSection() {
                         fontSize: "0.9rem",
                       }}
                     >
-                      {product.type === "robot" ? "Popular items" : "Popular items"}
+                      {product.type === "robot"
+                        ? "Popular items"
+                        : "Popular items"}
                     </Typography>
-
-                    {/* Price Section */}
-                    <Box
-                      sx={{
-                        mb: 2.5,
-                      }}
-                    >
-                      <Typography
-                        variant="h5"
-                        sx={{
-                          fontWeight: 700,
-                          color: "#2c3e50",
-                          fontSize: "1.4rem",
-                        }}
-                      >
-                        {formatVND(product.price)}
-                      </Typography>
-                    </Box>
 
                     {/* Action Buttons */}
                     <Box
@@ -433,7 +412,9 @@ export default function BestSellingProductSection() {
                           e.stopPropagation();
                         }}
                       >
-                        <CompareArrowsIcon sx={{ color: "#7f8c8d", fontSize: 20 }} />
+                        <CompareArrowsIcon
+                          sx={{ color: "#7f8c8d", fontSize: 20 }}
+                        />
                       </IconButton>
                     </Box>
                   </Box>

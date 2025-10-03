@@ -3,17 +3,12 @@ export interface Image {
   id: string;
   url: string;
   robotId?: string; // Optional - links to Robot
-  componentId?: string; // Optional - links to Component  
   createdAt: string;
   updatedAt: string;
   isDeleted?: boolean;
-  
+
   // Navigation properties (if populated by BE)
   robot?: {
-    id: string;
-    name: string;
-  };
-  component?: {
     id: string;
     name: string;
   };
@@ -23,18 +18,15 @@ export interface Image {
 export interface CreateImageRequest {
   url: string;
   robotId?: string; // Optional - links to Robot
-  componentId?: string; // Optional - links to Component
 }
 
 export interface UpdateImageRequest {
   url?: string;
-  robotId?: string; // Optional - links to Robot  
-  componentId?: string; // Optional - links to Component
+  robotId?: string; // Optional - links to Robot
 }
 
 export interface GetImagesRequest {
   robotId?: string; // Filter by robot
-  componentId?: string; // Filter by component
   pageNumber?: number;
   pageSize?: number;
   sortBy?: number;

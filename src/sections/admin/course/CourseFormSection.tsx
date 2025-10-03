@@ -240,7 +240,7 @@ export default function CourseFormSection({
                       }
                     >
                       <MenuItem value={CourseType.Free}>Miễn phí</MenuItem>
-                      <MenuItem value={CourseType.Paid}>Trả phí</MenuItem>
+                      <MenuItem value={CourseType.Premium}>Trả phí</MenuItem>
                     </Select>
                   </FormControl>
                 </Stack>
