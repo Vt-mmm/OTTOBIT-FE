@@ -92,6 +92,12 @@ export default function CourseDetailsSection({
   // Fetch course maps for this course
   const [courseMaps, setCourseMaps] = useState<any[]>([]);
   const [courseMapsLoading, setCourseMapsLoading] = useState(false);
+  const [courseMapsPagination, setCourseMapsPagination] = useState({
+    page: 1,
+    pageSize: 12,
+    total: 0,
+    totalPages: 1,
+  });
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [availableMaps, setAvailableMaps] = useState<any[]>([]);
   const [selectedMapId, setSelectedMapId] = useState<string>("");
@@ -101,32 +107,38 @@ export default function CourseDetailsSection({
     open: boolean;
     id: string | null;
     mapTitle: string;
-  }>({ open: false, id: null, mapTitle: "" });
+    isDeleted: boolean;
+  }>({ open: false, id: null, mapTitle: "", isDeleted: false });
+  const fetchCourseMaps = async (page = 1) => {
+    if (!course?.id) return;
+    setCourseMapsLoading(true);
+    try {
+      const res = await axiosClient.get(ROUTES_API_COURSE_MAP.GET_ALL, {
+        params: {
+          courseId: course.id,
+          PageNumber: page,
+          PageSize: courseMapsPagination.pageSize,
+          IncludeDeleted: true,
+        },
+      });
+      const data = (res as any)?.data?.data;
+      const items = Array.isArray(data?.items) ? data.items : [];
+      setCourseMaps(items);
+      setCourseMapsPagination((prev) => ({
+        ...prev,
+        page: page,
+        total: data?.total || 0,
+        totalPages: data?.totalPages || 1,
+      }));
+    } catch (_e) {
+      setCourseMaps([]);
+    } finally {
+      setCourseMapsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchCourseMaps = async () => {
-      if (!course?.id) return;
-      setCourseMapsLoading(true);
-      try {
-        const res = await axiosClient.get(ROUTES_API_COURSE_MAP.GET_ALL, {
-          params: { courseId: course.id },
-        });
-        const data = (res as any)?.data?.data;
-        // Support both paged and flat arrays just in case
-        const items = Array.isArray(data?.items)
-          ? data.items
-          : Array.isArray(data)
-          ? data
-          : data
-          ? [data]
-          : [];
-        setCourseMaps(items);
-      } catch (_e) {
-        setCourseMaps([]);
-      } finally {
-        setCourseMapsLoading(false);
-      }
-    };
-    fetchCourseMaps();
+    fetchCourseMaps(1);
   }, [course?.id]);
 
   // Load available maps for add dialog
@@ -398,6 +410,7 @@ export default function CourseDetailsSection({
                         <TableCell>Thứ tự</TableCell>
                         <TableCell>Tên map</TableCell>
                         <TableCell>Mô tả</TableCell>
+                        <TableCell>Trạng thái</TableCell>
                         <TableCell>Ngày tạo</TableCell>
                         <TableCell align="right">Thao tác</TableCell>
                       </TableRow>
@@ -433,32 +446,94 @@ export default function CourseDetailsSection({
                               </Typography>
                             </TableCell>
                             <TableCell>
+                              <Chip
+                                label={m.isDeleted ? "Đã xóa" : "Hoạt động"}
+                                size="small"
+                                color={m.isDeleted ? "error" : "success"}
+                                variant="outlined"
+                              />
+                            </TableCell>
+                            <TableCell>
                               {m.createdAt
                                 ? new Date(m.createdAt).toLocaleString("vi-VN")
                                 : "-"}
                             </TableCell>
                             <TableCell align="right">
-                              <Button
-                                size="small"
-                                color="error"
-                                variant="outlined"
-                                startIcon={<DeleteIcon />}
-                                onClick={() =>
-                                  setDeleteDialog({
-                                    open: true,
-                                    id: m.id,
-                                    mapTitle: m.mapTitle || m.mapId,
-                                  })
-                                }
-                              >
-                                Xóa
-                              </Button>
+                              {m.isDeleted ? (
+                                <Button
+                                  size="small"
+                                  color="success"
+                                  variant="outlined"
+                                  onClick={() =>
+                                    setDeleteDialog({
+                                      open: true,
+                                      id: m.id,
+                                      mapTitle: m.mapTitle || m.mapId,
+                                      isDeleted: true,
+                                    })
+                                  }
+                                >
+                                  Khôi phục
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="small"
+                                  color="error"
+                                  variant="outlined"
+                                  startIcon={<DeleteIcon />}
+                                  onClick={() =>
+                                    setDeleteDialog({
+                                      open: true,
+                                      id: m.id,
+                                      mapTitle: m.mapTitle || m.mapId,
+                                      isDeleted: false,
+                                    })
+                                  }
+                                >
+                                  Xóa
+                                </Button>
+                              )}
                             </TableCell>
                           </TableRow>
                         ))}
                     </TableBody>
                   </Table>
                 </TableContainer>
+              )}
+
+              {/* Pagination */}
+              {courseMapsPagination.totalPages > 1 && (
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      disabled={courseMapsPagination.page <= 1}
+                      onClick={() =>
+                        fetchCourseMaps(courseMapsPagination.page - 1)
+                      }
+                    >
+                      Trước
+                    </Button>
+                    <Typography variant="body2">
+                      Trang {courseMapsPagination.page} /{" "}
+                      {courseMapsPagination.totalPages}
+                    </Typography>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      disabled={
+                        courseMapsPagination.page >=
+                        courseMapsPagination.totalPages
+                      }
+                      onClick={() =>
+                        fetchCourseMaps(courseMapsPagination.page + 1)
+                      }
+                    >
+                      Sau
+                    </Button>
+                  </Stack>
+                </Box>
               )}
             </CardContent>
           </Card>
@@ -515,21 +590,7 @@ export default function CourseDetailsSection({
                   setSelectedMapId("");
                   setMapOrder(0);
                   // refresh list
-                  const res = await axiosClient.get(
-                    ROUTES_API_COURSE_MAP.GET_ALL,
-                    {
-                      params: { courseId: course.id },
-                    }
-                  );
-                  const data = (res as any)?.data?.data;
-                  const items = Array.isArray(data?.items)
-                    ? data.items
-                    : Array.isArray(data)
-                    ? data
-                    : data
-                    ? [data]
-                    : [];
-                  setCourseMaps(items);
+                  await fetchCourseMaps(courseMapsPagination.page);
                 } finally {
                   setSubmitting(false);
                 }
@@ -540,45 +601,70 @@ export default function CourseDetailsSection({
           </DialogActions>
         </Dialog>
 
-        {/* Delete Course Map Confirmation */}
+        {/* Delete/Restore Course Map Confirmation */}
         <Dialog
           open={deleteDialog.open}
           onClose={() =>
-            setDeleteDialog({ open: false, id: null, mapTitle: "" })
+            setDeleteDialog({
+              open: false,
+              id: null,
+              mapTitle: "",
+              isDeleted: false,
+            })
           }
         >
-          <DialogTitle>Xác nhận xóa</DialogTitle>
+          <DialogTitle>
+            {deleteDialog.isDeleted ? "Xác nhận khôi phục" : "Xác nhận xóa"}
+          </DialogTitle>
           <DialogContent>
             <Typography>
-              Bạn có chắc muốn xóa course map "{deleteDialog.mapTitle}"?
+              Bạn có chắc muốn {deleteDialog.isDeleted ? "khôi phục" : "xóa"}{" "}
+              course map "{deleteDialog.mapTitle}"?
             </Typography>
           </DialogContent>
           <DialogActions>
             <Button
               onClick={() =>
-                setDeleteDialog({ open: false, id: null, mapTitle: "" })
+                setDeleteDialog({
+                  open: false,
+                  id: null,
+                  mapTitle: "",
+                  isDeleted: false,
+                })
               }
             >
               Hủy
             </Button>
             <Button
-              color="error"
+              color={deleteDialog.isDeleted ? "success" : "error"}
               variant="contained"
               onClick={async () => {
                 if (!deleteDialog.id) return;
                 try {
-                  await axiosClient.delete(
-                    ROUTES_API_COURSE_MAP.DELETE(deleteDialog.id)
-                  );
-                  setCourseMaps((prev) =>
-                    prev.filter((x: any) => x.id !== deleteDialog.id)
-                  );
+                  if (deleteDialog.isDeleted) {
+                    // Restore
+                    await axiosClient.post(
+                      ROUTES_API_COURSE_MAP.RESTORE(deleteDialog.id)
+                    );
+                  } else {
+                    // Delete
+                    await axiosClient.delete(
+                      ROUTES_API_COURSE_MAP.DELETE(deleteDialog.id)
+                    );
+                  }
+                  // Refresh list
+                  await fetchCourseMaps(courseMapsPagination.page);
                 } finally {
-                  setDeleteDialog({ open: false, id: null, mapTitle: "" });
+                  setDeleteDialog({
+                    open: false,
+                    id: null,
+                    mapTitle: "",
+                    isDeleted: false,
+                  });
                 }
               }}
             >
-              Xóa
+              {deleteDialog.isDeleted ? "Khôi phục" : "Xóa"}
             </Button>
           </DialogActions>
         </Dialog>

@@ -1101,7 +1101,13 @@ const MapDesignerPage = () => {
               onChallengeJsonChange={handleChallengeJsonChange}
               challengeJson={challengeJson}
               onSaveMap={handleSaveMap}
-              onOpenMapPicker={() => setMapPickerOpen(true)}
+              onOpenMapPicker={() => {
+                if (!courseId) {
+                  alert("Vui lòng chọn khóa học trước khi chọn map!");
+                  return;
+                }
+                setMapPickerOpen(true);
+              }}
               registerOpenChallengeTrigger={(fn: () => void) => {
                 (openChallengeDialogRef as any).current = fn;
               }}
@@ -1262,6 +1268,7 @@ const MapDesignerPage = () => {
       <MapPickerDialog
         open={mapPickerOpen}
         onClose={() => setMapPickerOpen(false)}
+        courseId={courseId}
         onSelect={async (m: any) => {
           setMapPickerOpen(false);
           try {
