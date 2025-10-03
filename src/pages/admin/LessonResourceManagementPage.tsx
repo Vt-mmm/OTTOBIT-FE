@@ -71,7 +71,7 @@ export default function LessonResourceManagementPage() {
                 component="h1"
                 sx={{ fontWeight: 700, color: "#1a1a1a" }}
               >
-                Quản lý Tài nguyên Bài học
+                Quản lý Tài nguyên Học tập
               </Typography>
               <Typography variant="body1" sx={{ color: "#666", mt: 1 }}>
                 {headerSubtitle}

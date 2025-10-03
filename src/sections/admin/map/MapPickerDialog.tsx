@@ -28,12 +28,14 @@ interface MapPickerDialogProps {
   open: boolean;
   onClose: () => void;
   onSelect: (map: MapSummary) => void;
+  courseId?: string; // Filter maps by course
 }
 
 export default function MapPickerDialog({
   open,
   onClose,
   onSelect,
+  courseId,
 }: MapPickerDialogProps) {
   const [search, setSearch] = useState("");
   const [committed, setCommitted] = useState("");
@@ -49,27 +51,40 @@ export default function MapPickerDialog({
     const fetchMaps = async () => {
       try {
         setLoading(true);
-        const res = await axiosClient.get("/api/v1/maps", {
-          params: {
-            SearchTerm: committed || undefined,
-            IncludeDeleted: false,
-            PageNumber: page,
-            PageSize: pageSize,
-          },
-        });
-        const data = (res as any)?.data?.data || (res as any)?.data || {};
-        const list = Array.isArray(data.items) ? data.items : [];
-        const tp =
-          typeof data.totalPages === "number"
-            ? data.totalPages
-            : typeof data.total === "number" &&
-              typeof data.pageSize === "number"
-            ? Math.max(1, Math.ceil(data.total / data.pageSize))
-            : list.length < pageSize && page === 1
-            ? 1
-            : 1;
-        if (!cancelled) setItems(list);
-        if (!cancelled) setTotalPages(tp);
+        let res;
+
+        if (courseId) {
+          // Fetch course-maps for specific course
+          res = await axiosClient.get("/api/v1/course-maps", {
+            params: {
+              CourseId: courseId,
+              PageNumber: page,
+              PageSize: pageSize,
+            },
+          });
+          const data = (res as any)?.data?.data || (res as any)?.data || {};
+          const courseMaps = Array.isArray(data.items) ? data.items : [];
+
+          // Transform course-maps to MapSummary format
+          const list = courseMaps.map((cm: any) => ({
+            id: cm.mapId,
+            title: cm.mapTitle || "Unknown Map",
+            description: cm.mapDescription || "",
+            mapJson: cm.mapJson,
+            createdAt: cm.createdAt,
+          }));
+
+          const tp = Math.max(
+            1,
+            Math.ceil((data.total || list.length) / pageSize)
+          );
+          if (!cancelled) setItems(list);
+          if (!cancelled) setTotalPages(tp);
+        } else {
+          // No courseId - show empty list with message
+          if (!cancelled) setItems([]);
+          if (!cancelled) setTotalPages(1);
+        }
       } catch (e) {
         if (!cancelled) setItems([]);
         if (!cancelled) setTotalPages(1);
@@ -81,7 +96,7 @@ export default function MapPickerDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, committed, page, pageSize]);
+  }, [open, committed, page, pageSize, courseId]);
 
   const triggerSearch = () => {
     setCommitted(search.trim());
@@ -107,24 +122,28 @@ export default function MapPickerDialog({
       disableEnforceFocus
       disableAutoFocus
     >
-      <DialogTitle>Select a Map</DialogTitle>
+      <DialogTitle>
+        {courseId ? "Select a Map from Course" : "Select a Map"}
+      </DialogTitle>
       <DialogContent dividers>
-        <TextField
-          fullWidth
-          placeholder="Search maps..."
-          size="small"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && triggerSearch()}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-          sx={{ mb: 2 }}
-        />
+        {!courseId && (
+          <TextField
+            fullWidth
+            placeholder="Search maps..."
+            size="small"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && triggerSearch()}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ mb: 2 }}
+          />
+        )}
         <List
           dense
           sx={{
@@ -141,7 +160,11 @@ export default function MapPickerDialog({
           )}
           {!loading && items.length === 0 && (
             <Box sx={{ p: 2 }}>
-              <Typography variant="body2">No maps found</Typography>
+              <Typography variant="body2">
+                {courseId
+                  ? "No maps found"
+                  : "Vui lòng chọn khóa học trước khi chọn map"}
+              </Typography>
             </Box>
           )}
           {items.map((m) => (
