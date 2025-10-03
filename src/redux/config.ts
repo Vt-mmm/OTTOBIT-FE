@@ -9,15 +9,16 @@ import submissionReducer from "./submission/submissionSlice";
 import lessonReducer from "./lesson/lessonSlice";
 import challengeReducer from "./challenge/challengeSlice";
 import mapReducer from "./map/mapSlice";
-import challengeProcessReducer from "./challengeProcess/challengeProcessSlice";
 import lessonProgressReducer from "./lessonProgress/lessonProgressSlice";
 import imageReducer from "./image/imageSlice";
 import componentReducer from "./component/componentSlice";
 import robotReducer from "./robot/robotSlice";
 import courseMapReducer from "./courseMap/courseMapSlice";
 import courseRobotReducer from "./courseRobot/courseRobotSlice";
-import studentRobotReducer from "./studentRobot/studentRobotSlice";
 import activationCodeReducer from "./activationCode/activationCodeSlice";
+import robotComponentReducer from "./robotComponent/robotComponentSlice";
+import certificateReducer from "./certificate/certificateSlice";
+import certificateTemplateReducer from "./certificateTemplate/certificateTemplateSlice";
 
 export const ottobit = configureStore({
   reducer: {
@@ -30,15 +31,16 @@ export const ottobit = configureStore({
     lesson: lessonReducer,
     challenge: challengeReducer,
     map: mapReducer, // ⭐️ NEW: Map management
-    challengeProcess: challengeProcessReducer, // ⭐️ NEW: Challenge progress tracking
     lessonProgress: lessonProgressReducer, // ⭐️ NEW: Lesson progress tracking
     image: imageReducer, // ⭐️ NEW: Image management
     component: componentReducer, // ⭐️ NEW: Component management
     robot: robotReducer, // ⭐️ NEW: Robot management
     courseMap: courseMapReducer, // ⭐️ NEW: CourseMap management
     courseRobot: courseRobotReducer, // ⭐️ NEW: CourseRobot (Course-Robot relationship)
-    studentRobot: studentRobotReducer, // ⭐️ NEW: StudentRobot (Student's activated robots)
     activationCode: activationCodeReducer, // ⭐️ NEW: ActivationCode (Robot activation codes)
+    robotComponent: robotComponentReducer, // ⭐️ NEW: RobotComponent (Robot-Component relationship)
+    certificate: certificateReducer, // ⭐️ NEW: Certificate management
+    certificateTemplate: certificateTemplateReducer, // ⭐️ NEW: CertificateTemplate management
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

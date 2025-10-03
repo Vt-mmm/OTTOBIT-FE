@@ -1,5 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { CourseRobotResult, CourseRobotsResponse } from "common/@types/courseRobot";
+import {
+  CourseRobotResult,
+  CourseRobotsResponse,
+} from "common/@types/courseRobot";
 import {
   getCourseRobotsThunk,
   getCourseRobotsByCourseThunk,
@@ -7,6 +10,9 @@ import {
   createCourseRobotThunk,
   updateCourseRobotThunk,
   deleteCourseRobotThunk,
+  restoreCourseRobotThunk,
+  getCourseRobotsForAdminThunk,
+  getCourseRobotByIdForAdminThunk,
 } from "./courseRobotThunks";
 
 interface CourseRobotState {
@@ -36,12 +42,15 @@ interface CourseRobotState {
     isCreating: boolean;
     isUpdating: boolean;
     isDeleting: boolean;
+    isRestoring: boolean;
     createError: string | null;
     updateError: string | null;
     deleteError: string | null;
+    restoreError: string | null;
     createSuccess: boolean;
     updateSuccess: boolean;
     deleteSuccess: boolean;
+    restoreSuccess: boolean;
   };
 }
 
@@ -62,12 +71,15 @@ const initialState: CourseRobotState = {
     isCreating: false,
     isUpdating: false,
     isDeleting: false,
+    isRestoring: false,
     createError: null,
     updateError: null,
     deleteError: null,
+    restoreError: null,
     createSuccess: false,
     updateSuccess: false,
     deleteSuccess: false,
+    restoreSuccess: false,
   },
 };
 
@@ -81,17 +93,22 @@ const courseRobotSlice = createSlice({
       state.operations.createError = null;
       state.operations.updateError = null;
       state.operations.deleteError = null;
+      state.operations.restoreError = null;
     },
     clearSuccessFlags: (state) => {
       state.operations.createSuccess = false;
       state.operations.updateSuccess = false;
       state.operations.deleteSuccess = false;
+      state.operations.restoreSuccess = false;
     },
     clearCurrentCourseRobot: (state) => {
       state.currentCourseRobot.data = null;
       state.currentCourseRobot.error = null;
     },
-    setCurrentCourseRobot: (state, action: PayloadAction<CourseRobotResult>) => {
+    setCurrentCourseRobot: (
+      state,
+      action: PayloadAction<CourseRobotResult>
+    ) => {
       state.currentCourseRobot.data = action.payload;
       state.currentCourseRobot.error = null;
     },
@@ -122,7 +139,11 @@ const courseRobotSlice = createSlice({
       .addCase(getCourseRobotsByCourseThunk.pending, (state, action) => {
         const courseId = action.meta.arg;
         if (!state.robotsByCourse[courseId]) {
-          state.robotsByCourse[courseId] = { data: null, isLoading: false, error: null };
+          state.robotsByCourse[courseId] = {
+            data: null,
+            isLoading: false,
+            error: null,
+          };
         }
         state.robotsByCourse[courseId].isLoading = true;
         state.robotsByCourse[courseId].error = null;
@@ -279,6 +300,87 @@ const courseRobotSlice = createSlice({
         state.operations.isDeleting = false;
         state.operations.deleteError = action.payload as string;
         state.operations.deleteSuccess = false;
+      });
+
+    // ========== ADMIN THUNKS ==========
+
+    // Get CourseRobots for Admin
+    builder
+      .addCase(getCourseRobotsForAdminThunk.pending, (state, action) => {
+        state.courseRobots.isLoading = true;
+        state.courseRobots.error = null;
+        state.courseRobots.lastQuery = action.meta.arg;
+      })
+      .addCase(getCourseRobotsForAdminThunk.fulfilled, (state, action) => {
+        state.courseRobots.isLoading = false;
+        state.courseRobots.data = action.payload;
+        state.courseRobots.error = null;
+      })
+      .addCase(getCourseRobotsForAdminThunk.rejected, (state, action) => {
+        state.courseRobots.isLoading = false;
+        state.courseRobots.error = action.payload as string;
+      });
+
+    // Get CourseRobot By ID for Admin
+    builder
+      .addCase(getCourseRobotByIdForAdminThunk.pending, (state) => {
+        state.currentCourseRobot.isLoading = true;
+        state.currentCourseRobot.error = null;
+      })
+      .addCase(getCourseRobotByIdForAdminThunk.fulfilled, (state, action) => {
+        state.currentCourseRobot.isLoading = false;
+        state.currentCourseRobot.data = action.payload;
+        state.currentCourseRobot.error = null;
+      })
+      .addCase(getCourseRobotByIdForAdminThunk.rejected, (state, action) => {
+        state.currentCourseRobot.isLoading = false;
+        state.currentCourseRobot.error = action.payload as string;
+      });
+
+    // Restore CourseRobot
+    builder
+      .addCase(restoreCourseRobotThunk.pending, (state) => {
+        state.operations.isRestoring = true;
+        state.operations.restoreError = null;
+        state.operations.restoreSuccess = false;
+      })
+      .addCase(restoreCourseRobotThunk.fulfilled, (state, action) => {
+        state.operations.isRestoring = false;
+        state.operations.restoreSuccess = true;
+        state.operations.restoreError = null;
+
+        // Add restored courseRobot back to the list if list exists
+        if (state.courseRobots.data?.items) {
+          // Check if it already exists (shouldn't, but just in case)
+          const existingIndex = state.courseRobots.data.items.findIndex(
+            (item) => item.id === action.payload.id
+          );
+          if (existingIndex === -1) {
+            state.courseRobots.data.items.unshift(action.payload);
+            state.courseRobots.data.total += 1;
+          } else {
+            // Update existing item
+            state.courseRobots.data.items[existingIndex] = action.payload;
+          }
+        }
+
+        // Add to robotsByCourse if relevant
+        const courseId = action.payload.courseId;
+        if (state.robotsByCourse[courseId]?.data) {
+          const existingIndex = state.robotsByCourse[courseId].data!.findIndex(
+            (item) => item.id === action.payload.id
+          );
+          if (existingIndex === -1) {
+            state.robotsByCourse[courseId].data!.unshift(action.payload);
+          } else {
+            state.robotsByCourse[courseId].data![existingIndex] = action.payload;
+          }
+        }
+      })
+      .addCase(restoreCourseRobotThunk.rejected, (state, action) => {
+        state.operations.isRestoring = false;
+        state.operations.restoreError = action.payload as string;
+        state.operations.restoreSuccess = false;
       });
   },
 });

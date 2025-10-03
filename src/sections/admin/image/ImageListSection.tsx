@@ -42,8 +42,8 @@ interface ImageListSectionProps {
   ) => void;
   /** Robot ID to filter images */
   robotId?: string;
-  /** Component ID to filter images */
-  componentId?: string;
+  /** Component ID to filter images - Removed */
+  // componentId?: string;
   /** Allow creation of new images */
   allowCreate?: boolean;
   /** Allow editing of existing images */
@@ -55,7 +55,7 @@ interface ImageListSectionProps {
 export default function ImageListSection({
   onViewModeChange,
   robotId,
-  componentId,
+  // componentId,
   allowCreate = true,
   allowEdit = true,
   allowDelete = true,
@@ -73,13 +73,12 @@ export default function ImageListSection({
     const filters = {
       pageNumber,
       pageSize,
-      // If we're filtering by specific robot/component, send that to backend
+      // If we're filtering by specific robot, send that to backend
       ...(robotId && { robotId }),
-      ...(componentId && { componentId }),
     };
 
     dispatch(getImagesThunk(filters));
-  }, [dispatch, pageNumber, robotId, componentId]);
+  }, [dispatch, pageNumber, robotId]);
 
   // Clear success flags after operations
   useEffect(() => {
@@ -103,10 +102,10 @@ export default function ImageListSection({
   const getFilteredImages = () => {
     const allImages = images.data?.items || [];
 
-    // If we're filtering by specific robot/component, skip tab filtering
+    // If we're filtering by specific robot, skip tab filtering
     let tabFiltered;
-    if (robotId || componentId) {
-      // Backend already filtered by robotId/componentId, use all returned images
+    if (robotId) {
+      // Backend already filtered by robotId, use all returned images
       tabFiltered = allImages;
     } else {
       // Filter by tab when in general image management
@@ -114,8 +113,8 @@ export default function ImageListSection({
         case 1: // Robot Images
           tabFiltered = allImages.filter((image) => image.robotId);
           break;
-        case 2: // Component Images
-          tabFiltered = allImages.filter((image) => image.componentId);
+        case 2: // Component Images - Removed
+          tabFiltered = allImages;
           break;
         default: // All Images
           tabFiltered = allImages;
@@ -132,7 +131,6 @@ export default function ImageListSection({
       (image) =>
         image.id.toLowerCase().includes(search) ||
         image.robot?.name.toLowerCase().includes(search) ||
-        image.component?.name.toLowerCase().includes(search) ||
         image.url.toLowerCase().includes(search)
     );
   };
@@ -142,13 +140,10 @@ export default function ImageListSection({
   // Get counts for tabs
   const allImages = images.data?.items || [];
   const robotImagesCount = allImages.filter((image) => image.robotId).length;
-  const componentImagesCount = allImages.filter(
-    (image) => image.componentId
-  ).length;
 
   const getImageCategory = (image: ImageResult) => {
     if (image.robotId) return "Robot";
-    if (image.componentId) return "Component";
+    // Component relation removed
     return "General";
   };
 
@@ -201,13 +196,12 @@ export default function ImageListSection({
         )}
       </Box>
 
-      {/* Filter Tabs - Only show when not filtering by specific robot/component */}
-      {!robotId && !componentId && (
+      {/* Filter Tabs - Only show when not filtering by specific robot */}
+      {!robotId && (
         <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
           <Tabs value={currentTab} onChange={handleTabChange}>
             <Tab label={`All Images (${images.data?.total || 0})`} />
             <Tab label={`Robot Images (${robotImagesCount})`} />
-            <Tab label={`Component Images (${componentImagesCount})`} />
           </Tabs>
         </Box>
       )}
@@ -238,8 +232,6 @@ export default function ImageListSection({
               ? `Try adjusting your search term "${searchTerm}"`
               : robotId
               ? "This robot has no images yet. Upload images to get started."
-              : componentId
-              ? "This component has no images yet. Upload images to get started."
               : currentTab === 0
               ? "Upload your first image to get started"
               : currentTab === 1
@@ -254,8 +246,6 @@ export default function ImageListSection({
             >
               {robotId
                 ? "Upload Robot Images"
-                : componentId
-                ? "Upload Component Images"
                 : "Upload First Image"}
             </Button>
           )}
@@ -411,15 +401,6 @@ export default function ImageListSection({
                       sx={{ mt: 0.5 }}
                     >
                       Robot: {image.robot.name}
-                    </Typography>
-                  )}
-                  {image.component && (
-                    <Typography
-                      variant="body2"
-                      color="secondary.main"
-                      sx={{ mt: 0.5 }}
-                    >
-                      Component: {image.component.name}
                     </Typography>
                   )}
                 </CardContent>

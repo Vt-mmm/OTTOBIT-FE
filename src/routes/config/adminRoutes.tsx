@@ -46,6 +46,12 @@ const AdminTestPage = lazy(() => import("pages/admin/AdminTestPage"));
 const ActivationCodeManagementPage = lazy(
   () => import("pages/admin/ActivationCodeManagementPage")
 );
+const CertificateManagementPage = lazy(
+  () => import("pages/admin/CertificateManagementPage")
+);
+const CertificateTemplateManagementPage = lazy(
+  () => import("pages/admin/CertificateTemplateManagementPage")
+);
 
 export const adminRoutes: Route[] = [
   {
@@ -126,6 +132,16 @@ export const adminRoutes: Route[] = [
   {
     path: PATH_ADMIN.activationCodeManagement,
     component: <ActivationCodeManagementPage />,
+    index: false,
+  },
+  {
+    path: PATH_ADMIN.certificateManagement,
+    component: <CertificateManagementPage />,
+    index: false,
+  },
+  {
+    path: PATH_ADMIN.certificateTemplateManagement,
+    component: <CertificateTemplateManagementPage />,
     index: false,
   },
   {

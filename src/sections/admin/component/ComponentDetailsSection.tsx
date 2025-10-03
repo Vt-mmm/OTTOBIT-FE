@@ -25,8 +25,8 @@ import {
   ZoomIn as ZoomInIcon,
   Link as LinkIcon,
   Memory as ComponentIcon,
-  AttachMoney as PriceIcon,
-  Inventory as StockIcon,
+  // AttachMoney as PriceIcon, // Removed - showroom mode
+  // Inventory as StockIcon, // Removed - showroom mode
   Category as TypeIcon,
 } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
@@ -35,8 +35,8 @@ import {
   ComponentResult,
   ComponentType,
 } from "../../../common/@types/component";
-import ImageManagement from "../../../components/admin/ImageManagement";
-import { formatVND } from "../../../utils/utils";
+// import ImageManagement from "../../../components/admin/ImageManagement"; // Removed - images managed at robot level
+// import { formatVND } from "../../../utils/utils"; // Removed - no pricing in showroom mode
 
 interface ComponentDetailsSectionProps {
   component: ComponentResult | null;
@@ -119,32 +119,10 @@ export default function ComponentDetailsSection({
     return typeColors[type] || "default";
   };
 
-  const getStockStatusColor = (
-    stock: number
-  ):
-    | "default"
-    | "primary"
-    | "secondary"
-    | "success"
-    | "warning"
-    | "info"
-    | "error" => {
-    if (stock === 0) return "error";
-    if (stock < 10) return "warning";
-    return "success";
-  };
-
-  const getStockStatusIconColor = (stock: number): "disabled" | "action" | "inherit" | "error" | "success" | "info" | "warning" | "primary" | "secondary" => {
-    if (stock === 0) return "error";
-    if (stock < 10) return "warning";
-    return "success";
-  };
-
-  const getStockStatusText = (stock: number) => {
-    if (stock === 0) return "Out of Stock";
-    if (stock < 10) return "Low Stock";
-    return "In Stock";
-  };
+  // Removed - Store is showroom only, no stock management
+  // const getStockStatusColor = (stock: number) => { ... }
+  // const getStockStatusIconColor = (stock: number) => { ... }
+  // const getStockStatusText = (stock: number) => { ... }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
@@ -274,26 +252,7 @@ export default function ComponentDetailsSection({
                         <ZoomInIcon />
                       </IconButton>
 
-                      {/* Status Chips */}
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          top: 8,
-                          left: 8,
-                          display: "flex",
-                          gap: 1,
-                        }}
-                      >
-                        <Chip
-                          label={formatVND(component.price)}
-                          color="primary"
-                          sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
-                        />
-                        <Chip
-                          label={getStockStatusText(component.stockQuantity)}
-                          color={getStockStatusColor(component.stockQuantity)}
-                        />
-                      </Box>
+                      {/* Showroom Mode - No pricing/stock display */}
                     </Box>
                   ) : (
                     <Box
@@ -333,26 +292,7 @@ export default function ComponentDetailsSection({
                         </Typography>
                       </Box>
 
-                      {/* Status Chips */}
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          top: 8,
-                          left: 8,
-                          display: "flex",
-                          gap: 1,
-                        }}
-                      >
-                        <Chip
-                          label={formatVND(component.price)}
-                          color="primary"
-                          sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
-                        />
-                        <Chip
-                          label={getStockStatusText(component.stockQuantity)}
-                          color={getStockStatusColor(component.stockQuantity)}
-                        />
-                      </Box>
+                      {/* Showroom Mode - No pricing/stock display */}
                     </Box>
                   )}
                 </Box>
@@ -431,36 +371,18 @@ export default function ComponentDetailsSection({
 
                   <Divider />
 
-                  {/* Pricing & Inventory */}
+                  {/* Showroom Mode - No pricing/inventory */}
                   <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Price
-                    </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <PriceIcon color="primary" />
-                      <Typography variant="h6" color="primary.main">
-                        {formatVND(component.price)}
+                    <Alert severity="info" sx={{ fontSize: "0.875rem" }}>
+                      <Typography variant="body2">
+                        🛒 To purchase this component, please visit our sales channels:
                       </Typography>
-                    </Box>
-                  </Box>
-
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Stock Status
-                    </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <StockIcon
-                        color={getStockStatusIconColor(component.stockQuantity)}
-                      />
-                      <Typography variant="body1">
-                        {component.stockQuantity} units
+                      <Typography variant="caption" component="div" sx={{ mt: 1 }}>
+                        • Facebook Shop<br/>
+                        • Shopee Store<br/>
+                        • TikTok Shop
                       </Typography>
-                      <Chip
-                        label={getStockStatusText(component.stockQuantity)}
-                        color={getStockStatusColor(component.stockQuantity)}
-                        size="small"
-                      />
-                    </Box>
+                    </Alert>
                   </Box>
 
                   {/* Image URL */}
@@ -524,12 +446,11 @@ export default function ComponentDetailsSection({
 
       {/* Images Tab */}
       {currentTab === 1 && (
-        <ImageManagement
-          componentId={component.id}
-          title="Component Images"
-          description={`Manage images for ${component.name}`}
-          showHeader={false}
-        />
+        <Box sx={{ p: 3 }}>
+          <Alert severity="info">
+            Image management for components has been disabled. Images are now managed at the robot level only.
+          </Alert>
+        </Box>
       )}
 
       {/* Full Screen Image Dialog */}

@@ -7,7 +7,8 @@ import CoursesPage from "pages/user/CoursesPage";
 import CourseDetailPage from "pages/user/CourseDetailPage";
 import LessonDetailPage from "pages/user/LessonDetailPage";
 import ChallengeDetailPage from "pages/user/ChallengeDetailPage";
-import MyCoursesPage from "pages/user/MyCoursesPage";
+// import MyCoursesPage from "pages/user/MyCoursesPage"; // Moved to Student Profile tabs
+// import MyCertificatesPage from "pages/user/MyCertificatesPage"; // Moved to Student Profile tabs
 
 // Public routes - accessible without authentication
 export const publicRoutes: Route[] = [
@@ -30,12 +31,12 @@ export const userRoutes: Route[] = [
     component: <CoursesPage />,
     index: false,
   },
-  {
-    path: PATH_USER.myCourses,
-    component: <MyCoursesPage />,
-    index: false,
-  },
-
+  // NOTE: myCourses, myCertificates and myRobots are now part of Student Profile tabs
+  // {
+  //   path: PATH_USER.myCertificates,
+  //   component: <MyCertificatesPage />,
+  //   index: false,
+  // },
   {
     path: PATH_USER.courseDetail,
     component: <CourseDetailPage />,

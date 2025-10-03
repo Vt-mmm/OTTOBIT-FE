@@ -209,10 +209,8 @@ export default function ComponentListingSection() {
               <ProductCard
                 id={component.id}
                 name={component.name}
-                price={component.price}
                 imageUrl={component.imageUrl}
                 description={component.description}
-                stockQuantity={component.stockQuantity}
                 onClick={() => handleComponentClick(component.id)}
                 type="component"
                 componentType={component.type}

@@ -1,5 +1,5 @@
 // Import Map type for relationship
-import { Map } from './map';
+import { Map } from "./map";
 
 // Challenge Mode enum
 export enum ChallengeMode {
@@ -20,6 +20,7 @@ export interface Challenge {
   challengeJson: string; // JSON string for challenge rules
   solutionJson?: string; // JSON string for solution (only for admin)
   challengeMode: ChallengeMode;
+  allowedBlocks?: string[]; // NEW: List of block types allowed in this challenge (for dynamic toolbox)
   createdAt: string;
   updatedAt: string;
   isDeleted?: boolean;
@@ -44,6 +45,7 @@ export interface CreateChallengeRequest {
   challengeJson: string;
   solutionJson: string;
   challengeMode: ChallengeMode; // ⭐️ NEW: Challenge mode
+  allowedBlocks?: string[]; // ⭐️ NEW: List of block types allowed in this challenge
 }
 
 export interface UpdateChallengeRequest {
@@ -56,12 +58,15 @@ export interface UpdateChallengeRequest {
   challengeJson: string;
   solutionJson: string;
   challengeMode: ChallengeMode; // ⭐️ NEW: Challenge mode
+  allowedBlocks?: string[]; // ⭐️ NEW: List of block types allowed in this challenge
 }
 
 export interface GetChallengesRequest {
   searchTerm?: string;
   lessonId?: string;
   courseId?: string;
+  mapId?: string; // NEW: Filter by mapId
+  challengeMode?: ChallengeMode; // NEW: Filter by challenge mode
   difficultyFrom?: number;
   difficultyTo?: number;
   includeDeleted?: boolean;
@@ -91,48 +96,9 @@ export interface UpdateChallengeData extends UpdateChallengeRequest {}
 export interface ChallengeResult extends Challenge {}
 
 export interface ChallengesResponse {
-  items: ChallengeResult[];  // Backend trả về 'items' thay vì 'data'
-  page: number;             // Backend trả về 'page' thay vì 'pageNumber'
-  size: number;             // Backend trả về 'size' thay vì 'pageSize'
-  total: number;            // Backend trả về 'total' thay vì 'totalCount'
+  items: ChallengeResult[]; // Backend trả về 'items' thay vì 'data'
+  page: number; // Backend trả về 'page' thay vì 'pageNumber'
+  size: number; // Backend trả về 'size' thay vì 'pageSize'
+  total: number; // Backend trả về 'total' thay vì 'totalCount'
   totalPages: number;
-}
-
-// Challenge Process types (for user progress tracking)
-export interface ChallengeProcess {
-  id: string;
-  enrollmentId: string;
-  challengeId: string;
-  challengeTitle: string;
-  challengeOrder: number;
-  difficulty: number;
-  bestStar: number;
-  bestSubmissionId?: string;
-  completedAt?: string;
-  studentName: string;
-  lessonTitle: string;
-  courseTitle: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ChallengeProcessResult extends ChallengeProcess {}
-
-export interface ChallengeProcessesResponse {
-  items: ChallengeProcessResult[];
-  page: number;
-  size: number;
-  total: number;
-  totalPages: number;
-}
-
-// Request types for challenge processes
-export interface GetChallengeProcessesRequest {
-  courseId?: string;
-  lessonId?: string;
-  isCompleted?: boolean;
-  minStars?: number;
-  difficulty?: number;
-  page?: number;
-  size?: number;
 }

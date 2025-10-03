@@ -6,6 +6,7 @@ import {
   deleteActivationCodeThunk,
   updateActivationCodeStatusThunk,
   exportActivationCodesCsvThunk,
+  redeemActivationCodeThunk,
 } from "./activationCodeThunks";
 
 interface ActivationCodeState {
@@ -22,15 +23,19 @@ interface ActivationCodeState {
     isDeleting: boolean;
     isUpdating: boolean;
     isExporting: boolean;
+    isRedeeming: boolean;
     createError: string | null;
     deleteError: string | null;
     updateError: string | null;
     exportError: string | null;
+    redeemError: string | null;
     createSuccess: boolean;
     deleteSuccess: boolean;
     updateSuccess: boolean;
     exportSuccess: boolean;
+    redeemSuccess: boolean;
     lastCreatedCodes?: string[];
+    lastRedeemedRobot?: any;
   };
 }
 
@@ -46,14 +51,17 @@ const initialState: ActivationCodeState = {
     isDeleting: false,
     isUpdating: false,
     isExporting: false,
+    isRedeeming: false,
     createError: null,
     deleteError: null,
     updateError: null,
     exportError: null,
+    redeemError: null,
     createSuccess: false,
     deleteSuccess: false,
     updateSuccess: false,
     exportSuccess: false,
+    redeemSuccess: false,
   },
 };
 
@@ -67,13 +75,21 @@ const activationCodeSlice = createSlice({
       state.operations.deleteError = null;
       state.operations.updateError = null;
       state.operations.exportError = null;
+      state.operations.redeemError = null;
     },
     clearSuccessFlags: (state) => {
       state.operations.createSuccess = false;
       state.operations.deleteSuccess = false;
       state.operations.updateSuccess = false;
       state.operations.exportSuccess = false;
+      state.operations.redeemSuccess = false;
       state.operations.lastCreatedCodes = undefined;
+      state.operations.lastRedeemedRobot = undefined;
+    },
+    clearRedeemStatus: (state) => {
+      state.operations.redeemError = null;
+      state.operations.redeemSuccess = false;
+      state.operations.lastRedeemedRobot = undefined;
     },
   },
   extraReducers: (builder) => {
@@ -186,10 +202,29 @@ const activationCodeSlice = createSlice({
         state.operations.isDeleting = false;
         state.operations.deleteError = action.payload as string;
         state.operations.deleteSuccess = false;
+      })
+
+      // Redeem Activation Code
+      .addCase(redeemActivationCodeThunk.pending, (state) => {
+        state.operations.isRedeeming = true;
+        state.operations.redeemError = null;
+        state.operations.redeemSuccess = false;
+      })
+      .addCase(redeemActivationCodeThunk.fulfilled, (state, action) => {
+        state.operations.isRedeeming = false;
+        state.operations.redeemSuccess = true;
+        state.operations.redeemError = null;
+        state.operations.lastRedeemedRobot = action.payload.robot;
+      })
+      .addCase(redeemActivationCodeThunk.rejected, (state, action) => {
+        state.operations.isRedeeming = false;
+        state.operations.redeemError = action.payload as string;
+        state.operations.redeemSuccess = false;
       });
   },
 });
 
-export const { clearErrors, clearSuccessFlags } = activationCodeSlice.actions;
+export const { clearErrors, clearSuccessFlags, clearRedeemStatus } =
+  activationCodeSlice.actions;
 
 export default activationCodeSlice.reducer;

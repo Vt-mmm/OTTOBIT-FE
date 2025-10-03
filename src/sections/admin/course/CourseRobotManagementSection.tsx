@@ -21,11 +21,16 @@ import {
   DialogContentText,
   DialogActions,
 } from "@mui/material";
-import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Restore as RestoreIcon,
+} from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "store/config";
 import {
-  getCourseRobotsThunk,
+  getCourseRobotsForAdminThunk,
   deleteCourseRobotThunk,
+  restoreCourseRobotThunk,
 } from "store/courseRobot/courseRobotThunks";
 import { clearSuccessFlags } from "store/courseRobot/courseRobotSlice";
 import AddRobotToCourseDialog from "components/courseRobot/AddRobotToCourseDialog";
@@ -45,7 +50,17 @@ export default function CourseRobotManagementSection({
   );
 
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [showDeleted, setShowDeleted] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    courseRobotId: string | null;
+    robotName: string;
+  }>({
+    open: false,
+    courseRobotId: null,
+    robotName: "",
+  });
+  const [restoreDialog, setRestoreDialog] = useState<{
     open: boolean;
     courseRobotId: string | null;
     robotName: string;
@@ -62,22 +77,54 @@ export default function CourseRobotManagementSection({
 
   useEffect(() => {
     console.log("🔄 Fetching course robots for courseId:", courseId);
-    dispatch(getCourseRobotsThunk({ courseId, pageSize: 100 }));
-  }, [dispatch, courseId]);
+    dispatch(
+      getCourseRobotsForAdminThunk({
+        courseId,
+        pageSize: 100,
+        includeDelete: showDeleted, // Matches BE field name: IncludeDelete
+      })
+    );
+  }, [dispatch, courseId, showDeleted]);
 
   useEffect(() => {
     if (operations.deleteSuccess) {
       setDeleteDialog({ open: false, courseRobotId: null, robotName: "" });
       dispatch(clearSuccessFlags());
-      dispatch(getCourseRobotsThunk({ courseId, pageSize: 100 }));
+      dispatch(
+        getCourseRobotsForAdminThunk({
+          courseId,
+          pageSize: 100,
+          includeDelete: showDeleted,
+        })
+      );
     }
-  }, [operations.deleteSuccess, dispatch, courseId]);
+  }, [operations.deleteSuccess, dispatch, courseId, showDeleted]);
+
+  useEffect(() => {
+    if (operations.restoreSuccess) {
+      setRestoreDialog({ open: false, courseRobotId: null, robotName: "" });
+      dispatch(clearSuccessFlags());
+      dispatch(
+        getCourseRobotsForAdminThunk({
+          courseId,
+          pageSize: 100,
+          includeDelete: showDeleted,
+        })
+      );
+    }
+  }, [operations.restoreSuccess, dispatch, courseId, showDeleted]);
 
   const handleAddSuccess = () => {
     console.log(
       "✅ CourseRobotManagementSection: handleAddSuccess called, reloading..."
     );
-    dispatch(getCourseRobotsThunk({ courseId, pageSize: 100 }));
+    dispatch(
+      getCourseRobotsForAdminThunk({
+        courseId,
+        pageSize: 100,
+        includeDelete: showDeleted,
+      })
+    );
   };
 
   const handleDeleteClick = (courseRobotId: string, robotName: string) => {
@@ -98,6 +145,24 @@ export default function CourseRobotManagementSection({
     setDeleteDialog({ open: false, courseRobotId: null, robotName: "" });
   };
 
+  const handleRestoreClick = (courseRobotId: string, robotName: string) => {
+    setRestoreDialog({
+      open: true,
+      courseRobotId,
+      robotName,
+    });
+  };
+
+  const handleRestoreConfirm = () => {
+    if (restoreDialog.courseRobotId) {
+      dispatch(restoreCourseRobotThunk(restoreDialog.courseRobotId));
+    }
+  };
+
+  const handleRestoreCancel = () => {
+    setRestoreDialog({ open: false, courseRobotId: null, robotName: "" });
+  };
+
   if (isLoading && items.length === 0) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
@@ -114,16 +179,28 @@ export default function CourseRobotManagementSection({
           justifyContent: "space-between",
           alignItems: "center",
           mb: 3,
+          flexWrap: "wrap",
+          gap: 2,
         }}
       >
         <Typography variant="h6">Robots Yêu cầu</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setAddDialogOpen(true)}
-        >
-          Thêm Robot
-        </Button>
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+          <Button
+            variant={showDeleted ? "contained" : "outlined"}
+            color="secondary"
+            size="small"
+            onClick={() => setShowDeleted(!showDeleted)}
+          >
+            {showDeleted ? "Ẩn robots đã xóa" : "Hiện robots đã xóa"}
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setAddDialogOpen(true)}
+          >
+            Thêm Robot
+          </Button>
+        </Box>
       </Box>
 
       {error && (
@@ -149,6 +226,18 @@ export default function CourseRobotManagementSection({
         </Alert>
       )}
 
+      {operations.restoreError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {operations.restoreError}
+        </Alert>
+      )}
+
+      {operations.restoreSuccess && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          Robot đã được khôi phục thành công!
+        </Alert>
+      )}
+
       {items.length === 0 ? (
         <Card>
           <CardContent>
@@ -166,26 +255,17 @@ export default function CourseRobotManagementSection({
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell align="center">Thứ tự</TableCell>
                 <TableCell>Robot</TableCell>
                 <TableCell>Model</TableCell>
                 <TableCell>Thương hiệu</TableCell>
-                <TableCell>Giá</TableCell>
                 <TableCell align="center">Bắt buộc</TableCell>
+                {showDeleted && <TableCell align="center">Trạng thái</TableCell>}
                 <TableCell align="right">Thao tác</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {items.map((courseRobot) => (
                 <TableRow key={courseRobot.id}>
-                  <TableCell align="center">
-                    <Chip
-                      label={courseRobot.order ?? "-"}
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                    />
-                  </TableCell>
                   <TableCell>
                     <Typography
                       variant="body2"
@@ -229,11 +309,6 @@ export default function CourseRobotManagementSection({
                       {courseRobot.robotBrand || "N/A"}
                     </Typography>
                   </TableCell>
-                  <TableCell>
-                    {courseRobot.robotPrice
-                      ? `${courseRobot.robotPrice.toLocaleString()}đ`
-                      : "N/A"}
-                  </TableCell>
                   <TableCell align="center">
                     {courseRobot.isRequired ? (
                       <Chip label="Bắt buộc" color="error" size="small" />
@@ -241,22 +316,49 @@ export default function CourseRobotManagementSection({
                       <Chip label="Tùy chọn" color="default" size="small" />
                     )}
                   </TableCell>
+                  {showDeleted && (
+                    <TableCell align="center">
+                      {courseRobot.isDeleted ? (
+                        <Chip label="Đã xóa" color="default" size="small" />
+                      ) : (
+                        <Chip label="Hoạt động" color="success" size="small" />
+                      )}
+                    </TableCell>
+                  )}
                   <TableCell align="right">
-                    <Button
-                      size="small"
-                      color="error"
-                      variant="outlined"
-                      startIcon={<DeleteIcon />}
-                      onClick={() =>
-                        handleDeleteClick(
-                          courseRobot.id,
-                          courseRobot.robotName || "Robot"
-                        )
-                      }
-                      disabled={operations.isDeleting}
-                    >
-                      Xóa
-                    </Button>
+                    {courseRobot.isDeleted ? (
+                      <Button
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                        startIcon={<RestoreIcon />}
+                        onClick={() =>
+                          handleRestoreClick(
+                            courseRobot.id,
+                            courseRobot.robotName || "Robot"
+                          )
+                        }
+                        disabled={operations.isRestoring}
+                      >
+                        Khôi phục
+                      </Button>
+                    ) : (
+                      <Button
+                        size="small"
+                        color="error"
+                        variant="outlined"
+                        startIcon={<DeleteIcon />}
+                        onClick={() =>
+                          handleDeleteClick(
+                            courseRobot.id,
+                            courseRobot.robotName || "Robot"
+                          )
+                        }
+                        disabled={operations.isDeleting}
+                      >
+                        Xóa
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -295,6 +397,33 @@ export default function CourseRobotManagementSection({
             startIcon={operations.isDeleting && <CircularProgress size={16} />}
           >
             Xóa
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Restore Confirmation Dialog */}
+      <Dialog open={restoreDialog.open} onClose={handleRestoreCancel}>
+        <DialogTitle>Xác nhận khôi phục</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Bạn có chắc chắn muốn khôi phục robot{" "}
+            <strong>{restoreDialog.robotName}</strong> cho khóa học này không?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleRestoreCancel} disabled={operations.isRestoring}>
+            Hủy
+          </Button>
+          <Button
+            onClick={handleRestoreConfirm}
+            color="primary"
+            variant="contained"
+            disabled={operations.isRestoring}
+            startIcon={
+              operations.isRestoring && <CircularProgress size={16} />
+            }
+          >
+            Khôi phục
           </Button>
         </DialogActions>
       </Dialog>

@@ -385,15 +385,25 @@ export default function ActivationCodeListSection() {
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
-                        {item.usedByFullname || "-"}
+                        {item.studentFullname || "-"}
                       </Typography>
                     </TableCell>
                     <TableCell align="right">
-                      <Box sx={{ display: "flex", gap: 0.5, justifyContent: "flex-end" }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 0.5,
+                          justifyContent: "flex-end",
+                        }}
+                      >
                         <IconButton
                           size="small"
                           onClick={() =>
-                            handleUpdateStatusClick(item.id, item.code, item.status)
+                            handleUpdateStatusClick(
+                              item.id,
+                              item.code,
+                              item.status
+                            )
                           }
                           title="Cập nhật trạng thái"
                         >
@@ -403,7 +413,10 @@ export default function ActivationCodeListSection() {
                           size="small"
                           color="error"
                           onClick={() => handleDeleteClick(item.id, item.code)}
-                          disabled={operations.isDeleting || item.status === CodeStatus.Used}
+                          disabled={
+                            operations.isDeleting ||
+                            item.status === CodeStatus.Used
+                          }
                           title={
                             item.status === CodeStatus.Used
                               ? "Không thể xóa mã đã sử dụng"

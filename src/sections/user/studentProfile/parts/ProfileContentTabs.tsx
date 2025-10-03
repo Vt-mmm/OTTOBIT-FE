@@ -4,10 +4,14 @@ import DashboardIcon from "@mui/icons-material/DashboardOutlined";
 import SchoolIcon from "@mui/icons-material/SchoolOutlined";
 import TrendingUpIcon from "@mui/icons-material/TrendingUpOutlined";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEventsOutlined";
+import SmartToyIcon from "@mui/icons-material/SmartToyOutlined";
+import CardMembershipIcon from "@mui/icons-material/CardMembershipOutlined";
 import OverviewTab from "../tabs/OverviewTab";
 import EnrolledCoursesTab from "../tabs/EnrolledCoursesTab";
 import LearningProgressTab from "../tabs/LearningProgressTab";
 import AchievementsTab from "../tabs/AchievementsTab";
+import MyRobotsTab from "../tabs/MyRobotsTab";
+import MyCertificatesTab from "../tabs/MyCertificatesTab";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -43,7 +47,7 @@ interface ProfileContentTabsProps {
   enrollments: any[];
   lessonProgress: any[];
   submissions: any[];
-  challengeProcesses: any[];
+  challengeBestStars: Map<string, number>;
   starBuckets: Array<{
     star: number;
     count: number;
@@ -57,7 +61,7 @@ export default function ProfileContentTabs({
   enrollments,
   lessonProgress,
   submissions,
-  challengeProcesses,
+  challengeBestStars,
   starBuckets,
   loading,
 }: ProfileContentTabsProps) {
@@ -72,6 +76,8 @@ export default function ProfileContentTabs({
     { label: "Khóa học", icon: <SchoolIcon /> },
     { label: "Tiến độ", icon: <TrendingUpIcon /> },
     { label: "Thành tích", icon: <EmojiEventsIcon /> },
+    { label: "Robots", icon: <SmartToyIcon /> },
+    { label: "Chứng chỉ", icon: <CardMembershipIcon /> },
   ];
 
   return (
@@ -124,7 +130,11 @@ export default function ProfileContentTabs({
 
       <Box sx={{ p: 3 }}>
         <TabPanel value={value} index={0}>
-          <OverviewTab stats={stats} learningProgress={learningProgress} loading={loading} />
+          <OverviewTab
+            stats={stats}
+            learningProgress={learningProgress}
+            loading={loading}
+          />
         </TabPanel>
 
         <TabPanel value={value} index={1}>
@@ -132,11 +142,28 @@ export default function ProfileContentTabs({
         </TabPanel>
 
         <TabPanel value={value} index={2}>
-          <LearningProgressTab lessonProgress={lessonProgress} submissions={submissions} loading={loading} />
+          <LearningProgressTab
+            lessonProgress={lessonProgress}
+            submissions={submissions}
+            loading={loading}
+          />
         </TabPanel>
 
         <TabPanel value={value} index={3}>
-          <AchievementsTab challengeProcesses={challengeProcesses} starBuckets={starBuckets} loading={loading} />
+          <AchievementsTab
+            submissions={submissions}
+            challengeBestStars={challengeBestStars}
+            starBuckets={starBuckets}
+            loading={loading}
+          />
+        </TabPanel>
+
+        <TabPanel value={value} index={4}>
+          <MyRobotsTab loading={loading} />
+        </TabPanel>
+
+        <TabPanel value={value} index={5}>
+          <MyCertificatesTab loading={loading} />
         </TabPanel>
       </Box>
     </Card>

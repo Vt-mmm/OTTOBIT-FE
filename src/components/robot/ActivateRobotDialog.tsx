@@ -15,8 +15,8 @@ import {
 } from "@mui/material";
 import { CheckCircle as CheckCircleIcon } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "store/config";
-import { activateRobotThunk } from "store/studentRobot/studentRobotThunks";
-import { clearActivationStatus } from "store/studentRobot/studentRobotSlice";
+import { redeemActivationCodeThunk } from "store/activationCode/activationCodeThunks";
+import { clearRedeemStatus } from "store/activationCode/activationCodeSlice";
 
 interface ActivateRobotDialogProps {
   open: boolean;
@@ -30,7 +30,7 @@ export default function ActivateRobotDialog({
   onSuccess,
 }: ActivateRobotDialogProps) {
   const dispatch = useAppDispatch();
-  const { activation } = useAppSelector((state) => state.studentRobot);
+  const { operations } = useAppSelector((state) => state.activationCode);
 
   const [activationCode, setActivationCode] = useState("");
   const [codeError, setCodeError] = useState("");
@@ -40,12 +40,12 @@ export default function ActivateRobotDialog({
       // Reset when dialog closes
       setActivationCode("");
       setCodeError("");
-      dispatch(clearActivationStatus());
+      dispatch(clearRedeemStatus());
     }
   }, [open, dispatch]);
 
   useEffect(() => {
-    if (activation.activationSuccess) {
+    if (operations.redeemSuccess) {
       // Wait a bit to show success message then close
       const timer = setTimeout(() => {
         onSuccess?.();
@@ -53,7 +53,7 @@ export default function ActivateRobotDialog({
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [activation.activationSuccess, onSuccess, onClose]);
+  }, [operations.redeemSuccess, onSuccess, onClose]);
 
   const validateCode = (code: string): boolean => {
     if (!code || code.trim().length === 0) {
@@ -75,7 +75,7 @@ export default function ActivateRobotDialog({
       return;
     }
 
-    dispatch(activateRobotThunk({ activationCode: trimmedCode }));
+    dispatch(redeemActivationCodeThunk({ code: trimmedCode }));
   };
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,7 +98,7 @@ export default function ActivateRobotDialog({
       <DialogContent>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, pt: 1 }}>
           {/* Success State */}
-          {activation.activationSuccess && (
+          {operations.redeemSuccess && (
             <Card
               sx={{ bgcolor: "success.light", borderColor: "success.main" }}
             >
@@ -121,12 +121,12 @@ export default function ActivateRobotDialog({
           )}
 
           {/* Error State */}
-          {activation.activationError && (
-            <Alert severity="error">{activation.activationError}</Alert>
+          {operations.redeemError && (
+            <Alert severity="error">{operations.redeemError}</Alert>
           )}
 
           {/* Input Form */}
-          {!activation.activationSuccess && (
+          {!operations.redeemSuccess && (
             <>
               <Typography variant="body2" color="text.secondary">
                 Nhập mã kích hoạt đi kèm với robot của bạn. Mã này thường được
@@ -142,7 +142,7 @@ export default function ActivateRobotDialog({
                 placeholder="OTTO-XXXX-XXXX-XXXX"
                 fullWidth
                 autoFocus
-                disabled={activation.isActivating}
+                disabled={operations.isRedeeming}
                 inputProps={{
                   style: { textTransform: "uppercase" },
                   maxLength: 50,
@@ -161,20 +161,20 @@ export default function ActivateRobotDialog({
         </Box>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        {!activation.activationSuccess && (
+        {!operations.redeemSuccess && (
           <>
-            <Button onClick={handleCancel} disabled={activation.isActivating}>
+            <Button onClick={handleCancel} disabled={operations.isRedeeming}>
               Hủy
             </Button>
             <Button
               onClick={handleActivate}
               variant="contained"
-              disabled={!activationCode.trim() || activation.isActivating}
+              disabled={!activationCode.trim() || operations.isRedeeming}
               startIcon={
-                activation.isActivating && <CircularProgress size={16} />
+                operations.isRedeeming && <CircularProgress size={16} />
               }
             >
-              {activation.isActivating ? "Đang kích hoạt..." : "Kích hoạt"}
+              {operations.isRedeeming ? "Đang kích hoạt..." : "Kích hoạt"}
             </Button>
           </>
         )}

@@ -4,7 +4,6 @@ export interface CourseRobot {
   courseId: string;
   robotId: string;
   isRequired: boolean;
-  order?: number;
   unlockCriteria?: {
     requiredLessonId?: string;
     requiredLevel?: number;
@@ -26,7 +25,6 @@ export interface CourseRobot {
     model: string;
     brand: string;
     imageUrl?: string;
-    price: number;
   };
 }
 
@@ -35,7 +33,6 @@ export interface CreateCourseRobotRequest {
   courseId: string;
   robotId: string;
   isRequired?: boolean;
-  order?: number;
   unlockCriteria?: {
     requiredLessonId?: string;
     requiredLevel?: number;
@@ -45,7 +42,6 @@ export interface CreateCourseRobotRequest {
 
 export interface UpdateCourseRobotRequest {
   isRequired?: boolean;
-  order?: number;
   unlockCriteria?: {
     requiredLessonId?: string;
     requiredLevel?: number;
@@ -57,6 +53,7 @@ export interface GetCourseRobotsRequest {
   courseId?: string;
   robotId?: string;
   isRequired?: boolean;
+  includeDelete?: boolean; // For admin - show deleted CourseRobots (matches BE field name)
   pageNumber?: number;
   pageSize?: number;
   sortBy?: number;
@@ -70,8 +67,6 @@ export interface CourseRobotResult extends CourseRobot {
   robotName?: string;
   robotBrand?: string;
   robotModel?: string;
-  robotPrice?: number;
-  robotStockQuantity?: number;
 }
 
 export interface CourseRobotsResponse {
@@ -89,9 +84,7 @@ export interface CourseRobotSummary {
   robotModel: string;
   robotBrand: string;
   robotImageUrl?: string;
-  robotPrice: number;
   isRequired: boolean;
-  order?: number;
   unlockCriteria?: {
     requiredLessonId?: string;
     requiredLevel?: number;

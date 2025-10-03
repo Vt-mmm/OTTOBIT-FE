@@ -1,12 +1,18 @@
+import { useEffect, useState } from "react";
 import {
   Box,
   Typography,
   Button,
   Rating,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import {
   Lock as LockIcon,
+  CardMembership as CertificateIcon,
 } from "@mui/icons-material";
+import { axiosClient } from "axiosClient/axiosClient";
+import { ROUTES_API_ENROLLMENT } from "constants/routesApiKeys";
 
 interface CourseCertificatesSectionProps {
   course: {
@@ -30,23 +36,81 @@ export default function CourseCertificatesSection({
   courseRating,
   totalRatings,
 }: CourseCertificatesSectionProps) {
+  // const [certificates, setCertificates] = useState<Certificate[]>([]); // TODO: Use when Certificate API is ready
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [courseCompleted, setCourseCompleted] = useState(false);
+
+  // Load certificates when user is enrolled
+  useEffect(() => {
+    if (!isUserEnrolled) return;
+
+    const loadCertificates = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Check if course is completed by checking enrollment status
+        const enrollmentRes = await axiosClient.get(
+          `${ROUTES_API_ENROLLMENT.MY_ENROLLMENTS}`,
+          { params: { courseId: course.id, pageSize: 1 } }
+        );
+        
+        const enrollment = enrollmentRes.data?.data?.items?.[0];
+        const isCompleted = enrollment?.isCompleted || false;
+        setCourseCompleted(isCompleted);
+
+        // If completed, try to fetch certificate
+        if (isCompleted) {
+          // TODO: Replace with actual certificate API when available
+          // const certRes = await axiosClient.get(ROUTES_API_CERTIFICATE.MY_CERTIFICATES, {
+          //   params: { courseId: course.id }
+          // });
+          // setCertificates(certRes.data?.data?.items || []);
+        }
+      } catch (err: any) {
+        setError(err?.message || "Không thể tải thông tin chứng chỉ");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCertificates();
+  }, [isUserEnrolled, course.id]);
+
+  if (loading) {
+    return (
+      <Box sx={{ bgcolor: "white", p: 3, border: "1px solid #e0e0e0", borderRadius: 1, textAlign: "center" }}>
+        <CircularProgress size={40} />
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+          Đang tải thông tin chứng chỉ...
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ bgcolor: "white", p: 3, border: "1px solid #e0e0e0", borderRadius: 1 }}>
       <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-        Chứng chỉ và Kỹ năng nhận được
+        Chứng chỉ nhận được
       </Typography>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
       
       {/* Certificate List */}
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        {/* Course Completion Certificate */}
+        {/* Main Course Completion Certificate */}
         <Box 
           sx={{ 
             display: "flex", 
             alignItems: "center", 
             p: 3, 
-            border: "1px solid #e0e0e0", 
+            border: courseCompleted ? "2px solid #4caf50" : "1px solid #e0e0e0",
             borderRadius: 1,
-            bgcolor: "white",
+            bgcolor: courseCompleted ? "#f1f8f4" : "white",
             position: "relative",
             opacity: !isUserEnrolled ? 0.7 : 1
           }}
@@ -119,18 +183,45 @@ export default function CourseCertificatesSection({
           </Box>
           
           <Box sx={{ ml: 2 }}>
-            <Button 
-              variant="outlined"
-              size="small"
-              onClick={() => !isUserEnrolled && onEnrollCourse()}
-              disabled={isUserEnrolled || isEnrolling}
-              sx={{
-                textTransform: "none",
-                minWidth: 100
-              }}
-            >
-              {isUserEnrolled ? "Hoàn thành" : "Bắt đầu"}
-            </Button>
+            {courseCompleted ? (
+              <Button 
+                variant="contained"
+                size="small"
+                color="success"
+                startIcon={<CertificateIcon />}
+                sx={{
+                  textTransform: "none",
+                  minWidth: 120
+                }}
+              >
+                Đã hoàn thành
+              </Button>
+            ) : isUserEnrolled ? (
+              <Button 
+                variant="outlined"
+                size="small"
+                color="primary"
+                sx={{
+                  textTransform: "none",
+                  minWidth: 100
+                }}
+              >
+                Đang học
+              </Button>
+            ) : (
+              <Button 
+                variant="outlined"
+                size="small"
+                onClick={onEnrollCourse}
+                disabled={isEnrolling}
+                sx={{
+                  textTransform: "none",
+                  minWidth: 100
+                }}
+              >
+                Bắt đầu
+              </Button>
+            )}
           </Box>
           
           {!isUserEnrolled && (
@@ -157,9 +248,37 @@ export default function CourseCertificatesSection({
             </Box>
           )}
         </Box>
+
+        {/* Info box for not enrolled users */}
+        {!isUserEnrolled && (
+          <Alert severity="info" sx={{ mt: 2 }}>
+            <Typography variant="body2">
+              <strong>Ghi chú:</strong> Bạn cần tham gia khóa học và hoàn thành tất cả các bài học để nhận chứng chỉ.
+            </Typography>
+          </Alert>
+        )}
+
+        {/* Info box for enrolled but not completed */}
+        {isUserEnrolled && !courseCompleted && (
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            <Typography variant="body2">
+              <strong>Tiến độ:</strong> Hoàn thành tất cả {lessons.length} bài học để nhận chứng chỉ hoàn thành khóa học.
+            </Typography>
+          </Alert>
+        )}
+
+        {/* Success message when completed */}
+        {courseCompleted && (
+          <Alert severity="success" sx={{ mt: 2 }}>
+            <Typography variant="body2">
+              <strong>Chúc mừng!</strong> Bạn đã hoàn thành khóa học. Chứng chỉ của bạn có thể xem trong tab "Chứng chỉ" trong trang hồ sơ học viên.
+            </Typography>
+          </Alert>
+        )}
         
+        {/* Remove hardcoded certificates - will be added back when API is ready */}
         {/* Skills Specialization Certificate */}
-        <Box 
+        {/* <Box 
           sx={{ 
             display: "flex", 
             alignItems: "center", 
@@ -275,10 +394,10 @@ export default function CourseCertificatesSection({
               </Box>
             </Box>
           )}
-        </Box>
+        </Box> */}
         
-        {/* Professional Certificate */}
-        <Box 
+        {/* Professional Certificate - Commented out until API ready */}
+        {/* <Box
           sx={{ 
             display: "flex", 
             alignItems: "center", 
@@ -392,7 +511,7 @@ export default function CourseCertificatesSection({
               </Typography>
             </Box>
           </Box>
-        </Box>
+        </Box> */}
       </Box>
     </Box>
   );
