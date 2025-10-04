@@ -447,10 +447,8 @@ def user_route(forward, turnLeft, turnRight, turnBack, collect, startSound, fini
     
     forward(1)
     if _check_victory():
-        append_action('victory')
         display.show(Image.YES)
     else:
-        append_action('defeat')
         display.show(Image.NO)
     finishSound()
 
