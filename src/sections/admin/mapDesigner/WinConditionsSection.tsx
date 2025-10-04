@@ -447,10 +447,10 @@ export default function WinConditionsSection({
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       }}
     >
-      <Typography 
-        variant="h6" 
-        sx={{ 
-          mb: 2, 
+      <Typography
+        variant="h6"
+        sx={{
+          mb: 2,
           fontWeight: 600,
           color: THEME_COLORS.text.primary,
         }}
@@ -506,7 +506,7 @@ export default function WinConditionsSection({
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
           <Typography variant="body2" sx={{ fontWeight: 500 }}>
             Note
-        </Typography>
+          </Typography>
           <Tooltip
             title={
               <Box sx={{ p: 1, maxWidth: 300 }}>
@@ -662,7 +662,6 @@ export default function WinConditionsSection({
           >
             <MenuItem value={0}>Simulation</MenuItem>
             <MenuItem value={1}>PhysicalFirst</MenuItem>
-            <MenuItem value={2}>SimulationPhysical</MenuItem>
           </Select>
         </FormControl>
       </Box>
@@ -716,12 +715,12 @@ export default function WinConditionsSection({
         </DialogTitle>
         <DialogContent dividers>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <Box 
-            sx={{ 
-              p: 2, 
+            <Box
+              sx={{
+                p: 2,
                 border: `1px solid ${THEME_COLORS.border}`,
                 borderRadius: 1.5,
-              bgcolor: THEME_COLORS.background,
+                bgcolor: THEME_COLORS.background,
               }}
             >
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>
@@ -876,7 +875,7 @@ export default function WinConditionsSection({
                           gap: 1.5,
                           p: 1,
                           border: `1px solid ${THEME_COLORS.border}`,
-              borderRadius: 1,
+                          borderRadius: 1,
                         }}
                       >
                         {(() => {
@@ -955,7 +954,7 @@ export default function WinConditionsSection({
                         >
                           <Typography variant="caption">
                             Allowed Collect
-            </Typography>
+                          </Typography>
                           <input
                             type="checkbox"
                             checked={bt.allowedCollect}
@@ -970,7 +969,7 @@ export default function WinConditionsSection({
                             }
                           />
                         </FormControl>
-          </Box>
+                      </Box>
                     ))}
                   </Box>
                 </Box>
@@ -1019,14 +1018,14 @@ export default function WinConditionsSection({
                       const greenSrc =
                         (MAP_ASSETS.find((a) => a.id === "pin_green") as any)
                           ?.imagePath || "";
-              return (
+                      return (
                         <>
                           {yellowSrc && (
-                <Box
+                            <Box
                               component="img"
                               src={yellowSrc}
                               alt="yellow"
-                  sx={{
+                              sx={{
                                 width: 20,
                                 height: 20,
                                 objectFit: "contain",
@@ -1123,7 +1122,7 @@ export default function WinConditionsSection({
                     sx={{ mb: 1, fontWeight: 600 }}
                   >
                     Boxes on Map
-                      </Typography>
+                  </Typography>
                   <Box
                     sx={{ display: "flex", flexDirection: "column", gap: 1 }}
                   >
@@ -1199,8 +1198,8 @@ export default function WinConditionsSection({
                     ))}
                   </Box>
                   <Box
-                          sx={{ 
-                            mt: 1,
+                    sx={{
+                      mt: 1,
                       display: "flex",
                       alignItems: "center",
                       gap: 1.5,
@@ -1221,7 +1220,7 @@ export default function WinConditionsSection({
                       inputProps={{ inputMode: "decimal" }}
                       sx={{ width: 140 }}
                     />
-                    </Box>
+                  </Box>
                 </Box>
                 <Box>
                   <Box
@@ -1267,7 +1266,7 @@ export default function WinConditionsSection({
                               component="img"
                               src={src}
                               alt="box"
-                      sx={{ 
+                              sx={{
                                 width: 20,
                                 height: 20,
                                 objectFit: "contain",
@@ -1328,7 +1327,7 @@ export default function WinConditionsSection({
                         >
                           Remove
                         </Button>
-                  </Box>
+                      </Box>
                     ))}
                     <Button
                       variant="outlined"
@@ -1345,9 +1344,9 @@ export default function WinConditionsSection({
                       error={hasTriedSave && !boxVictoryDescription.trim()}
                       onChange={(e) => setBoxVictoryDescription(e.target.value)}
                     />
+                  </Box>
                 </Box>
-          </Box>
-      </Box>
+              </Box>
             )}
 
             <Box>
@@ -1356,7 +1355,7 @@ export default function WinConditionsSection({
               >
                 <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                   Constraints
-        </Typography>
+                </Typography>
                 <IconButton
                   size="small"
                   aria-label="constraints-help"
@@ -1381,7 +1380,7 @@ export default function WinConditionsSection({
                 </Typography>
                 <FormGroup>
                   <Box
-            sx={{
+                    sx={{
                       display: "grid",
                       gridTemplateColumns: "repeat(2, 1fr)",
                       gap: 1,
@@ -1430,18 +1429,18 @@ export default function WinConditionsSection({
                 </FormGroup>
               </Box>
               <Box sx={{ display: "flex", gap: 2 }}>
-            <TextField
+                <TextField
                   label="Min cards"
                   type="number"
-              size="small"
+                  size="small"
                   value={minCards}
                   onChange={(e) => setMinCards(Number(e.target.value))}
                   inputProps={{ min: 0 }}
-            />
-              <TextField
+                />
+                <TextField
                   label="Max cards"
-                type="number"
-                size="small"
+                  type="number"
+                  size="small"
                   value={maxCards}
                   onChange={(e) => setMaxCards(Number(e.target.value))}
                   inputProps={{ min: 0 }}
@@ -2155,7 +2154,7 @@ export default function WinConditionsSection({
           <Box
             onMouseEnter={handleTooltipMouseEnter}
             onMouseLeave={handleTooltipMouseLeave}
-          sx={{
+            sx={{
               position: "fixed",
               left: tooltipState.x,
               top: tooltipState.y,
@@ -2192,9 +2191,9 @@ export default function WinConditionsSection({
                 transform: "translateX(-50%)",
                 border: "6px solid transparent",
                 borderTopColor: "rgba(0, 0, 0, 0.9)",
-            },
-          }}
-        >
+              },
+            }}
+          >
             {tooltipState.content}
           </Box>,
           document.body

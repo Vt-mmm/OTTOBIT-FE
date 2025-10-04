@@ -8,13 +8,74 @@ export type ActionSocketMessage = {
   [key: string]: any;
 };
 
+// Convert string actions to ProgramAction format for Phaser with grouping
+function convertStringActionsToProgramActions(actions: string[]): any[] {
+  if (actions.length === 0) return [];
+
+  const result: any[] = [];
+  let i = 0;
+
+  while (i < actions.length) {
+    const currentAction = actions[i];
+
+    // Handle actions that can be grouped (have count)
+    if (currentAction === "forward") {
+      let count = 1;
+      i++; // Move to next action
+
+      // Count consecutive "forward" actions
+      while (i < actions.length && actions[i] === "forward") {
+        count++;
+        i++;
+      }
+
+      result.push({ type: "forward", count });
+    } else if (currentAction.startsWith("collect")) {
+      const color = currentAction.replace("collect", "").toLowerCase();
+      let count = 1;
+      i++; // Move to next action
+
+      // Count consecutive collect actions with same color
+      while (i < actions.length && actions[i] === currentAction) {
+        count++;
+        i++;
+      }
+
+      result.push({ type: "collect", color, count });
+    } else {
+      // Handle actions that don't need grouping
+      switch (currentAction) {
+        case "turnRight":
+          result.push({ type: "turnRight" });
+          break;
+        case "turnLeft":
+          result.push({ type: "turnLeft" });
+          break;
+        case "turnBack":
+          result.push({ type: "turnBack" });
+          break;
+        default:
+          // Fallback for unknown actions
+          result.push({ type: currentAction });
+          break;
+      }
+      i++;
+    }
+  }
+
+  return result;
+}
+
 // Send actions to Phaser game via postMessage
 function sendActionsToPhaser(actions: string[]) {
+  // Convert string actions to ProgramAction format
+  const programActions = convertStringActionsToProgramActions(actions);
+
   const message = {
     source: "parent-website",
     type: "RUN_PROGRAM_HEADLESS",
     data: {
-      actions: actions,
+      actions: programActions,
       version: "1.0.0",
       programName: "microbit_program",
     },
@@ -26,7 +87,7 @@ function sendActionsToPhaser(actions: string[]) {
   ) as HTMLIFrameElement;
   if (gameIframe && gameIframe.contentWindow) {
     gameIframe.contentWindow.postMessage(message, "*");
-    console.log("📤 Sent actions to Phaser:", actions);
+    console.log("📤 Sent actions to Phaser:", message);
   } else {
     console.warn("⚠️ Game iframe not found");
   }
