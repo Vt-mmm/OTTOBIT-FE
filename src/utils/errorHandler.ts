@@ -40,6 +40,26 @@ export function extractApiErrorMessage(
     }
   }
 
+  // Check if it's an Axios error with direct data (for 409 conflicts)
+  if (error?.data) {
+    const apiError: ApiErrorResponse = error.data;
+
+    // Priority 1: Check for detailed errors array
+    if (
+      apiError.errors &&
+      Array.isArray(apiError.errors) &&
+      apiError.errors.length > 0
+    ) {
+      // Join all error messages with line breaks
+      return apiError.errors.join("\n");
+    }
+
+    // Priority 2: Use main message
+    if (apiError.message) {
+      return apiError.message;
+    }
+  }
+
   // Priority 3: Check direct error message
   if (error?.message) {
     return error.message;

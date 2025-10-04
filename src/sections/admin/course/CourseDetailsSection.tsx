@@ -41,6 +41,8 @@ import { CourseResult } from "../../../common/@types/course";
 import CourseRobotManagementSection from "./CourseRobotManagementSection";
 import { axiosClient } from "axiosClient";
 import { ROUTES_API_COURSE_MAP, ROUTES_API_MAP } from "constants/routesApiKeys";
+import { extractApiErrorMessage } from "../../../utils/errorHandler";
+import { useNotification } from "../../../hooks/useNotification";
 
 interface Props {
   course: CourseResult | null;
@@ -109,6 +111,18 @@ export default function CourseDetailsSection({
     mapTitle: string;
     isDeleted: boolean;
   }>({ open: false, id: null, mapTitle: "", isDeleted: false });
+  const [editDialog, setEditDialog] = useState<{
+    open: boolean;
+    id: string | null;
+    mapTitle: string;
+    currentOrder: number;
+  }>({ open: false, id: null, mapTitle: "", currentOrder: 0 });
+
+  // Use common notification hook
+  const { showNotification, NotificationComponent } = useNotification({
+    anchorOrigin: { vertical: "top", horizontal: "right" },
+    autoHideDurationMs: 6000,
+  });
   const fetchCourseMaps = async (page = 1) => {
     if (!course?.id) return;
     setCourseMapsLoading(true);
@@ -459,40 +473,64 @@ export default function CourseDetailsSection({
                                 : "-"}
                             </TableCell>
                             <TableCell align="right">
-                              {m.isDeleted ? (
-                                <Button
-                                  size="small"
-                                  color="success"
-                                  variant="outlined"
-                                  onClick={() =>
-                                    setDeleteDialog({
-                                      open: true,
-                                      id: m.id,
-                                      mapTitle: m.mapTitle || m.mapId,
-                                      isDeleted: true,
-                                    })
-                                  }
-                                >
-                                  Khôi phục
-                                </Button>
-                              ) : (
-                                <Button
-                                  size="small"
-                                  color="error"
-                                  variant="outlined"
-                                  startIcon={<DeleteIcon />}
-                                  onClick={() =>
-                                    setDeleteDialog({
-                                      open: true,
-                                      id: m.id,
-                                      mapTitle: m.mapTitle || m.mapId,
-                                      isDeleted: false,
-                                    })
-                                  }
-                                >
-                                  Xóa
-                                </Button>
-                              )}
+                              <Stack
+                                direction="row"
+                                spacing={1}
+                                justifyContent="flex-end"
+                              >
+                                {!m.isDeleted && (
+                                  <Button
+                                    size="small"
+                                    color="primary"
+                                    variant="outlined"
+                                    startIcon={<EditIcon />}
+                                    onClick={() =>
+                                      setEditDialog({
+                                        open: true,
+                                        id: m.id,
+                                        mapTitle: m.mapTitle || m.mapId,
+                                        currentOrder: m.order || 0,
+                                      })
+                                    }
+                                  >
+                                    Sửa
+                                  </Button>
+                                )}
+                                {m.isDeleted ? (
+                                  <Button
+                                    size="small"
+                                    color="success"
+                                    variant="outlined"
+                                    onClick={() =>
+                                      setDeleteDialog({
+                                        open: true,
+                                        id: m.id,
+                                        mapTitle: m.mapTitle || m.mapId,
+                                        isDeleted: true,
+                                      })
+                                    }
+                                  >
+                                    Khôi phục
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size="small"
+                                    color="error"
+                                    variant="outlined"
+                                    startIcon={<DeleteIcon />}
+                                    onClick={() =>
+                                      setDeleteDialog({
+                                        open: true,
+                                        id: m.id,
+                                        mapTitle: m.mapTitle || m.mapId,
+                                        isDeleted: false,
+                                      })
+                                    }
+                                  >
+                                    Xóa
+                                  </Button>
+                                )}
+                              </Stack>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -591,6 +629,12 @@ export default function CourseDetailsSection({
                   setMapOrder(0);
                   // refresh list
                   await fetchCourseMaps(courseMapsPagination.page);
+                } catch (error) {
+                  const errorMessage = extractApiErrorMessage(
+                    error,
+                    "Có lỗi xảy ra khi thêm course map"
+                  );
+                  showNotification(errorMessage, "error");
                 } finally {
                   setSubmitting(false);
                 }
@@ -654,6 +698,14 @@ export default function CourseDetailsSection({
                   }
                   // Refresh list
                   await fetchCourseMaps(courseMapsPagination.page);
+                } catch (error) {
+                  const errorMessage = extractApiErrorMessage(
+                    error,
+                    deleteDialog.isDeleted
+                      ? "Có lỗi xảy ra khi khôi phục course map"
+                      : "Có lỗi xảy ra khi xóa course map"
+                  );
+                  showNotification(errorMessage, "error");
                 } finally {
                   setDeleteDialog({
                     open: false,
@@ -665,6 +717,91 @@ export default function CourseDetailsSection({
               }}
             >
               {deleteDialog.isDeleted ? "Khôi phục" : "Xóa"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Edit Course Map Order Dialog */}
+        <Dialog
+          open={editDialog.open}
+          onClose={() =>
+            setEditDialog({
+              open: false,
+              id: null,
+              mapTitle: "",
+              currentOrder: 0,
+            })
+          }
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>Chỉnh sửa thứ tự course map</DialogTitle>
+          <DialogContent sx={{ pt: 2 }}>
+            <Stack spacing={2}>
+              <Typography variant="body2" color="text.secondary">
+                Map: <strong>{editDialog.mapTitle}</strong>
+              </Typography>
+              <TextField
+                size="small"
+                type="number"
+                label="Thứ tự (order)"
+                value={editDialog.currentOrder}
+                onChange={(e) =>
+                  setEditDialog((prev) => ({
+                    ...prev,
+                    currentOrder: Number(e.target.value),
+                  }))
+                }
+                inputProps={{ min: 0 }}
+              />
+            </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() =>
+                setEditDialog({
+                  open: false,
+                  id: null,
+                  mapTitle: "",
+                  currentOrder: 0,
+                })
+              }
+            >
+              Hủy
+            </Button>
+            <Button
+              variant="contained"
+              disabled={submitting}
+              onClick={async () => {
+                if (!editDialog.id) return;
+                setSubmitting(true);
+                try {
+                  await axiosClient.put(
+                    ROUTES_API_COURSE_MAP.UPDATE(editDialog.id),
+                    {
+                      order: editDialog.currentOrder,
+                    }
+                  );
+                  setEditDialog({
+                    open: false,
+                    id: null,
+                    mapTitle: "",
+                    currentOrder: 0,
+                  });
+                  // Refresh list
+                  await fetchCourseMaps(courseMapsPagination.page);
+                } catch (error) {
+                  const errorMessage = extractApiErrorMessage(
+                    error,
+                    "Có lỗi xảy ra khi cập nhật course map"
+                  );
+                  showNotification(errorMessage, "error");
+                } finally {
+                  setSubmitting(false);
+                }
+              }}
+            >
+              Cập nhật
             </Button>
           </DialogActions>
         </Dialog>
@@ -825,6 +962,9 @@ export default function CourseDetailsSection({
           </Card>
         </Grid>
       </Grid>
+
+      {/* Common Notification Component */}
+      <NotificationComponent />
     </Box>
   );
 }
