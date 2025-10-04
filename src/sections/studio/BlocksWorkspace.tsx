@@ -25,8 +25,8 @@ export default function BlocksWorkspace({
   onWorkspaceChange,
   initialProgramActionsJson,
   detectionsFromExecute,
-  // allowedBlocks, // Unused parameter
-}: BlocksWorkspaceProps) {
+}: // allowedBlocks, // Unused parameter
+BlocksWorkspaceProps) {
   const workspaceRef = useRef<HTMLDivElement>(null);
   const [blocklyWorkspace, setBlocklyWorkspace] = useState<any>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -301,18 +301,25 @@ export default function BlocksWorkspace({
       window.addEventListener("orientationchange", handleResize as any);
 
       // Helper: render program actions into workspace starting from a new start block
+      // ONLY if initialProgramActionsJson is NOT provided (solution mode will handle its own start block)
       setTimeout(() => {
+        // Defer program rendering to the dedicated effect to avoid double-render
+        if (initialProgramActionsJson) {
+          console.log(
+            "⏭️ [BlocksWorkspace] Skipping initial start block - solution mode will create it"
+          );
+          return;
+        }
+
         const moveDistance = isMobile ? 30 : 50;
-        // Always ensure a start block exists
+        // Always ensure a start block exists for normal editing mode
+        console.log(
+          "🟢 [BlocksWorkspace] Creating initial start block for editing mode"
+        );
         const startBlock = workspace.newBlock("ottobit_start");
         startBlock.initSvg();
         startBlock.render();
         startBlock.moveBy(moveDistance, moveDistance);
-
-        // Defer program rendering to the dedicated effect to avoid double-render
-        if (initialProgramActionsJson) {
-          return;
-        }
 
         try {
           const program = initialProgramActionsJson;
@@ -1728,31 +1735,61 @@ export default function BlocksWorkspace({
     if (!blocklyWorkspace) return;
     if (!initialProgramActionsJson) return;
 
+    console.log("🔄 [BlocksWorkspace] Solution render effect triggered");
+
     // Force cleanup field inputs trước khi render program
     fieldInputManager.forceCleanupAll();
 
     try {
       const program = initialProgramActionsJson;
       const actions = Array.isArray(program?.actions) ? program.actions : [];
-      if (actions.length === 0) return;
+      if (actions.length === 0) {
+        console.log("⚠️ [BlocksWorkspace] No actions to render, skipping");
+        return;
+      }
 
       // Clear and rebuild
+      console.log("🧹 [BlocksWorkspace] Clearing workspace");
       blocklyWorkspace.clear();
 
+      // Check if any start blocks still exist after clear
+      const existingStartBlocks = blocklyWorkspace
+        .getAllBlocks()
+        .filter((b: any) => b.type === "ottobit_start");
+      console.log(
+        "🔍 [BlocksWorkspace] Existing start blocks after clear:",
+        existingStartBlocks.length
+      );
+
       const moveDistance = 50;
+      console.log("🟢 [BlocksWorkspace] Creating single start block");
       const startBlock = blocklyWorkspace.newBlock("ottobit_start");
       startBlock.initSvg();
       startBlock.render();
       startBlock.moveBy(moveDistance, moveDistance);
 
-      const createBlockFromAction = (act: any, index: number): any => {
+      const createBlockFromAction = (
+        act: any,
+        index: number,
+        isTopLevel: boolean = true
+      ): any => {
         let blockType: string | null = null;
         const type = String(act?.type || "").toLowerCase();
+        console.log(
+          `    🎨 [BlocksWorkspace] Creating block for action type: "${type}"`,
+          act
+        );
+
         if (type === "repeat") blockType = "ottobit_repeat";
         else if (type === "repeatrange") blockType = "ottobit_repeat_range";
         else if (type === "forward" || type === "move_forward")
           blockType = "ottobit_move_forward";
-        else if (type === "turnright" || type === "rotate")
+        else if (
+          type === "turnright" ||
+          type === "turnleft" ||
+          type === "turnback" ||
+          type === "rotate"
+        )
           blockType = "ottobit_rotate";
         else if (type === "if") blockType = "ottobit_if_expandable";
         else if (type === "while") blockType = "ottobit_while";
@@ -1766,12 +1803,37 @@ export default function BlocksWorkspace({
           else if (color === "green") blockType = "ottobit_collect_green";
           else blockType = "ottobit_collect_yellow";
         }
-        if (!blockType) return null;
+
+        if (!blockType) {
+          console.error(
+            `    ❌ [BlocksWorkspace] Unknown block type: "${type}"`,
+            act
+          );
+          return null;
+        }
+
+        console.log(
+          `    ✅ [BlocksWorkspace] Mapped to blockType: "${blockType}"`
+        );
 
         const block: any = blocklyWorkspace.newBlock(blockType);
         block.initSvg();
         block.render();
-        block.moveBy(moveDistance + 200, moveDistance + index * 70);
+
+        // Only set position for top-level blocks (not nested blocks inside function/repeat bodies)
+        if (isTopLevel) {
+          block.moveBy(moveDistance + 200, moveDistance + index * 70);
+          console.log(
+            `    📍 [BlocksWorkspace] Positioned block at (${
+              moveDistance + 200
+            }, ${moveDistance + index * 70})`
+          );
+        } else {
+          console.log(
+            `    📍 [BlocksWorkspace] Skipping position for nested block (will auto-position on connect)`
+          );
+        }
+
         try {
           block.setEditable && block.setEditable(true);
           block.setDisabled && block.setDisabled(false);
@@ -1799,10 +1861,34 @@ export default function BlocksWorkspace({
         try {
           // Set counts by connecting number inputs or setting fields depending on block type
           if (typeof act.count === "number") {
-            // Repeat: TIMES is a field_number
-            if (blockType === "ottobit_repeat" && block.setFieldValue) {
-              if (block.getField && block.getField("TIMES")) {
-                block.setFieldValue(String(act.count), "TIMES");
+            console.log(
+              `    🔢 [BlocksWorkspace] Setting count for ${blockType}:`,
+              act.count
+            );
+            // Repeat: TIMES is an input_value (not field), need to connect number block
+            if (blockType === "ottobit_repeat") {
+              const input = block.getInput && block.getInput("TIMES");
+              if (input?.connection) {
+                const num = blocklyWorkspace.newBlock("ottobit_number");
+                num.initSvg();
+                num.render();
+                try {
+                  num.setFieldValue(String(act.count), "NUM");
+                  console.log(
+                    `      ✅ [BlocksWorkspace] Connected number block with value:`,
+                    act.count
+                  );
+                } catch (e) {
+                  console.error(
+                    `      ❌ [BlocksWorkspace] Error setting number value:`,
+                    e
+                  );
+                }
+                input.connection.connect(num.outputConnection);
+              } else {
+                console.warn(
+                  `      ⚠️ [BlocksWorkspace] TIMES input not found on repeat block`
+                );
               }
             }
             // Move forward: input_value STEPS
@@ -2074,7 +2160,8 @@ export default function BlocksWorkspace({
               body.forEach((childAct: any, childIdx: number) => {
                 const childBlock = createBlockFromAction(
                   childAct,
-                  index * 10 + childIdx + 1
+                  index * 10 + childIdx + 1,
+                  false // nested block inside repeat/if/while body
                 );
                 if (!childBlock) return;
                 if (
@@ -2267,7 +2354,8 @@ export default function BlocksWorkspace({
                         (childAct: any, childIdx: number) => {
                           const childBlock = createBlockFromAction(
                             childAct,
-                            index * 100 + elseIfIdx * 10 + childIdx + 1
+                            index * 100 + elseIfIdx * 10 + childIdx + 1,
+                            false // nested block inside ELSE IF body
                           );
                           if (!childBlock) return;
                           if (
@@ -2311,7 +2399,8 @@ export default function BlocksWorkspace({
                 act.else.forEach((childAct: any, childIdx: number) => {
                   const childBlock = createBlockFromAction(
                     childAct,
-                    index * 1000 + childIdx + 1
+                    index * 1000 + childIdx + 1,
+                    false // nested block inside ELSE body
                   );
                   if (!childBlock) return;
                   if (
@@ -2338,7 +2427,7 @@ export default function BlocksWorkspace({
 
       let prev: any = startBlock as any;
       actions.forEach((act: any, idx: number) => {
-        const b = createBlockFromAction(act, idx);
+        const b = createBlockFromAction(act, idx, true); // top-level action
         if (!b) return;
         try {
           if (
@@ -2368,7 +2457,13 @@ export default function BlocksWorkspace({
           ? programObj.functions
           : [];
 
+        console.log("🔧 [BlocksWorkspace] Rendering functions:", {
+          functionsCount: functionsArr.length,
+          functions: functionsArr,
+        });
+
         const createFunctionDef = (fn: any, fnIndex: number) => {
+          console.log(`🔨 [BlocksWorkspace] Creating function ${fnIndex}:`, fn);
           const name: string =
             String(fn?.name || fn?.title || `func_${fnIndex + 1}`) ||
             `func_${fnIndex + 1}`;
@@ -2400,6 +2495,13 @@ export default function BlocksWorkspace({
           // Connect function body
           try {
             const body: any[] = Array.isArray(fn?.body) ? fn.body : [];
+            console.log(
+              `  📦 [BlocksWorkspace] Function body for ${fn?.name}:`,
+              {
+                bodyLength: body.length,
+                body: JSON.stringify(body, null, 2),
+              }
+            );
             if (body.length > 0) {
               // Find statement input for function body
               const stmtInput =
@@ -2407,31 +2509,65 @@ export default function BlocksWorkspace({
                 (defBlock.inputList || []).find(
                   (inp: any) => inp && inp.type === 3 && inp.connection
                 );
+              console.log(
+                `  🔌 [BlocksWorkspace] Statement input found:`,
+                !!stmtInput
+              );
               if (stmtInput && stmtInput.connection) {
                 let prevInner: any = null;
                 body.forEach((childAct: any, childIdx: number) => {
+                  console.log(
+                    `    🧩 [BlocksWorkspace] Processing body action ${childIdx}:`,
+                    JSON.stringify(childAct)
+                  );
                   const childBlock = createBlockFromAction(
                     childAct,
-                    10000 + fnIndex * 100 + childIdx + 1
+                    10000 + fnIndex * 100 + childIdx + 1,
+                    false // nested block inside function body
                   );
-                  if (!childBlock) return;
+                  console.log(`    ✅ [BlocksWorkspace] Child block created:`, {
+                    created: !!childBlock,
+                    type: childBlock?.type,
+                    id: childBlock?.id,
+                  });
+                  if (!childBlock) {
+                    console.error(
+                      `    ❌ [BlocksWorkspace] Failed to create child block for:`,
+                      childAct
+                    );
+                    return;
+                  }
                   if (
                     prevInner &&
                     prevInner.nextConnection &&
                     childBlock.previousConnection &&
                     !prevInner.nextConnection.isConnected()
                   ) {
+                    console.log(
+                      `    🔗 [BlocksWorkspace] Connecting to previous block`
+                    );
                     prevInner.nextConnection.connect(
                       childBlock.previousConnection
                     );
                   } else if (!prevInner && childBlock.previousConnection) {
+                    console.log(
+                      `    🔗 [BlocksWorkspace] Connecting first block to statement input`
+                    );
                     stmtInput.connection.connect(childBlock.previousConnection);
                   }
                   prevInner = childBlock;
                 });
+                console.log(
+                  `  ✅ [BlocksWorkspace] Function body completed with ${body.length} blocks`
+                );
               }
             }
-          } catch {}
+          } catch (err) {
+            console.error(
+              `  ❌ [BlocksWorkspace] Error rendering function body:`,
+              err
+            );
+          }
 
           // Place it nicely
           try {

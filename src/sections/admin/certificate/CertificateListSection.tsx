@@ -41,8 +41,8 @@ import {
   CERTIFICATE_STATUS_COLORS,
 } from "common/enums/certificate.enum";
 import { toast } from "react-toastify";
-import CertificateDetailDialog from "./CertificateDetailDialog";
-import RevokeCertificateDialog from "./RevokeCertificateDialog";
+import CertificateDetailDialog from "sections/admin/certificate/CertificateDetailDialog";
+import RevokeCertificateDialog from "sections/admin/certificate/RevokeCertificateDialog";
 
 export default function CertificateListSection() {
   const dispatch = useDispatch<AppDispatch>();

@@ -10,12 +10,15 @@ import { useAppDispatch, useAppSelector } from "store/config";
 import { getCourseRobotsThunk } from "store/courseRobot/courseRobotThunks";
 import RobotRequirementCard from "components/robot/RobotRequirementCard";
 import ActivateRobotDialog from "components/robot/ActivateRobotDialog";
+import { CourseType } from "common/@types/course";
 
 interface CourseSidebarSectionProps {
   course: {
     id: string;
     title: string;
     imageUrl?: string;
+    price?: number;
+    type?: CourseType;
   };
   lessons: any[];
   isEnrolled?: boolean;
@@ -84,10 +87,17 @@ export default function CourseSidebarSection({
               Nội dung khóa học
             </Typography>
             <Chip
-              label="Miễn phí"
+              label={
+                course.type === CourseType.Free || (course.price ?? 0) === 0
+                  ? "Miễn phí"
+                  : `${(course.price ?? 0).toLocaleString()} VND`
+              }
               size="small"
               sx={{
-                bgcolor: "#4caf50",
+                bgcolor:
+                  course.type === CourseType.Free || (course.price ?? 0) === 0
+                    ? "#4caf50"
+                    : "#ff9800",
                 color: "white",
                 fontWeight: 600,
                 fontSize: "0.7rem",

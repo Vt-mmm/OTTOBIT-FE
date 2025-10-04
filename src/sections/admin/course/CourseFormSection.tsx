@@ -222,9 +222,26 @@ export default function CourseFormSection({
                     fullWidth
                     label="Giá (VND)"
                     type="number"
-                    value={formData.price}
-                    onChange={handleInputChange("price")}
-                    inputProps={{ min: 0 }}
+                    value={formData.price || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData((prev) => ({
+                        ...prev,
+                        price: value === "" ? 0 : parseInt(value, 10),
+                      }));
+                    }}
+                    onFocus={(e) => {
+                      // Auto-select for easy replacement
+                      setTimeout(() => e.target.select(), 0);
+                    }}
+                    onBlur={(e) => {
+                      // Set to 0 if empty or negative on blur
+                      const value = parseInt(e.target.value, 10);
+                      if (e.target.value === "" || isNaN(value) || value < 0) {
+                        setFormData((prev) => ({ ...prev, price: 0 }));
+                      }
+                    }}
+                    inputProps={{ min: 0, step: 1000 }}
                   />
 
                   <FormControl fullWidth>

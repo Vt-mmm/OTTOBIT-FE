@@ -12,6 +12,7 @@ import {
   School as SchoolIcon,
   Person as PersonIcon,
 } from "@mui/icons-material";
+import { CourseType } from "common/@types/course";
 
 interface CourseHeroSectionProps {
   course: {
@@ -20,6 +21,8 @@ interface CourseHeroSectionProps {
     description: string;
     createdByName?: string;
     enrollmentsCount?: number;
+    price?: number;
+    type?: CourseType;
   };
   lessons: any[];
   isUserEnrolled: boolean;
@@ -44,11 +47,15 @@ export default function CourseHeroSection({
       <Typography variant="h3" component="h1" sx={{ fontWeight: 700, mb: 2 }}>
         {course.title}
       </Typography>
-      
-      <Typography variant="h6" color="text.secondary" sx={{ mb: 3, lineHeight: 1.6 }}>
+
+      <Typography
+        variant="h6"
+        color="text.secondary"
+        sx={{ mb: 3, lineHeight: 1.6 }}
+      >
         {course.description}
       </Typography>
-      
+
       {/* Course Stats */}
       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 3 }}>
         {/* Rating */}
@@ -58,7 +65,7 @@ export default function CourseHeroSection({
             {courseRating} ({totalRatings.toLocaleString()} đánh giá)
           </Typography>
         </Box>
-        
+
         <Chip
           icon={<SchoolIcon />}
           label={`${lessons.length} bài học`}
@@ -94,20 +101,21 @@ export default function CourseHeroSection({
 
       {/* Enrollment CTA */}
       {!isUserEnrolled ? (
-        <Box 
-          sx={{ 
-            p: 3, 
-            bgcolor: "#f8f9fa", 
+        <Box
+          sx={{
+            p: 3,
+            bgcolor: "#f8f9fa",
             border: "2px solid #4caf50",
             borderRadius: 2,
-            mb: 4 
+            mb: 4,
           }}
         >
           <Typography variant="h6" sx={{ mb: 2, color: "#2e7d32" }}>
             Bắt đầu hành trình học tập của bạn!
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Tham gia {course.enrollmentsCount || 0} học viên khác và khám phá thế giới lập trình robot thú vị.
+            Tham gia {course.enrollmentsCount || 0} học viên khác và khám phá
+            thế giới lập trình robot thú vị.
           </Typography>
           <Button
             variant="contained"
@@ -115,14 +123,20 @@ export default function CourseHeroSection({
             onClick={onEnrollCourse}
             disabled={isEnrolling}
             sx={{
-              bgcolor: "#4caf50",
+              bgcolor:
+                course.type === CourseType.Free || (course.price ?? 0) === 0
+                  ? "#4caf50"
+                  : "#1976d2",
               color: "white",
               fontWeight: 600,
               py: 1.5,
               px: 4,
               fontSize: "1.1rem",
               "&:hover": {
-                bgcolor: "#43a047",
+                bgcolor:
+                  course.type === CourseType.Free || (course.price ?? 0) === 0
+                    ? "#43a047"
+                    : "#1565c0",
               },
             }}
           >
@@ -131,24 +145,29 @@ export default function CourseHeroSection({
                 <CircularProgress size={20} sx={{ mr: 1, color: "white" }} />
                 Đang xử lý...
               </>
-            ) : (
+            ) : course.type === CourseType.Free || (course.price ?? 0) === 0 ? (
               "Tham gia khóa học miễn phí"
+            ) : (
+              `Tham gia khóa học - ${(course.price ?? 0).toLocaleString()} VND`
             )}
           </Button>
         </Box>
       ) : (
-        <Box 
-          sx={{ 
-            p: 2, 
-            bgcolor: "#e8f5e9", 
+        <Box
+          sx={{
+            p: 2,
+            bgcolor: "#e8f5e9",
             border: "1px solid #4caf50",
             borderRadius: 2,
-            mb: 2 
+            mb: 2,
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <CheckCircleIcon sx={{ color: "#4caf50", fontSize: "1.2rem" }} />
-            <Typography variant="body1" sx={{ color: "#2e7d32", fontWeight: 600 }}>
+            <Typography
+              variant="body1"
+              sx={{ color: "#2e7d32", fontWeight: 600 }}
+            >
               Bạn đã tham gia khóa học này!
             </Typography>
           </Box>

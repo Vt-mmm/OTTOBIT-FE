@@ -1,15 +1,9 @@
 import React, { useState } from "react";
-import {
-  Card,
-  Typography,
-  Box,
-  Button,
-  Chip,
-  Rating,
-} from "@mui/material";
+import { Card, Typography, Box, Button, Chip, Rating } from "@mui/material";
 import PeopleIcon from "@mui/icons-material/People";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { CourseType } from "common/@types/course";
 
 interface CourseCardProps {
   id: string;
@@ -25,6 +19,8 @@ interface CourseCardProps {
   compact?: boolean;
   isEnrolled?: boolean;
   onEnroll?: (courseId: string) => void;
+  price?: number; // NEW: Price from backend
+  type?: CourseType; // NEW: Course type from backend
 }
 
 // Array of local images from public folder
@@ -39,7 +35,9 @@ const placeholderImages = [
 
 // Function to get consistent placeholder for course ID
 const getPlaceholderImage = (courseId: string) => {
-  const index = courseId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % placeholderImages.length;
+  const index =
+    courseId.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) %
+    placeholderImages.length;
   return placeholderImages[index];
 };
 
@@ -47,20 +45,16 @@ const getPlaceholderImage = (courseId: string) => {
 const DEFAULT_FALLBACK = "/asset/LogoOttobit.png";
 
 // Mock data generators based on course ID for consistency
-const generateMockRating = (courseId: string): { rating: number; reviewCount: number } => {
-  const hash = courseId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+const generateMockRating = (
+  courseId: string
+): { rating: number; reviewCount: number } => {
+  const hash = courseId
+    .split("")
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const rating = 4.1 + (hash % 9) / 10; // 4.1 - 4.9
   const reviewCount = 50 + (hash % 500); // 50-550 reviews
   return { rating: Math.round(rating * 10) / 10, reviewCount };
 };
-
-const generateMockPricing = (courseId: string): 'Free' | 'Free Trial' | 'Paid' => {
-  const hash = courseId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const pricingOptions = ['Free', 'Free Trial', 'Paid'] as const;
-  return pricingOptions[hash % pricingOptions.length];
-};
-
-// Removed unused functions
 
 export default function CourseCard({
   id,
@@ -72,12 +66,19 @@ export default function CourseCard({
   onClick,
   isEnrolled = false,
   onEnroll,
+  price = 0, // Default to 0 if not provided
+  type = CourseType.Free, // Default to Free if not provided
 }: CourseCardProps) {
-  const [imgSrc, setImgSrc] = useState<string>(imageUrl || getPlaceholderImage(id));
+  const [imgSrc, setImgSrc] = useState<string>(
+    imageUrl || getPlaceholderImage(id)
+  );
 
   // Generate mock data based on course ID for consistency
   const { rating, reviewCount } = generateMockRating(id);
-  const pricing = generateMockPricing(id);
+
+  // Determine course pricing display based on backend data
+  const isFree = type === CourseType.Free || price === 0;
+  const priceDisplay = isFree ? "Miễn phí" : `${price.toLocaleString()} VND`;
 
   const handleImageError = () => {
     setImgSrc(DEFAULT_FALLBACK);
@@ -127,24 +128,24 @@ export default function CourseCard({
       >
         {/* Pricing Badge */}
         <Chip
-          label={pricing === 'Free' ? 'Miễn phí' : pricing === 'Free Trial' ? 'Dùng thử miễn phí' : 'Trả phí'}
+          label={priceDisplay}
           size="small"
           sx={{
             position: "absolute",
             top: 8,
             right: 8,
-            backgroundColor: pricing === 'Free' ? '#4caf50' : '#1976d2',
+            backgroundColor: isFree ? "#4caf50" : "#ff9800",
             color: "white",
             fontSize: "0.7rem",
             fontWeight: 600,
             zIndex: 2,
           }}
         />
-        
+
         {/* Enrolled Badge */}
         {isEnrolled && (
           <Chip
-            icon={<CheckCircleIcon sx={{ fontSize: '0.8rem !important' }} />}
+            icon={<CheckCircleIcon sx={{ fontSize: "0.8rem !important" }} />}
             label="Đã tham gia"
             size="small"
             sx={{
@@ -162,7 +163,7 @@ export default function CourseCard({
             }}
           />
         )}
-        
+
         <img
           src={imgSrc}
           alt={title}
@@ -279,7 +280,7 @@ export default function CourseCard({
                 {lessonsCount} bài học
               </Box>
             )}
-            
+
             {/* Students */}
             {enrollmentsCount !== undefined && (
               <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -287,7 +288,7 @@ export default function CourseCard({
                 {enrollmentsCount.toLocaleString()} học viên
               </Box>
             )}
-            
+
             {/* Skills tags */}
             <Chip
               label="Blockly"
@@ -329,13 +330,13 @@ export default function CourseCard({
                   px: 2,
                   py: 0.8,
                   borderRadius: 1,
-                  backgroundColor: pricing === 'Free' ? '#4caf50' : '#1976d2',
+                  backgroundColor: isFree ? "#4caf50" : "#1976d2",
                   "&:hover": {
-                    backgroundColor: pricing === 'Free' ? '#43a047' : '#1565c0',
+                    backgroundColor: isFree ? "#43a047" : "#1565c0",
                   },
                 }}
               >
-                {pricing === 'Free' ? 'Tham gia miễn phí' : 'Tìm hiểu thêm'}
+                {isFree ? "Tham gia miễn phí" : "Tham gia khóa học"}
               </Button>
             ) : (
               <Button
