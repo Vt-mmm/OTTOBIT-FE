@@ -16,7 +16,6 @@ export interface RobotComponent {
 // Request for getting list of robot components with filters
 export interface GetRobotComponentsRequest {
   page?: number;
-  pageSize?: number;
   size?: number;
   searchTerm?: string;
   robotId?: string; // Filter by specific robot

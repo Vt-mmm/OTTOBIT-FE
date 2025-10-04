@@ -52,8 +52,8 @@ export default function RobotFormSection({
     imageUrl: robot?.imageUrl || "",
     technicalSpecs: robot?.technicalSpecs || "",
     requirements: robot?.requirements || "",
-    minAge: robot?.minAge || 8,
-    maxAge: robot?.maxAge || 99,
+    minAge: robot?.minAge ?? 8,
+    maxAge: robot?.maxAge ?? 99,
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -243,18 +243,29 @@ export default function RobotFormSection({
                         label="Minimum Age"
                         type="number"
                         value={formData.minAge || ""}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          const value = e.target.value;
                           setFormData((prev) => ({
                             ...prev,
-                            minAge: Number(e.target.value) || 8,
-                          }))
-                        }
+                            minAge: value === "" ? 0 : parseInt(value, 10),
+                          }));
+                        }}
+                        onFocus={(e) => {
+                          // Auto-select for easy replacement
+                          setTimeout(() => e.target.select(), 0);
+                        }}
+                        onBlur={(e) => {
+                          // Set default value if empty on blur
+                          if (e.target.value === "") {
+                            setFormData((prev) => ({ ...prev, minAge: 8 }));
+                          }
+                        }}
                         error={!!errors.minAge}
                         helperText={errors.minAge}
                         fullWidth
                         required
                         InputProps={{
-                          inputProps: { min: 0, max: 18 },
+                          inputProps: { min: 0, max: 18, step: 1 },
                         }}
                       />
                     </Grid>
@@ -264,18 +275,33 @@ export default function RobotFormSection({
                         label="Maximum Age"
                         type="number"
                         value={formData.maxAge || ""}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          const value = e.target.value;
                           setFormData((prev) => ({
                             ...prev,
-                            maxAge: Number(e.target.value) || 99,
-                          }))
-                        }
+                            maxAge: value === "" ? 0 : parseInt(value, 10),
+                          }));
+                        }}
+                        onFocus={(e) => {
+                          // Auto-select for easy replacement
+                          setTimeout(() => e.target.select(), 0);
+                        }}
+                        onBlur={(e) => {
+                          // Set default value if empty on blur
+                          if (e.target.value === "") {
+                            setFormData((prev) => ({ ...prev, maxAge: 99 }));
+                          }
+                        }}
                         error={!!errors.maxAge}
                         helperText={errors.maxAge}
                         fullWidth
                         required
                         InputProps={{
-                          inputProps: { min: formData.minAge, max: 99 },
+                          inputProps: {
+                            min: formData.minAge,
+                            max: 99,
+                            step: 1,
+                          },
                         }}
                       />
                     </Grid>

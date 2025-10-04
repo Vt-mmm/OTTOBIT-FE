@@ -269,9 +269,26 @@ export default function LessonFormSection({
                     fullWidth
                     type="number"
                     label="Thứ tự trong khóa học *"
-                    value={formData.order}
-                    onChange={handleInputChange("order")}
-                    inputProps={{ min: 1 }}
+                    value={formData.order || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData((prev) => ({
+                        ...prev,
+                        order: value === "" ? 0 : parseInt(value, 10),
+                      }));
+                    }}
+                    onFocus={(e) => {
+                      // Auto-select for easy replacement
+                      setTimeout(() => e.target.select(), 0);
+                    }}
+                    onBlur={(e) => {
+                      // Set to 1 if empty or less than 1 on blur
+                      const value = parseInt(e.target.value, 10);
+                      if (e.target.value === "" || isNaN(value) || value < 1) {
+                        setFormData((prev) => ({ ...prev, order: 1 }));
+                      }
+                    }}
+                    inputProps={{ min: 1, step: 1 }}
                     helperText="Vị trí của bài học trong khóa học"
                   />
                 </Stack>
