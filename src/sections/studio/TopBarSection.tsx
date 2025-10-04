@@ -50,7 +50,7 @@ import {
   getStoredNavigationData,
 } from "../../utils/studioNavigation";
 import { isChallengeAccessible } from "../../utils/challengeUtils";
-import { getChallengeProcesses } from "../../redux/challenge/challengeSlice";
+import { getMySubmissionsThunk } from "../../redux/submission/submissionThunks";
 import SolutionHintDialog from "./SolutionHintDialog";
 
 interface TopBarSectionProps {
@@ -67,12 +67,12 @@ export default function TopBarSection({
   roomId,
 }: TopBarSectionProps) {
   return (
-      <TopBarContent
-        activeTab={activeTab}
-        onTabChange={onTabChange}
-        workspace={workspace}
+    <TopBarContent
+      activeTab={activeTab}
+      onTabChange={onTabChange}
+      workspace={workspace}
       roomId={roomId}
-      />
+    />
   );
 }
 
@@ -175,15 +175,14 @@ function TopBarContent({
     return map;
   }, [lessonChallengeItems]);
 
-  // Challenge processes from Redux (progress info)
-  const challengeProcessesItems = useAppSelector(
-    (state) => state.challenge.challengeProcesses.data?.items || []
-  );
+  // Submissions from Redux (progress info)
+  const { mySubmissions } = useAppSelector((state) => state.submission);
+  const submissionsItems = mySubmissions?.data?.items || [];
 
-  // Fetch challenge processes when lessonId is present
+  // Fetch submissions when lessonId is present
   useEffect(() => {
     if (!lessonId) return;
-    dispatch(getChallengeProcesses({ lessonId, page: 1, size: 50 }));
+    dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 100 }));
   }, [lessonId, dispatch]);
 
   // Check accessibility using the same logic as LessonTabletSection
@@ -194,9 +193,9 @@ function TopBarContent({
           ? lessonChallengeItems[index]
           : lessonChallengeItems.find((c: any) => c.id === id);
       if (!challenge) return false;
-      return isChallengeAccessible(challenge, challengeProcessesItems);
+      return isChallengeAccessible(challenge, lessonChallengeItems, submissionsItems);
     },
-    [lessonChallengeItems, challengeProcessesItems]
+    [lessonChallengeItems, submissionsItems]
   );
 
   // Function to submit solution after completing challenge - memoized to prevent recreations
@@ -270,7 +269,7 @@ function TopBarContent({
 
       // Refresh progress from server and submit solution
       if (lessonId) {
-        dispatch(getChallengeProcesses({ lessonId, page: 1, size: 50 }));
+        dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 100 }));
       }
       submitSolution(calculatedStars);
     },
@@ -952,24 +951,24 @@ function TopBarContent({
           </Tooltip>
 
           <Tooltip title="Open Camera">
-                <IconButton
+            <IconButton
               id="tour-btn-camera"
               onClick={handleCamera}
-                  sx={{
+              sx={{
                 bgcolor: "#fff3e0",
                 color: "#f57c00",
-                    width: 48,
-                    height: 48,
-                    "&:hover": {
+                width: 48,
+                height: 48,
+                "&:hover": {
                   bgcolor: "#ffe0b2",
-                      transform: "translateY(-1px)",
+                  transform: "translateY(-1px)",
                   boxShadow: "0 4px 12px rgba(245, 124, 0, 0.3)",
-                    },
-                  }}
-                >
+                },
+              }}
+            >
               <CameraIcon sx={{ fontSize: 24 }} />
-                </IconButton>
-              </Tooltip>
+            </IconButton>
+          </Tooltip>
 
           <Tooltip title="Gợi ý lời giải">
             <IconButton
@@ -1021,55 +1020,55 @@ function TopBarContent({
           {/* Divider */}
           <Box sx={{ width: 1, height: 32, bgcolor: "#e2e8f0", mx: 0.8 }} />
 
-              <IconButton
+          <IconButton
             id="tour-btn-run"
             aria-label={isRunning ? "Stop Program" : "Run Program"}
-                onClick={isRunning ? handleStop : handleRun}
-                disabled={!workspace}
-                sx={{
-                  bgcolor: isRunning ? "#ef4444" : "#10b981",
-                  color: "white",
+            onClick={isRunning ? handleStop : handleRun}
+            disabled={!workspace}
+            sx={{
+              bgcolor: isRunning ? "#ef4444" : "#10b981",
+              color: "white",
               width: { xs: 36, sm: 42, md: 48 },
               height: { xs: 36, sm: 42, md: 48 },
-                  "&:hover": {
-                    bgcolor: isRunning ? "#dc2626" : "#059669",
-                    transform: "translateY(-1px)",
-                    boxShadow: isRunning
-                      ? "0 4px 12px rgba(239, 68, 68, 0.4)"
-                      : "0 4px 12px rgba(16, 185, 129, 0.4)",
-                  },
-                  "&:disabled": {
-                    bgcolor: "#9ca3af",
-                    color: "#6b7280",
-                    "&:hover": {
-                      transform: "none",
-                      boxShadow: "none",
-                    },
-                  },
-                }}
-              >
-                {isRunning ? (
-                  <StopIcon sx={{ fontSize: 24 }} />
-                ) : (
-                  <RunIcon sx={{ fontSize: 24 }} />
-                )}
-              </IconButton>
+              "&:hover": {
+                bgcolor: isRunning ? "#dc2626" : "#059669",
+                transform: "translateY(-1px)",
+                boxShadow: isRunning
+                  ? "0 4px 12px rgba(239, 68, 68, 0.4)"
+                  : "0 4px 12px rgba(16, 185, 129, 0.4)",
+              },
+              "&:disabled": {
+                bgcolor: "#9ca3af",
+                color: "#6b7280",
+                "&:hover": {
+                  transform: "none",
+                  boxShadow: "none",
+                },
+              },
+            }}
+          >
+            {isRunning ? (
+              <StopIcon sx={{ fontSize: 24 }} />
+            ) : (
+              <RunIcon sx={{ fontSize: 24 }} />
+            )}
+          </IconButton>
 
           <Tooltip title="Restart Map">
             <span id="tour-btn-restart-wrap">
-            <IconButton
+              <IconButton
                 id="tour-btn-restart"
                 onClick={handleRestart}
                 disabled={!phaserConnected || !phaserReady}
-              sx={{
+                sx={{
                   bgcolor: "#f3f4f6",
                   color: "#6b7280",
                   width: { xs: 36, sm: 42, md: 48 },
                   height: { xs: 36, sm: 42, md: 48 },
-                "&:hover": {
+                  "&:hover": {
                     bgcolor: "#ff9800",
-                  color: "white",
-                  transform: "translateY(-1px)",
+                    color: "white",
+                    transform: "translateY(-1px)",
                     boxShadow: "0 4px 12px rgba(255, 152, 0, 0.4)",
                   },
                   "&:disabled": {
@@ -1079,11 +1078,11 @@ function TopBarContent({
                       transform: "none",
                       boxShadow: "none",
                     },
-                },
-              }}
-            >
+                  },
+                }}
+              >
                 <RestartIcon sx={{ fontSize: 24 }} />
-            </IconButton>
+              </IconButton>
             </span>
           </Tooltip>
         </Box>

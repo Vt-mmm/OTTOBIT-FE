@@ -72,10 +72,8 @@ export default function FeaturedRobotsSection() {
                   <ProductCard
                     id={robot.id}
                     name={robot.name}
-                    price={robot.price}
                     imageUrl={robot.imageUrl}
                     description={robot.description}
-                    stockQuantity={robot.stockQuantity}
                     onClick={() => handleRobotClick(robot.id)}
                     type="robot"
                     brand={robot.brand}

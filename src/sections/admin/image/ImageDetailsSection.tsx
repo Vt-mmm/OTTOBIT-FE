@@ -71,7 +71,7 @@ export default function ImageDetailsSection({
 
   const getImageCategory = () => {
     if (image.robotId) return "Robot";
-    if (image.componentId) return "Component";
+    // Component relation removed
     return "General";
   };
 
@@ -270,17 +270,7 @@ export default function ImageDetailsSection({
                   </Box>
                 )}
 
-                {/* Component Info */}
-                {image.component && (
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Component
-                    </Typography>
-                    <Typography variant="body1" color="secondary.main">
-                      {image.component.name}
-                    </Typography>
-                  </Box>
-                )}
+                {/* Component Info - Removed */}
 
                 <Divider />
 

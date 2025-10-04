@@ -6,20 +6,24 @@ export interface Robot {
   brand: string;
   description?: string;
   imageUrl?: string;
-  price: number;
-  stockQuantity: number;
   technicalSpecs?: string;
   requirements?: string;
   minAge: number;
   maxAge: number;
+  // No price/stock - Store is showroom only, purchases via external platforms
+  externalPurchaseLinks?: {
+    facebook?: string;
+    shopee?: string;
+    lazada?: string;
+    tiktokShop?: string;
+  };
   createdAt: string;
   updatedAt: string;
   isDeleted?: boolean;
-  
+
   // Navigation properties (if populated by BE)
   images?: any[];
   courseRobots?: any[];
-  studentRobots?: any[];
 }
 
 // Age range helper
@@ -35,8 +39,6 @@ export interface CreateRobotRequest {
   brand: string;
   description?: string;
   imageUrl?: string;
-  price: number;
-  stockQuantity: number;
   technicalSpecs?: string;
   requirements?: string;
   minAge: number;
@@ -49,8 +51,6 @@ export interface UpdateRobotRequest {
   brand?: string;
   description?: string;
   imageUrl?: string;
-  price?: number;
-  stockQuantity?: number;
   technicalSpecs?: string;
   requirements?: string;
   minAge?: number;
@@ -60,11 +60,8 @@ export interface UpdateRobotRequest {
 export interface GetRobotsRequest {
   searchTerm?: string;
   brand?: string;
-  minPrice?: number;
-  maxPrice?: number;
   minAge?: number;
   maxAge?: number;
-  inStock?: boolean;
   pageNumber?: number;
   pageSize?: number;
   sortBy?: number;

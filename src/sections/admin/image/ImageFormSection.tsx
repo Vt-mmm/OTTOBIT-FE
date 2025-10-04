@@ -62,15 +62,13 @@ export default function ImageFormSection({
     url: image?.url || "",
     assignmentType: image?.robotId
       ? "robot"
-      : image?.componentId
-      ? "component"
       : robotId
       ? "robot"
       : componentId
       ? "component"
       : "general",
     robotId: image?.robotId || robotId || "",
-    componentId: image?.componentId || componentId || "",
+    componentId: componentId || "",
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});

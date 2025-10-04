@@ -24,7 +24,6 @@ import { useAppDispatch, useAppSelector } from "store/config";
 import { getComponentByIdThunk } from "store/component/componentThunks";
 import { PATH_PUBLIC, PATH_USER } from "routes/paths";
 import { ComponentType } from "common/@types/component";
-import { formatVND } from "utils/utils";
 
 interface ComponentDetailSectionProps {
   componentId: string;
@@ -51,8 +50,7 @@ export default function ComponentDetailSection({ componentId }: ComponentDetailS
   };
 
   const handleQuantityChange = (delta: number) => {
-    const component = currentComponent.data;
-    setQuantity((prev) => Math.max(1, Math.min(prev + delta, component?.stockQuantity || 1)));
+    setQuantity((prev) => Math.max(1, prev + delta));
   };
 
   const getComponentTypeLabel = (type: ComponentType) => {
@@ -231,21 +229,12 @@ export default function ComponentDetailSection({ componentId }: ComponentDetailS
                 size="small"
                 sx={{ fontWeight: 600 }}
               />
-              <Chip
-                label={component.stockQuantity > 500 ? "Sold 500+" : "Popular"}
-                size="small"
-                sx={{ bgcolor: "success.light", color: "success.dark", fontWeight: 600 }}
-              />
             </Box>
           </Box>
 
-          {/* Price */}
-          <Typography variant="h3" sx={{ fontWeight: 700, mb: 3, color: "text.primary" }}>
-            {formatVND(component.price)}
-          </Typography>
-
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            (or starting from {formatVND(Math.round(component.price / 12))}/month with 0% installment)
+          {/* Price - Contact for purchase */}
+          <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, color: "primary.main" }}>
+            Contact us to purchase
           </Typography>
 
           <Divider sx={{ my: 3 }} />
@@ -300,7 +289,6 @@ export default function ComponentDetailSection({ componentId }: ComponentDetailS
                 </Typography>
                 <IconButton
                   onClick={() => handleQuantityChange(1)}
-                  disabled={quantity >= component.stockQuantity}
                   sx={{ borderRadius: 0 }}
                 >
                   <AddIcon />
@@ -341,12 +329,9 @@ export default function ComponentDetailSection({ componentId }: ComponentDetailS
           )}
 
           {/* Availability */}
-          <Box sx={{ mb: 4, p: 2, bgcolor: "success.50", borderRadius: 1 }}>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: "success.dark" }}>
-              {component.stockQuantity > 0 ? "In Stock" : "Out of Stock"} —{" "}
-              {component.stockQuantity > 0
-                ? `Ships in 1-2 business days (${component.stockQuantity} units available)`
-                : "Currently unavailable"}
+          <Box sx={{ mb: 4, p: 2, bgcolor: "info.50", borderRadius: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "info.dark" }}>
+              Contact us for availability and pricing information
             </Typography>
           </Box>
 
@@ -356,7 +341,6 @@ export default function ComponentDetailSection({ componentId }: ComponentDetailS
               variant="contained"
               size="large"
               fullWidth
-              disabled={component.stockQuantity === 0}
               sx={{
                 py: 1.5,
                 fontSize: "1rem",
@@ -364,7 +348,7 @@ export default function ComponentDetailSection({ componentId }: ComponentDetailS
                 textTransform: "none",
               }}
             >
-              Add to Cart
+              Contact to Purchase
             </Button>
             <Button
               variant="outlined"

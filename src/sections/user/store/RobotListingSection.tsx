@@ -49,15 +49,8 @@ export default function RobotListingSection() {
     const filters: GetRobotsRequest = {
       searchTerm: searchTerm.trim() || undefined,
       brand: filterBrand !== "all" ? filterBrand : undefined,
-      inStock:
-        filterStock === "inStock"
-          ? true
-          : filterStock === "outOfStock"
-          ? false
-          : undefined,
-      // Only apply price filter if user has interacted with it
-      minPrice: applyPriceFilter && priceRange[0] > 0 ? priceRange[0] : undefined,
-      maxPrice: applyPriceFilter && priceRange[1] < 50000000 ? priceRange[1] : undefined,
+      // inStock filter removed - no stock data available
+      // Price filter removed - no pricing data in backend
       // Only apply age filter if user has interacted with it
       minAge: applyAgeFilter && ageRange[0] > 1 ? ageRange[0] : undefined,
       maxAge: applyAgeFilter && ageRange[1] < 99 ? ageRange[1] : undefined,
@@ -437,10 +430,8 @@ export default function RobotListingSection() {
                   key={robot.id}
                   id={robot.id}
                   name={robot.name}
-                  price={robot.price}
                   imageUrl={robot.imageUrl}
                   description={robot.description}
-                  stockQuantity={robot.stockQuantity}
                   onClick={() => handleRobotClick(robot.id)}
                   type="robot"
                   brand={robot.brand}

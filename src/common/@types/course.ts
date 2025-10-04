@@ -1,3 +1,9 @@
+// CourseType enum from backend
+export enum CourseType {
+  Free = 1,
+  Premium = 2,
+}
+
 // Course entity interfaces based on BE models
 export interface Course {
   id: string;
@@ -25,15 +31,7 @@ export interface CourseRobotInfo {
   robotModel: string;
   robotBrand: string;
   robotImageUrl?: string;
-  robotPrice: number;
   isRequired: boolean;
-  order?: number;
-}
-
-// Course pricing type
-export enum CourseType {
-  Free = 1,
-  Paid = 2,
 }
 
 // Request types
@@ -56,6 +54,9 @@ export interface UpdateCourseRequest {
 export interface GetCoursesRequest {
   searchTerm?: string;
   createdById?: string;
+  type?: CourseType; // NEW: Filter by course type
+  minPrice?: number; // NEW: Filter by minimum price
+  maxPrice?: number; // NEW: Filter by maximum price
   includeDeleted?: boolean;
   pageNumber?: number;
   pageSize?: number;

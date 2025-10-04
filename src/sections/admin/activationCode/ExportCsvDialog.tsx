@@ -85,7 +85,7 @@ export default function ExportCsvDialog({
               component="div"
               sx={{ mt: 1, fontFamily: "monospace" }}
             >
-              Code, Status, ExpiresAt, UsedAt, UsedById, RobotId, BatchId
+              Code, Status, ExpiresAt, UsedAt, StudentId, RobotId, BatchId
             </Typography>
           </Alert>
         </Box>
@@ -99,11 +99,7 @@ export default function ExportCsvDialog({
           variant="contained"
           disabled={!batchId.trim() || isLoading}
           startIcon={
-            isLoading ? (
-              <CircularProgress size={16} />
-            ) : (
-              <DownloadIcon />
-            )
+            isLoading ? <CircularProgress size={16} /> : <DownloadIcon />
           }
         >
           {isLoading ? "Đang export..." : "Export CSV"}

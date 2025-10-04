@@ -1,3 +1,5 @@
+export * from "./certificate";
+export * from "./certificateTemplate";
 export * from "./challenge";
 export * from "./course";
 export * from "./enrollment";

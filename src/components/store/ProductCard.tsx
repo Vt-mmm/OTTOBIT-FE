@@ -17,10 +17,10 @@ import { formatVND } from "utils/utils";
 interface ProductCardProps {
   id: string;
   name: string;
-  price: number;
+  price?: number; // Optional - showroom mode
   imageUrl?: string;
   description?: string;
-  stockQuantity: number;
+  stockQuantity?: number; // Optional - showroom mode
   onClick: () => void;
   type: "robot" | "component";
   // Robot specific
@@ -136,30 +136,34 @@ export default function ProductCard({
           </Box>
         )}
 
-        {/* Price Badge */}
-        <Chip
-          label={formatVND(price)}
-          color="primary"
-          sx={{
-            position: "absolute",
-            top: 8,
-            left: 8,
-            fontWeight: "bold",
-            fontSize: "0.85rem",
-          }}
-        />
+        {/* Price Badge - Only show if price available */}
+        {price !== undefined && (
+          <Chip
+            label={formatVND(price)}
+            color="primary"
+            sx={{
+              position: "absolute",
+              top: 8,
+              left: 8,
+              fontWeight: "bold",
+              fontSize: "0.85rem",
+            }}
+          />
+        )}
 
-        {/* Stock Status */}
-        <Chip
-          label={getStockStatusText(stockQuantity)}
-          color={getStockStatusColor(stockQuantity)}
-          size="small"
-          sx={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-          }}
-        />
+        {/* Stock Status - Only show if stockQuantity available */}
+        {stockQuantity !== undefined && (
+          <Chip
+            label={getStockStatusText(stockQuantity)}
+            color={getStockStatusColor(stockQuantity)}
+            size="small"
+            sx={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+            }}
+          />
+        )}
       </Box>
 
       {/* Content Section */}
@@ -215,15 +219,21 @@ export default function ProductCard({
           {description || "No description available"}
         </Typography>
 
-        {/* Price and Stock Info */}
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: "auto" }}>
-          <Typography variant="h6" color="primary.main" fontWeight="bold">
-            {formatVND(price)}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {stockQuantity} units
-          </Typography>
-        </Box>
+        {/* Price and Stock Info - Only show if available */}
+        {(price !== undefined || stockQuantity !== undefined) && (
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: "auto" }}>
+            {price !== undefined && (
+              <Typography variant="h6" color="primary.main" fontWeight="bold">
+                {formatVND(price)}
+              </Typography>
+            )}
+            {stockQuantity !== undefined && (
+              <Typography variant="body2" color="text.secondary">
+                {stockQuantity} units
+              </Typography>
+            )}
+          </Box>
+        )}
       </CardContent>
     </Card>
   );

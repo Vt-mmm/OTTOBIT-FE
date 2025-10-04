@@ -10,8 +10,8 @@ type ViewMode = "list" | "create" | "edit" | "details";
 export interface ImageManagementProps {
   /** Robot ID to filter images (optional) */
   robotId?: string;
-  /** Component ID to filter images (optional) */
-  componentId?: string;
+  /** Component ID to filter images (optional) - Removed */
+  // componentId?: string;
   /** Custom title for the image management section */
   title?: string;
   /** Custom description */
@@ -32,7 +32,7 @@ export interface ImageManagementProps {
 
 export default function ImageManagement({
   robotId,
-  componentId,
+  // componentId,
   title = "Image Management",
   description,
   showHeader = true,
@@ -67,7 +67,6 @@ export default function ImageManagement({
           <ImageFormSection
             mode="create"
             robotId={robotId}
-            componentId={componentId}
             onBack={handleBackToList}
             onSuccess={() => handleImageSuccess('create')}
           />
@@ -78,7 +77,6 @@ export default function ImageManagement({
             mode="edit"
             image={selectedImage}
             robotId={robotId}
-            componentId={componentId}
             onBack={handleBackToList}
             onSuccess={() => handleImageSuccess('update', selectedImage || undefined)}
           />
@@ -98,7 +96,6 @@ export default function ImageManagement({
         return (
           <ImageListSection
             robotId={robotId}
-            componentId={componentId}
             onViewModeChange={handleViewModeChange}
             allowCreate={allowCreate}
             allowEdit={allowEdit}
@@ -113,8 +110,6 @@ export default function ImageManagement({
       case "create":
         return robotId
           ? "Upload Robot Images"
-          : componentId
-          ? "Upload Component Images"
           : "Upload New Image";
       case "edit":
         return "Edit Image";
@@ -132,8 +127,6 @@ export default function ImageManagement({
       case "create":
         return robotId
           ? "Upload new images for this robot"
-          : componentId
-          ? "Upload new images for this component"
           : "Upload a new image to the system";
       case "edit":
         return "Update image information and assignments";
@@ -142,9 +135,7 @@ export default function ImageManagement({
       default:
         return robotId
           ? "Manage images for this robot"
-          : componentId
-          ? "Manage images for this component"
-          : "Manage images for robots, components, and general use";
+          : "Manage images for robots and general use";
     }
   };
 

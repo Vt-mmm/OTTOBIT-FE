@@ -5,9 +5,17 @@ export interface Component {
   description: string;
   type: ComponentType;
   imageUrl?: string;
-  price: number;
-  stockQuantity: number;
   specifications?: string; // Backend uses string, not object
+  
+  // Store is showroom only - purchases via external platforms
+  externalPurchaseLinks?: {
+    facebook?: string;
+    shopee?: string;
+    lazada?: string;
+    tiktokShop?: string;
+    website?: string;
+  };
+  
   createdAt: string;
   updatedAt: string;
   isDeleted: boolean;
@@ -57,8 +65,6 @@ export interface CreateComponentRequest {
   description: string;
   type: ComponentType;
   imageUrl?: string;
-  price: number;
-  stockQuantity: number;
   specifications?: string;
 }
 
@@ -67,8 +73,6 @@ export interface UpdateComponentRequest {
   description?: string;
   type?: ComponentType;
   imageUrl?: string;
-  price?: number;
-  stockQuantity?: number;
   specifications?: string;
 }
 

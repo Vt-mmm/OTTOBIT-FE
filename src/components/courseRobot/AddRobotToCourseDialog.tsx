@@ -41,7 +41,6 @@ export default function AddRobotToCourseDialog({
 
   const [selectedRobot, setSelectedRobot] = useState<any>(null);
   const [isRequired, setIsRequired] = useState(true);
-  const [order, setOrder] = useState<number>(1);
 
   useEffect(() => {
     if (open) {
@@ -55,7 +54,6 @@ export default function AddRobotToCourseDialog({
     dispatch(clearSuccessFlags());
     setSelectedRobot(null);
     setIsRequired(true);
-    setOrder(1);
     if (onSuccess) {
       console.log("✅ AddRobotToCourseDialog: calling parent onSuccess");
       onSuccess();
@@ -78,7 +76,6 @@ export default function AddRobotToCourseDialog({
       robotId: selectedRobot.id,
       robotName: selectedRobot.name,
       isRequired,
-      order,
     });
 
     dispatch(
@@ -86,7 +83,6 @@ export default function AddRobotToCourseDialog({
         courseId,
         robotId: selectedRobot.id,
         isRequired,
-        order,
       })
     );
   };
@@ -94,7 +90,6 @@ export default function AddRobotToCourseDialog({
   const handleCancel = () => {
     setSelectedRobot(null);
     setIsRequired(true);
-    setOrder(1);
     onClose();
   };
 
@@ -144,22 +139,12 @@ export default function AddRobotToCourseDialog({
                       <Box>
                         <Typography variant="body1">{option.name}</Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {option.model} - {option.brand} | Giá:{" "}
-                          {option.price.toLocaleString()}đ
+                          {option.model} - {option.brand}
                         </Typography>
                       </Box>
                     </Box>
                   );
                 }}
-              />
-
-              <TextField
-                label="Thứ tự"
-                type="number"
-                value={order}
-                onChange={(e) => setOrder(parseInt(e.target.value) || 1)}
-                inputProps={{ min: 1 }}
-                helperText="Thứ tự hiển thị của robot trong khóa học"
               />
 
               <FormControlLabel

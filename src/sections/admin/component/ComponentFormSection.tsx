@@ -13,14 +13,11 @@ import {
   Alert,
   CircularProgress,
   Grid,
-  InputAdornment,
 } from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
   Save as SaveIcon,
   Memory as ComponentIcon,
-  AttachMoney as PriceIcon,
-  Inventory as StockIcon,
 } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import {
@@ -38,7 +35,6 @@ import {
   UpdateComponentRequest,
 } from "../../../common/@types/component";
 import { SimpleImageUploader } from "../../../components/common/SimpleImageUploader";
-import { formatVND } from "../../../utils/utils";
 
 interface ComponentFormSectionProps {
   mode: "create" | "edit";
@@ -52,8 +48,6 @@ interface ComponentFormData {
   description: string;
   type: ComponentType;
   imageUrl: string;
-  price: number;
-  stockQuantity: number;
   specifications: string;
 }
 
@@ -71,8 +65,6 @@ export default function ComponentFormSection({
     description: component?.description || "",
     type: component?.type || ComponentType.OTHER,
     imageUrl: component?.imageUrl || "",
-    price: component?.price || 0,
-    stockQuantity: component?.stockQuantity || 0,
     specifications: component?.specifications || "",
   });
 
@@ -102,14 +94,6 @@ export default function ComponentFormSection({
       newErrors.description = "Description is required";
     }
 
-    if (formData.price <= 0) {
-      newErrors.price = "Price must be greater than 0";
-    }
-
-    if (formData.stockQuantity < 0) {
-      newErrors.stockQuantity = "Stock quantity cannot be negative";
-    }
-
     if (formData.imageUrl && !isValidUrl(formData.imageUrl)) {
       newErrors.imageUrl = "Please enter a valid image URL";
     }
@@ -132,8 +116,6 @@ export default function ComponentFormSection({
           description: formData.description.trim(),
           type: formData.type,
           imageUrl: formData.imageUrl.trim() || undefined,
-          price: formData.price,
-          stockQuantity: formData.stockQuantity,
           specifications: formData.specifications.trim() || undefined,
         };
         await dispatch(createComponentThunk(createData));
@@ -143,8 +125,6 @@ export default function ComponentFormSection({
           description: formData.description.trim(),
           type: formData.type,
           imageUrl: formData.imageUrl.trim() || undefined,
-          price: formData.price,
-          stockQuantity: formData.stockQuantity,
           specifications: formData.specifications.trim() || undefined,
         };
         await dispatch(
@@ -195,11 +175,7 @@ export default function ComponentFormSection({
     <Box>
       {/* Header */}
       <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={onBack}
-          sx={{ mr: 2 }}
-        >
+        <Button startIcon={<ArrowBackIcon />} onClick={onBack} sx={{ mr: 2 }}>
           Back to List
         </Button>
       </Box>
@@ -242,7 +218,9 @@ export default function ComponentFormSection({
                         <Select
                           value={formData.type}
                           label="Component Type"
-                          onChange={(e) => handleInputChange("type", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("type", e.target.value)
+                          }
                           disabled={isLoading}
                         >
                           {Object.values(ComponentType)
@@ -261,7 +239,9 @@ export default function ComponentFormSection({
                   <TextField
                     label="Description"
                     value={formData.description}
-                    onChange={(e) => handleInputChange("description", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("description", e.target.value)
+                    }
                     error={!!errors.description}
                     helperText={errors.description}
                     multiline
@@ -271,51 +251,13 @@ export default function ComponentFormSection({
                     placeholder="Describe the component's features and applications..."
                   />
 
-                  <Grid container spacing={2}>
-                    {/* Price */}
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        label="Price"
-                        type="number"
-                        value={formData.price || ""}
-                        onChange={(e) => handleInputChange("price", parseFloat(e.target.value) || 0)}
-                        error={!!errors.price}
-                        helperText={errors.price}
-                        fullWidth
-                        required
-                        InputProps={{
-                          startAdornment: <InputAdornment position="start"><PriceIcon /></InputAdornment>,
-                          inputProps: { min: 0, step: 0.01 }
-                        }}
-                        placeholder="0.00"
-                      />
-                    </Grid>
-
-                    {/* Stock Quantity */}
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        label="Stock Quantity"
-                        type="number"
-                        value={formData.stockQuantity || ""}
-                        onChange={(e) => handleInputChange("stockQuantity", parseInt(e.target.value) || 0)}
-                        error={!!errors.stockQuantity}
-                        helperText={errors.stockQuantity}
-                        fullWidth
-                        required
-                        InputProps={{
-                          startAdornment: <InputAdornment position="start"><StockIcon /></InputAdornment>,
-                          inputProps: { min: 0 }
-                        }}
-                        placeholder="0"
-                      />
-                    </Grid>
-                  </Grid>
-
                   {/* Technical Specifications */}
                   <TextField
                     label="Technical Specifications"
                     value={formData.specifications}
-                    onChange={(e) => handleInputChange("specifications", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("specifications", e.target.value)
+                    }
                     multiline
                     rows={4}
                     fullWidth
@@ -326,9 +268,13 @@ export default function ComponentFormSection({
                   <TextField
                     label="Image URL (Optional)"
                     value={formData.imageUrl}
-                    onChange={(e) => handleInputChange("imageUrl", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("imageUrl", e.target.value)
+                    }
                     error={!!errors.imageUrl}
-                    helperText={errors.imageUrl || "URL to component's product image"}
+                    helperText={
+                      errors.imageUrl || "URL to component's product image"
+                    }
                     fullWidth
                     placeholder="https://example.com/component-image.jpg"
                   />
@@ -341,7 +287,9 @@ export default function ComponentFormSection({
               <Button
                 type="submit"
                 variant="contained"
-                startIcon={isLoading ? <CircularProgress size={20} /> : <SaveIcon />}
+                startIcon={
+                  isLoading ? <CircularProgress size={20} /> : <SaveIcon />
+                }
                 disabled={isLoading}
                 size="large"
               >
@@ -365,7 +313,9 @@ export default function ComponentFormSection({
               entityId={component?.id}
               entityType="component"
               currentImageUrl={formData.imageUrl}
-              onImageChange={(url: string | null) => handleInputChange("imageUrl", url || "")}
+              onImageChange={(url: string | null) =>
+                handleInputChange("imageUrl", url || "")
+              }
               title="Component Image"
               description="Upload component image"
               height={280}
@@ -378,7 +328,7 @@ export default function ComponentFormSection({
                 <Typography variant="h6" gutterBottom>
                   Component Preview
                 </Typography>
-                
+
                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                   <ComponentIcon sx={{ mr: 1, color: "primary.main" }} />
                   <Typography variant="body1" fontWeight="medium">
@@ -386,21 +336,18 @@ export default function ComponentFormSection({
                   </Typography>
                 </Box>
 
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 2 }}
+                >
                   {formData.description || "No description provided"}
                 </Typography>
 
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                   <Typography variant="body2">
-                    <strong>Type:</strong> {getComponentTypeLabel(formData.type)}
-                  </Typography>
-
-                  <Typography variant="body2">
-                    <strong>Price:</strong> {formatVND(formData.price)}
-                  </Typography>
-
-                  <Typography variant="body2">
-                    <strong>Stock:</strong> {formData.stockQuantity} units
+                    <strong>Type:</strong>{" "}
+                    {getComponentTypeLabel(formData.type)}
                   </Typography>
 
                   {formData.specifications && (
@@ -410,10 +357,9 @@ export default function ComponentFormSection({
                   )}
 
                   {/* Status */}
-                  <Box sx={{ mt: 1, pt: 1, borderTop: 1, borderColor: "divider" }}>
-                    <Typography variant="body2" color="text.secondary">
-                      <strong>Status:</strong> {formData.stockQuantity > 0 ? "In Stock" : "Out of Stock"}
-                    </Typography>
+                  <Box
+                    sx={{ mt: 1, pt: 1, borderTop: 1, borderColor: "divider" }}
+                  >
                     <Typography variant="body2" color="text.secondary">
                       <strong>Category:</strong> Electronic Component
                     </Typography>

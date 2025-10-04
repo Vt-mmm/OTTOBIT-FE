@@ -14,10 +14,8 @@ import {
   CircularProgress,
   Container,
 } from "@mui/material";
-import {
-  ChallengeResult,
-  ChallengeProcessResult,
-} from "../../../common/@types/challenge";
+import { ChallengeResult } from "../../../common/@types/challenge";
+import { SubmissionResult } from "../../../common/@types/submission";
 import {
   isChallengeAccessible,
   getChallengeProgress,
@@ -25,7 +23,7 @@ import {
 
 interface LessonTabletSectionProps {
   challenges: ChallengeResult[];
-  challengeProcesses?: ChallengeProcessResult[];
+  submissions?: SubmissionResult[];
   challengesLoading: boolean;
   challengesError: string | null;
   onChallengeSelect: (challengeId: string) => void;
@@ -34,7 +32,7 @@ interface LessonTabletSectionProps {
 
 const LessonTabletSection: React.FC<LessonTabletSectionProps> = ({
   challenges,
-  challengeProcesses = [],
+  submissions = [],
   challengesLoading,
   challengesError,
   onChallengeSelect,
@@ -473,11 +471,12 @@ const LessonTabletSection: React.FC<LessonTabletSectionProps> = ({
                       {challenges.map((challenge) => {
                         const isAccessible = isChallengeAccessible(
                           challenge,
-                          challengeProcesses
+                          challenges,
+                          submissions
                         );
                         const progress = getChallengeProgress(
                           challenge.id,
-                          challengeProcesses
+                          submissions
                         );
 
                         return (

@@ -8,10 +8,8 @@ import {
 } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "store/config";
 import { getCourseRobotsThunk } from "store/courseRobot/courseRobotThunks";
-import { getMyRobotsThunk } from "store/studentRobot/studentRobotThunks";
 import RobotRequirementCard from "components/robot/RobotRequirementCard";
 import ActivateRobotDialog from "components/robot/ActivateRobotDialog";
-import { StudentRobotResult } from "common/@types/studentRobot";
 
 interface CourseSidebarSectionProps {
   course: {
@@ -29,36 +27,25 @@ export default function CourseSidebarSection({
 }: CourseSidebarSectionProps) {
   const dispatch = useAppDispatch();
   const { courseRobots } = useAppSelector((state) => state.courseRobot);
-  const { myRobots } = useAppSelector((state) => state.studentRobot);
   const [activateDialogOpen, setActivateDialogOpen] = useState(false);
 
   // Use courseRobots.data from GET_ALL endpoint
   const courseRobotsList = courseRobots.data?.items || [];
-  // Handle both array and object response formats
-  const myRobotsList = Array.isArray(myRobots.data)
-    ? myRobots.data
-    : myRobots.data &&
-      typeof myRobots.data === "object" &&
-      "items" in myRobots.data
-    ? (myRobots.data as any).items || []
-    : [];
 
   useEffect(() => {
     // Fetch robots required for this course
     dispatch(getCourseRobotsThunk({ courseId: course.id, pageSize: 100 }));
-    // Fetch user's robots
-    dispatch(getMyRobotsThunk());
   }, [dispatch, course.id]);
 
   const handleActivateSuccess = () => {
-    dispatch(getMyRobotsThunk());
+    // TODO: Refresh after activation
+    dispatch(getCourseRobotsThunk({ courseId: course.id, pageSize: 100 }));
   };
 
-  // Check if user owns a specific robot
-  const isRobotOwned = (robotId: string): boolean => {
-    return myRobotsList.some(
-      (sr: StudentRobotResult) => sr.robotId === robotId
-    );
+  // TODO: Implement proper robot ownership checking
+  // For now, assume user doesn't own any robots (will be fixed later)
+  const isRobotOwned = (_robotId: string): boolean => {
+    return false; // Temporarily disabled
   };
 
   // Check if all required robots are owned
@@ -85,7 +72,14 @@ export default function CourseSidebarSection({
       >
         {/* Remove image preview, just show info */}
         <Box sx={{ p: 2 }}>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 1.5,
+            }}
+          >
             <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
               Nội dung khóa học
             </Typography>
@@ -134,7 +128,9 @@ export default function CourseSidebarSection({
           }}
         >
           <Box sx={{ p: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+            <Box
+              sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}
+            >
               <RobotIcon sx={{ color: "#1976d2", fontSize: 20 }} />
               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                 Robots Yêu cầu
@@ -153,9 +149,7 @@ export default function CourseSidebarSection({
             {/* Success message if has all required robots */}
             {requiredRobots.length > 0 && hasAllRequiredRobots && (
               <Alert severity="success" sx={{ mb: 1.5, py: 0.5 }}>
-                <Typography variant="caption">
-                  Đủ robots ✓
-                </Typography>
+                <Typography variant="caption">Đủ robots ✓</Typography>
               </Alert>
             )}
 
@@ -167,7 +161,6 @@ export default function CourseSidebarSection({
                   robotModel={courseRobot.robotModel || ""}
                   robotBrand={courseRobot.robotBrand || ""}
                   robotImageUrl={undefined}
-                  robotPrice={courseRobot.robotPrice || 0}
                   isRequired={courseRobot.isRequired}
                   isOwned={isRobotOwned(courseRobot.robotId)}
                   onActivate={() => setActivateDialogOpen(true)}
@@ -177,7 +170,6 @@ export default function CourseSidebarSection({
           </Box>
         </Box>
       )}
-
 
       {/* Skills Section */}
       <Box
