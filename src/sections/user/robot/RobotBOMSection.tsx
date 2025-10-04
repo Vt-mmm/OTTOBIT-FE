@@ -22,9 +22,7 @@ interface RobotBOMSectionProps {
  * Component hiển thị Bill of Materials (BOM) cho User
  * Dùng trong trang Robot Detail để user xem danh sách linh kiện cần thiết
  */
-export default function RobotBOMSection({
-  robotId,
-}: RobotBOMSectionProps) {
+export default function RobotBOMSection({ robotId }: RobotBOMSectionProps) {
   const dispatch = useDispatch<AppDispatch>();
 
   const { robotComponents, isLoading } = useSelector(
@@ -36,7 +34,8 @@ export default function RobotBOMSection({
       dispatch(
         getRobotComponentsThunk({
           robotId,
-          pageSize: 100,
+          page: 1,
+          size: 100,
         })
       );
     }
@@ -64,16 +63,16 @@ export default function RobotBOMSection({
         <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
           📦 Danh sách linh kiện (BOM)
         </Typography>
-        <Paper 
-          elevation={0} 
-          sx={{ 
-            border: '1px solid', 
-            borderColor: 'divider',
+        <Paper
+          elevation={0}
+          sx={{
+            border: "1px solid",
+            borderColor: "divider",
             p: 6,
-            textAlign: 'center'
+            textAlign: "center",
           }}
         >
-          <ComponentIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
+          <ComponentIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
           <Typography variant="body1" color="text.secondary">
             Chưa có thông tin linh kiện cho robot này
           </Typography>

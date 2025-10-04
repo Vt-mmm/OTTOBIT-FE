@@ -16,7 +16,10 @@ import {
 } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getCourses } from "../../../redux/course/courseSlice";
-import { createEnrollment, getMyEnrollments } from "../../../redux/enrollment/enrollmentSlice";
+import {
+  createEnrollment,
+  getMyEnrollments,
+} from "../../../redux/enrollment/enrollmentSlice";
 import { getStudentByUserThunk } from "../../../redux/student/studentThunks";
 import { PATH_USER } from "../../../routes/paths";
 import StudentProfileRequiredDialog from "./StudentProfileRequiredDialog";
@@ -30,26 +33,35 @@ interface CourseListingSectionProps {
   searchQuery: string;
 }
 
-export default function CourseListingSection({ searchQuery }: CourseListingSectionProps) {
+export default function CourseListingSection({
+  searchQuery,
+}: CourseListingSectionProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { data: courses, isLoading, error } = useAppSelector((state) => state.course.courses);
+  const {
+    data: courses,
+    isLoading,
+    error,
+  } = useAppSelector((state) => state.course.courses);
   const { myEnrollments } = useAppSelector((state) => state.enrollment);
   const { studentData } = useAppSelector((state) => ({
     studentData: state.student.currentStudent.data,
   }));
-  
+
   // State for UI
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [currentPage, setCurrentPage] = useState(1);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" as "success" | "error" });
-  const [profileDialog, setProfileDialog] = useState({ 
-    open: false, 
-    courseName: "", 
-    courseId: "" 
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error",
+  });
+  const [profileDialog, setProfileDialog] = useState({
+    open: false,
+    courseName: "",
+    courseId: "",
   });
   const itemsPerPage = 12;
-
 
   useEffect(() => {
     dispatch(getCourses({ pageSize: 50 }));
@@ -62,9 +74,11 @@ export default function CourseListingSection({ searchQuery }: CourseListingSecti
 
     let filtered = courses.items.filter((course) => {
       // Search filter
-      if (searchQuery && 
-          !course.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          !course.description.toLowerCase().includes(searchQuery.toLowerCase())) {
+      if (
+        searchQuery &&
+        !course.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !course.description.toLowerCase().includes(searchQuery.toLowerCase())
+      ) {
         return false;
       }
       return true;
@@ -74,9 +88,13 @@ export default function CourseListingSection({ searchQuery }: CourseListingSecti
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "newest":
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
         case "oldest":
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          return (
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
         case "alphabetical":
           return a.title.localeCompare(b.title);
         case "popular":
@@ -109,14 +127,17 @@ export default function CourseListingSection({ searchQuery }: CourseListingSecti
       if (studentData) {
         return true;
       }
-      
+
       // Only call API if we don't have data yet
       const result = await dispatch(getStudentByUserThunk()).unwrap();
       return !!result;
     } catch (error: any) {
       // If 404 or NO_STUDENT_PROFILE, user doesn't have profile
-      if (error.includes?.("404") || error === "NO_STUDENT_PROFILE" || 
-          (typeof error === "string" && error.toLowerCase().includes("not found"))) {
+      if (
+        error.includes?.("404") ||
+        error === "NO_STUDENT_PROFILE" ||
+        (typeof error === "string" && error.toLowerCase().includes("not found"))
+      ) {
         return false;
       }
       // For other errors, assume no profile to be safe
@@ -126,55 +147,60 @@ export default function CourseListingSection({ searchQuery }: CourseListingSecti
 
   const handleEnrollCourse = async (courseId: string) => {
     // Find course name for better UX
-    const course = courses?.items?.find(c => c.id === courseId);
+    const course = courses?.items?.find((c) => c.id === courseId);
     const courseName = course?.title || "khóa học này";
-    
+
     try {
       // First check if user has student profile
       const hasProfile = await checkStudentProfile();
-      
+
       if (!hasProfile) {
         // Show dialog to prompt user to create profile
         setProfileDialog({
           open: true,
           courseName,
-          courseId
+          courseId,
         });
         return;
       }
 
       // If has profile, proceed with enrollment
       await dispatch(createEnrollment({ courseId })).unwrap();
-      
-      setSnackbar({ 
-        open: true, 
-        message: "Tham gia khóa học thành công!", 
-        severity: "success" 
+
+      setSnackbar({
+        open: true,
+        message: "Tham gia khóa học thành công!",
+        severity: "success",
       });
-      
+
       // Refresh enrollments to update UI immediately
       dispatch(getMyEnrollments({ pageSize: 100 }));
     } catch (error: any) {
       // Check if error indicates missing student profile
-      const requiresProfile = typeof error === "string" && [
-        "student not found",
-        "student profile required",
-        "no student profile", 
-        "create student profile",
-        "missing student profile"
-      ].some(keyword => error.toLowerCase().includes(keyword));
-      
+      const requiresProfile =
+        typeof error === "string" &&
+        [
+          "student not found",
+          "student profile required",
+          "no student profile",
+          "create student profile",
+          "missing student profile",
+        ].some((keyword) => error.toLowerCase().includes(keyword));
+
       if (requiresProfile) {
         setProfileDialog({
           open: true,
           courseName,
-          courseId
+          courseId,
         });
       } else {
-        setSnackbar({ 
-          open: true, 
-          message: typeof error === 'string' ? error : "Không thể tham gia khóa học. Vui lòng thử lại.", 
-          severity: "error" 
+        setSnackbar({
+          open: true,
+          message:
+            typeof error === "string"
+              ? error
+              : "Không thể tham gia khóa học. Vui lòng thử lại.",
+          severity: "error",
         });
       }
     }
@@ -185,16 +211,16 @@ export default function CourseListingSection({ searchQuery }: CourseListingSecti
     if (!myEnrollments.data?.items) {
       return false;
     }
-    
-    const isEnrolled = myEnrollments.data.items.some(enrollment => {
+
+    const isEnrolled = myEnrollments.data.items.some((enrollment) => {
       return enrollment.courseId === courseId;
     });
-    
+
     return isEnrolled;
   };
 
   const handleCloseSnackbar = () => {
-    setSnackbar(prev => ({ ...prev, open: false }));
+    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
   const handleCloseProfileDialog = () => {
@@ -206,7 +232,6 @@ export default function CourseListingSection({ searchQuery }: CourseListingSecti
     handleCloseProfileDialog();
   };
 
-
   const handleSortChange = (newSort: SortOption) => {
     setSortBy(newSort);
     setCurrentPage(1);
@@ -217,7 +242,6 @@ export default function CourseListingSection({ searchQuery }: CourseListingSecti
     // Scroll to top when page changes
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
 
   if (isLoading) {
     return (
@@ -249,24 +273,30 @@ export default function CourseListingSection({ searchQuery }: CourseListingSecti
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Header with search result count and sort */}
-      <Box 
-        sx={{ 
-          display: "flex", 
-          justifyContent: "space-between", 
-          alignItems: "center", 
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
           mb: 4,
           flexWrap: "wrap",
-          gap: 2 
+          gap: 2,
         }}
       >
         <Typography variant="h6" sx={{ color: "#666" }}>
           {searchQuery ? (
-            <>Tìm thấy <strong>{filteredAndSortedCourses.length}</strong> khóa học cho "{searchQuery}"</>
+            <>
+              Tìm thấy <strong>{filteredAndSortedCourses.length}</strong> khóa
+              học cho "{searchQuery}"
+            </>
           ) : (
-            <>Tìm thấy <strong>{filteredAndSortedCourses.length}</strong> khóa học (Trang {currentPage} / {Math.max(1, totalPages)})</>
+            <>
+              Tìm thấy <strong>{filteredAndSortedCourses.length}</strong> khóa
+              học (Trang {currentPage} / {Math.max(1, totalPages)})
+            </>
           )}
         </Typography>
-        
+
         {/* Sort Dropdown */}
         <FormControl size="small" sx={{ minWidth: 200 }}>
           <InputLabel>Sắp xếp theo</InputLabel>
@@ -289,9 +319,9 @@ export default function CourseListingSection({ searchQuery }: CourseListingSecti
           <Alert severity="info">
             {courses?.items?.length === 0
               ? "Chưa có khóa học nào được tạo."
-              : searchQuery 
-                ? `Không tìm thấy khóa học nào với từ khóa "${searchQuery}".`
-                : "Không tìm thấy khóa học nào."}
+              : searchQuery
+              ? `Không tìm thấy khóa học nào với từ khóa "${searchQuery}".`
+              : "Không tìm thấy khóa học nào."}
           </Alert>
         </Box>
       ) : (
@@ -313,6 +343,8 @@ export default function CourseListingSection({ searchQuery }: CourseListingSecti
                 onClick={handleCourseClick}
                 isEnrolled={isUserEnrolledInCourse(course.id)}
                 onEnroll={handleEnrollCourse}
+                price={(course as any).price}
+                type={(course as any).type}
               />
             ))}
           </Stack>
@@ -333,18 +365,18 @@ export default function CourseListingSection({ searchQuery }: CourseListingSecti
           )}
         </>
       )}
-      
+
       {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert 
-          onClose={handleCloseSnackbar} 
+        <Alert
+          onClose={handleCloseSnackbar}
           severity={snackbar.severity}
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
           {snackbar.message}
         </Alert>

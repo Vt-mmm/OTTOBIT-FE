@@ -146,9 +146,25 @@ export default function CreateBatchDialog({
               <TextField
                 label="Số lượng mã *"
                 type="number"
-                value={quantity}
-                onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                inputProps={{ min: 1, max: 10000 }}
+                value={quantity || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setQuantity(value === "" ? 0 : parseInt(value, 10));
+                }}
+                onFocus={(e) => {
+                  // Auto-select for easy replacement
+                  setTimeout(() => e.target.select(), 0);
+                }}
+                onBlur={(e) => {
+                  // Set to 1 if empty or less than 1 on blur
+                  const value = parseInt(e.target.value, 10);
+                  if (e.target.value === "" || isNaN(value) || value < 1) {
+                    setQuantity(1);
+                  } else if (value > 10000) {
+                    setQuantity(10000);
+                  }
+                }}
+                inputProps={{ min: 1, max: 10000, step: 1 }}
                 helperText="Số lượng mã kích hoạt cần tạo (tối đa 10,000)"
               />
 
@@ -207,7 +223,9 @@ export default function CreateBatchDialog({
         <Button
           onClick={handleSubmit}
           variant="contained"
-          disabled={!selectedRobot || quantity < 1 || !batchId.trim() || isLoading}
+          disabled={
+            !selectedRobot || quantity < 1 || !batchId.trim() || isLoading
+          }
           startIcon={operations.isCreating && <CircularProgress size={16} />}
         >
           Tạo {quantity} Mã

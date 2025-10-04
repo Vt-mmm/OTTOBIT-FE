@@ -68,6 +68,8 @@ export default function RobotComponentsTab({
 
   // Local state
   const [openDialog, setOpenDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [deletingItem, setDeletingItem] = useState<any>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const [formData, setFormData] = useState<RobotComponentFormData>({
@@ -87,7 +89,8 @@ export default function RobotComponentsTab({
       getRobotComponentsForAdminThunk({
         robotId,
         includeDeleted,
-        pageSize: 100,
+        page: 1,
+        size: 100,
       })
     );
   };
@@ -137,11 +140,22 @@ export default function RobotComponentsTab({
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Bạn có chắc muốn xóa component này?")) return;
+  const handleOpenDelete = (rc: any) => {
+    setDeletingItem(rc);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog(false);
+    setDeletingItem(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItem) return;
     try {
-      await dispatch(deleteRobotComponentThunk(id)).unwrap();
-      toast.success("Xóa thành công!");
+      await dispatch(deleteRobotComponentThunk(deletingItem.id)).unwrap();
+      toast.success("Xóa component thành công!");
+      handleCloseDeleteDialog();
       loadRobotComponents();
     } catch (error: any) {
       toast.error(error || "Có lỗi xảy ra!");
@@ -317,7 +331,7 @@ export default function RobotComponentsTab({
                           <Tooltip title="Xóa" arrow>
                             <IconButton
                               size="small"
-                              onClick={() => handleDelete(rc.id)}
+                              onClick={() => handleOpenDelete(rc)}
                               sx={{
                                 color: "error.main",
                                 "&:hover": { bgcolor: "error.lighter" },
@@ -384,14 +398,25 @@ export default function RobotComponentsTab({
               fullWidth
               type="number"
               label="Số lượng *"
-              value={formData.quantity}
-              onChange={(e) =>
+              value={formData.quantity || ""}
+              onChange={(e) => {
+                const value = e.target.value;
                 setFormData({
                   ...formData,
-                  quantity: parseInt(e.target.value) || 1,
-                })
-              }
-              inputProps={{ min: 1 }}
+                  quantity: value === "" ? 0 : parseInt(value, 10),
+                });
+              }}
+              onFocus={(e) => {
+                // Auto-select for easy replacement
+                setTimeout(() => e.target.select(), 0);
+              }}
+              onBlur={(e) => {
+                // Set default to 1 if empty on blur
+                if (e.target.value === "" || parseInt(e.target.value, 10) < 1) {
+                  setFormData({ ...formData, quantity: 1 });
+                }
+              }}
+              inputProps={{ min: 1, step: 1 }}
             />
           </Stack>
         </DialogContent>
@@ -403,6 +428,41 @@ export default function RobotComponentsTab({
             disabled={!formData.componentId}
           >
             {editingId ? "Cập nhật" : "Thêm mới"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={openDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ pb: 2 }}>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <DeleteIcon color="error" />
+            <Typography variant="h6">Xác nhận xóa</Typography>
+          </Stack>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            Bạn có chắc muốn xóa component{" "}
+            <strong>{deletingItem?.componentName}</strong> khỏi robot này?
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Component này sẽ bị đánh dấu là đã xóa và có thể khôi phục sau.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog}>Hủy</Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleConfirmDelete}
+            startIcon={<DeleteIcon />}
+          >
+            Xóa
           </Button>
         </DialogActions>
       </Dialog>

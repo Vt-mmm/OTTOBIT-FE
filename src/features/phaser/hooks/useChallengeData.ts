@@ -203,7 +203,20 @@ export function useChallengeData() {
       if (!challenge?.solutionJson) return null;
 
       const result = parseJsonSafely(challenge.solutionJson);
-      return result.success ? result.data : null;
+      if (!result.success || !result.data) return null;
+
+      // ✅ Normalize solution structure - add missing fields if needed
+      const solution = result.data;
+      if (Array.isArray(solution.actions)) {
+        return {
+          version: solution.version || "1.0.0",
+          programName: solution.programName || "solution_program",
+          actions: solution.actions,
+          functions: solution.functions || [],
+        };
+      }
+
+      return result.data;
     },
     [findChallengeById]
   );
