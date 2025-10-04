@@ -97,8 +97,10 @@ export function connectActionSocket(
   const connect = () => {
     socket = io(url, {
       path: "/socket.io",
-      transports: ["websocket"],
+      transports: isHttps ? ["websocket", "polling"] : ["websocket"],
       withCredentials: true,
+      timeout: 5000,
+      forceNew: true,
     });
 
     socket.on("connect", () => {
