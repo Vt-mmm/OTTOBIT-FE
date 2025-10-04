@@ -102,10 +102,8 @@ export default function MicrobitDialog({
       `    startSound()\n` +
       indented +
       `    if _check_victory():\n` +
-      `        append_action('victory')\n` +
       `        display.show(Image.YES)\n` +
       `    else:\n` +
-      `        append_action('defeat')\n` +
       `        display.show(Image.NO)\n` +
       `    finishSound()\n`
     );

@@ -84,11 +84,7 @@ export function connectActionSocket(
   // Force WSS for HTTPS pages (production)
   const isHttps =
     typeof window !== "undefined" && window.location.protocol === "https:";
-  const protocol = isHttps
-    ? "wss"
-    : options?.protocol ||
-      (ACTIONS_SERVER_CONFIG.PROTOCOL as "ws" | "wss") ||
-      "ws";
+  const protocol = "http";
 
   // NestJS Socket.IO default path is /socket.io
   const url = `${protocol}://${host}:${port}`;
