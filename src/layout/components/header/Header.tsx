@@ -31,6 +31,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "store/config";
 import { logout } from "../../../redux/auth/authSlice";
+import { CartButton } from "components/cart";
 import {
   PATH_PUBLIC,
   PATH_USER,
@@ -413,6 +414,9 @@ const Header: React.FC = () => {
                   }}
                 />
               )}
+
+              {/* Cart Button - Only for authenticated users */}
+              <CartButton />
 
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}

@@ -69,6 +69,7 @@ export default function CourseDetailSection({
   const { myEnrollments, operations } = useAppSelector(
     (state) => state.enrollment
   );
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const { studentData } = useAppSelector((state) => ({
     studentData: state.student.currentStudent.data,
   }));
@@ -80,13 +81,17 @@ export default function CourseDetailSection({
       (enrollment) => enrollment.courseId === courseId
     ) || false;
 
+  // Fetch course details (public data)
   useEffect(() => {
-    // Fetch course details
     dispatch(getCourseById(courseId));
-
-    // Fetch user's enrollments to check enrollment status
-    dispatch(getMyEnrollments({ pageSize: 100 }));
   }, [dispatch, courseId]);
+
+  // Fetch user's enrollments ONLY if authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(getMyEnrollments({ pageSize: 100 }));
+    }
+  }, [dispatch, courseId, isAuthenticated]);
 
   // Always use preview for course detail page - individual lessons will be fetched when clicked
   useEffect(() => {

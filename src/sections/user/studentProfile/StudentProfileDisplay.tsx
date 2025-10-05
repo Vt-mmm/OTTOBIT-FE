@@ -20,23 +20,25 @@ export default function StudentProfileDisplay() {
   const { myEnrollments } = useAppSelector((state) => state.enrollment);
   const { mySubmissions } = useAppSelector((state) => state.submission);
   const { myLessonProgress } = useAppSelector((state) => state.lessonProgress);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
+    // Only fetch data if user is authenticated and has student data
+    if (!isAuthenticated || !currentStudent?.data) return;
+
     // Fetch real data when component mounts
-    if (currentStudent?.data) {
-      dispatch(getMyEnrollmentsThunk({ pageNumber: 1, pageSize: 100 }));
-      dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 100 }));
-      dispatch(
-        getMyLessonProgress({
-          pageNumber: 1,
-          pageSize: 100,
-          sortBy: LessonProgressSortBy.LessonOrder,
-          sortDirection: SortDirection.Ascending,
-        })
-      );
-    }
-  }, [dispatch, currentStudent]);
+    dispatch(getMyEnrollmentsThunk({ pageNumber: 1, pageSize: 100 }));
+    dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 100 }));
+    dispatch(
+      getMyLessonProgress({
+        pageNumber: 1,
+        pageSize: 100,
+        sortBy: LessonProgressSortBy.LessonOrder,
+        sortDirection: SortDirection.Ascending,
+      })
+    );
+  }, [dispatch, currentStudent, isAuthenticated]);
 
   if (!currentStudent || !currentStudent.data) {
     return null;

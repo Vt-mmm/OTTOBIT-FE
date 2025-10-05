@@ -19,12 +19,12 @@ let pendingRequests: Array<{
 // Track if interceptors are added to prevent duplicates
 let interceptorsAdded = false;
 
-const processQueue = (error: unknown, token: string | null = null) => {
+const processQueue = (error: unknown) => {
   pendingRequests.forEach(({ resolve, reject }) => {
     if (error) {
       reject(error);
     } else {
-      resolve(token);
+      resolve(null); // Just signal completion, don't pass token
     }
   });
 
@@ -151,11 +151,6 @@ const setupAxiosClient = (store: Store<RootState>) => {
               refreshToken: response.data.data.tokens.refreshToken,
             };
 
-            console.log("[Refresh Token] Extracted tokens:", {
-              hasAccessToken: !!tokenResponse.accessToken,
-              hasRefreshToken: !!tokenResponse.refreshToken,
-            });
-
             // Update with new tokens directly (don't remove first to avoid Redux state reset)
             // This prevents router from detecting auth loss and redirecting
             await dispatch(
@@ -165,28 +160,37 @@ const setupAxiosClient = (store: Store<RootState>) => {
               })
             );
 
-            // Update authorization header for subsequent requests
-            axiosClient.defaults.headers.common.Authorization = `Bearer ${tokenResponse.accessToken}`;
+            // DON'T set token in axios defaults - let request interceptor
+            // read fresh token from cookie on each request
+            // This ensures multiple tabs stay in sync
 
-            console.log(
-              "[Refresh Token] Updated axios default header with new token"
-            );
-
-            // Process all queued requests with new token
-            processQueue(null, tokenResponse.accessToken);
+            // Process all queued requests - they will get fresh token from cookie
+            processQueue(null);
 
             // Retry the original request with new token
             isRefreshing = false;
             return axiosClient(originalConfig);
-          } catch (error) {
-            console.error("[Refresh Token] Token refresh failed:", {
-              error: error instanceof Error ? error.message : error,
-              stack: error instanceof Error ? error.stack : undefined,
-            });
-            processQueue(error, null);
-            dispatch(setIsLogout(true));
+          } catch (error: any) {
+            // Check if this is a refresh token error from backend
+            const errorCode = error?.response?.data?.errorCode;
+            const errorMessage = error?.response?.data?.message || "";
+
+            // Only logout for truly expired tokens, not for temporary mismatches
+            // REFRESH_TOKEN_INVALID means token is expired or truly invalid
+            // We DON'T logout on "does not match" - might be from another tab
+            const shouldLogout =
+              errorCode === "REFRESH_TOKEN_INVALID" ||
+              errorMessage.toLowerCase().includes("expired") ||
+              !error?.response; // Network errors should also logout
+
+            processQueue(error);
+
+            if (shouldLogout) {
+              dispatch(setIsLogout(true));
+              resetAuthHeaders();
+            }
+
             isRefreshing = false;
-            resetAuthHeaders();
             return Promise.reject(error);
           }
         } else {
@@ -194,11 +198,9 @@ const setupAxiosClient = (store: Store<RootState>) => {
           return new Promise((resolve, reject) => {
             pendingRequests.push({ resolve, reject });
           })
-            .then((token) => {
-              // After token refresh is done, retry original request with new token
-              originalConfig.headers.Authorization = `Bearer ${
-                token as string
-              }`;
+            .then(() => {
+              // Don't manually set token - let request interceptor read fresh token from cookie
+              // This ensures we always use the latest token, even if another tab refreshed it
               return axiosClient(originalConfig);
             })
             .catch((error) => {

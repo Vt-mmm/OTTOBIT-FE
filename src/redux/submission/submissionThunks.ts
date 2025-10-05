@@ -40,7 +40,11 @@ async function callApiWithRetry<T>(
     } catch (error) {
       lastError = error;
       const axiosError = error as AxiosError;
-      if (axiosError.response?.status === 401) {
+      // Don't retry on 401 (unauthorized) or 404 (not found)
+      if (
+        axiosError.response?.status === 401 ||
+        axiosError.response?.status === 404
+      ) {
         break;
       }
     }
@@ -149,36 +153,41 @@ export const getSubmissionsByChallengeThunk = createAsyncThunk<
   SubmissionsResponse,
   { challengeId: string; pageNumber?: number; pageSize?: number },
   { rejectValue: string }
->("submission/getByChallenge", async ({ challengeId, pageNumber, pageSize }, { rejectWithValue }) => {
-  try {
-    const response = await callApiWithRetry(() =>
-      axiosClient.get<ApiResponse<SubmissionsResponse>>(
-        ROUTES_API_SUBMISSION.BY_CHALLENGE(challengeId),
-        {
-          params: {
-            pageNumber,
-            pageSize,
-          },
-        }
-      )
-    );
+>(
+  "submission/getByChallenge",
+  async ({ challengeId, pageNumber, pageSize }, { rejectWithValue }) => {
+    try {
+      const response = await callApiWithRetry(() =>
+        axiosClient.get<ApiResponse<SubmissionsResponse>>(
+          ROUTES_API_SUBMISSION.BY_CHALLENGE(challengeId),
+          {
+            params: {
+              pageNumber,
+              pageSize,
+            },
+          }
+        )
+      );
 
-    if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to fetch challenge submissions");
+      if (response.data.errors || response.data.errorCode) {
+        throw new Error(
+          response.data.message || "Failed to fetch challenge submissions"
+        );
+      }
+
+      if (!response.data.data) {
+        throw new Error("No submissions data received");
+      }
+
+      return response.data.data;
+    } catch (error: any) {
+      const err = error as AxiosError<ErrorResponse>;
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch challenge submissions"
+      );
     }
-
-    if (!response.data.data) {
-      throw new Error("No submissions data received");
-    }
-
-    return response.data.data;
-  } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch challenge submissions"
-    );
   }
-});
+);
 
 // Create submission (submit code solution)
 export const createSubmissionThunk = createAsyncThunk<

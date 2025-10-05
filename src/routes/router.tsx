@@ -52,6 +52,9 @@ const RobotDetailPage = lazy(() => import("pages/user/store/RobotDetailPage"));
 const ComponentDetailPage = lazy(
   () => import("pages/user/store/ComponentDetailPage")
 );
+// Cart page
+const CartPage = lazy(() => import("pages/user/CartPage"));
+// My Robots page
 // Error pages
 const Page404 = lazy(() => import("pages/error/Page404"));
 const Page500 = lazy(() => import("pages/error/Page500"));
@@ -97,18 +100,15 @@ function AppRouter() {
   const [isInitializing, setIsInitializing] = useState(true);
 
   // Add a short delay to ensure auth state is fully loaded
+  // Don't auto-logout here - let the interceptor handle it when API calls fail
   useEffect(() => {
-    // Đặt một timeout để đảm bảo state được khởi tạo đầy đủ
     const timer = setTimeout(() => {
       setIsInitializing(false);
-    }, 1000);
+    }, 50); // Minimal delay just for Redux rehydration
 
     return () => {
       clearTimeout(timer);
     };
-    // Empty dependency array - only run once on mount
-    // Don't react to isAuthenticated/userAuth changes to avoid loops
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Show loading screen during initialization
@@ -191,6 +191,10 @@ function AppRouter() {
         <ReactRoute element={<UserRouter />}>
           {/* Các trang dành riêng cho user */}
           <ReactRoute path={PATH_USER.homepage} element={<SharedHomePage />} />
+
+          {/* Shopping Cart */}
+          <ReactRoute path={PATH_USER.cart} element={<CartPage />} />
+
           {/* User Store Routes */}
           <ReactRoute path={PATH_USER.store} element={<StorePage />} />
           <ReactRoute path={PATH_USER.robots} element={<RobotListPage />} />
@@ -206,9 +210,9 @@ function AppRouter() {
             path={PATH_USER.componentDetail}
             element={<ComponentDetailPage />}
           />
+
           {/* Other User Routes */}
           <ReactRoute path={PATH_USER.courses} element={<CoursesPage />} />
-          {/* myCourses and myRobots routes removed - now part of Student Profile tabs */}
 
           <ReactRoute
             path={PATH_USER.courseDetail}

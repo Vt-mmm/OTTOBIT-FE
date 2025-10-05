@@ -42,6 +42,8 @@ export const PATH_USER = {
   courseDetail: path(ROOTS_USER, "/courses/:id"),
   lessons: path(ROOTS_USER, "/lessons"),
   lessonDetail: path(ROOTS_USER, "/lessons/:id"),
+  // Shopping cart
+  cart: path(ROOTS_USER, "/cart"),
   // User management pages - myCourses, myRobots, myCertificates moved to Student Profile tabs
   challenges: path(ROOTS_USER, "/challenges"),
   challengeDetail: path(ROOTS_USER, "/challenges/:id"),
@@ -64,6 +66,7 @@ export const PATH_ADMIN = {
   studentManagement: path(ROOTS_ADMIN_DASHBOARD, "/student-management"),
   robotManagement: path(ROOTS_ADMIN_DASHBOARD, "/robot-management"),
   componentManagement: path(ROOTS_ADMIN_DASHBOARD, "/component-management"),
+  cartManagement: path(ROOTS_ADMIN_DASHBOARD, "/cart-management"),
   lessonResourceManagement: path(
     ROOTS_ADMIN_DASHBOARD,
     "/lesson-resource-management"
@@ -72,10 +75,7 @@ export const PATH_ADMIN = {
     ROOTS_ADMIN_DASHBOARD,
     "/activation-code-management"
   ),
-  certificateManagement: path(
-    ROOTS_ADMIN_DASHBOARD,
-    "/certificate-management"
-  ),
+  certificateManagement: path(ROOTS_ADMIN_DASHBOARD, "/certificate-management"),
   certificateTemplateManagement: path(
     ROOTS_ADMIN_DASHBOARD,
     "/certificate-template-management"
