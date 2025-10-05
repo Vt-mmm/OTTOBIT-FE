@@ -35,7 +35,11 @@ async function callApiWithRetry<T>(
     } catch (error) {
       lastError = error;
       const axiosError = error as AxiosError;
-      if (axiosError.response?.status === 401) {
+      // Don't retry on 401 (unauthorized) or 404 (not found)
+      if (
+        axiosError.response?.status === 401 ||
+        axiosError.response?.status === 404
+      ) {
         break;
       }
     }

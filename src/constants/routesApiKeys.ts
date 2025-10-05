@@ -23,6 +23,8 @@ const ROOTS_ACTIVATION_CODE = "/api/v1/activation-codes";
 const ROOTS_ROBOT_COMPONENT = "/api/v1/robot-components";
 const ROOTS_CERTIFICATE = "/api/v1/certificates";
 const ROOTS_CERTIFICATE_TEMPLATE = "/api/v1/certificate-templates";
+const ROOTS_CART = "/api/v1/cart";
+const ROOTS_CART_ITEM = "/api/v1/cart/items";
 
 export const ROUTES_API_AUTH = {
   // Authentication endpoints
@@ -275,4 +277,29 @@ export const ROUTES_API_CERTIFICATE_TEMPLATE = {
 
   // User/Admin endpoints
   GET_BY_ID: (id: string) => path(ROOTS_CERTIFICATE_TEMPLATE, `/${id}`), // GET /api/v1/certificate-templates/{id} (User,Admin)
+};
+
+// Cart endpoints
+export const ROUTES_API_CART = {
+  // Cart management
+  GET_CART: ROOTS_CART, // GET /api/v1/cart (User)
+  CREATE_CART: ROOTS_CART, // POST /api/v1/cart (User)
+  CLEAR_CART: ROOTS_CART, // DELETE /api/v1/cart (User)
+  GET_SUMMARY: path(ROOTS_CART, `/summary`), // GET /api/v1/cart/summary (User)
+  VALIDATE_CART: path(ROOTS_CART, `/validate`), // POST /api/v1/cart/validate (User)
+  APPLY_DISCOUNT: path(ROOTS_CART, `/discount`), // POST /api/v1/cart/discount (User)
+  REMOVE_DISCOUNT: path(ROOTS_CART, `/discount`), // DELETE /api/v1/cart/discount (User)
+};
+
+// Cart Item endpoints
+export const ROUTES_API_CART_ITEM = {
+  // Cart items management
+  GET_ITEMS: ROOTS_CART_ITEM, // GET /api/v1/cart/items (User)
+  ADD_ITEM: ROOTS_CART_ITEM, // POST /api/v1/cart/items (User)
+  REMOVE_ITEM: (courseId: string) => path(ROOTS_CART_ITEM, `/${courseId}`), // DELETE /api/v1/cart/items/{courseId} (User)
+  UPDATE_ITEM_PRICE: (courseId: string) =>
+    path(ROOTS_CART_ITEM, `/${courseId}/price`), // PUT /api/v1/cart/items/{courseId}/price (User)
+  VALIDATE_ITEM: path(ROOTS_CART_ITEM, `/validate`), // POST /api/v1/cart/items/validate (User)
+  CHECK_EXISTS: (courseId: string) =>
+    path(ROOTS_CART_ITEM, `/exists/${courseId}`), // GET /api/v1/cart/items/exists/{courseId} (User)
 };

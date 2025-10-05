@@ -39,7 +39,12 @@ async function callApiWithRetry<T>(
     } catch (error) {
       lastError = error;
       const axiosError = error as AxiosError;
-      if (axiosError.response?.status === 401) {
+      // Don't retry on 401 (unauthorized) or 404 (not found)
+      // 404 means user doesn't have student profile yet - this is expected
+      if (
+        axiosError.response?.status === 401 ||
+        axiosError.response?.status === 404
+      ) {
         break;
       }
     }
@@ -59,9 +64,25 @@ export const getMyEnrollmentsThunk = createAsyncThunk<
         ROUTES_API_ENROLLMENT.MY_ENROLLMENTS,
         {
           params: request,
+          // Custom flag to suppress console errors for expected 404
+          validateStatus: (status) => {
+            // Treat 404 as valid response (user doesn't have student profile)
+            return (status >= 200 && status < 300) || status === 404;
+          },
         }
       )
     );
+
+    // Handle 404 case (no student profile)
+    if (response.status === 404) {
+      return {
+        items: [],
+        page: 1,
+        size: request.pageSize || 10,
+        total: 0,
+        totalPages: 0,
+      };
+    }
 
     if (response.data.errors || response.data.errorCode) {
       throw new Error(response.data.message || "Failed to fetch enrollments");
@@ -74,8 +95,8 @@ export const getMyEnrollmentsThunk = createAsyncThunk<
     return response.data.data;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
-    
-    // If 404, return empty data instead of error (user has no enrollments yet)
+
+    // Fallback: If 404 still comes here, return empty data
     if (err.response?.status === 404) {
       return {
         items: [],
@@ -85,7 +106,7 @@ export const getMyEnrollmentsThunk = createAsyncThunk<
         totalPages: 0,
       };
     }
-    
+
     return rejectWithValue(
       err.response?.data?.message || "Failed to fetch my enrollments"
     );
@@ -180,13 +201,13 @@ export const createEnrollmentThunk = createAsyncThunk<
     return response.data.data;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
-    
+
     // Parse error message from different response formats
     let errorMessage = "Failed to enroll in course";
-    
+
     if (err.response?.data) {
       const responseData = err.response.data;
-      
+
       // Handle different error response formats
       if (typeof responseData === "string") {
         errorMessage = responseData;
@@ -198,7 +219,7 @@ export const createEnrollmentThunk = createAsyncThunk<
     } else if (err.message) {
       errorMessage = err.message;
     }
-    
+
     return rejectWithValue(errorMessage);
   }
 });

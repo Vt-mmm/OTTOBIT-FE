@@ -81,7 +81,10 @@ export default function CourseLessonsSection({
             const progress = getLessonProgress(lesson.id, lessonProgresses);
             const statusText = getLessonStatusText(lesson, lessonProgresses);
             const buttonText = getLessonButtonText(lesson, lessonProgresses);
-            const challengeCount = (progress as any).totalChallenges ?? (lesson as any).challengesCount ?? 0;
+            const challengeCount =
+              (progress as any).totalChallenges ??
+              (lesson as any).challengesCount ??
+              0;
 
             return (
               <React.Fragment key={lesson.id}>
@@ -135,7 +138,11 @@ export default function CourseLessonsSection({
                             mb: 0.5,
                           }}
                         >
-                          <Typography variant="subtitle1" fontWeight={600}>
+                          <Typography
+                            variant="subtitle1"
+                            fontWeight={600}
+                            component="span"
+                          >
                             {lesson.title}
                           </Typography>
                           {/* Status Chip */}
@@ -178,6 +185,7 @@ export default function CourseLessonsSection({
                             variant="body2"
                             color="text.secondary"
                             sx={{ mb: 1 }}
+                            component="span"
                           >
                             {lesson.content}
                           </Typography>
@@ -203,6 +211,12 @@ export default function CourseLessonsSection({
                           </Box>
                         </Box>
                       }
+                      primaryTypographyProps={{
+                        component: "div",
+                      }}
+                      secondaryTypographyProps={{
+                        component: "div",
+                      }}
                     />
 
                     <Button

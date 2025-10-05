@@ -10,6 +10,7 @@ import { useAppDispatch, useAppSelector } from "store/config";
 import { getCourseRobotsThunk } from "store/courseRobot/courseRobotThunks";
 import RobotRequirementCard from "components/robot/RobotRequirementCard";
 import ActivateRobotDialog from "components/robot/ActivateRobotDialog";
+import { AddToCartButton } from "components/cart";
 import { CourseType } from "common/@types/course";
 
 interface CourseSidebarSectionProps {
@@ -122,6 +123,17 @@ export default function CourseSidebarSection({
               <Typography variant="body2">Chứng chỉ hoàn thành</Typography>
             </Box>
           </Box>
+
+          {/* Add to Cart Button - Only for Premium Courses */}
+          {course.type !== CourseType.Free && (course.price ?? 0) > 0 && (
+            <Box sx={{ mt: 2 }}>
+              <AddToCartButton
+                courseId={course.id}
+                coursePrice={course.price ?? 0}
+                fullWidth
+              />
+            </Box>
+          )}
         </Box>
       </Box>
 

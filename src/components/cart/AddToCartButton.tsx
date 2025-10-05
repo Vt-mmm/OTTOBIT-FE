@@ -1,0 +1,169 @@
+import { useState, useEffect } from "react";
+import { Button, CircularProgress } from "@mui/material";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import CheckIcon from "@mui/icons-material/Check";
+import { useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "store/config";
+import {
+  addCartItemThunk,
+  checkItemExistsThunk,
+  getCartSummaryThunk,
+  getCartThunk,
+} from "store/cart/cartThunks";
+import { PATH_USER } from "routes/paths";
+import {
+  showSuccessToast,
+  showErrorToast,
+  showWarningToast,
+  showInfoToast,
+} from "utils/toast";
+
+interface AddToCartButtonProps {
+  courseId: string;
+  coursePrice: number;
+  disabled?: boolean;
+  fullWidth?: boolean;
+}
+
+export default function AddToCartButton({
+  courseId,
+  coursePrice,
+  disabled = false,
+  fullWidth = false,
+}: AddToCartButtonProps) {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { operations, itemExistsCache } = useAppSelector((state) => state.cart);
+
+  const isInCart = itemExistsCache[courseId] || false;
+  const isAdding = operations.isAddingItem;
+
+  // Check if we already have cache for this course
+  const hasCache = courseId in itemExistsCache;
+  const [isChecking, setIsChecking] = useState(!hasCache);
+
+  useEffect(() => {
+    // Only check if we don't have cache
+    if (hasCache) {
+      return;
+    }
+
+    // Check if item exists in cart on mount (background check)
+    const checkExists = async () => {
+      try {
+        await dispatch(checkItemExistsThunk(courseId));
+      } catch (error) {
+        console.error("Failed to check item existence:", error);
+      } finally {
+        setIsChecking(false);
+      }
+    };
+
+    checkExists();
+  }, [dispatch, courseId, hasCache]);
+
+  const handleAddToCart = async () => {
+    console.log("[AddToCart] Starting add to cart for course:", courseId);
+    console.log("[AddToCart] Current isInCart:", isInCart);
+    console.log(
+      "[AddToCart] Current itemExistsCache:",
+      itemExistsCache[courseId]
+    );
+
+    try {
+      const result = await dispatch(
+        addCartItemThunk({
+          courseId,
+          unitPrice: coursePrice,
+        })
+      ).unwrap();
+
+      console.log("[AddToCart] Successfully added item:", result);
+
+      // Refresh full cart to get updated cart data
+      await dispatch(getCartThunk());
+
+      // Refresh cart summary to update badge count
+      await dispatch(getCartSummaryThunk());
+
+      // Update exists cache
+      await dispatch(checkItemExistsThunk(courseId));
+
+      // Show success message
+      showSuccessToast("Đã thêm khóa học vào giỏ hàng!");
+    } catch (error: any) {
+      console.error("[AddToCart] Failed to add to cart:", error);
+
+      // Error from unwrap() is already the string message from rejectWithValue
+      const errorMessage =
+        typeof error === "string"
+          ? error
+          : error?.message || "Không thể thêm vào giỏ hàng";
+
+      console.log("[AddToCart] Error message:", errorMessage);
+
+      // Show appropriate message based on error content
+      if (
+        errorMessage.includes("already exists") ||
+        errorMessage.includes("đã có trong giỏ")
+      ) {
+        showWarningToast("Khóa học đã có trong giỏ hàng!");
+      } else if (
+        errorMessage.includes("already own") ||
+        errorMessage.includes("đã sở hữu")
+      ) {
+        showInfoToast("Bạn đã sở hữu khóa học này rồi!");
+      } else {
+        showErrorToast(errorMessage);
+      }
+    }
+  };
+
+  const handleGoToCart = () => {
+    navigate(PATH_USER.cart);
+  };
+
+  // Show "In Cart" immediately if cache says so
+  if (isInCart) {
+    return (
+      <Button
+        fullWidth={fullWidth}
+        variant="outlined"
+        color="success"
+        startIcon={<CheckIcon />}
+        onClick={handleGoToCart}
+        sx={{
+          textTransform: "none",
+          fontWeight: 600,
+        }}
+      >
+        Đã có trong giỏ hàng
+      </Button>
+    );
+  }
+
+  // Show loading state only while adding, not while checking
+  // This improves UX - user sees button immediately
+  return (
+    <Button
+      fullWidth={fullWidth}
+      variant="contained"
+      color="primary"
+      startIcon={
+        isAdding ? (
+          <CircularProgress size={20} color="inherit" />
+        ) : (
+          <ShoppingCartIcon />
+        )
+      }
+      onClick={handleAddToCart}
+      disabled={disabled || isAdding || isChecking}
+      sx={{
+        textTransform: "none",
+        fontWeight: 600,
+      }}
+    >
+      {isAdding ? "Đang thêm..." : "Thêm vào giỏ hàng"}
+    </Button>
+  );
+}

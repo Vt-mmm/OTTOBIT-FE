@@ -19,6 +19,7 @@ import activationCodeReducer from "./activationCode/activationCodeSlice";
 import robotComponentReducer from "./robotComponent/robotComponentSlice";
 import certificateReducer from "./certificate/certificateSlice";
 import certificateTemplateReducer from "./certificateTemplate/certificateTemplateSlice";
+import cartReducer from "./cart/cartSlice";
 
 export const ottobit = configureStore({
   reducer: {
@@ -41,6 +42,7 @@ export const ottobit = configureStore({
     robotComponent: robotComponentReducer, // ⭐️ NEW: RobotComponent (Robot-Component relationship)
     certificate: certificateReducer, // ⭐️ NEW: Certificate management
     certificateTemplate: certificateTemplateReducer, // ⭐️ NEW: CertificateTemplate management
+    cart: cartReducer, // ⭐️ NEW: Cart management
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

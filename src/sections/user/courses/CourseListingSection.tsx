@@ -44,6 +44,7 @@ export default function CourseListingSection({
     error,
   } = useAppSelector((state) => state.course.courses);
   const { myEnrollments } = useAppSelector((state) => state.enrollment);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const { studentData } = useAppSelector((state) => ({
     studentData: state.student.currentStudent.data,
   }));
@@ -63,10 +64,17 @@ export default function CourseListingSection({
   });
   const itemsPerPage = 12;
 
+  // Fetch courses (public data)
   useEffect(() => {
     dispatch(getCourses({ pageSize: 50 }));
-    dispatch(getMyEnrollments({ pageSize: 100 }));
   }, [dispatch]);
+
+  // Fetch enrollments ONLY if user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(getMyEnrollments({ pageSize: 100 }));
+    }
+  }, [dispatch, isAuthenticated]);
 
   // Filter and sort courses
   const filteredAndSortedCourses = useMemo(() => {
