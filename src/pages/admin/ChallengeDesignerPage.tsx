@@ -28,6 +28,7 @@ import ThreeDRotationIcon from "@mui/icons-material/ThreeDRotation";
 import { axiosClient } from "axiosClient";
 import { ROUTES_API_CHALLENGE } from "constants/routesApiKeys";
 import { extractApiErrorMessage } from "utils/errorHandler";
+import { useNotification } from "../../hooks/useNotification";
 import { useAppDispatch, useAppSelector } from "../../redux/config";
 import { getCoursesForAdmin } from "../../redux/course/courseSlice";
 import {
@@ -67,6 +68,12 @@ const MapDesignerPage = () => {
   const [viewMode, setViewMode] = useState<"orthogonal" | "isometric">(
     "isometric"
   );
+
+  // Use common notification hook
+  const { showNotification, NotificationComponent } = useNotification({
+    anchorOrigin: { vertical: "top", horizontal: "right" },
+    autoHideDurationMs: 6000,
+  });
   const [mapGrid, setMapGrid] = useState<MapCell[][]>(
     Array(GRID_CONFIG.rows)
       .fill(null)
@@ -487,65 +494,12 @@ const MapDesignerPage = () => {
     }
   ); */
 
-  // Lightweight toast fallback (top-right) when global Snackbar is unavailable
-  const showLocalToast = (
+  // Helper function to show notifications using common hook
+  const showToast = (
     message: string,
     variant: "success" | "error" | "info" | "warning" = "info"
   ) => {
-    const containerId = "local-toast-container";
-    let container = document.getElementById(containerId);
-    if (!container) {
-      container = document.createElement("div");
-      container.id = containerId;
-      Object.assign(container.style, {
-        position: "fixed",
-        top: "16px",
-        right: "16px",
-        zIndex: "2000",
-        display: "flex",
-        flexDirection: "column",
-        gap: "8px",
-        pointerEvents: "none",
-      } as CSSStyleDeclaration);
-      document.body.appendChild(container);
-    }
-    const toast = document.createElement("div");
-    const bgMap: Record<string, string> = {
-      success: "#2e7d32",
-      error: "#d32f2f",
-      info: "#0288d1",
-      warning: "#ed6c02",
-    };
-    // Align styles to MUI/Notistack look & feel
-    Object.assign(toast.style, {
-      background: bgMap[variant] || "#323232",
-      color: "#fff",
-      padding: "6px 16px",
-      borderRadius: "4px",
-      boxShadow:
-        "rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px",
-      fontSize: "0.875rem",
-      lineHeight: "1.43",
-      fontWeight: "500",
-      letterSpacing: "0.01071em",
-      pointerEvents: "auto",
-      transition: "opacity 0.3s, transform 0.3s",
-      opacity: "0",
-      transform: "translateY(-6px)",
-    } as CSSStyleDeclaration);
-    toast.textContent = message;
-    toast.setAttribute("role", "alert");
-    container.appendChild(toast);
-    requestAnimationFrame(() => {
-      toast.style.opacity = "1";
-      toast.style.transform = "translateY(0)";
-    });
-    const remove = () => {
-      toast.style.opacity = "0";
-      toast.style.transform = "translateY(-6px)";
-      setTimeout(() => toast.remove(), 300);
-    };
-    setTimeout(remove, 2500);
+    showNotification(message, variant);
   };
 
   const handleCellClick = (row: number, col: number) => {
@@ -647,10 +601,10 @@ const MapDesignerPage = () => {
             anchorOrigin: { vertical: "top", horizontal: "right" },
           });
         } else {
-          showLocalToast(msg, "error");
+          showToast(msg, "error");
         }
       } catch {
-        showLocalToast(msg, "error");
+        showToast(msg, "error");
       }
       return;
     }
@@ -664,10 +618,10 @@ const MapDesignerPage = () => {
             anchorOrigin: { vertical: "top", horizontal: "right" },
           });
         } else {
-          showLocalToast(msg, "error");
+          showToast(msg, "error");
         }
       } catch {
-        showLocalToast(msg, "error");
+        showToast(msg, "error");
       }
       return;
     }
@@ -697,10 +651,10 @@ const MapDesignerPage = () => {
             anchorOrigin: { vertical: "top", horizontal: "right" },
           });
         } else {
-          showLocalToast(msg, variant);
+          showToast(msg, variant);
         }
       } catch {
-        showLocalToast(msg, variant);
+        showToast(msg, variant);
       }
       return;
     }
@@ -728,10 +682,10 @@ const MapDesignerPage = () => {
             anchorOrigin: { vertical: "top", horizontal: "right" },
           });
         } else {
-          showLocalToast(msg, "error");
+          showToast(msg, "error");
         }
       } catch {
-        showLocalToast(msg, "error");
+        showToast(msg, "error");
       }
       return;
     }
@@ -754,10 +708,10 @@ const MapDesignerPage = () => {
             anchorOrigin: { vertical: "top", horizontal: "right" },
           });
         } else {
-          showLocalToast(msg, "error");
+          showToast(msg, "error");
         }
       } catch {
-        showLocalToast(msg, "error");
+        showToast(msg, "error");
       }
       return;
     }
@@ -804,7 +758,7 @@ const MapDesignerPage = () => {
               anchorOrigin: { vertical: "top", horizontal: "right" },
             });
           } else {
-            showLocalToast(msg, "error");
+            showToast(msg, "error");
           }
           return;
         }
@@ -849,21 +803,14 @@ const MapDesignerPage = () => {
           anchorOrigin: { vertical: "top", horizontal: "right" },
         });
       } else {
-        showLocalToast(msg, variant as any);
+        showToast(msg, variant as any);
       }
     } catch (e: any) {
       const errorMessage = extractApiErrorMessage(
         e,
         "Failed to save challenge"
       );
-      if ((window as any).Snackbar?.enqueueSnackbar) {
-        (window as any).Snackbar.enqueueSnackbar(errorMessage, {
-          variant: "error",
-          anchorOrigin: { vertical: "top", horizontal: "right" },
-        });
-      } else {
-        showLocalToast(errorMessage, "error");
-      }
+      showToast(errorMessage, "error");
     }
   };
 
@@ -1381,10 +1328,10 @@ const MapDesignerPage = () => {
                         anchorOrigin: { vertical: "top", horizontal: "right" },
                       });
                     } else {
-                      showLocalToast(msg, "error");
+                      showToast(msg, "error");
                     }
                   } catch {
-                    showLocalToast(msg, "error");
+                    showToast(msg, "error");
                   }
                   return;
                 }
@@ -1413,21 +1360,14 @@ const MapDesignerPage = () => {
                     anchorOrigin: { vertical: "top", horizontal: "right" },
                   });
                 } else {
-                  showLocalToast(msg, variant as any);
+                  showToast(msg, variant as any);
                 }
               } catch (e: any) {
                 const errorMessage = extractApiErrorMessage(
                   e,
                   "Failed to save challenge"
                 );
-                if ((window as any).Snackbar?.enqueueSnackbar) {
-                  (window as any).Snackbar.enqueueSnackbar(errorMessage, {
-                    variant: "error",
-                    anchorOrigin: { vertical: "top", horizontal: "right" },
-                  });
-                } else {
-                  showLocalToast(errorMessage, "error");
-                }
+                showToast(errorMessage, "error");
               }
             }}
           >
@@ -1435,6 +1375,9 @@ const MapDesignerPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Common Notification Component */}
+      <NotificationComponent />
     </AdminLayout>
   );
 };

@@ -40,7 +40,7 @@ export function extractApiErrorMessage(
     }
   }
 
-  // Check if error.data exists (some axios errors have data directly)
+  // Check if it's an Axios error with direct data (for 409 conflicts)
   if (error?.data) {
     const apiError: ApiErrorResponse = error.data;
 
@@ -50,6 +50,7 @@ export function extractApiErrorMessage(
       Array.isArray(apiError.errors) &&
       apiError.errors.length > 0
     ) {
+      // Join all error messages with line breaks
       return apiError.errors.join("\n");
     }
 
