@@ -8,6 +8,12 @@ export type ActionSocketMessage = {
   [key: string]: any;
 };
 
+// Keep last built program to allow visible simulation later
+let lastProgram: any | null = null;
+export function getLastProgram() {
+  return lastProgram;
+}
+
 // Convert string actions to ProgramAction format for Phaser with grouping
 function convertStringActionsToProgramActions(actions: string[]): any[] {
   if (actions.length === 0) return [];
@@ -71,16 +77,20 @@ function sendActionsToPhaser(actions: string[]) {
   // Convert string actions to ProgramAction format
   const programActions = convertStringActionsToProgramActions(actions);
 
+  const program = {
+    version: "1.0.0",
+    programName: "user_program",
+    actions: programActions,
+    functions: [],
+  };
+  // Save for later simulate run
+  lastProgram = program;
+
   const message = {
     source: "parent-website",
     type: "RUN_PROGRAM_HEADLESS",
     data: {
-      program: {
-        version: "1.0.0",
-        programName: "user_program",
-        actions: programActions,
-        functions: [],
-      },
+      program,
     },
   };
 
@@ -90,9 +100,7 @@ function sendActionsToPhaser(actions: string[]) {
   ) as HTMLIFrameElement;
   if (gameIframe && gameIframe.contentWindow) {
     gameIframe.contentWindow.postMessage(message, "*");
-    console.log("📤 Sent actions to Phaser:", message);
   } else {
-    console.warn("⚠️ Game iframe not found");
   }
 }
 
@@ -116,7 +124,6 @@ function setupPhaserMessageListener() {
 }
 
 function handleCompiledActions(data: any) {
-  console.log("✅ Compiled actions from Phaser:", data.actions);
   // Hiển thị kết quả lên UI
   displayActions(data.actions);
 }
@@ -127,8 +134,7 @@ function handleError(data: any) {
   showErrorMessage(data.message);
 }
 
-function displayActions(actions: string[]) {
-  console.log("🎮 Display actions:", actions);
+function displayActions(_actions: string[]) {
   // TODO: Hiển thị actions lên UI
 }
 
@@ -172,8 +178,6 @@ export function connectActionSocket(
     socket.on("disconnect", () => {});
 
     socket.on("actions", (data: any) => {
-      console.log("📥 Actions event (socket.io):", data);
-
       // Send actions to Phaser game via postMessage
       if (data.actions && Array.isArray(data.actions)) {
         sendActionsToPhaser(data.actions);

@@ -135,23 +135,10 @@ export class BlocklyToPhaserConverter {
 
     // Traverse through connected blocks
     while (currentBlock) {
-      try {
-        // Debug: log visiting block types to trace missing conversions
-        // eslint-disable-next-line no-console
-        console.log("[Converter] Visiting block:", currentBlock.type);
-      } catch {}
-
       const convertedActions = this.convertBlockToActions(currentBlock);
       if (convertedActions && convertedActions.length > 0) {
         actions.push(...convertedActions);
       } else {
-        try {
-          // eslint-disable-next-line no-console
-          console.warn(
-            "[Converter] No actions produced for block:",
-            currentBlock.type
-          );
-        } catch {}
       }
 
       // Move to next connected block
