@@ -66,7 +66,9 @@ export default function EnrolledCoursesTab({
   const [enrollments, setEnrollments] = useState<EnrollmentItem[]>(
     propEnrollments || []
   );
-  const [loading, setLoading] = useState<boolean>(propLoading !== undefined ? propLoading : true);
+  const [loading, setLoading] = useState<boolean>(
+    propLoading !== undefined ? propLoading : true
+  );
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<
     Record<string, { total: number; completed: number; percent: number }>
@@ -142,7 +144,9 @@ export default function EnrolledCoursesTab({
               0;
             const completed = completedRes.data?.data?.total ?? 0;
             const percent =
-              total > 0 ? Math.min(100, Math.round((completed / total) * 100)) : 0;
+              total > 0
+                ? Math.min(100, Math.round((completed / total) * 100))
+                : 0;
             return [courseId, { total, completed, percent }] as const;
           })
         );
@@ -191,25 +195,35 @@ export default function EnrolledCoursesTab({
         </Box>
         <Divider />
         {[1, 2, 3].map((i) => (
-          <Skeleton key={i} variant="rectangular" height={120} sx={{ borderRadius: 2 }} />
+          <Skeleton
+            key={i}
+            variant="rectangular"
+            height={120}
+            sx={{ borderRadius: 2 }}
+          />
         ))}
       </Stack>
     );
   }
 
   return (
-    <Stack spacing={2}>
+    <Stack spacing={{ xs: 2, sm: 2.5, md: 3 }}>
       <Box
         sx={{
           display: "flex",
-          alignItems: "center",
+          alignItems: { xs: "flex-start", sm: "center" },
           justifyContent: "space-between",
+          flexDirection: { xs: "column", sm: "row" },
+          gap: { xs: 1.5, sm: 0 },
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 600, fontSize: { xs: "1.125rem", sm: "1.25rem" } }}
+        >
           Khóa học của tôi
         </Typography>
-        <Box sx={{ display: "flex", gap: 1 }}>
+        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
           <Chip
             label={`Đang học (${inProgress.length})`}
             color={tab === "IN_PROGRESS" ? "primary" : "default"}
@@ -368,25 +382,57 @@ export default function EnrolledCoursesTab({
               key={enrollment.id}
               variant="outlined"
               sx={{
-                p: 2.5,
+                p: { xs: 2, sm: 2.5 },
                 borderRadius: 2,
                 transition: "all 0.2s ease",
                 "&:hover": {
                   boxShadow: 2,
                 },
+                minWidth: 0,
+                maxWidth: "100%",
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: { xs: 1.5, sm: 2 },
+                  flexWrap: { xs: "wrap", md: "nowrap" },
+                }}
+              >
                 <Avatar
                   src={enrollment.courseImageUrl || undefined}
                   variant="rounded"
-                  sx={{ width: 56, height: 56 }}
+                  sx={{
+                    width: { xs: 48, sm: 56 },
+                    height: { xs: 48, sm: 56 },
+                    flexShrink: 0,
+                  }}
                 >
                   {enrollment.courseTitle?.charAt(0) || "C"}
                 </Avatar>
-                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Typography noWrap sx={{ fontWeight: 700, flexGrow: 1 }}>
+                <Box
+                  sx={{
+                    flexGrow: 1,
+                    minWidth: 0,
+                    maxWidth: { xs: "calc(100% - 64px)", md: "100%" },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: { xs: 0.5, sm: 1 },
+                    }}
+                  >
+                    <Typography
+                      noWrap
+                      sx={{
+                        fontWeight: 700,
+                        flexGrow: 1,
+                        fontSize: { xs: "0.9375rem", sm: "1rem" },
+                      }}
+                    >
                       {enrollment.courseTitle || "Khóa học"}
                     </Typography>
                     <Tooltip
@@ -415,28 +461,51 @@ export default function EnrolledCoursesTab({
                     </Typography>
                   </Box>
                 </Box>
-                {tab === "COMPLETED" ? (
-                  <Button
-                    startIcon={<CheckCircleOutlineIcon />}
-                    variant="text"
-                    onClick={() => navigate(detailPath)}
-                    size="small"
-                  >
-                    Xem chi tiết
-                  </Button>
-                ) : (
-                  <Button
-                    startIcon={<PlayArrowIcon />}
-                    variant="contained"
-                    onClick={() => navigate(detailPath)}
-                    size="small"
-                  >
-                    Tiếp tục học
-                  </Button>
-                )}
+                <Box
+                  sx={{
+                    width: { xs: "100%", md: "auto" },
+                    display: "flex",
+                    justifyContent: { xs: "stretch", md: "flex-end" },
+                    order: { xs: 3, md: 0 },
+                    mt: { xs: 1, md: 0 },
+                  }}
+                >
+                  {tab === "COMPLETED" ? (
+                    <Button
+                      startIcon={<CheckCircleOutlineIcon />}
+                      variant="text"
+                      onClick={() => navigate(detailPath)}
+                      size="small"
+                      fullWidth={{ xs: true, md: false } as any}
+                      sx={{
+                        minHeight: { xs: 44, sm: 36 },
+                        fontSize: { xs: "0.875rem", sm: "0.8125rem" },
+                        flexShrink: 0,
+                      }}
+                    >
+                      Xem chi tiết
+                    </Button>
+                  ) : (
+                    <Button
+                      startIcon={<PlayArrowIcon />}
+                      variant="contained"
+                      onClick={() => navigate(detailPath)}
+                      size="small"
+                      fullWidth={{ xs: true, md: false } as any}
+                      sx={{
+                        minHeight: { xs: 44, sm: 36 },
+                        fontSize: { xs: "0.875rem", sm: "0.8125rem" },
+                        flexShrink: 0,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      Tiếp tục học
+                    </Button>
+                  )}
+                </Box>
               </Box>
               {isOpen && (
-                <Box sx={{ mt: 2, pl: 7 }}>
+                <Box sx={{ mt: 2, pl: { xs: 0, sm: 7 } }}>
                   {(!lessonsState || lessonsState.loading) && (
                     <Stack spacing={1.25}>
                       {Array.from({ length: 2 }).map((_, i) => (

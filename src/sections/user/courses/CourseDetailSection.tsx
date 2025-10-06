@@ -302,9 +302,19 @@ export default function CourseDetailSection({
 
   return (
     <>
-      <Box sx={{ bgcolor: "#ffffff", minHeight: "100vh" }}>
-        <Container maxWidth="lg" sx={{ pt: { xs: 10, md: 12 } }}>
-          <Grid container spacing={4}>
+      <Box
+        sx={{
+          bgcolor: "#ffffff",
+          minHeight: "100vh",
+          maxWidth: "100vw",
+          overflow: "hidden",
+        }}
+      >
+        <Container
+          maxWidth="lg"
+          sx={{ pt: { xs: 10, md: 12 }, px: { xs: 2, sm: 3 } }}
+        >
+          <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
             {/* Main Content */}
             <Grid item xs={12} md={8}>
               {/* Course Hero Section */}

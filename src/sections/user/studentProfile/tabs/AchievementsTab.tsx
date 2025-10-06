@@ -80,15 +80,17 @@ export default function AchievementsTab({
       >
         <Card
           sx={{
-            borderRadius: 3,
+            borderRadius: { xs: 2, sm: 3 },
             boxShadow: "0 2px 12px rgba(0, 0, 0, 0.08)",
             border: "1px solid",
             borderColor: "divider",
             background: "linear-gradient(135deg, #ffa726 0%, #fb8c00 100%)",
             color: "white",
+            minWidth: 0,
+            overflow: "hidden",
           }}
         >
-          <CardContent sx={{ p: 3 }}>
+          <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
               <EmojiEventsIcon />
               <Typography variant="h6" sx={{ fontWeight: 700 }}>
@@ -99,11 +101,18 @@ export default function AchievementsTab({
               sx={{
                 display: "grid",
                 gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
-                gap: 3,
+                gap: { xs: 2, sm: 3 },
               }}
             >
               <Box>
-                <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontWeight: 700,
+                    mb: 0.5,
+                    fontSize: { xs: "1.75rem", sm: "2.125rem" },
+                  }}
+                >
                   {totalChallenges}
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.9 }}>

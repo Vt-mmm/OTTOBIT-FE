@@ -44,16 +44,19 @@ export default function CourseLessonsSection({
       sx={{
         bgcolor: "white",
         border: "1px solid #e0e0e0",
-        borderRadius: 1,
+        borderRadius: { xs: 0, sm: 1 },
         mb: 4,
+        maxWidth: "100%",
+        minWidth: 0,
+        overflow: "hidden",
       }}
     >
-      <Box sx={{ p: 3, pb: 0 }}>
+      <Box sx={{ p: { xs: 2, sm: 2.5, md: { xs: 2, sm: 2.5, md: 3 } }, pb: 0 }}>
         <Typography
           variant="h5"
           component="h2"
           gutterBottom
-          sx={{ fontWeight: 600 }}
+          sx={{ fontWeight: 600, fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
         >
           Nội dung khóa học
         </Typography>
@@ -93,18 +96,19 @@ export default function CourseLessonsSection({
                     onClick={() => isAccessible && onLessonClick(lesson.id)}
                     disabled={!isAccessible}
                     sx={{
-                      py: 2.5,
+                      py: { xs: 2, sm: 2.5 },
+                      px: { xs: 2, sm: 2.5, md: 3 },
                       opacity: !isAccessible ? 0.6 : 1,
                       "&:hover": {
                         bgcolor: !isAccessible ? "transparent" : "action.hover",
                       },
                     }}
                   >
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: { xs: 56, sm: 64 } }}>
                       <Avatar
                         sx={{
-                          width: 48,
-                          height: 48,
+                          width: { xs: 40, sm: 48 },
+                          height: { xs: 40, sm: 48 },
                           bgcolor: !isAccessible
                             ? "grey.400"
                             : progress.isCompleted

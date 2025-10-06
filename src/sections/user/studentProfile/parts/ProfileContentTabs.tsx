@@ -83,28 +83,34 @@ export default function ProfileContentTabs({
   return (
     <Card
       sx={{
-        borderRadius: 4,
+        borderRadius: { xs: 0, sm: 4 },
         boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
         border: "1px solid",
         borderColor: "divider",
         overflow: "hidden",
+        minWidth: 0, // Allow shrinking below content width
+        width: "100%",
       }}
     >
-      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+      <Box sx={{ borderBottom: 1, borderColor: "divider", overflow: "hidden" }}>
         <Tabs
           value={value}
           onChange={handleChange}
           variant="scrollable"
           scrollButtons="auto"
+          allowScrollButtonsMobile
           sx={{
-            px: 2,
+            px: { xs: 1, sm: 2 },
+            minHeight: { xs: 56, sm: 64 },
             "& .MuiTab-root": {
-              minHeight: 64,
+              minHeight: { xs: 56, sm: 64 },
               textTransform: "none",
-              fontSize: "1rem",
+              fontSize: { xs: "0.875rem", sm: "1rem" },
               fontWeight: 600,
               color: "text.secondary",
-              mr: 2, // Thêm khoảng cách giữa các tab
+              mr: { xs: 1, sm: 2 },
+              minWidth: { xs: "auto", sm: 120 },
+              px: { xs: 1, sm: 2 },
               "&.Mui-selected": {
                 color: "primary.main",
               },
@@ -112,6 +118,9 @@ export default function ProfileContentTabs({
             "& .MuiTabs-indicator": {
               height: 3,
               borderRadius: "3px 3px 0 0",
+            },
+            "& .MuiTabs-scrollButtons": {
+              "&.Mui-disabled": { opacity: 0.3 },
             },
           }}
         >
@@ -128,7 +137,7 @@ export default function ProfileContentTabs({
         </Tabs>
       </Box>
 
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
         <TabPanel value={value} index={0}>
           <OverviewTab
             stats={stats}

@@ -10,10 +10,16 @@ type ViewMode = "list" | "create" | "edit" | "details";
 
 export default function LessonManagementPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
-  const [selectedLesson, setSelectedLesson] = useState<LessonResult | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<LessonResult | null>(
+    null
+  );
   const [selectedCourseId, setSelectedCourseId] = useState<string>("");
 
-  const handleViewModeChange = (mode: ViewMode, lesson?: LessonResult, courseId?: string) => {
+  const handleViewModeChange = (
+    mode: ViewMode,
+    lesson?: LessonResult,
+    courseId?: string
+  ) => {
     setViewMode(mode);
     setSelectedLesson(lesson || null);
     if (courseId) setSelectedCourseId(courseId);
@@ -36,7 +42,7 @@ export default function LessonManagementPage() {
             onSuccess={handleBackToList}
           />
         );
-      
+
       case "edit":
         return (
           <LessonFormSection
@@ -46,7 +52,7 @@ export default function LessonManagementPage() {
             onSuccess={handleBackToList}
           />
         );
-      
+
       case "details":
         return (
           <LessonDetailsSection
@@ -55,11 +61,13 @@ export default function LessonManagementPage() {
             onEdit={(lesson) => handleViewModeChange("edit", lesson)}
           />
         );
-      
+
       default:
         return (
           <LessonListSection
-            onCreateNew={(courseId) => handleViewModeChange("create", undefined, courseId)}
+            onCreateNew={(courseId) =>
+              handleViewModeChange("create", undefined, courseId)
+            }
             onEditLesson={(lesson) => handleViewModeChange("edit", lesson)}
             onViewDetails={(lesson) => handleViewModeChange("details", lesson)}
           />
@@ -69,8 +77,11 @@ export default function LessonManagementPage() {
 
   return (
     <AdminLayout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ mb: 4 }}>
+      <Container
+        maxWidth="xl"
+        sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}
+      >
+        <Box sx={{ mb: { xs: 3, sm: 4 } }}>
           <Typography
             variant="h4"
             component="h1"
@@ -78,21 +89,25 @@ export default function LessonManagementPage() {
               fontWeight: 700,
               color: "#1a1a1a",
               mb: 1,
+              fontSize: { xs: "1.5rem", sm: "2.125rem" },
             }}
           >
             Quản lý Bài học
           </Typography>
-          
+
           <Typography
             variant="body1"
             sx={{
               color: "#666",
+              fontSize: { xs: "0.875rem", sm: "1rem" },
             }}
           >
             {viewMode === "list" && "Danh sách tất cả bài học trong hệ thống"}
             {viewMode === "create" && "Tạo bài học mới"}
-            {viewMode === "edit" && `Chỉnh sửa bài học: ${selectedLesson?.title}`}
-            {viewMode === "details" && `Chi tiết bài học: ${selectedLesson?.title}`}
+            {viewMode === "edit" &&
+              `Chỉnh sửa bài học: ${selectedLesson?.title}`}
+            {viewMode === "details" &&
+              `Chi tiết bài học: ${selectedLesson?.title}`}
           </Typography>
         </Box>
 

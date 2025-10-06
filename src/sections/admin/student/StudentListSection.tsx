@@ -134,26 +134,19 @@ export default function StudentListSection({}: StudentListSectionProps) {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      {/* Header */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-          👥 Students Management
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          View and manage student profiles (Students register their own
-          accounts)
-        </Typography>
-      </Box>
-
+    <Box>
       {/* Search & Filters */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
+      <Card sx={{ mb: { xs: 2, sm: 3 } }}>
+        <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "2fr 1fr 1fr 1fr" },
-              gap: 2,
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "1fr 1fr",
+                md: "2fr 1fr 1fr 1fr",
+              },
+              gap: { xs: 1.5, sm: 2 },
             }}
           >
             <TextField
@@ -200,11 +193,21 @@ export default function StudentListSection({}: StudentListSectionProps) {
               }}
             />
           </Box>
-          <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+          <Box
+            sx={{
+              mt: { xs: 1.5, sm: 2 },
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          >
             <Button
               variant="contained"
               onClick={triggerSearch}
               startIcon={<SearchIcon />}
+              sx={{
+                minHeight: { xs: 44, sm: 36 },
+                width: { xs: "100%", sm: "auto" },
+              }}
             >
               Tìm kiếm
             </Button>
@@ -214,106 +217,133 @@ export default function StudentListSection({}: StudentListSectionProps) {
 
       {/* Error Display */}
       {students.error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert severity="error" sx={{ mb: { xs: 2, sm: 3 } }}>
           {students.error}
         </Alert>
       )}
 
       {/* Students Table */}
-      <Paper>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Student</TableCell>
-              <TableCell>Phone</TableCell>
-              <TableCell>Location</TableCell>
-              <TableCell align="center">Age</TableCell>
-              <TableCell align="center">Enrollments</TableCell>
-              <TableCell align="center">Submissions</TableCell>
-              <TableCell>Joined</TableCell>
-              <TableCell align="right">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {students.data?.items?.map((student) => (
-              <TableRow key={student.id} hover>
-                <TableCell>
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}>
-                      {student.fullname?.charAt(0)?.toUpperCase()}
-                    </Avatar>
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: "medium" }}>
-                        {student.fullname}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        ID: {student.id.slice(-8)}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </TableCell>
-                <TableCell>{student.phoneNumber || "-"}</TableCell>
-                <TableCell>
-                  <Typography variant="body2">
-                    {[student.city, student.state].filter(Boolean).join(", ") ||
-                      "-"}
-                  </Typography>
-                </TableCell>
-                <TableCell align="center">
-                  {student.dateOfBirth
-                    ? dayjs().diff(dayjs(student.dateOfBirth), "year")
-                    : "-"}
-                </TableCell>
-                <TableCell align="center">
-                  <Chip
-                    label={student.enrollmentsCount || 0}
-                    size="small"
-                    color="primary"
-                    variant="outlined"
-                    icon={<SchoolIcon />}
-                  />
-                </TableCell>
-                <TableCell align="center">
-                  <Chip
-                    label={student.submissionsCount || 0}
-                    size="small"
-                    color="secondary"
-                    variant="outlined"
-                  />
-                </TableCell>
-                <TableCell>
-                  {dayjs(student.createdAt).format("DD/MM/YYYY")}
-                </TableCell>
-                <TableCell align="right">
-                  <IconButton
-                    size="small"
-                    title="View Student"
-                    onClick={() => handleViewDetails(student)}
-                  >
-                    <ViewIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    title="Edit Student"
-                    onClick={() => handleEditStudent(student)}
-                    color="secondary"
-                  >
-                    <EditIcon />
-                  </IconButton>
-                </TableCell>
+      <Paper sx={{ overflow: "hidden" }}>
+        <Box sx={{ overflowX: "auto" }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Student</TableCell>
+                <TableCell>Phone</TableCell>
+                <TableCell>Location</TableCell>
+                <TableCell align="center">Age</TableCell>
+                <TableCell align="center">Enrollments</TableCell>
+                <TableCell align="center">Submissions</TableCell>
+                <TableCell>Joined</TableCell>
+                <TableCell align="right">Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {students.data?.items?.map((student) => (
+                <TableRow key={student.id} hover>
+                  <TableCell>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}>
+                        {student.fullname?.charAt(0)?.toUpperCase()}
+                      </Avatar>
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: "medium" }}
+                        >
+                          {student.fullname}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          ID: {student.id.slice(-8)}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </TableCell>
+                  <TableCell>{student.phoneNumber || "-"}</TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {[student.city, student.state]
+                        .filter(Boolean)
+                        .join(", ") || "-"}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    {student.dateOfBirth
+                      ? dayjs().diff(dayjs(student.dateOfBirth), "year")
+                      : "-"}
+                  </TableCell>
+                  <TableCell align="center">
+                    <Chip
+                      label={student.enrollmentsCount || 0}
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                      icon={<SchoolIcon />}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <Chip
+                      label={student.submissionsCount || 0}
+                      size="small"
+                      color="secondary"
+                      variant="outlined"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {dayjs(student.createdAt).format("DD/MM/YYYY")}
+                  </TableCell>
+                  <TableCell align="right">
+                    <IconButton
+                      size="small"
+                      title="View Student"
+                      onClick={() => handleViewDetails(student)}
+                    >
+                      <ViewIcon />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      title="Edit Student"
+                      onClick={() => handleEditStudent(student)}
+                      color="secondary"
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Box>
 
         {/* Empty State */}
         {!students.isLoading && students.data?.items?.length === 0 && (
-          <Box sx={{ textAlign: "center", py: 8 }}>
-            <PersonIcon sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
-            <Typography variant="h6" color="text.secondary" gutterBottom>
+          <Box
+            sx={{
+              textAlign: "center",
+              py: { xs: 6, sm: 8 },
+              px: { xs: 2, sm: 3 },
+            }}
+          >
+            <PersonIcon
+              sx={{
+                fontSize: { xs: 48, sm: 64 },
+                color: "text.secondary",
+                mb: 2,
+              }}
+            />
+            <Typography
+              variant="h6"
+              color="text.secondary"
+              gutterBottom
+              sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
+            >
               No Students Found
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mb: 3, fontSize: { xs: "0.875rem", sm: "1rem" } }}
+            >
               {committedSearch
                 ? "Try adjusting your search criteria"
                 : "No students have joined yet"}
@@ -326,9 +356,11 @@ export default function StudentListSection({}: StudentListSectionProps) {
           <Box
             sx={{
               display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
               justifyContent: "space-between",
               alignItems: "center",
-              p: 2,
+              gap: { xs: 2, sm: 0 },
+              p: { xs: 1.5, sm: 2 },
             }}
           >
             <FormControl size="small">
@@ -355,6 +387,8 @@ export default function StudentListSection({}: StudentListSectionProps) {
               onChange={(_, v) => setPageNumber(v)}
               shape="rounded"
               color="primary"
+              size="small"
+              siblingCount={0}
             />
           </Box>
         ) : null}

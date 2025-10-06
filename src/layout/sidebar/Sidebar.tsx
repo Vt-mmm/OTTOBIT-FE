@@ -65,7 +65,9 @@ export function Sidebar({ openNav, onCloseNav }: SidebarProps) {
         transform: "none",
         transition: "none",
         transformStyle: "flat",
+        width: "100%",
         maxWidth: NAV_WIDTH,
+        minWidth: 0,
         "&::-webkit-scrollbar": {
           width: "6px",
           background: "transparent",
@@ -90,7 +92,7 @@ export function Sidebar({ openNav, onCloseNav }: SidebarProps) {
             component="img"
             src="/asset/OttobitLogoText.png"
             alt="Ottobit Logo"
-            sx={{ height: 28, width: "auto" }}
+            sx={{ height: { xs: 24, sm: 28 }, width: "auto", maxWidth: "100%" }}
           />
         </Box>
       ) : (

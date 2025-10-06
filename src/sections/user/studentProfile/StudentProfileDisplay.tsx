@@ -189,8 +189,10 @@ export default function StudentProfileDisplay() {
       sx={{
         display: "grid",
         gridTemplateColumns: { xs: "1fr", lg: "350px 1fr" },
-        gap: 4,
-        p: { xs: 2, md: 3 },
+        gap: { xs: 2, sm: 3, md: 4 },
+        p: { xs: 0, sm: 1, md: 2, lg: 3 },
+        maxWidth: "100%",
+        minWidth: 0,
       }}
     >
       {/* Sidebar - Profile Info */}
@@ -199,12 +201,14 @@ export default function StudentProfileDisplay() {
       </Box>
 
       {/* Mobile Profile Card (visible on small screens) */}
-      <Box sx={{ display: { xs: "block", lg: "none" }, mb: 3 }}>
+      <Box sx={{ display: { xs: "block", lg: "none" }, mb: { xs: 2, sm: 3 } }}>
         <ProfileSidebar student={student} onEdit={() => setIsEditing(true)} />
       </Box>
 
       {/* Main Content - Tabs */}
-      <Box sx={{ gridColumn: { xs: "1", lg: "2" } }}>
+      <Box
+        sx={{ gridColumn: { xs: "1", lg: "2" }, minWidth: 0, maxWidth: "100%" }}
+      >
         <ProfileContentTabs
           stats={realData}
           learningProgress={realData.learningProgress}

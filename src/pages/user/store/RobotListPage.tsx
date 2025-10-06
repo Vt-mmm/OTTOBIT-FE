@@ -9,15 +9,47 @@ export default function RobotListPage() {
     window.scrollTo(0, 0);
   }, []);
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", bgcolor: "white" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+        bgcolor: "white",
+        maxWidth: "100vw",
+        overflow: "hidden",
+      }}
+    >
       <Header />
-      <Box sx={{ flexGrow: 1, py: 6, mt: 2 }}>
-        <Container maxWidth="xl">
-          <Typography variant="h3" component="h1" sx={{ mb: 1, fontWeight: 700 }}>
+      <Box
+        sx={{
+          flexGrow: 1,
+          py: { xs: 3, sm: 4, md: 6 },
+          mt: { xs: 1, sm: 2 },
+          px: { xs: 0, sm: 2 },
+        }}
+      >
+        <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 } }}>
+          <Typography
+            variant="h3"
+            component="h1"
+            sx={{
+              mb: 1,
+              fontWeight: 700,
+              fontSize: { xs: "1.75rem", sm: "2.5rem", md: "3rem" },
+            }}
+          >
             Educational Robots
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-            Discover our collection of educational robots perfect for learning programming and robotics
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{
+              mb: { xs: 3, sm: 4 },
+              fontSize: { xs: "0.875rem", sm: "1rem" },
+            }}
+          >
+            Discover our collection of educational robots perfect for learning
+            programming and robotics
           </Typography>
           <RobotListingSection />
         </Container>

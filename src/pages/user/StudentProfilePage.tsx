@@ -17,8 +17,9 @@ const StudentProfilePage: React.FC = () => {
         sx={{
           flex: 1,
           background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
-          pt: { xs: 10, md: 12 },
-          pb: 8,
+          pt: { xs: 8, sm: 10, md: 12 },
+          pb: { xs: 4, sm: 6, md: 8 },
+          px: { xs: 2, sm: 3, md: 0 },
           position: "relative",
           overflow: "hidden",
           "&::before": {
@@ -27,16 +28,24 @@ const StudentProfilePage: React.FC = () => {
             top: 0,
             left: 0,
             right: 0,
-            height: "300px",
-            background: "linear-gradient(180deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%)",
+            height: { xs: "200px", md: "300px" },
+            background:
+              "linear-gradient(180deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%)",
             pointerEvents: "none",
           },
         }}
       >
-        <Container maxWidth="xl" sx={{ position: "relative", zIndex: 1 }}>
+        <Container
+          maxWidth="xl"
+          sx={{
+            position: "relative",
+            zIndex: 1,
+            px: { xs: 1, sm: 2, md: 3 },
+          }}
+        >
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}      
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
             <StudentProfileSection onStudentCreated={handleStudentCreated} />
@@ -48,4 +57,3 @@ const StudentProfilePage: React.FC = () => {
 };
 
 export default StudentProfilePage;
-    
