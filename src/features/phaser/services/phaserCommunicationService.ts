@@ -151,6 +151,8 @@ export class PhaserCommunicationService {
     }
 
     try {
+      // Debug: log the exact message being posted to Phaser
+
       this.iframe!.contentWindow!.postMessage(message, "*");
     } catch (error) {
       console.error("❌ [sendMessage] Error sending message:", error);

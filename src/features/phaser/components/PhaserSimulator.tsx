@@ -6,6 +6,7 @@ import {
   getStoredNavigationData,
 } from "../../../utils/studioNavigation";
 import { usePhaserContext } from "../context/PhaserContext.js";
+import { getLastProgram } from "../../socket/actionSocket.js";
 import VictoryModal from "./VictoryModal.js";
 import DefeatModal from "./DefeatModal";
 import { VictoryErrorBoundary } from "./VictoryErrorBoundary.js";
@@ -26,6 +27,10 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     connect,
     clearError,
     restartScene, // Thêm restartScene để sử dụng logic giống TopBar
+    runProgram,
+    onMessage,
+    offMessage,
+    getStatus,
     // Victory state
     victoryData,
     isVictoryModalOpen,
@@ -34,6 +39,8 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     defeatData,
     isDefeatModalOpen,
     hideDefeatModal,
+    // Challenge context
+    currentChallenge,
     // Challenge context
     currentChallengeId,
     lessonChallenges,
@@ -44,6 +51,9 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const prevVictoryOpenRef = useRef<boolean>(false);
+  const prevDefeatOpenRef = useRef<boolean>(false);
+  const suppressAutoResetRef = useRef<boolean>(false);
 
   // Handle replay using proper restart logic from PhaserContext
   const handleReplay = async () => {
@@ -61,6 +71,72 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
       }
       hideVictoryModal();
       hideDefeatModal();
+    }
+  };
+
+  // Run headless simulation for physical challenges
+  const handleSimulate = async () => {
+    try {
+      // Prevent auto-reset effect from triggering due to modal close
+      suppressAutoResetRef.current = true;
+
+      // Close result modals first to avoid later close firing restart
+      hideVictoryModal();
+      hideDefeatModal();
+
+      await restartScene();
+
+      // Wait for READY after restart to avoid race when sending RUN_PROGRAM
+      await new Promise<void>((resolve) => {
+        let resolved = false;
+        const handler = () => {
+          if (!resolved) {
+            resolved = true;
+            offMessage("READY", handler);
+            resolve();
+          }
+        };
+        // Fallback timeout
+        const to = setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            offMessage("READY", handler);
+            resolve();
+          }
+        }, 800);
+        onMessage("READY", () => {
+          clearTimeout(to);
+          handler();
+        });
+      });
+
+      // Extra guard: poll status until scene is ready
+      try {
+        const maxTries = 5;
+        for (let i = 0; i < maxTries; i++) {
+          const status: any = await getStatus().catch(() => null);
+          if (
+            status &&
+            (status.gameState === "ready" || status.programStatus === "idle")
+          ) {
+            break;
+          }
+          await new Promise((r) => setTimeout(r, 250));
+        }
+      } catch {}
+
+      // Use last built program from socket feed and run visible simulator
+      const program = getLastProgram();
+      if (program) {
+        await runProgram(program);
+      }
+    } catch (_e) {
+      // silently ignore
+    } finally {
+      // Re-enable auto-reset shortly after simulate sequence
+      setTimeout(() => {
+        suppressAutoResetRef.current = false;
+      }, 300);
     }
   };
 
@@ -132,6 +208,33 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     },
     []
   );
+
+  // Auto reset map when result modals are dismissed (physical mode only)
+  useEffect(() => {
+    const wasVictoryOpen = prevVictoryOpenRef.current;
+    const wasDefeatOpen = prevDefeatOpenRef.current;
+    const isPhysical = Number(currentChallenge?.challengeMode) === 1;
+
+    // Update refs for next tick
+    prevVictoryOpenRef.current = isVictoryModalOpen;
+    prevDefeatOpenRef.current = isDefeatModalOpen;
+
+    // Detect close event
+    const victoryJustClosed = wasVictoryOpen && !isVictoryModalOpen;
+    const defeatJustClosed = wasDefeatOpen && !isDefeatModalOpen;
+
+    if (isPhysical && (victoryJustClosed || defeatJustClosed)) {
+      // Reset the scene so the next simulate run starts clean
+      if (!suppressAutoResetRef.current) {
+        restartScene().catch(() => {});
+      }
+    }
+  }, [
+    isVictoryModalOpen,
+    isDefeatModalOpen,
+    currentChallenge?.challengeMode,
+    restartScene,
+  ]);
 
   // Handle iframe resize based on container size (debounced)
   const handleContainerResize = useCallback(
@@ -310,6 +413,8 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
           victoryData={victoryData}
           onPlayNext={handlePlayNext}
           onReplay={handleReplay}
+          showSimulateButton={Number(currentChallenge?.challengeMode) === 1}
+          onSimulate={handleSimulate}
           onGoHome={() => {
             // TODO: Implement go home logic
             hideVictoryModal();
@@ -327,6 +432,8 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
           open={isDefeatModalOpen}
           onClose={hideDefeatModal}
           defeatData={defeatData}
+          showSimulateButton={Number(currentChallenge?.challengeMode) === 1}
+          onSimulate={handleSimulate}
           onReplay={handleReplay}
           onGoHome={() => {
             // TODO: Implement go home logic

@@ -21,6 +21,7 @@ import {
   HomeOutlined,
   ErrorOutline,
   RestartAlt,
+  SmartToy,
 } from "@mui/icons-material";
 import { TransitionProps } from "@mui/material/transitions";
 import { ErrorData } from "../types/phaser";
@@ -31,6 +32,8 @@ interface DefeatModalProps {
   defeatData: ErrorData | null;
   onReplay?: () => void;
   onGoHome?: () => void;
+  showSimulateButton?: boolean;
+  onSimulate?: () => void;
 }
 
 // Transition component for the modal
@@ -81,6 +84,8 @@ export default function DefeatModal({
   defeatData,
   onReplay,
   onGoHome,
+  showSimulateButton,
+  onSimulate,
 }: DefeatModalProps) {
   if (!defeatData) return null;
 
@@ -305,6 +310,32 @@ export default function DefeatModal({
                 }}
               >
                 Trang chủ
+              </Button>
+            )}
+
+            {showSimulateButton && onSimulate && (
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<SmartToy />}
+                onClick={onSimulate}
+                sx={{
+                  py: 1.5,
+                  px: 3,
+                  borderRadius: "12px",
+                  textTransform: "none",
+                  fontWeight: 700,
+                  background:
+                    "linear-gradient(135deg, #0891b2 0%, #0ea5b3 100%)",
+                  boxShadow: "0 4px 16px rgba(8, 145, 178, 0.32)",
+                  "&:hover": {
+                    background:
+                      "linear-gradient(135deg, #0ea5b3 0%, #06b6d4 100%)",
+                    transform: "translateY(-2px)",
+                  },
+                }}
+              >
+                Chạy mô phỏng
               </Button>
             )}
           </Box>
