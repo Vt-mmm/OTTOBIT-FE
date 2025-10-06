@@ -75,9 +75,12 @@ function sendActionsToPhaser(actions: string[]) {
     source: "parent-website",
     type: "RUN_PROGRAM_HEADLESS",
     data: {
-      actions: programActions,
-      version: "1.0.0",
-      programName: "microbit_program",
+      program: {
+        version: "1.0.0",
+        programName: "user_program",
+        actions: programActions,
+        functions: [],
+      },
     },
   };
 
