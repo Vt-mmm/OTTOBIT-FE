@@ -51,11 +51,7 @@ export default function RobotManagementPage() {
           />
         );
       default:
-        return (
-          <RobotListSection
-            onViewModeChange={handleViewModeChange}
-          />
-        );
+        return <RobotListSection onViewModeChange={handleViewModeChange} />;
     }
   };
 
@@ -87,8 +83,11 @@ export default function RobotManagementPage() {
 
   return (
     <AdminLayout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ mb: 4 }}>
+      <Container
+        maxWidth="xl"
+        sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}
+      >
+        <Box sx={{ mb: { xs: 3, sm: 4 } }}>
           <Typography
             variant="h3"
             component="h1"
@@ -96,15 +95,20 @@ export default function RobotManagementPage() {
               fontWeight: 700,
               color: "text.primary",
               mb: 1,
+              fontSize: { xs: "1.75rem", sm: "2.5rem", md: "3rem" },
             }}
           >
             {getPageTitle()}
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}
+          >
             {getPageDescription()}
           </Typography>
         </Box>
-        
+
         {renderContent()}
       </Container>
     </AdminLayout>

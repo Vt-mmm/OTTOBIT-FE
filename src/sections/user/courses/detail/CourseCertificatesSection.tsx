@@ -54,7 +54,7 @@ export default function CourseCertificatesSection({
           `${ROUTES_API_ENROLLMENT.MY_ENROLLMENTS}`,
           { params: { courseId: course.id, pageSize: 1 } }
         );
-        
+
         const enrollment = enrollmentRes.data?.data?.items?.[0];
         const isCompleted = enrollment?.isCompleted || false;
         setCourseCompleted(isCompleted);
@@ -79,7 +79,15 @@ export default function CourseCertificatesSection({
 
   if (loading) {
     return (
-      <Box sx={{ bgcolor: "white", p: 3, border: "1px solid #e0e0e0", borderRadius: 1, textAlign: "center" }}>
+      <Box
+        sx={{
+          bgcolor: "white",
+          p: 3,
+          border: "1px solid #e0e0e0",
+          borderRadius: 1,
+          textAlign: "center",
+        }}
+      >
         <CircularProgress size={40} />
         <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
           Đang tải thông tin chứng chỉ...
@@ -89,8 +97,27 @@ export default function CourseCertificatesSection({
   }
 
   return (
-    <Box sx={{ bgcolor: "white", p: 3, border: "1px solid #e0e0e0", borderRadius: 1 }}>
-      <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+    <Box
+      sx={{
+        bgcolor: "white",
+        p: { xs: 2, sm: 2.5, md: 3 },
+        border: "1px solid #e0e0e0",
+        borderRadius: { xs: 0, sm: 1 },
+        maxWidth: "100%",
+        minWidth: 0,
+        overflow: "hidden",
+      }}
+    >
+      <Typography
+        variant="h5"
+        component="h2"
+        gutterBottom
+        sx={{
+          fontWeight: 600,
+          mb: 3,
+          fontSize: { xs: "1.25rem", sm: "1.5rem" },
+        }}
+      >
         Chứng chỉ nhận được
       </Typography>
 
@@ -99,33 +126,41 @@ export default function CourseCertificatesSection({
           {error}
         </Alert>
       )}
-      
+
       {/* Certificate List */}
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {/* Main Course Completion Certificate */}
-        <Box 
-          sx={{ 
-            display: "flex", 
-            alignItems: "center", 
-            p: 3, 
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: { xs: "flex-start", sm: "center" },
+            flexDirection: { xs: "column", sm: "row" },
+            p: { xs: 2, sm: 2.5, md: 3 },
             border: courseCompleted ? "2px solid #4caf50" : "1px solid #e0e0e0",
             borderRadius: 1,
             bgcolor: courseCompleted ? "#f1f8f4" : "white",
             position: "relative",
-            opacity: !isUserEnrolled ? 0.7 : 1
+            opacity: !isUserEnrolled ? 0.7 : 1,
+            gap: { xs: 2, sm: 0 },
           }}
         >
-          <Box sx={{ mr: 3, flexShrink: 0 }}>
+          <Box
+            sx={{
+              mr: { xs: 0, sm: 3 },
+              flexShrink: 0,
+              alignSelf: { xs: "center", sm: "flex-start" },
+            }}
+          >
             <Box
               sx={{
-                width: 60,
-                height: 60,
+                width: { xs: 56, sm: 60 },
+                height: { xs: 56, sm: 60 },
                 borderRadius: "50%",
                 bgcolor: "#f0f7ff",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                border: "2px solid #4caf50"
+                border: "2px solid #4caf50",
               }}
             >
               <Box
@@ -133,20 +168,36 @@ export default function CourseCertificatesSection({
                 src="/asset/LogoOttobit.png"
                 alt="Certificate"
                 sx={{
-                  width: 36,
-                  height: 36,
-                  objectFit: "contain"
+                  width: { xs: 32, sm: 36 },
+                  height: { xs: 32, sm: 36 },
+                  objectFit: "contain",
                 }}
               />
             </Box>
           </Box>
-          
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: "#333" }}>
+
+          <Box sx={{ flex: 1, minWidth: 0, width: { xs: "100%", sm: "auto" } }}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{
+                fontWeight: 600,
+                color: "#333",
+                fontSize: { xs: "1rem", sm: "1.25rem" },
+              }}
+            >
               Chứng chỉ hoàn thành - {course.title}
             </Typography>
-            
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
+
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: { xs: 1, sm: 2 },
+                mb: 1,
+                flexWrap: "wrap",
+              }}
+            >
               <Typography variant="body2" color="text.secondary">
                 Khóa học 1
               </Typography>
@@ -160,70 +211,78 @@ export default function CourseCertificatesSection({
                 •
               </Typography>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <Rating value={courseRating} readOnly size="small" precision={0.1} />
+                <Rating
+                  value={courseRating}
+                  readOnly
+                  size="small"
+                  precision={0.1}
+                />
                 <Typography variant="body2" color="text.secondary">
                   {courseRating} ({totalRatings} đánh giá)
                 </Typography>
               </Box>
             </Box>
-            
-            <Button 
-              variant="text" 
-              size="small" 
-              sx={{ 
-                color: "#1976d2", 
-                textTransform: "none", 
-                p: 0, 
+
+            <Button
+              variant="text"
+              size="small"
+              sx={{
+                color: "#1976d2",
+                textTransform: "none",
+                p: 0,
                 minWidth: "auto",
-                "&:hover": { bgcolor: "transparent", textDecoration: "underline" }
+                "&:hover": {
+                  bgcolor: "transparent",
+                  textDecoration: "underline",
+                },
               }}
             >
               Xem chứng chỉ
             </Button>
           </Box>
-          
+
           <Box sx={{ ml: 2 }}>
             {courseCompleted ? (
-              <Button 
+              <Button
                 variant="contained"
                 size="small"
                 color="success"
                 startIcon={<CertificateIcon />}
                 sx={{
                   textTransform: "none",
-                  minWidth: 120
+                  minWidth: 120,
                 }}
               >
                 Đã hoàn thành
               </Button>
             ) : isUserEnrolled ? (
-              <Button 
+              <Button
                 variant="outlined"
                 size="small"
                 color="primary"
                 sx={{
                   textTransform: "none",
-                  minWidth: 100
+                  minWidth: 100,
                 }}
               >
                 Đang học
               </Button>
             ) : (
-              <Button 
+              <Button
                 variant="outlined"
                 size="small"
                 onClick={onEnrollCourse}
                 disabled={isEnrolling}
                 sx={{
                   textTransform: "none",
-                  minWidth: 100
+                  minWidth: 100,
                 }}
               >
                 Bắt đầu
               </Button>
             )}
           </Box>
-          
+
           {!isUserEnrolled && (
             <Box
               sx={{
@@ -236,12 +295,18 @@ export default function CourseCertificatesSection({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                borderRadius: 1
+                borderRadius: 1,
               }}
             >
               <Box sx={{ textAlign: "center" }}>
-                <LockIcon sx={{ fontSize: 24, color: "text.secondary", mb: 1 }} />
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+                <LockIcon
+                  sx={{ fontSize: 24, color: "text.secondary", mb: 1 }}
+                />
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontWeight: 600 }}
+                >
                   Tham gia để mở khóa
                 </Typography>
               </Box>
@@ -253,7 +318,8 @@ export default function CourseCertificatesSection({
         {!isUserEnrolled && (
           <Alert severity="info" sx={{ mt: 2 }}>
             <Typography variant="body2">
-              <strong>Ghi chú:</strong> Bạn cần tham gia khóa học và hoàn thành tất cả các bài học để nhận chứng chỉ.
+              <strong>Ghi chú:</strong> Bạn cần tham gia khóa học và hoàn thành
+              tất cả các bài học để nhận chứng chỉ.
             </Typography>
           </Alert>
         )}
@@ -262,7 +328,8 @@ export default function CourseCertificatesSection({
         {isUserEnrolled && !courseCompleted && (
           <Alert severity="warning" sx={{ mt: 2 }}>
             <Typography variant="body2">
-              <strong>Tiến độ:</strong> Hoàn thành tất cả {lessons.length} bài học để nhận chứng chỉ hoàn thành khóa học.
+              <strong>Tiến độ:</strong> Hoàn thành tất cả {lessons.length} bài
+              học để nhận chứng chỉ hoàn thành khóa học.
             </Typography>
           </Alert>
         )}
@@ -271,11 +338,13 @@ export default function CourseCertificatesSection({
         {courseCompleted && (
           <Alert severity="success" sx={{ mt: 2 }}>
             <Typography variant="body2">
-              <strong>Chúc mừng!</strong> Bạn đã hoàn thành khóa học. Chứng chỉ của bạn có thể xem trong tab "Chứng chỉ" trong trang hồ sơ học viên.
+              <strong>Chúc mừng!</strong> Bạn đã hoàn thành khóa học. Chứng chỉ
+              của bạn có thể xem trong tab "Chứng chỉ" trong trang hồ sơ học
+              viên.
             </Typography>
           </Alert>
         )}
-        
+
         {/* Remove hardcoded certificates - will be added back when API is ready */}
         {/* Skills Specialization Certificate */}
         {/* <Box 
@@ -395,7 +464,7 @@ export default function CourseCertificatesSection({
             </Box>
           )}
         </Box> */}
-        
+
         {/* Professional Certificate - Commented out until API ready */}
         {/* <Box
           sx={{ 

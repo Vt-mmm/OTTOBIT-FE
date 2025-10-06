@@ -26,8 +26,7 @@ export default function ComponentManagementPage() {
     setSelectedComponent(null);
   };
 
-
-const renderContent = () => {
+  const renderContent = () => {
     switch (viewMode) {
       case "create":
         return (
@@ -95,8 +94,11 @@ const renderContent = () => {
 
   return (
     <AdminLayout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ mb: 4 }}>
+      <Container
+        maxWidth="xl"
+        sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}
+      >
+        <Box sx={{ mb: { xs: 3, sm: 4 } }}>
           <Typography
             variant="h3"
             component="h1"
@@ -104,15 +106,20 @@ const renderContent = () => {
               fontWeight: 700,
               color: "text.primary",
               mb: 1,
+              fontSize: { xs: "1.5rem", sm: "2.125rem" },
             }}
           >
             {getPageTitle()}
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}
+          >
             {getPageDescription()}
           </Typography>
         </Box>
-        
+
         {renderContent()}
       </Container>
     </AdminLayout>

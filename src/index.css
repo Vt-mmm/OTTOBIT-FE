@@ -4,9 +4,15 @@
   font-weight: 400;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 html {
   /* Reserve space for the vertical scrollbar to avoid layout shift when it appears/disappears */
   scrollbar-gutter: stable both-edges;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 /* Used to lock page scroll on Studio route to prevent scrollbar flicker */
@@ -30,7 +36,14 @@ body.no-scroll #root {
 body {
   margin: 0;
   min-width: 320px;
+  max-width: 100vw;
   min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#root {
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -159,4 +172,3 @@ img {
   outline: none;
   box-shadow: none;
 }
-

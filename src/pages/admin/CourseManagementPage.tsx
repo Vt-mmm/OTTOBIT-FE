@@ -10,7 +10,9 @@ type ViewMode = "list" | "create" | "edit" | "details";
 
 export default function CourseManagementPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
-  const [selectedCourse, setSelectedCourse] = useState<CourseResult | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<CourseResult | null>(
+    null
+  );
 
   const handleViewModeChange = (mode: ViewMode, course?: CourseResult) => {
     setViewMode(mode);
@@ -32,7 +34,7 @@ export default function CourseManagementPage() {
             onSuccess={handleBackToList}
           />
         );
-      
+
       case "edit":
         return (
           <CourseFormSection
@@ -42,7 +44,7 @@ export default function CourseManagementPage() {
             onSuccess={handleBackToList}
           />
         );
-      
+
       case "details":
         return (
           <CourseDetailsSection
@@ -51,7 +53,7 @@ export default function CourseManagementPage() {
             onEdit={(course) => handleViewModeChange("edit", course)}
           />
         );
-      
+
       default:
         return (
           <CourseListSection
@@ -65,8 +67,11 @@ export default function CourseManagementPage() {
 
   return (
     <AdminLayout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ mb: 4 }}>
+      <Container
+        maxWidth="xl"
+        sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}
+      >
+        <Box sx={{ mb: { xs: 3, sm: 4 } }}>
           <Typography
             variant="h4"
             component="h1"
@@ -74,21 +79,25 @@ export default function CourseManagementPage() {
               fontWeight: 700,
               color: "#1a1a1a",
               mb: 1,
+              fontSize: { xs: "1.5rem", sm: "2.125rem" },
             }}
           >
             Quản lý Khóa học
           </Typography>
-          
+
           <Typography
             variant="body1"
             sx={{
               color: "#666",
+              fontSize: { xs: "0.875rem", sm: "1rem" },
             }}
           >
             {viewMode === "list" && "Danh sách tất cả khóa học trong hệ thống"}
             {viewMode === "create" && "Tạo khóa học mới"}
-            {viewMode === "edit" && `Chỉnh sửa khóa học: ${selectedCourse?.title}`}
-            {viewMode === "details" && `Chi tiết khóa học: ${selectedCourse?.title}`}
+            {viewMode === "edit" &&
+              `Chỉnh sửa khóa học: ${selectedCourse?.title}`}
+            {viewMode === "details" &&
+              `Chi tiết khóa học: ${selectedCourse?.title}`}
           </Typography>
         </Box>
 

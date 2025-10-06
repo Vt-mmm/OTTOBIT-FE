@@ -11,6 +11,7 @@ import {
   Chip,
   useTheme,
   alpha,
+  IconButton,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "store/config";
@@ -18,13 +19,17 @@ import { logout } from "store/auth/authSlice";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import MenuIcon from "@mui/icons-material/Menu";
+import useResponsive from "hooks/useResponsive";
 
 interface AdminHeaderProps {
   title?: string;
+  onOpenNav?: () => void;
 }
 
-const AdminHeader: React.FC<AdminHeaderProps> = ({ title }) => {
+const AdminHeader: React.FC<AdminHeaderProps> = ({ title, onOpenNav }) => {
   const theme = useTheme();
+  const isDesktop = useResponsive("up", "lg");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -78,7 +83,18 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ title }) => {
         zIndex: theme.zIndex.drawer + 1,
       }}
     >
-      <Toolbar sx={{ justifyContent: "space-between" }}>
+      <Toolbar sx={{ justifyContent: "space-between", px: { xs: 2, sm: 3 } }}>
+        {/* Mobile menu button */}
+        {!isDesktop && (
+          <IconButton
+            onClick={onOpenNav}
+            sx={{ mr: 1, color: "text.primary" }}
+            aria-label="open menu"
+          >
+            <MenuIcon />
+          </IconButton>
+        )}
+
         {/* Title section - only on desktop */}
         <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}>
           {title && (

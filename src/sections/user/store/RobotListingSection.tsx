@@ -116,27 +116,38 @@ export default function RobotListingSection() {
     <Box
       sx={{
         display: "flex",
-        gap: 3,
+        flexDirection: { xs: "column", lg: "row" },
+        gap: { xs: 2, sm: 3 },
         bgcolor: "#f5f5f5",
         minHeight: "100vh",
-        p: 3,
+        p: { xs: 0, sm: 2, md: 3 },
+        maxWidth: "100%",
+        overflow: "hidden",
       }}
     >
-      {/* Sidebar Filter */}
+      {/* Sidebar Filter - Hidden on mobile */}
       <Box
         sx={{
-          width: 280,
+          display: { xs: "none", lg: "block" },
+          width: { lg: 280, xl: 300 },
           flexShrink: 0,
           bgcolor: "white",
           borderRadius: 2,
-          p: 3,
+          p: { lg: 2.5, xl: 3 },
           height: "fit-content",
           position: "sticky",
           top: 20,
           boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
         }}
       >
-        <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
+        <Typography
+          variant="h6"
+          sx={{
+            mb: 3,
+            fontWeight: 600,
+            fontSize: { lg: "1.125rem", xl: "1.25rem" },
+          }}
+        >
           Category
         </Typography>
 
@@ -196,7 +207,9 @@ export default function RobotListingSection() {
                 },
               }}
             />
-            <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}
+            >
               <Typography variant="caption" color="text.secondary">
                 {formatVNDNumber(priceRange[0])} đ
               </Typography>
@@ -295,7 +308,9 @@ export default function RobotListingSection() {
                 },
               }}
             />
-            <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}
+            >
               <Typography variant="caption" color="text.secondary">
                 {ageRange[0]} tuổi
               </Typography>
@@ -308,17 +323,27 @@ export default function RobotListingSection() {
       </Box>
 
       {/* Main Content */}
-      <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <Box
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minWidth: 0,
+          maxWidth: "100%",
+        }}
+      >
         {/* Top Bar with Results Info */}
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
-            mb: 3,
+            alignItems: { xs: "flex-start", sm: "center" },
+            flexDirection: { xs: "column", sm: "row" },
+            gap: { xs: 1.5, sm: 0 },
+            mb: { xs: 2, sm: 3 },
             bgcolor: "white",
-            p: 2,
-            borderRadius: 2,
+            p: { xs: 2, sm: 2, md: 2.5 },
+            borderRadius: { xs: 0, sm: 2 },
             boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
           }}
         >
@@ -337,7 +362,7 @@ export default function RobotListingSection() {
               </Typography>
             )}
           </Box>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
+          <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 120 } }}>
             <InputLabel>Per Page</InputLabel>
             <Select
               value={pageSize}
@@ -384,7 +409,11 @@ export default function RobotListingSection() {
             >
               <Box sx={{ textAlign: "center" }}>
                 <CircularProgress size={40} />
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mt: 2 }}
+                >
                   Loading...
                 </Typography>
               </Box>
@@ -417,10 +446,11 @@ export default function RobotListingSection() {
                 gridTemplateColumns: {
                   xs: "1fr",
                   sm: "repeat(2, 1fr)",
-                  md: "repeat(3, 1fr)",
-                  lg: "repeat(4, 1fr)",
+                  md: "repeat(2, 1fr)",
+                  lg: "repeat(3, 1fr)",
+                  xl: "repeat(4, 1fr)",
                 },
-                gap: 3,
+                gap: { xs: 2, sm: 2.5, md: 3 },
                 opacity: robots.isLoading && robots.data ? 0.6 : 1,
                 transition: "opacity 0.2s ease",
               }}
@@ -448,10 +478,10 @@ export default function RobotListingSection() {
             sx={{
               display: "flex",
               justifyContent: "center",
-              mt: 4,
+              mt: { xs: 3, sm: 4 },
               bgcolor: "white",
-              p: 2,
-              borderRadius: 2,
+              p: { xs: 1.5, sm: 2 },
+              borderRadius: { xs: 0, sm: 2 },
               boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
             }}
           >
@@ -460,9 +490,10 @@ export default function RobotListingSection() {
               page={pageNumber}
               onChange={(_, value) => setPageNumber(value)}
               color="primary"
-              size="large"
-              showFirstButton
-              showLastButton
+              size={{ xs: "medium", sm: "large" } as any}
+              showFirstButton={{ xs: false, sm: true } as any}
+              showLastButton={{ xs: false, sm: true } as any}
+              siblingCount={{ xs: 0, sm: 1 } as any}
             />
           </Box>
         )}

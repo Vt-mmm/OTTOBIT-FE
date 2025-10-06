@@ -23,7 +23,9 @@ interface MyRobotsTabProps {
   loading?: boolean;
 }
 
-export default function MyRobotsTab({ loading: externalLoading }: MyRobotsTabProps) {
+export default function MyRobotsTab({
+  loading: externalLoading,
+}: MyRobotsTabProps) {
   const dispatch = useAppDispatch();
   const { robots } = useAppSelector((state) => state.robot);
   const [activateDialogOpen, setActivateDialogOpen] = useState(false);
@@ -51,9 +53,27 @@ export default function MyRobotsTab({ loading: externalLoading }: MyRobotsTabPro
   if (isLoading && myRobots.length === 0) {
     return (
       <Box>
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-          <Skeleton variant="text" width={200} height={40} />
-          <Skeleton variant="rectangular" width={180} height={36} />
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: { xs: 2, sm: 0 },
+            mb: 3,
+          }}
+        >
+          <Skeleton
+            variant="text"
+            width={200}
+            height={40}
+            sx={{ width: { xs: "100%", sm: 200 } }}
+          />
+          <Skeleton
+            variant="rectangular"
+            width={180}
+            height={36}
+            sx={{ width: { xs: "100%", sm: 180 }, height: { xs: 48, sm: 36 } }}
+          />
         </Box>
         <Box
           sx={{
@@ -86,12 +106,19 @@ export default function MyRobotsTab({ loading: externalLoading }: MyRobotsTabPro
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: { xs: "flex-start", sm: "center" },
+          flexDirection: { xs: "column", sm: "row" },
+          gap: { xs: 2, sm: 0 },
           mb: 3,
         }}
       >
-        <Box>
-          <Typography variant="h5" fontWeight={600} gutterBottom>
+        <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
+          <Typography
+            variant="h5"
+            fontWeight={600}
+            gutterBottom
+            sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
+          >
             Robots của tôi
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -103,6 +130,13 @@ export default function MyRobotsTab({ loading: externalLoading }: MyRobotsTabPro
           startIcon={<RobotIcon />}
           onClick={() => setActivateDialogOpen(true)}
           size="medium"
+          fullWidth={{ xs: true, sm: false } as any}
+          sx={{
+            minHeight: { xs: 48, sm: 40 },
+            fontSize: { xs: "0.9375rem", sm: "0.875rem" },
+            whiteSpace: "nowrap",
+            width: { xs: "100%", sm: "auto" },
+          }}
         >
           Kích hoạt Robot
         </Button>
@@ -134,6 +168,10 @@ export default function MyRobotsTab({ loading: externalLoading }: MyRobotsTabPro
           <Button
             variant="contained"
             onClick={() => setActivateDialogOpen(true)}
+            sx={{
+              minHeight: { xs: 48, sm: 40 },
+              px: { xs: 4, sm: 3 },
+            }}
           >
             Kích hoạt Robot
           </Button>
@@ -158,8 +196,9 @@ export default function MyRobotsTab({ loading: externalLoading }: MyRobotsTabPro
                 flexDirection: "column",
                 height: "100%",
                 transition: "all 0.3s ease",
+                borderRadius: { xs: 2, sm: 3 },
                 "&:hover": {
-                  transform: "translateY(-4px)",
+                  transform: { xs: "none", sm: "translateY(-4px)" },
                   boxShadow: 4,
                 },
               }}
@@ -170,11 +209,18 @@ export default function MyRobotsTab({ loading: externalLoading }: MyRobotsTabPro
                   height="200"
                   image={robot.imageUrl}
                   alt={robot.name}
-                  sx={{ objectFit: "cover" }}
+                  sx={{
+                    objectFit: "cover",
+                    height: { xs: 160, sm: 200 },
+                  }}
                 />
               )}
-              <CardContent sx={{ flexGrow: 1 }}>
-                <Typography variant="h6" gutterBottom>
+              <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 2.5 } }}>
+                <Typography
+                  variant="h6"
+                  gutterBottom
+                  sx={{ fontSize: { xs: "1.125rem", sm: "1.25rem" } }}
+                >
                   {robot.name || "Robot"}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" gutterBottom>

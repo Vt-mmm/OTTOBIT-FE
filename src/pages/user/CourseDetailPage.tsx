@@ -9,9 +9,18 @@ export default function CourseDetailPage() {
 
   if (!id) {
     return (
-      <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+      >
         <Header />
-        <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Box
+          sx={{
+            flexGrow: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           <Box sx={{ textAlign: "center" }}>
             <h1>Course Not Found</h1>
             <p>Course ID is missing</p>
@@ -23,9 +32,19 @@ export default function CourseDetailPage() {
   }
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+        maxWidth: "100vw",
+        overflow: "hidden",
+      }}
+    >
       <Header />
-      <Box sx={{ flexGrow: 1, py: 5 }}>
+      <Box
+        sx={{ flexGrow: 1, py: { xs: 2, sm: 3, md: 5 }, px: { xs: 0, sm: 2 } }}
+      >
         <CourseDetailSection courseId={id} />
       </Box>
       <Footer />

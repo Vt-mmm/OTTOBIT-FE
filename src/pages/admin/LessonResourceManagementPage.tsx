@@ -56,24 +56,40 @@ export default function LessonResourceManagementPage() {
   }, [selectedId]);
   return (
     <AdminLayout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ mb: 2 }}>
+      <Container
+        maxWidth="xl"
+        sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}
+      >
+        <Box sx={{ mb: { xs: 2, sm: 3 } }}>
           <Box
             sx={{
               display: "flex",
-              alignItems: "center",
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: { xs: "flex-start", sm: "center" },
               justifyContent: "space-between",
+              gap: { xs: 1, sm: 0 },
             }}
           >
             <Box>
               <Typography
                 variant="h4"
                 component="h1"
-                sx={{ fontWeight: 700, color: "#1a1a1a" }}
+                sx={{
+                  fontWeight: 700,
+                  color: "#1a1a1a",
+                  fontSize: { xs: "1.5rem", sm: "2.125rem" },
+                }}
               >
                 Quản lý Tài nguyên Học tập
               </Typography>
-              <Typography variant="body1" sx={{ color: "#666", mt: 1 }}>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: "#666",
+                  mt: 1,
+                  fontSize: { xs: "0.875rem", sm: "1rem" },
+                }}
+              >
                 {headerSubtitle}
               </Typography>
             </Box>
@@ -85,7 +101,11 @@ export default function LessonResourceManagementPage() {
                 setSelectedId(null);
                 setMode("list");
               }}
-              sx={{ mt: 1, alignSelf: "flex-start" }}
+              sx={{
+                mt: { xs: 1.5, sm: 1 },
+                alignSelf: "flex-start",
+                minHeight: { xs: 44, sm: 36 },
+              }}
               variant="text"
               color="inherit"
             >
