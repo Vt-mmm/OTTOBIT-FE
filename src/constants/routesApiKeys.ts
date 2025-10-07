@@ -25,6 +25,9 @@ const ROOTS_CERTIFICATE = "/api/v1/certificates";
 const ROOTS_CERTIFICATE_TEMPLATE = "/api/v1/certificate-templates";
 const ROOTS_CART = "/api/v1/cart";
 const ROOTS_CART_ITEM = "/api/v1/cart/items";
+const ROOTS_ORDER = "/api/v1/orders";
+const ROOTS_PAYMENT_TRANSACTION = "/api/v1/payment-transactions";
+const ROOTS_PAYOS = "/api/v1/payos";
 
 export const ROUTES_API_AUTH = {
   // Authentication endpoints
@@ -302,4 +305,34 @@ export const ROUTES_API_CART_ITEM = {
   VALIDATE_ITEM: path(ROOTS_CART_ITEM, `/validate`), // POST /api/v1/cart/items/validate (User)
   CHECK_EXISTS: (courseId: string) =>
     path(ROOTS_CART_ITEM, `/exists/${courseId}`), // GET /api/v1/cart/items/exists/{courseId} (User)
+};
+
+// Order endpoints
+export const ROUTES_API_ORDER = {
+  // User endpoints
+  CREATE_FROM_CART: ROOTS_ORDER, // POST /api/v1/orders (User)
+  GET_ORDERS: ROOTS_ORDER, // GET /api/v1/orders (User - paginated)
+  GET_BY_ID: (orderId: string) => path(ROOTS_ORDER, `/${orderId}`), // GET /api/v1/orders/{orderId} (User)
+  CANCEL: (orderId: string) => path(ROOTS_ORDER, `/${orderId}/cancel`), // PUT /api/v1/orders/{orderId}/cancel (User)
+
+  // Admin endpoints
+  GET_ORDERS_ADMIN: path(ROOTS_ORDER, `/admin`), // GET /api/v1/orders/admin (Admin - paginated)
+  GET_BY_ID_ADMIN: (orderId: string) => path(ROOTS_ORDER, `/admin/${orderId}`), // GET /api/v1/orders/admin/{orderId} (Admin)
+  UPDATE_STATUS: (orderId: string) => path(ROOTS_ORDER, `/${orderId}/status`), // PUT /api/v1/orders/{orderId}/status (Admin)
+};
+
+// Payment Transaction endpoints
+export const ROUTES_API_PAYMENT = {
+  // User endpoints
+  GET_HISTORY: ROOTS_PAYMENT_TRANSACTION, // GET /api/v1/payment-transactions (User - paginated)
+  GET_BY_ORDER_ID: (orderId: string) =>
+    path(ROOTS_PAYMENT_TRANSACTION, `/${orderId}`), // GET /api/v1/payment-transactions/{orderId} (User)
+  CANCEL_PAYMENT: (orderId: string) =>
+    path(ROOTS_PAYMENT_TRANSACTION, `/${orderId}/cancel`), // POST /api/v1/payment-transactions/{orderId}/cancel (User)
+};
+
+// PayOS endpoints
+export const ROUTES_API_PAYOS = {
+  INITIATE: path(ROOTS_PAYOS, `/initiate`), // POST /api/v1/payos/initiate (User)
+  WEBHOOK: path(ROOTS_PAYOS, `/webhook`), // POST /api/v1/payos/webhook (Public - for PayOS callbacks)
 };

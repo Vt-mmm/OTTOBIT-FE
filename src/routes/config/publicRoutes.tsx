@@ -1,7 +1,9 @@
 import { Route } from "common/@types";
 import HomePage from "pages/user/Homepage";
+import PaymentReturnPage from "pages/user/PaymentReturnPage";
+import PaymentCancelPage from "pages/user/PaymentCancelPage";
 import { Page403, Page404, Page500 } from "pages/error";
-import { PATH_ERROR, PATH_PUBLIC } from "routes/paths";
+import { PATH_ERROR, PATH_PUBLIC, PATH_AUTH } from "routes/paths";
 
 export const publicRoutes: Route[] = [
   {
@@ -14,6 +16,18 @@ export const publicRoutes: Route[] = [
   {
     path: PATH_PUBLIC.homepage,
     component: <HomePage />,
+    index: false,
+  },
+  // Payment callback routes - accessible without authentication
+  // URLs match Backend: /auth/return-url and /auth/cancel-url
+  {
+    path: PATH_AUTH.returnUrl,
+    component: <PaymentReturnPage />,
+    index: false,
+  },
+  {
+    path: PATH_AUTH.cancelUrl,
+    component: <PaymentCancelPage />,
     index: false,
   },
 ];

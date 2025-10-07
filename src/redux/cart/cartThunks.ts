@@ -188,6 +188,7 @@ export const getCartSummaryThunk = createAsyncThunk<
 /**
  * Validate cart before checkout
  * POST /api/v1/cart/validate
+ * Note: Backend returns Result.Ok with message only (no data object)
  */
 export const validateCartThunk = createAsyncThunk<
   ValidationResult,
@@ -196,24 +197,26 @@ export const validateCartThunk = createAsyncThunk<
 >("cart/validateCart", async (_, { rejectWithValue }) => {
   try {
     const response = await callApiWithRetry(() =>
-      axiosClient.post<ApiResponse<ValidationResult>>(
-        ROUTES_API_CART.VALIDATE_CART
-      )
+      axiosClient.post<ApiResponse<null>>(ROUTES_API_CART.VALIDATE_CART)
     );
 
+    // Backend returns success with message only, no data
+    // If we reach here without error, validation passed
     if (response.data.errors || response.data.errorCode) {
-      const errorMessage = extractApiErrorMessage(
-        { response: { data: response.data } },
-        "Failed to validate cart"
-      );
-      throw new Error(errorMessage);
+      return {
+        isValid: false,
+        errors: response.data.errors || [response.data.message],
+        message: response.data.message,
+      };
     }
 
-    if (!response.data.data) {
-      throw new Error("No validation result received");
-    }
-
-    return response.data.data;
+    // Validation successful
+    return {
+      isValid: true,
+      errors: undefined,
+      warnings: undefined,
+      message: response.data.message || "Cart validation successful",
+    };
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,

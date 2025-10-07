@@ -19,6 +19,8 @@ export const PATH_AUTH = {
   verifyEmail: path(ROOTS_AUTH, "/verify-email"),
   confirmEmail: path(ROOTS_AUTH, "/confirm-email"),
   resendEmailConfirmation: path(ROOTS_AUTH, "/resend-email-confirmation"),
+  returnUrl: path(ROOTS_AUTH, "/return-url"),
+  cancelUrl: path(ROOTS_AUTH, "/cancel-url"),
 };
 export const PATH_PUBLIC = {
   homepage: "/", // Đường dẫn gốc cho người dùng không cần đăng nhập
@@ -44,6 +46,7 @@ export const PATH_USER = {
   lessonDetail: path(ROOTS_USER, "/lessons/:id"),
   // Shopping cart
   cart: path(ROOTS_USER, "/cart"),
+  checkout: path(ROOTS_USER, "/checkout"),
   // User management pages - myCourses, myRobots, myCertificates moved to Student Profile tabs
   challenges: path(ROOTS_USER, "/challenges"),
   challengeDetail: path(ROOTS_USER, "/challenges/:id"),

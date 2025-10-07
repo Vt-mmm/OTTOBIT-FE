@@ -123,3 +123,16 @@ export interface ActionPayloadErrorData {
   }[];
   StatusCode: number;
 }
+
+/**
+ * Generic paginated response
+ */
+export interface Paginate<T> {
+  items: T[];
+  page: number;
+  size: number;
+  total: number;
+  totalPages: number;
+  hasNextPage?: boolean;
+  hasPreviousPage?: boolean;
+}
