@@ -8,6 +8,7 @@ import CourseDetailPage from "pages/user/CourseDetailPage";
 import LessonDetailPage from "pages/user/LessonDetailPage";
 import ChallengeDetailPage from "pages/user/ChallengeDetailPage";
 import CartPage from "pages/user/CartPage";
+import CheckoutPage from "pages/user/CheckoutPage";
 // import MyCoursesPage from "pages/user/MyCoursesPage"; // Moved to Student Profile tabs
 // import MyCertificatesPage from "pages/user/MyCertificatesPage"; // Moved to Student Profile tabs
 
@@ -35,6 +36,11 @@ export const userRoutes: Route[] = [
   {
     path: PATH_USER.cart,
     component: <CartPage />,
+    index: false,
+  },
+  {
+    path: PATH_USER.checkout,
+    component: <CheckoutPage />,
     index: false,
   },
   // NOTE: myCourses, myCertificates and myRobots are now part of Student Profile tabs

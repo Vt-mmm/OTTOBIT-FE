@@ -2,7 +2,7 @@ import { Role } from "common/enums";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAppSelector } from "store/config";
 import { getAccessToken } from "utils";
-import { PATH_USER, PATH_PUBLIC } from "routes/paths";
+import { PATH_USER, PATH_PUBLIC, PATH_AUTH } from "routes/paths";
 
 export default function PublicRouter() {
   const accessToken = getAccessToken();
@@ -13,6 +13,9 @@ export default function PublicRouter() {
   const alwaysPublicPaths = [
     // Video Call routes - must be accessible by both authenticated and non-authenticated users
     PATH_PUBLIC.homepage,
+    // Payment callback routes - must be accessible after PayOS redirect
+    PATH_AUTH.returnUrl,
+    PATH_AUTH.cancelUrl,
   ];
 
   // Check if current path is in the always public paths list or starts with these paths

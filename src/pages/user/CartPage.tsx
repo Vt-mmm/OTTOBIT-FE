@@ -6,6 +6,8 @@ import { getCartThunk, validateCartThunk } from "store/cart/cartThunks";
 import Header from "layout/components/header/Header";
 import Footer from "layout/components/footer/Footer";
 import { CartItemsList, CartSummaryCard, DiscountSection } from "sections/cart";
+import { PATH_USER } from "routes/paths";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 
 export default function CartPage() {
   const navigate = useNavigate();
@@ -25,7 +27,7 @@ export default function CartPage() {
 
       if (result.isValid) {
         // Navigate to checkout page
-        navigate("/checkout");
+        navigate(PATH_USER.checkout);
       } else {
         setShowValidationErrors(true);
       }
@@ -36,7 +38,7 @@ export default function CartPage() {
   };
 
   const handleContinueShopping = () => {
-    navigate("/user/courses");
+    navigate(PATH_USER.courses);
   };
 
   const cartData = cart.data;
@@ -46,13 +48,29 @@ export default function CartPage() {
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <Header />
 
-      <Box sx={{ flexGrow: 1, backgroundColor: "#f5f5f5", py: 4 }}>
+      <Box
+        sx={{
+          flexGrow: 1,
+          bgcolor: "#f5f5f5",
+          pt: 12,
+          pb: 8,
+        }}
+      >
         <Container maxWidth="lg">
           {/* Page Title */}
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom>
-              Giỏ Hàng Của Bạn
+          <Box sx={{ mb: 5 }}>
+            <Typography
+              variant="h3"
+              fontWeight={700}
+              sx={{ mb: 1, color: "#1a1a1a" }}
+            >
+              Giỏ Hàng
             </Typography>
+            {!isEmpty && (
+              <Typography variant="body1" color="text.secondary">
+                {cartData?.itemsCount} khóa học đang chờ bạn
+              </Typography>
+            )}
           </Box>
 
           {/* Validation Errors */}
@@ -61,7 +79,10 @@ export default function CartPage() {
             !validation.cartValidation.isValid && (
               <Alert
                 severity="error"
-                sx={{ mb: 3 }}
+                sx={{
+                  mb: 3,
+                  borderRadius: 2,
+                }}
                 onClose={() => setShowValidationErrors(false)}
               >
                 <Typography variant="body2" fontWeight={600} gutterBottom>
@@ -80,23 +101,59 @@ export default function CartPage() {
             <Box
               sx={{
                 textAlign: "center",
-                py: 8,
-                backgroundColor: "white",
+                py: 10,
+                px: 4,
+                background: "white",
                 borderRadius: 2,
-                boxShadow: 1,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               }}
             >
-              <Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
-                Giỏ hàng của bạn đang trống
+              <Box
+                sx={{
+                  width: 100,
+                  height: 100,
+                  margin: "0 auto 24px",
+                  borderRadius: "50%",
+                  bgcolor: "#f0f0f0",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <ShoppingCartIcon sx={{ fontSize: 48, color: "#9e9e9e" }} />
+              </Box>
+              <Typography
+                variant="h5"
+                fontWeight={600}
+                gutterBottom
+                sx={{ mb: 2 }}
+              >
+                Giỏ hàng trống
               </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-                Hãy khám phá các khóa học thú vị và thêm vào giỏ hàng!
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                sx={{ mb: 4, maxWidth: 400, mx: "auto" }}
+              >
+                Hãy khám phá các khóa học STEM thú vị và thêm vào giỏ hàng để
+                bắt đầu hành trình học tập!
               </Typography>
               <Button
                 variant="contained"
                 size="large"
                 onClick={handleContinueShopping}
-                sx={{ px: 4 }}
+                sx={{
+                  px: 4,
+                  py: 1.5,
+                  fontSize: "1rem",
+                  fontWeight: 600,
+                  borderRadius: 2,
+                  bgcolor: "#43A047",
+                  textTransform: "none",
+                  "&:hover": {
+                    bgcolor: "#388E3C",
+                  },
+                }}
               >
                 Khám Phá Khóa Học
               </Button>

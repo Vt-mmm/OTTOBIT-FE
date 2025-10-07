@@ -110,6 +110,10 @@ export default function CartSummaryCard({ onCheckout }: CartSummaryCardProps) {
                 fontSize: "1rem",
                 fontWeight: 600,
                 textTransform: "none",
+                bgcolor: "#43A047",
+                "&:hover": {
+                  bgcolor: "#388E3C",
+                },
               }}
             >
               Thanh Toán
