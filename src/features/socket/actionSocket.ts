@@ -149,15 +149,15 @@ export function connectActionSocket(
   options?: { host?: string; port?: number; protocol?: "ws" | "wss" }
 ) {
   const host = options?.host || ACTIONS_SERVER_CONFIG.HOST || "localhost";
-  const port = options?.port ?? parseInt(ACTIONS_SERVER_CONFIG.PORT || "3000");
+  // const port = options?.port ?? parseInt(ACTIONS_SERVER_CONFIG.PORT || "3000");
 
   // Force WSS for HTTPS pages (production)
   const isHttps =
     typeof window !== "undefined" && window.location.protocol === "https:";
-  const protocol = "http";
+  const protocol = "https";
 
   // NestJS Socket.IO default path is /socket.io
-  const url = `${protocol}://${host}:${port}`;
+  const url = `${protocol}://${host}`;
   let socket: Socket | null = null;
 
   const connect = () => {
