@@ -1,16 +1,28 @@
-import { Box, Container, Typography, TextField, InputAdornment } from "@mui/material";
+import {
+  Box,
+  Container,
+  Typography,
+  TextField,
+  InputAdornment,
+} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import { useLocales } from "../../../hooks";
 
 interface CourseHeroSectionProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
 }
 
-export default function CourseHeroSection({ searchQuery, onSearchChange }: CourseHeroSectionProps) {
+export default function CourseHeroSection({
+  searchQuery,
+  onSearchChange,
+}: CourseHeroSectionProps) {
+  const { translate } = useLocales();
   return (
     <Box
       sx={{
-        background: "linear-gradient(135deg, #ffffff 0%, #f8fffe 50%, #e8f5e8 100%)",
+        background:
+          "linear-gradient(135deg, #ffffff 0%, #f8fffe 50%, #e8f5e8 100%)",
         position: "relative",
         overflow: "hidden",
         borderBottom: "1px solid rgba(76, 175, 80, 0.1)",
@@ -21,11 +33,20 @@ export default function CourseHeroSection({ searchQuery, onSearchChange }: Cours
           left: 0,
           right: 0,
           bottom: 0,
-          background: "url('data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234caf50' fill-opacity='0.03'%3E%3Ccircle cx='40' cy='40' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')",
+          background:
+            "url('data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234caf50' fill-opacity='0.03'%3E%3Ccircle cx='40' cy='40' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')",
         },
       }}
     >
-      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1, pt: { xs: 10, md: 12 }, pb: { xs: 4, md: 6 } }}>
+      <Container
+        maxWidth="lg"
+        sx={{
+          position: "relative",
+          zIndex: 1,
+          pt: { xs: 10, md: 12 },
+          pb: { xs: 4, md: 6 },
+        }}
+      >
         {/* Main Hero Content */}
         <Box sx={{ textAlign: "center" }}>
           <Typography
@@ -35,16 +56,17 @@ export default function CourseHeroSection({ searchQuery, onSearchChange }: Cours
               fontWeight: 700,
               mb: 1,
               fontSize: { xs: "2rem", md: "2.5rem" },
-              background: "linear-gradient(135deg, #2e7d32 0%, #4caf50 50%, #66bb6a 100%)",
+              background:
+                "linear-gradient(135deg, #2e7d32 0%, #4caf50 50%, #66bb6a 100%)",
               backgroundClip: "text",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               letterSpacing: "-0.02em",
             }}
           >
-            Ottobit Courses
+            {translate("courses.Title")}
           </Typography>
-          
+
           {/* Decorative underline */}
           <Box
             sx={{
@@ -56,7 +78,7 @@ export default function CourseHeroSection({ searchQuery, onSearchChange }: Cours
               mb: 2,
             }}
           />
-          
+
           <Typography
             variant="h6"
             sx={{
@@ -69,14 +91,14 @@ export default function CourseHeroSection({ searchQuery, onSearchChange }: Cours
               mb: 4,
             }}
           >
-            Khám phá các khóa học lập trình thú vị với robot Ottobit
+            {translate("courses.Subtitle")}
           </Typography>
 
           {/* Search Bar */}
           <Box sx={{ maxWidth: "600px", mx: "auto" }}>
             <TextField
               fullWidth
-              placeholder="Tìm kiếm khóa học..."
+              placeholder={translate("courses.SearchPlaceholder")}
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               InputProps={{

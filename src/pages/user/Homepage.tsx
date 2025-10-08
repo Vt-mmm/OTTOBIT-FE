@@ -2,6 +2,7 @@ import React from "react";
 import { Box } from "@mui/material";
 import Header from "layout/components/header/Header";
 import Footer from "layout/components/footer/Footer";
+import { LanguageSwitcher } from "components/common";
 import {
   HeroSection,
   TransitionSection,
@@ -20,9 +21,22 @@ const HomePage: React.FC = () => {
         bgcolor: "#fff",
         width: "100%",
         overflow: "hidden",
+        position: "relative",
       }}
     >
       <Header />
+
+      {/* Language Switcher - Top right */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: { xs: 80, md: 90 },
+          right: { xs: 16, md: 32 },
+          zIndex: 999,
+        }}
+      >
+        <LanguageSwitcher />
+      </Box>
 
       {/* Main Exhibition Layout */}
       <Box

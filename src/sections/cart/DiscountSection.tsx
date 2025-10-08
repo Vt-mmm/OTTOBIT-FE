@@ -12,9 +12,11 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import { useAppDispatch, useAppSelector } from "store/config";
 import { applyDiscountThunk, removeDiscountThunk } from "store/cart/cartThunks";
+import { useLocales } from "../../hooks";
 import { showSuccessToast, showErrorToast } from "utils/toast";
 
 export default function DiscountSection() {
+  const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const { cart, operations } = useAppSelector((state) => state.cart);
   const [discountCode, setDiscountCode] = useState("");
@@ -27,7 +29,7 @@ export default function DiscountSection() {
 
   const handleApplyDiscount = async () => {
     if (!discountCode.trim()) {
-      setError("Vui lòng nhập mã giảm giá");
+      setError(translate("cart.EnterDiscountCode"));
       return;
     }
 
@@ -38,19 +40,19 @@ export default function DiscountSection() {
       const discountAmount = parseFloat(discountCode);
 
       if (isNaN(discountAmount) || discountAmount < 0) {
-        setError("Mã giảm giá không hợp lệ");
+        setError(translate("cart.InvalidDiscountCode"));
         return;
       }
 
       await dispatch(applyDiscountThunk({ discountAmount })).unwrap();
       setDiscountCode("");
-      showSuccessToast("Áp dụng mã giảm giá thành công!");
+      showSuccessToast(translate("cart.DiscountAppliedSuccess"));
     } catch (err: any) {
       const errorMessage =
         err?.response?.data?.message ||
         err?.message ||
         err ||
-        "Không thể áp dụng mã giảm giá";
+        translate("cart.CannotApplyDiscount");
       setError(errorMessage);
       showErrorToast(errorMessage);
     }
@@ -66,7 +68,7 @@ export default function DiscountSection() {
         err?.response?.data?.message ||
         err?.message ||
         err ||
-        "Không thể xóa mã giảm giá";
+        translate("cart.CannotRemoveDiscount");
       setError(errorMessage);
       showErrorToast(errorMessage);
     }
@@ -76,7 +78,7 @@ export default function DiscountSection() {
     <Card sx={{ boxShadow: 2 }}>
       <CardContent sx={{ p: 3 }}>
         <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-          Mã Giảm Giá
+          {translate("cart.DiscountCode")}
         </Typography>
 
         {error && (
@@ -102,7 +104,7 @@ export default function DiscountSection() {
               }
             >
               <Typography variant="body2">
-                Đã áp dụng giảm giá:{" "}
+                {translate("cart.DiscountApplied")}{" "}
                 <strong>
                   {cartData?.discountAmount.toLocaleString("vi-VN")} ₫
                 </strong>
@@ -115,7 +117,7 @@ export default function DiscountSection() {
             <TextField
               fullWidth
               size="small"
-              placeholder="Nhập mã giảm giá"
+              placeholder={translate("cart.EnterDiscountPlaceholder")}
               value={discountCode}
               onChange={(e) => setDiscountCode(e.target.value)}
               disabled={isApplying}
@@ -134,7 +136,9 @@ export default function DiscountSection() {
                 textTransform: "none",
               }}
             >
-              {isApplying ? "Đang áp dụng..." : "Áp dụng"}
+              {isApplying
+                ? translate("cart.Applying")
+                : translate("cart.Apply")}
             </Button>
           </Box>
         )}
@@ -144,7 +148,7 @@ export default function DiscountSection() {
           color="text.secondary"
           sx={{ display: "block", mt: 1.5 }}
         >
-          Nhập mã giảm giá hoặc voucher của bạn tại đây
+          {translate("cart.DiscountCodeInfo")}
         </Typography>
       </CardContent>
     </Card>

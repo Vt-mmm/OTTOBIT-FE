@@ -2,34 +2,39 @@ import React, { useRef } from "react";
 import { Box, Container, Typography, Button } from "@mui/material";
 import { motion, useInView } from "framer-motion";
 import { ArrowForward as ArrowIcon } from "@mui/icons-material";
+import { useLocales } from "hooks";
 
 const TransitionSection: React.FC = () => {
+  const { translate } = useLocales();
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   // Blockly-inspired section data
   const sections = [
     {
-      title: "create",
-      subtitle: "Learn to 3D print while making tens of accessories or even new robots and gadgets!",
-      buttonText: "Explore 3D files",
-      background: "linear-gradient(135deg, #FCD34D 0%, #F59E0B 50%, #D97706 100%)", // Yellow
+      title: translate("homepage.CreateTitle"),
+      subtitle: translate("homepage.CreateSubtitle"),
+      buttonText: translate("homepage.CreateButton"),
+      background:
+        "linear-gradient(135deg, #FCD34D 0%, #F59E0B 50%, #D97706 100%)", // Yellow
       textColor: "#ffffff",
       image: "/OttoDIY/create-photo-2.png",
     },
     {
-      title: "connect",
-      subtitle: "Build your first robot, tinker with electronics and develop important technology skills.",
-      buttonText: "See manuals",
-      background: "linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%)", // Blue
+      title: translate("homepage.ConnectTitle"),
+      subtitle: translate("homepage.ConnectSubtitle"),
+      buttonText: translate("homepage.ConnectButton"),
+      background:
+        "linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%)", // Blue
       textColor: "#ffffff",
       image: "/OttoDIY/connect-photo-2.png",
     },
     {
-      title: "code",
-      subtitle: "Easy and fun! Multiple block programming for beginners and advance to MicroPython like a Pro!",
-      buttonText: "Programming options",
-      background: "linear-gradient(135deg, #4ADE80 0%, #22C55E 50%, #16A34A 100%)", // Green
+      title: translate("homepage.CodeTitle"),
+      subtitle: translate("homepage.CodeSubtitle"),
+      buttonText: translate("homepage.CodeButton"),
+      background:
+        "linear-gradient(135deg, #4ADE80 0%, #22C55E 50%, #16A34A 100%)", // Green
       textColor: "#ffffff",
       image: "/OttoDIY/code-photo-2.png",
     },
@@ -52,11 +57,12 @@ const TransitionSection: React.FC = () => {
             display: "flex",
             alignItems: "center",
             background: section.background,
-            clipPath: index === 0 
-              ? "polygon(0 0, 100% 0, 85% 100%, 0 100%)" // First section - slant right
-              : index === 1 
-              ? "polygon(15% 0, 100% 0, 85% 100%, 0 100%)" // Middle section - slant both sides
-              : "polygon(15% 0, 100% 0, 100% 100%, 0 100%)", // Last section - slant left
+            clipPath:
+              index === 0
+                ? "polygon(0 0, 100% 0, 85% 100%, 0 100%)" // First section - slant right
+                : index === 1
+                ? "polygon(15% 0, 100% 0, 85% 100%, 0 100%)" // Middle section - slant both sides
+                : "polygon(15% 0, 100% 0, 100% 100%, 0 100%)", // Last section - slant left
             zIndex: sections.length - index,
             marginTop: index > 0 ? "-5vh" : 0, // Overlap sections
           }}
@@ -85,7 +91,7 @@ const TransitionSection: React.FC = () => {
               zIndex: 2,
             }}
           />
-          
+
           {/* Secondary decorative element */}
           <Box
             component={motion.div}
@@ -145,7 +151,10 @@ const TransitionSection: React.FC = () => {
               display: "flex",
               alignItems: "center",
               minHeight: "80vh",
-              flexDirection: { xs: "column", md: index % 2 === 0 ? "row" : "row-reverse" },
+              flexDirection: {
+                xs: "column",
+                md: index % 2 === 0 ? "row" : "row-reverse",
+              },
               gap: { xs: 4, md: 8 },
               py: { xs: 8, md: 12 },
             }}
@@ -154,7 +163,10 @@ const TransitionSection: React.FC = () => {
             <Box
               sx={{
                 flex: 1,
-                textAlign: { xs: "center", md: index % 2 === 0 ? "left" : "right" },
+                textAlign: {
+                  xs: "center",
+                  md: index % 2 === 0 ? "left" : "right",
+                },
               }}
             >
               <motion.div
@@ -175,7 +187,7 @@ const TransitionSection: React.FC = () => {
                 >
                   {section.title}
                 </Typography>
-                
+
                 <Typography
                   variant="h5"
                   sx={{
@@ -190,7 +202,7 @@ const TransitionSection: React.FC = () => {
                 >
                   {section.subtitle}
                 </Typography>
-                
+
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={isInView ? { scale: 1, opacity: 1 } : {}}
@@ -304,7 +316,7 @@ const TransitionSection: React.FC = () => {
                       zIndex: 3,
                     }}
                   />
-                  
+
                   {/* Image container with Blockly styling */}
                   <Box
                     sx={{
@@ -327,9 +339,11 @@ const TransitionSection: React.FC = () => {
                         right: 0,
                         bottom: 0,
                         background: `linear-gradient(45deg, transparent 30%, ${
-                          index === 0 ? "rgba(252, 211, 77, 0.1)" : 
-                          index === 1 ? "rgba(96, 165, 250, 0.1)" : 
-                          "rgba(74, 222, 128, 0.1)"
+                          index === 0
+                            ? "rgba(252, 211, 77, 0.1)"
+                            : index === 1
+                            ? "rgba(96, 165, 250, 0.1)"
+                            : "rgba(74, 222, 128, 0.1)"
                         } 50%, transparent 70%)`,
                       },
                     }}

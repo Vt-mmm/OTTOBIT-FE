@@ -26,5 +26,21 @@
   "Previous": "Previous",
   "Language": "Language",
   "English": "English",
-  "Vietnamese": "Vietnamese"
+  "Vietnamese": "Vietnamese",
+  "NotAvailable": "Not available",
+  "EnterActivationCode": "Please enter activation code",
+  "InvalidActivationCode": "Invalid activation code",
+  "ExampleCode": "Example: OTTO-XXXX-XXXX-XXXX",
+  "Activating": "Activating...",
+  "Activate": "Activate",
+  "Activated": "Activated",
+  "Required": "Required",
+  "ActivateRobot": "Activate Robot",
+  "BuyRobot": "Buy Robot",
+  "YouOwnThisRobot": "You own this robot",
+  "EnterWifiCredentials": "Please enter WiFi SSID and Password before flashing!",
+  "BackToLesson": "Back to lesson",
+  "Back": "Back",
+  "CannotReloadMap": "Cannot reload map. Please try again.",
+  "MapReloadedSuccessfully": "Map reloaded successfully!"
 }

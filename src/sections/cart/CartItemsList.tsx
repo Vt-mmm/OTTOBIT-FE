@@ -1,8 +1,10 @@
 import { Box, Typography, CircularProgress, Alert } from "@mui/material";
 import { useAppSelector } from "store/config";
+import { useLocales } from "../../hooks";
 import { CartItemCard } from "sections/cart";
 
 export default function CartItemsList() {
+  const { translate } = useLocales();
   const { cart, items } = useAppSelector((state) => state.cart);
 
   const isLoading = cart.isLoading || items.isLoading;
@@ -32,7 +34,7 @@ export default function CartItemsList() {
         }}
       >
         <Typography variant="h6" color="text.secondary">
-          Không có khóa học nào trong giỏ hàng
+          {translate("cart.NoCoursesInCart")}
         </Typography>
       </Box>
     );
@@ -41,7 +43,7 @@ export default function CartItemsList() {
   return (
     <Box>
       <Typography variant="h6" gutterBottom sx={{ mb: 2, fontWeight: 600 }}>
-        Khóa Học Trong Giỏ Hàng ({cartItems.length})
+        {translate("cart.CoursesInCart", { count: cartItems.length })}
       </Typography>
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>

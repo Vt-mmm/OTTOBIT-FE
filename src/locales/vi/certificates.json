@@ -1,0 +1,22 @@
+{
+  "YourCertificate": "Chứng chỉ của bạn",
+  "VerificationCodeCopied": "Đã sao chép mã xác thực!",
+  "PDFFeatureDevelopment": "Tính năng download PDF đang được phát triển. Vui lòng chụp màn hình hoặc liên hệ admin.",
+  "DownloadError": "Có lỗi xảy ra khi tải xuống!",
+  "CopyCode": "Sao Chép Mã",
+  "DownloadPDF": "Tải PDF",
+  "Close": "Đóng",
+  "VerificationCode": "Mã xác thực",
+  "IssuedOn": "Cấp ngày",
+  "ValidCertificate": "Đây là chứng chỉ hợp lệ được cấp bởi Ottobit Academy",
+  "InfoNote": "<strong>Lưu ý:</strong> Đây là chứng chỉ điện tử của bạn. Bạn có thể tải xuống hoặc chia sẻ mã xác thực để xác minh tính hợp lệ.",
+  "CompletionCertificate": "CHỨNG CHỈ HOÀN THÀNH",
+  "CertifyThat": "Chứng nhận rằng",
+  "HasCompleted": "đã hoàn thành thành công",
+  "WithScore": "với điểm số",
+  "CertificateNo": "Số chứng chỉ:",
+  "AwardedBy": "Được cấp bởi Ottobit Academy",
+  "CopyVerificationCode": "Sao chép",
+  "UseCodeToVerify": "Sử dụng mã này để xác minh tính hợp lệ của chứng chỉ",
+  "Downloading": "Đang tải..."
+}

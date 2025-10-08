@@ -14,6 +14,7 @@ import { SubmissionResult } from "../../../common/@types/submission";
 import { LessonNotesPanel } from "../../../components/lesson-notes";
 import { TabletDevice } from "../../../components/tablet";
 import { ChallengesGrid } from "../../../components/challenges";
+import { useLocales } from "hooks";
 
 interface LessonTabletSectionProps {
   challenges: ChallengeResult[];
@@ -36,6 +37,7 @@ const LessonTabletSection: React.FC<LessonTabletSectionProps> = ({
   lessonId,
   courseId, // Destructure courseId
 }) => {
+  const { translate } = useLocales();
   const [activeTab, setActiveTab] = useState(0);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -200,7 +202,7 @@ const LessonTabletSection: React.FC<LessonTabletSectionProps> = ({
                 }}
               >
                 <Typography variant="body1" color="text.secondary">
-                  Không thể tải ghi chú. Vui lòng thử lại sau.
+                  {translate("lessons.CannotLoadNotes")}
                 </Typography>
               </Box>
             )}

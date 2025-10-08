@@ -16,6 +16,7 @@ import {
 import { CheckCircle as CheckCircleIcon } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "store/config";
 import { redeemActivationCodeThunk } from "store/activationCode/activationCodeThunks";
+import { useLocales } from "hooks";
 import { clearRedeemStatus } from "store/activationCode/activationCodeSlice";
 
 interface ActivateRobotDialogProps {
@@ -30,6 +31,7 @@ export default function ActivateRobotDialog({
   onSuccess,
 }: ActivateRobotDialogProps) {
   const dispatch = useAppDispatch();
+  const { translate } = useLocales();
   const { operations } = useAppSelector((state) => state.activationCode);
 
   const [activationCode, setActivationCode] = useState("");
@@ -57,11 +59,11 @@ export default function ActivateRobotDialog({
 
   const validateCode = (code: string): boolean => {
     if (!code || code.trim().length === 0) {
-      setCodeError("Vui lòng nhập mã kích hoạt");
+      setCodeError(translate("common.EnterActivationCode"));
       return false;
     }
     if (code.length < 6) {
-      setCodeError("Mã kích hoạt không hợp lệ");
+      setCodeError(translate("common.InvalidActivationCode"));
       return false;
     }
     setCodeError("");
@@ -138,7 +140,7 @@ export default function ActivateRobotDialog({
                 value={activationCode}
                 onChange={handleCodeChange}
                 error={!!codeError}
-                helperText={codeError || "Ví dụ: OTTO-XXXX-XXXX-XXXX"}
+                helperText={codeError || translate("common.ExampleCode")}
                 placeholder="OTTO-XXXX-XXXX-XXXX"
                 fullWidth
                 autoFocus
@@ -174,7 +176,9 @@ export default function ActivateRobotDialog({
                 operations.isRedeeming && <CircularProgress size={16} />
               }
             >
-              {operations.isRedeeming ? "Đang kích hoạt..." : "Kích hoạt"}
+              {operations.isRedeeming
+                ? translate("common.Activating")
+                : translate("common.Activate")}
             </Button>
           </>
         )}

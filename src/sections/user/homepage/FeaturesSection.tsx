@@ -10,55 +10,17 @@ import {
   Code as CodeIcon,
   Psychology as CreativityIcon,
 } from "@mui/icons-material";
+import { useLocales } from "../../../hooks";
 
-// Features data with better balanced positioning
-const featuresData = [
-  {
-    icon: <TouchIcon sx={{ fontSize: 24 }} />,
-    title: "New ways to interact!",
-    color: "#60a5fa", // Blue
-    position: { top: "30%", left: "15%" }, // Moved closer to center and down
-  },
-  {
-    icon: <SchoolIcon sx={{ fontSize: 24 }} />,
-    title: "Teach STEM+ with Ottobit!",
-    color: "#a78bfa", // Purple
-    position: { top: "5%", left: "25%" }, // Moved to left side for balance
-  },
-  {
-    icon: <PrintIcon sx={{ fontSize: 24 }} />,
-    title: "Shape Ottobit with 3D printed parts",
-    color: "#fbbf24", // Yellow
-    position: { top: "30%", right: "15%" }, // Moved closer to center and down
-  },
-  {
-    icon: <CreativityIcon sx={{ fontSize: 24 }} />,
-    title: "Creativity and problemsolving",
-    color: "#60a5fa", // Blue
-    position: { top: "50%", right: "10%" }, // Moved up more to avoid overlap
-  },
-  {
-    icon: <LightbulbIcon sx={{ fontSize: 24 }} />,
-    title: "Free your imagination",
-    color: "#fbbf24", // Yellow
-    position: { top: "55%", left: "10%" }, // Changed to top positioning, closer to center
-  },
-  {
-    icon: <ExtensionIcon sx={{ fontSize: 24 }} />,
-    title: "New building mechanisms",
-    color: "#22c55e", // Green
-    position: { bottom: "5%", left: "25%" }, // Moved to left side for balance
-  },
-  {
-    icon: <CodeIcon sx={{ fontSize: 24 }} />,
-    title: "Multiple coding options",
-    color: "#22c55e", // Green
-    position: { bottom: "15%", right: "10%" }, // Moved down more to avoid overlap
-  },
-];
+interface FeatureDataType {
+  icon: React.ReactNode;
+  title: string;
+  color: string;
+  position: any;
+}
 
 const FeatureCard: React.FC<{
-  feature: (typeof featuresData)[0];
+  feature: FeatureDataType;
   index: number;
 }> = ({ feature, index }) => {
   const ref = useRef(null);
@@ -69,11 +31,11 @@ const FeatureCard: React.FC<{
       ref={ref}
       initial={{ scale: 0, opacity: 0 }}
       animate={isInView ? { scale: 1, opacity: 1 } : {}}
-      transition={{ 
-        duration: 0.5, 
+      transition={{
+        duration: 0.5,
         delay: index * 0.1,
         type: "spring",
-        stiffness: 100 
+        stiffness: 100,
       }}
       style={{
         position: "absolute",
@@ -131,8 +93,55 @@ const FeatureCard: React.FC<{
 };
 
 const FeaturesSection: React.FC = () => {
+  const { translate } = useLocales();
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
+
+  // Features data using translate
+  const featuresData: FeatureDataType[] = [
+    {
+      icon: <TouchIcon sx={{ fontSize: 24 }} />,
+      title: translate("homepage.NewWaysInteract"),
+      color: "#60a5fa", // Blue
+      position: { top: "30%", left: "15%" },
+    },
+    {
+      icon: <SchoolIcon sx={{ fontSize: 24 }} />,
+      title: translate("homepage.TeachSTEM"),
+      color: "#a78bfa", // Purple
+      position: { top: "5%", left: "25%" },
+    },
+    {
+      icon: <PrintIcon sx={{ fontSize: 24 }} />,
+      title: translate("homepage.Shape3D"),
+      color: "#fbbf24", // Yellow
+      position: { top: "30%", right: "15%" },
+    },
+    {
+      icon: <CreativityIcon sx={{ fontSize: 24 }} />,
+      title: translate("homepage.CreativityProblem"),
+      color: "#60a5fa", // Blue
+      position: { top: "50%", right: "10%" },
+    },
+    {
+      icon: <LightbulbIcon sx={{ fontSize: 24 }} />,
+      title: translate("homepage.FreeImagination"),
+      color: "#fbbf24", // Yellow
+      position: { top: "55%", left: "10%" },
+    },
+    {
+      icon: <ExtensionIcon sx={{ fontSize: 24 }} />,
+      title: translate("homepage.NewBuildingMechanisms"),
+      color: "#22c55e", // Green
+      position: { bottom: "5%", left: "25%" },
+    },
+    {
+      icon: <CodeIcon sx={{ fontSize: 24 }} />,
+      title: translate("homepage.MultipleCoding"),
+      color: "#22c55e", // Green
+      position: { bottom: "15%", right: "10%" },
+    },
+  ];
 
   return (
     <Box
@@ -153,9 +162,9 @@ const FeaturesSection: React.FC = () => {
     >
       <Container
         maxWidth={false}
-        sx={{ 
+        sx={{
           maxWidth: "1400px", // Increased for more space
-          position: "relative", 
+          position: "relative",
           zIndex: 1,
           height: "700px", // Increased height
         }}
@@ -186,7 +195,7 @@ const FeaturesSection: React.FC = () => {
                 lineHeight: 1.1,
               }}
             >
-              Endless functionality.
+              {translate("homepage.EndlessFunctionality")}
             </Typography>
             <Typography
               variant="h1"
@@ -218,7 +227,7 @@ const FeaturesSection: React.FC = () => {
                   },
                 }}
               >
-                fun
+                {translate("homepage.EndlessFun")}
               </Box>
             </Typography>
 
@@ -249,7 +258,7 @@ const FeaturesSection: React.FC = () => {
                   },
                 }}
               >
-                Explore solutions
+                {translate("homepage.ExploreSolutions")}
               </Button>
             </motion.div>
           </motion.div>
@@ -311,4 +320,3 @@ const FeaturesSection: React.FC = () => {
 };
 
 export default FeaturesSection;
-

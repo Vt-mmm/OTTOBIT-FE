@@ -10,37 +10,45 @@ import {
   SecuritySettings,
   EditProfileDialog,
 } from "sections/user/profile";
+import { LanguageSwitcher } from "components/common";
 import { UpdateProfileForm } from "common/@types";
 import { useAppDispatch } from "store/config";
-import { getMyProfileThunk, updateMyProfileThunk } from "store/account/accountSlice";
+import {
+  getMyProfileThunk,
+  updateMyProfileThunk,
+} from "store/account/accountSlice";
+import { useLocales } from "hooks";
 
 // Simple placeholders for future sections
 function CoursesSection() {
+  const { translate } = useLocales();
   return (
     <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
       <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-        Khóa học đã tham gia
+        {translate("profile.CoursesTitle")}
       </Typography>
       <Typography variant="body2" color="text.secondary">
-        Sẽ hiển thị danh sách khóa học của bạn tại đây.
+        {translate("profile.CoursesPlaceholder")}
       </Typography>
     </Paper>
   );
 }
 function LessonsSection() {
+  const { translate } = useLocales();
   return (
     <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
       <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-        Bài học gần đây
+        {translate("profile.LessonsTitle")}
       </Typography>
       <Typography variant="body2" color="text.secondary">
-        Sẽ hiển thị danh sách bài học bạn đã tham gia tại đây.
+        {translate("profile.LessonsPlaceholder")}
       </Typography>
     </Paper>
   );
 }
 
 const UserProfilePage: React.FC = () => {
+  const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const [section] = useState<"overview" | "courses" | "lessons" | "security">(
     "overview"
@@ -54,7 +62,7 @@ const UserProfilePage: React.FC = () => {
 
   const handleEditProfile = () => setEditDialogOpen(true);
   const handleCloseEditDialog = () => setEditDialogOpen(false);
-  
+
   const handleSaveProfile = async (data: UpdateProfileForm) => {
     try {
       await dispatch(updateMyProfileThunk({ data })).unwrap();
@@ -92,16 +100,34 @@ const UserProfilePage: React.FC = () => {
 
   return (
     <>
-      <Box sx={{ minHeight: "100vh", bgcolor: "common.white" }}>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          bgcolor: "common.white",
+          position: "relative",
+        }}
+      >
+        {/* Language Switcher - Top right */}
+        <Box
+          sx={{
+            position: "absolute",
+            top: { xs: 16, md: 24 },
+            right: { xs: 16, md: 32 },
+            zIndex: 999,
+          }}
+        >
+          <LanguageSwitcher />
+        </Box>
+
         <UserProfileHeader
           title={
             section === "overview"
-              ? "Hồ sơ cá nhân"
+              ? translate("profile.Title")
               : section === "courses"
-              ? "Khóa học của tôi"
+              ? translate("profile.MyCourses")
               : section === "lessons"
-              ? "Bài học của tôi"
-              : "Bảo mật tài khoản"
+              ? translate("profile.MyLessons")
+              : translate("profile.AccountSecurity")
           }
         />
         <Box sx={{ display: "flex", minHeight: "calc(100vh - 64px)" }}>

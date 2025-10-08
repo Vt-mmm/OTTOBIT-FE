@@ -19,6 +19,7 @@ import {
   getChallengeProgress,
 } from "../../utils/challengeUtils";
 import ChallengeCard from "./ChallengeCard";
+import { useLocales } from "hooks";
 
 interface ChallengesGridProps {
   challenges: ChallengeResult[];
@@ -37,6 +38,8 @@ const ChallengesGrid: React.FC<ChallengesGridProps> = ({
   onChallengeSelect,
   onRetry,
 }) => {
+  const { translate } = useLocales();
+
   // Loading state
   if (loading) {
     return (
@@ -49,7 +52,9 @@ const ChallengesGrid: React.FC<ChallengesGridProps> = ({
         }}
       >
         <CircularProgress />
-        <Typography sx={{ ml: 2 }}>Đang tải danh sách thử thách...</Typography>
+        <Typography sx={{ ml: 2 }}>
+          {translate("challenges.LoadingChallenges")}
+        </Typography>
       </Box>
     );
   }
@@ -59,10 +64,10 @@ const ChallengesGrid: React.FC<ChallengesGridProps> = ({
     return (
       <Box sx={{ textAlign: "center", p: 4 }}>
         <Alert severity="error" sx={{ mb: 2 }}>
-          Lỗi khi tải thử thách: {error}
+          {translate("challenges.ErrorLoadingChallenges", { error })}
         </Alert>
         <Button variant="contained" onClick={onRetry}>
-          Thử lại
+          {translate("challenges.Retry")}
         </Button>
       </Box>
     );
@@ -92,10 +97,10 @@ const ChallengesGrid: React.FC<ChallengesGridProps> = ({
           }}
         >
           <Typography variant="h5" sx={{ color: "#2e3440", mb: 2 }}>
-            🤔 Chưa có thử thách nào
+            {translate("challenges.NoChallenges")}
           </Typography>
           <Typography variant="body1" sx={{ color: "#5e6c84" }}>
-            Bài học này chưa có thử thách. Vui lòng thử lại sau.
+            {translate("challenges.NoChallengesMessage")}
           </Typography>
         </Box>
       </Box>

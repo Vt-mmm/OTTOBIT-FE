@@ -13,6 +13,7 @@ import {
   IconButton,
   Tooltip,
 } from "@mui/material";
+import { useLocales } from "hooks";
 import {
   Close as CloseIcon,
   PlayArrow as PlayIcon,
@@ -46,6 +47,7 @@ export default function MicrobitDialog({
   workspace,
   roomId,
 }: MicrobitDialogProps) {
+  const { translate } = useLocales();
   const [isConnected, setIsConnected] = useState(false);
   const [isFlashing, setIsFlashing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -343,7 +345,7 @@ export default function MicrobitDialog({
 
     // Validate WiFi fields before flashing
     if (!wifiSsid || !wifiPass) {
-      setError("Vui lòng nhập đầy đủ WiFi SSID và Password trước khi flash!");
+      setError(translate("common.EnterWifiCredentials"));
       addLog("❌ Error: WiFi credentials required");
       return;
     }

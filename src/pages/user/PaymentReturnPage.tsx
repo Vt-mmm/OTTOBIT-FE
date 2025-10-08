@@ -13,9 +13,12 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { CheckCircle } from "@mui/icons-material";
 import Header from "layout/components/header/Header";
 import Footer from "layout/components/footer/Footer";
+import { LanguageSwitcher } from "components/common";
 import { PATH_USER } from "routes/paths";
+import { useLocales } from "hooks";
 
 export default function PaymentReturnPage() {
+  const { translate } = useLocales();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(true);
@@ -43,7 +46,7 @@ export default function PaymentReturnPage() {
 
       // Check if payment was cancelled (string comparison)
       if (cancel === "true" || status === "CANCELLED") {
-        setError("Thanh toán đã bị hủy.");
+        setError(translate("payment.PaymentCancelled"));
         return;
       }
 
@@ -56,7 +59,7 @@ export default function PaymentReturnPage() {
       // Fallback: Check if payment was successful by code/status
       // PayOS returns code="00" for success, or status="PAID"
       if (code !== "00" && status !== "PAID") {
-        setError("Thanh toán không thành công. Vui lòng thử lại.");
+        setError(translate("payment.PaymentFailed"));
       }
     }, 2000);
 
@@ -84,18 +87,37 @@ export default function PaymentReturnPage() {
       >
         <CircularProgress size={60} />
         <Typography variant="h6" sx={{ mt: 3 }}>
-          Đang xử lý thanh toán...
+          {translate("payment.ProcessingPayment")}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          Vui lòng không đóng cửa sổ này
+          {translate("payment.PleaseWait")}
         </Typography>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+        position: "relative",
+      }}
+    >
       <Header />
+
+      {/* Language Switcher - Top right */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: { xs: 80, md: 90 },
+          right: { xs: 16, md: 32 },
+          zIndex: 999,
+        }}
+      >
+        <LanguageSwitcher />
+      </Box>
 
       <Box
         sx={{
@@ -119,14 +141,15 @@ export default function PaymentReturnPage() {
                     {error}
                   </Alert>
                   <Typography variant="h5" gutterBottom>
-                    Thanh Toán Không Thành Công
+                    {translate("payment.PaymentError")}
                   </Typography>
                   <Typography color="text.secondary" sx={{ mb: 4 }}>
-                    Đã có lỗi xảy ra trong quá trình thanh toán.
+                    {translate("payment.PaymentProcessingError")}
                     {orderCode && (
                       <>
                         <br />
-                        Mã đơn hàng: <strong>{orderCode}</strong>
+                        {translate("payment.OrderNumber")}:{" "}
+                        <strong>{orderCode}</strong>
                       </>
                     )}
                   </Typography>
@@ -137,13 +160,13 @@ export default function PaymentReturnPage() {
                       variant="outlined"
                       onClick={() => navigate(PATH_USER.cart)}
                     >
-                      Quay Lại Giỏ Hàng
+                      {translate("payment.BackToCart")}
                     </Button>
                     <Button
                       variant="contained"
                       onClick={handleContinueShopping}
                     >
-                      Tiếp Tục Mua Sắm
+                      {translate("payment.ContinueShopping")}
                     </Button>
                   </Box>
                 </>
@@ -171,14 +194,14 @@ export default function PaymentReturnPage() {
                     />
                   </Box>
                   <Typography variant="h3" fontWeight={700} gutterBottom>
-                    Thanh Toán Thành Công!
+                    {translate("payment.PaymentSuccessful")}
                   </Typography>
                   <Typography
                     variant="h6"
                     color="text.secondary"
                     sx={{ mb: 1 }}
                   >
-                    Cảm ơn bạn đã mua hàng tại Ottobit.
+                    {translate("payment.ThankYouPurchase")}
                   </Typography>
                   {orderCode && (
                     <Typography
@@ -186,7 +209,8 @@ export default function PaymentReturnPage() {
                       color="text.secondary"
                       sx={{ mb: 4 }}
                     >
-                      Mã đơn hàng: <strong>{orderCode}</strong>
+                      {translate("payment.OrderNumber")}:{" "}
+                      <strong>{orderCode}</strong>
                     </Typography>
                   )}
                   <Typography
@@ -194,7 +218,7 @@ export default function PaymentReturnPage() {
                     color="text.secondary"
                     sx={{ mb: 4 }}
                   >
-                    Bạn có thể bắt đầu học ngay các khóa học đã mua.
+                    {translate("payment.CanStartLearning")}
                   </Typography>
 
                   <Box
@@ -227,7 +251,7 @@ export default function PaymentReturnPage() {
                         },
                       }}
                     >
-                      Xem Đơn Hàng
+                      {translate("payment.ViewOrders")}
                     </Button>
                     <Button
                       variant="outlined"
@@ -247,7 +271,7 @@ export default function PaymentReturnPage() {
                         },
                       }}
                     >
-                      Tiếp Tục Khám Phá
+                      {translate("payment.ContinueExploring")}
                     </Button>
                   </Box>
                 </>
@@ -271,7 +295,7 @@ export default function PaymentReturnPage() {
                   color="text.secondary"
                   gutterBottom
                 >
-                  Chi tiết giao dịch
+                  {translate("payment.TransactionDetails")}
                 </Typography>
                 <Box sx={{ mt: 2 }}>
                   {id && (

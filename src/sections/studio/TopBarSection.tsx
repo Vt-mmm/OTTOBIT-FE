@@ -38,6 +38,7 @@ import {
 } from "@mui/icons-material";
 import { usePhaserContext } from "../../features/phaser/context/PhaserContext";
 import { useNotification } from "hooks/useNotification";
+import { useLocales } from "hooks";
 import { forceCleanupBeforeExecute } from "../../theme/block/renderer-ottobit";
 import { useFieldInputManager } from "../../components/block/hooks/useFieldInputManager";
 import { useAppDispatch, useAppSelector } from "../../redux/config";
@@ -112,6 +113,7 @@ function TopBarContent({
   );
   const [selectedCameraId, setSelectedCameraId] = useState<string>("");
   const { showNotification, NotificationComponent } = useNotification();
+  const { translate } = useLocales();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const dispatch = useAppDispatch();
@@ -193,7 +195,11 @@ function TopBarContent({
           ? lessonChallengeItems[index]
           : lessonChallengeItems.find((c: any) => c.id === id);
       if (!challenge) return false;
-      return isChallengeAccessible(challenge, lessonChallengeItems, submissionsItems);
+      return isChallengeAccessible(
+        challenge,
+        lessonChallengeItems,
+        submissionsItems
+      );
     },
     [lessonChallengeItems, submissionsItems]
   );
@@ -365,10 +371,10 @@ function TopBarContent({
     try {
       await restartScene();
 
-      showNotification("Map đã được tải lại thành công!", "success");
+      showNotification(translate("common.MapReloadedSuccessfully"), "success");
     } catch (error) {
       console.error("❌ [TopBar] Error restarting scene:", error);
-      showNotification("Không thể tải lại map. Vui lòng thử lại.", "error");
+      showNotification(translate("common.CannotReloadMap"), "error");
     }
   };
 
@@ -747,7 +753,13 @@ function TopBarContent({
         </Typography>
 
         {/* Back to Lesson */}
-        <Tooltip title={lessonId ? "Quay lại bài học" : "Quay lại"}>
+        <Tooltip
+          title={
+            lessonId
+              ? translate("common.BackToLesson")
+              : translate("common.Back")
+          }
+        >
           <IconButton
             onClick={handleBackToLesson}
             sx={{

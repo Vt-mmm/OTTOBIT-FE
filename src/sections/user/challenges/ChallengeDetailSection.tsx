@@ -26,18 +26,24 @@ import {
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getChallengeById } from "../../../redux/challenge/challengeSlice";
 import { PATH_USER } from "../../../routes/paths";
+import { useLocales } from "../../../hooks";
 
 interface ChallengeDetailSectionProps {
   challengeId: string;
 }
 
-export default function ChallengeDetailSection({ challengeId }: ChallengeDetailSectionProps) {
+export default function ChallengeDetailSection({
+  challengeId,
+}: ChallengeDetailSectionProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  
-  const { data: challenge, isLoading, error } = useAppSelector(
-    (state) => state.challenge.currentChallenge
-  );
+  const { translate } = useLocales();
+
+  const {
+    data: challenge,
+    isLoading,
+    error,
+  } = useAppSelector((state) => state.challenge.currentChallenge);
 
   useEffect(() => {
     // Fetch challenge details
@@ -89,10 +95,10 @@ export default function ChallengeDetailSection({ challengeId }: ChallengeDetailS
       <Container>
         <Box sx={{ textAlign: "center", py: 8 }}>
           <Typography variant="h5" color="text.secondary" gutterBottom>
-            Không tìm thấy thử thách
+            {translate("challenges.ChallengeNotFoundTitle")}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Thử thách không tồn tại hoặc đã bị xóa.
+            {translate("challenges.ChallengeNotFoundDesc")}
           </Typography>
         </Box>
       </Container>
@@ -112,7 +118,7 @@ export default function ChallengeDetailSection({ challengeId }: ChallengeDetailS
           }}
           underline="hover"
         >
-          Khóa học
+          {translate("challenges.Courses")}
         </Link>
         {challenge.courseTitle && (
           <Link
@@ -149,7 +155,7 @@ export default function ChallengeDetailSection({ challengeId }: ChallengeDetailS
         onClick={handleBackToLesson}
         sx={{ mb: 3 }}
       >
-        Quay lại bài học
+        {translate("challenges.BackToLesson")}
       </Button>
 
       {/* Challenge Header */}
@@ -160,27 +166,39 @@ export default function ChallengeDetailSection({ challengeId }: ChallengeDetailS
               {challenge.title}
             </Typography>
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              {challenge.description || "Không có mô tả"}
+              {challenge.description || translate("challenges.NoDescription")}
             </Typography>
-            
+
             {/* Challenge Stats */}
             <Box sx={{ display: "flex", gap: 2, mt: 3, flexWrap: "wrap" }}>
               <Chip
                 icon={<AssignmentIcon />}
-                label={`Thử thách #${challenge.order || 1}`}
+                label={translate("challenges.Challenge", {
+                  order: challenge.order || 1,
+                })}
                 color="primary"
                 variant="outlined"
               />
               <Chip
                 icon={<TrophyIcon />}
-                label={`Độ khó: ${challenge.difficulty || 1}/5`}
-                color={challenge.difficulty >= 4 ? "error" : challenge.difficulty >= 3 ? "warning" : "success"}
+                label={translate("challenges.Difficulty", {
+                  level: challenge.difficulty || 1,
+                })}
+                color={
+                  challenge.difficulty >= 4
+                    ? "error"
+                    : challenge.difficulty >= 3
+                    ? "warning"
+                    : "success"
+                }
                 variant="outlined"
               />
               {challenge.submissionsCount !== undefined && (
                 <Chip
                   icon={<TimerIcon />}
-                  label={`${challenge.submissionsCount} lần nộp`}
+                  label={translate("challenges.Submissions", {
+                    count: challenge.submissionsCount,
+                  })}
                   color="info"
                   variant="outlined"
                 />
@@ -191,40 +209,39 @@ export default function ChallengeDetailSection({ challengeId }: ChallengeDetailS
             <Box sx={{ mt: 4 }}>
               <Typography variant="h5" gutterBottom>
                 <LightbulbIcon sx={{ mr: 1, verticalAlign: "middle" }} />
-                Hướng dẫn
+                {translate("challenges.Instructions")}
               </Typography>
               <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
-                Sử dụng các khối lệnh để điều khiển robot hoàn thành nhiệm vụ.
-                Hãy đọc kỹ mô tả thử thách và lập trình robot một cách hiệu quả nhất.
+                {translate("challenges.InstructionsText")}
               </Typography>
             </Box>
           </Grid>
-          
+
           <Grid item xs={12} md={4}>
             <Box sx={{ textAlign: "center" }}>
-              <AssignmentIcon 
-                sx={{ 
-                  fontSize: 120, 
-                  color: "primary.main", 
-                  mb: 2 
-                }} 
+              <AssignmentIcon
+                sx={{
+                  fontSize: 120,
+                  color: "primary.main",
+                  mb: 2,
+                }}
               />
               <Typography variant="h6" gutterBottom>
-                Sẵn sàng thử thách?
+                {translate("challenges.ReadyForChallenge")}
               </Typography>
               <Button
                 variant="contained"
                 size="large"
                 startIcon={<PlayArrowIcon />}
                 onClick={handleStartChallenge}
-                sx={{ 
+                sx={{
                   mt: 2,
                   px: 4,
                   py: 1.5,
-                  fontSize: "1.1rem"
+                  fontSize: "1.1rem",
                 }}
               >
-                Bắt đầu thử thách
+                {translate("challenges.StartChallenge")}
               </Button>
             </Box>
           </Grid>
@@ -238,16 +255,18 @@ export default function ChallengeDetailSection({ challengeId }: ChallengeDetailS
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 <AssignmentIcon sx={{ mr: 1, verticalAlign: "middle" }} />
-                Thông tin thử thách
+                {translate("challenges.ChallengeInfo")}
               </Typography>
               <Typography variant="body2" color="text.secondary" paragraph>
-                Thứ tự: #{challenge.order || 1}
+                {translate("challenges.Order", { order: challenge.order || 1 })}
               </Typography>
               <Typography variant="body2" color="text.secondary" paragraph>
-                Độ khó: {challenge.difficulty || 1}/5
+                {translate("challenges.DifficultyLevel", {
+                  level: challenge.difficulty || 1,
+                })}
               </Typography>
               <Typography variant="body2" color="text.secondary" paragraph>
-                Tạo: {new Date(challenge.createdAt).toLocaleDateString('vi-VN')}
+                Tạo: {new Date(challenge.createdAt).toLocaleDateString("vi-VN")}
               </Typography>
             </CardContent>
           </Card>
@@ -301,10 +320,10 @@ export default function ChallengeDetailSection({ challengeId }: ChallengeDetailS
           size="large"
           startIcon={<PlayArrowIcon />}
           onClick={handleStartChallenge}
-          sx={{ 
+          sx={{
             px: 6,
             py: 2,
-            fontSize: "1.2rem"
+            fontSize: "1.2rem",
           }}
         >
           Bắt đầu thử thách ngay

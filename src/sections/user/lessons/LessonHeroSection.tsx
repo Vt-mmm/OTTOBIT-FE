@@ -6,6 +6,7 @@
 import React from "react";
 import { Box, Grid, Typography, Button, Container } from "@mui/material";
 import { ArrowBack as ArrowBackIcon } from "@mui/icons-material";
+import { useLocales } from "../../../hooks";
 
 interface LessonInfo {
   id: string;
@@ -23,22 +24,24 @@ const LessonHeroSection: React.FC<LessonHeroSectionProps> = ({
   currentLessonInfo,
   onBackToCourse,
 }) => {
+  const { translate } = useLocales();
   // Generate dynamic terminal content based on current lesson
   const getTerminalContentForLesson = (lessonInfo: LessonInfo | null) => {
     if (!lessonInfo) {
       return {
-        title: "Đang tải thông tin bài học...",
-        description: "Vui lòng chờ trong giây lát",
+        title: translate("lessons.LoadingLesson"),
+        description: translate("lessons.PleaseWait"),
         code: [
-          "// Đang tải thông tin bài học...",
+          translate("lessons.LoadingCode"),
           'console.log("Loading lesson data...");',
         ],
       };
     }
 
-    const lessonTitle = lessonInfo.title || "Bài học lập trình";
+    const lessonTitle =
+      lessonInfo.title || translate("lessons.DefaultLessonTitle");
     const lessonContent =
-      lessonInfo.content || "Học lập trình với robot thông minh";
+      lessonInfo.content || translate("lessons.DefaultLessonContent");
 
     // Split lesson content into sentences for terminal display
     const contentLines = lessonContent
@@ -48,15 +51,12 @@ const LessonHeroSection: React.FC<LessonHeroSectionProps> = ({
       .map((line) => line.trim());
 
     // Generate code with actual lesson information
-    const generateLessonCode = (
-      title: string,
-      lines: string[]
-    ) => {
+    const generateLessonCode = (title: string, lines: string[]) => {
       const code = [
-        `// Bài học: ${title}`,
-        `console.log("Chào mừng đến với: ${title}");`,
+        translate("lessons.LessonTitle", { title }),
+        translate("lessons.WelcomeToLesson", { title }),
         "",
-        "// Nội dung bài học:",
+        translate("lessons.LessonContent"),
       ];
 
       // Add lesson content as comments and console.log statements
@@ -78,7 +78,7 @@ const LessonHeroSection: React.FC<LessonHeroSectionProps> = ({
       // Add some interactive code based on lesson type
       code.push(
         "",
-        "// Bắt đầu thực hành:",
+        translate("lessons.LearningGoals"),
         "function startLesson() {",
         '  console.log("Robot sẵn sàng học bài mới!");',
         `  console.log("Đang học: ${title}");`,
@@ -146,7 +146,7 @@ const LessonHeroSection: React.FC<LessonHeroSectionProps> = ({
                     },
                   }}
                 >
-                  Quay lại khóa học
+                  {translate("lessons.BackToCourse")}
                 </Button>
               )}
             </Box>
@@ -157,13 +157,13 @@ const LessonHeroSection: React.FC<LessonHeroSectionProps> = ({
             <Box>
               <Box
                 sx={{
-                    background: "#1e1e1e", // Darker background for better contrast
-                    borderRadius: 3,
-                    overflow: "hidden",
-                    boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
-                    border: "1px solid #3a3a3a",
-                    maxWidth: "100%",
-                    minHeight: "500px",
+                  background: "#1e1e1e", // Darker background for better contrast
+                  borderRadius: 3,
+                  overflow: "hidden",
+                  boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+                  border: "1px solid #3a3a3a",
+                  maxWidth: "100%",
+                  minHeight: "500px",
                 }}
               >
                 {/* Terminal Header */}
@@ -220,7 +220,8 @@ const LessonHeroSection: React.FC<LessonHeroSectionProps> = ({
                 <Box
                   sx={{
                     p: 4,
-                    fontFamily: "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
+                    fontFamily:
+                      "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
                     fontSize: { xs: "13px", md: "15px" },
                     lineHeight: 1.7,
                     minHeight: "400px",
@@ -252,7 +253,7 @@ const LessonHeroSection: React.FC<LessonHeroSectionProps> = ({
                               "break",
                               "return",
                               "repeat",
-                              "class", 
+                              "class",
                               "import",
                               "export",
                               "extends",
@@ -302,9 +303,7 @@ const LessonHeroSection: React.FC<LessonHeroSectionProps> = ({
                                   {part}
                                 </span>
                               );
-                            } else if (
-                              jsObjects.includes(part) 
-                            ) {
+                            } else if (jsObjects.includes(part)) {
                               // Objects - coral red
                               return (
                                 <span
@@ -377,7 +376,13 @@ const LessonHeroSection: React.FC<LessonHeroSectionProps> = ({
                                 </span>
                               );
                             } else if (
-                              ["true", "false", "null", "undefined", "NaN"].includes(part)
+                              [
+                                "true",
+                                "false",
+                                "null",
+                                "undefined",
+                                "NaN",
+                              ].includes(part)
                             ) {
                               // Literals - coral red
                               return (
@@ -413,18 +418,18 @@ const LessonHeroSection: React.FC<LessonHeroSectionProps> = ({
                       gap: 1,
                     }}
                   >
-                      <Box
-                        sx={{
-                          width: 10,
-                          height: 18,
-                          bgcolor: "#8BE9FD", // Bright cyan cursor
-                          animation: "blink 1s infinite",
-                          "@keyframes blink": {
-                            "0%, 50%": { opacity: 1 },
-                            "51%, 100%": { opacity: 0 },
-                          },
-                        }}
-                      />
+                    <Box
+                      sx={{
+                        width: 10,
+                        height: 18,
+                        bgcolor: "#8BE9FD", // Bright cyan cursor
+                        animation: "blink 1s infinite",
+                        "@keyframes blink": {
+                          "0%, 50%": { opacity: 1 },
+                          "51%, 100%": { opacity: 0 },
+                        },
+                      }}
+                    />
                   </Box>
                 </Box>
               </Box>

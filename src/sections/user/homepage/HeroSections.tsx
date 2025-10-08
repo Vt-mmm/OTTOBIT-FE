@@ -3,8 +3,10 @@ import { motion } from "framer-motion";
 import { DroneModel3D } from "components/3d";
 import { useAppSelector } from "store/config";
 import { Science, School, Engineering } from "@mui/icons-material";
+import { useLocales } from "hooks";
 
 const HeroSection = () => {
+  const { translate } = useLocales();
   // Lấy trạng thái đăng nhập từ Redux store
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
@@ -169,28 +171,28 @@ const HeroSection = () => {
                   mb: 2,
                 }}
               >
-                <Box 
-                  component="span" 
-                  sx={{ 
+                <Box
+                  component="span"
+                  sx={{
                     color: "#1f2937",
                     display: "block",
                     fontSize: { xs: "2.5rem", sm: "3.5rem", md: "4.5rem" },
                   }}
                 >
-                  Meet
+                  {translate("homepage.Meet")}
                 </Box>
-                <Box 
-                  component="span" 
-                  sx={{ 
+                <Box
+                  component="span"
+                  sx={{
                     color: "#22c55e",
                     fontWeight: 800,
                     fontSize: { xs: "3.5rem", sm: "4.5rem", md: "6rem" },
                   }}
                 >
-                  Ottobit
+                  {translate("homepage.Ottobit")}
                 </Box>
               </Typography>
-              
+
               <Typography
                 variant="h2"
                 sx={{
@@ -202,9 +204,9 @@ const HeroSection = () => {
                   maxWidth: "500px",
                 }}
               >
-                your unique STEAM learning companion
+                {translate("homepage.UniqueSTEAM")}
                 <br />
-                and complete robotics solution
+                {translate("homepage.CompleteSolution")}
               </Typography>
             </motion.div>
 
@@ -240,11 +242,17 @@ const HeroSection = () => {
                   >
                     <Engineering sx={{ fontSize: 28, color: "#22c55e" }} />
                   </Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: "#1f2937" }}>
-                    Build
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: 600, mb: 0.5, color: "#1f2937" }}
+                  >
+                    {translate("homepage.Build")}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: "#374151", opacity: 0.8 }}>
-                    Easy and simple<br />to program
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "#374151", opacity: 0.8 }}
+                  >
+                    {translate("homepage.EasySimple")}
                   </Typography>
                 </Box>
 
@@ -265,11 +273,17 @@ const HeroSection = () => {
                   >
                     <Science sx={{ fontSize: 28, color: "#22c55e" }} />
                   </Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: "#1f2937" }}>
-                    Learn
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: 600, mb: 0.5, color: "#1f2937" }}
+                  >
+                    {translate("homepage.Learn")}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: "#374151", opacity: 0.8 }}>
-                    Creativity and<br />problem solving
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "#374151", opacity: 0.8 }}
+                  >
+                    {translate("homepage.CreativityProblemSolving")}
                   </Typography>
                 </Box>
 
@@ -290,11 +304,17 @@ const HeroSection = () => {
                   >
                     <School sx={{ fontSize: 28, color: "#22c55e" }} />
                   </Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: "#1f2937" }}>
-                    Expandable
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: 600, mb: 0.5, color: "#1f2937" }}
+                  >
+                    {translate("homepage.Expandable")}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: "#374151", opacity: 0.8 }}>
-                    Let your imagination<br />flow!
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "#374151", opacity: 0.8 }}
+                  >
+                    {translate("homepage.LetImagination")}
                   </Typography>
                 </Box>
               </Box>

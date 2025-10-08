@@ -23,6 +23,7 @@ import {
 import { getStudentByUserThunk } from "../../../redux/student/studentThunks";
 import { PATH_USER } from "../../../routes/paths";
 import StudentProfileRequiredDialog from "./StudentProfileRequiredDialog";
+import { useLocales } from "../../../hooks";
 
 // Import the new sections
 import CourseHeroSection from "./detail/CourseHeroSection";
@@ -39,6 +40,7 @@ export default function CourseDetailSection({
 }: CourseDetailSectionProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { translate } = useLocales();
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -135,7 +137,7 @@ export default function CourseDetailSection({
   }, [studentData, dispatch]);
 
   const handleEnrollCourse = async () => {
-    const courseName = course?.title || "khóa học này";
+    const courseName = course?.title || translate("courses.ThisCourse");
 
     try {
       // First check if user has student profile
@@ -156,7 +158,7 @@ export default function CourseDetailSection({
 
       setSnackbar({
         open: true,
-        message: "Tham gia khóa học thành công!",
+        message: translate("courses.EnrollSuccess"),
         severity: "success",
       });
 
@@ -184,7 +186,7 @@ export default function CourseDetailSection({
           message:
             typeof error === "string"
               ? error
-              : "Không thể tham gia khóa học. Vui lòng thử lại.",
+              : translate("courses.EnrollError"),
           severity: "error",
         });
       }
@@ -196,7 +198,7 @@ export default function CourseDetailSection({
     if (!isUserEnrolled) {
       setSnackbar({
         open: true,
-        message: "Vui lòng tham gia khóa học để truy cập bài học.",
+        message: translate("courses.LoginToAccess"),
         severity: "warning",
       });
       return;
@@ -209,7 +211,7 @@ export default function CourseDetailSection({
     if (!currentLesson) {
       setSnackbar({
         open: true,
-        message: "Không tìm thấy bài học.",
+        message: translate("courses.LessonNotFound"),
         severity: "error",
       });
       return;
@@ -224,7 +226,9 @@ export default function CourseDetailSection({
     if (!accessible) {
       setSnackbar({
         open: true,
-        message: `Vui lòng hoàn thành bài học trước đó để mở khóa "${currentLesson.title}".`,
+        message: `${translate("courses.CompleteToUnlock")} "${
+          currentLesson.title
+        }".`,
         severity: "warning",
       });
       return;

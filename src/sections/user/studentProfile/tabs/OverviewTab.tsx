@@ -7,6 +7,7 @@ import {
   Skeleton,
 } from "@mui/material";
 import { motion } from "framer-motion";
+import { useLocales } from "../../../../hooks";
 import SchoolIcon from "@mui/icons-material/SchoolOutlined";
 import AssignmentIcon from "@mui/icons-material/AssignmentOutlined";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEventsOutlined";
@@ -35,23 +36,25 @@ export default function OverviewTab({
   learningProgress,
   loading,
 }: OverviewTabProps) {
+  const { translate } = useLocales();
+
   const statsCards = [
     {
-      title: "Khóa học đã tham gia",
+      title: translate("student.CoursesEnrolled"),
       value: stats.totalEnrollments,
       icon: <SchoolIcon sx={{ fontSize: 32 }} />,
       color: "#4caf50",
       bgColor: "rgba(76, 175, 80, 0.1)",
     },
     {
-      title: "Bài tập đã nộp",
+      title: translate("student.AssignmentsSubmitted"),
       value: stats.totalSubmissions,
       icon: <AssignmentIcon sx={{ fontSize: 32 }} />,
       color: "#2196f3",
       bgColor: "rgba(33, 150, 243, 0.1)",
     },
     {
-      title: "Khóa học hoàn thành",
+      title: translate("student.CoursesCompleted"),
       value: stats.completedCourses,
       icon: <EmojiEventsIcon sx={{ fontSize: 32 }} />,
       color: "#ff9800",
@@ -97,7 +100,9 @@ export default function OverviewTab({
                 },
               }}
             >
-              <CardContent sx={{ p: 3, flex: 1, display: "flex", alignItems: "center" }}>
+              <CardContent
+                sx={{ p: 3, flex: 1, display: "flex", alignItems: "center" }}
+              >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                   <Box
                     sx={{
@@ -123,7 +128,7 @@ export default function OverviewTab({
                     <Typography
                       variant="body2"
                       color="text.secondary"
-                      sx={{ 
+                      sx={{
                         fontSize: "0.875rem",
                         lineHeight: 1.4,
                         minHeight: "2.8em", // Fix: Reserve space for 2 lines
@@ -163,7 +168,7 @@ export default function OverviewTab({
               gap: 1,
             }}
           >
-            📚 Tiến độ học tập
+            📚 {translate("student.LearningProgress")}
           </Typography>
 
           {loading ? (

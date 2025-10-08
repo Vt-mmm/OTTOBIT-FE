@@ -13,6 +13,7 @@ import {
 } from "@mui/icons-material";
 import { axiosClient } from "axiosClient/axiosClient";
 import { ROUTES_API_ENROLLMENT } from "constants/routesApiKeys";
+import { useLocales } from "hooks";
 
 interface CourseCertificatesSectionProps {
   course: {
@@ -36,6 +37,7 @@ export default function CourseCertificatesSection({
   courseRating,
   totalRatings,
 }: CourseCertificatesSectionProps) {
+  const { translate } = useLocales();
   // const [certificates, setCertificates] = useState<Certificate[]>([]); // TODO: Use when Certificate API is ready
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +70,7 @@ export default function CourseCertificatesSection({
           // setCertificates(certRes.data?.data?.items || []);
         }
       } catch (err: any) {
-        setError(err?.message || "Không thể tải thông tin chứng chỉ");
+        setError(err?.message || translate("courses.CannotLoadCertificate"));
       } finally {
         setLoading(false);
       }
@@ -90,7 +92,7 @@ export default function CourseCertificatesSection({
       >
         <CircularProgress size={40} />
         <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-          Đang tải thông tin chứng chỉ...
+          {translate("courses.LoadingCertificate")}
         </Typography>
       </Box>
     );
@@ -118,7 +120,7 @@ export default function CourseCertificatesSection({
           fontSize: { xs: "1.25rem", sm: "1.5rem" },
         }}
       >
-        Chứng chỉ nhận được
+        {translate("courses.CertificateReceived")}
       </Typography>
 
       {error && (
@@ -237,7 +239,7 @@ export default function CourseCertificatesSection({
                 },
               }}
             >
-              Xem chứng chỉ
+              {translate("courses.ViewCertificate")}
             </Button>
           </Box>
 
@@ -253,7 +255,7 @@ export default function CourseCertificatesSection({
                   minWidth: 120,
                 }}
               >
-                Đã hoàn thành
+                {translate("courses.Completed")}
               </Button>
             ) : isUserEnrolled ? (
               <Button
@@ -265,7 +267,7 @@ export default function CourseCertificatesSection({
                   minWidth: 100,
                 }}
               >
-                Đang học
+                {translate("courses.Learning")}
               </Button>
             ) : (
               <Button
@@ -278,7 +280,7 @@ export default function CourseCertificatesSection({
                   minWidth: 100,
                 }}
               >
-                Bắt đầu
+                {translate("courses.Start")}
               </Button>
             )}
           </Box>
@@ -318,8 +320,11 @@ export default function CourseCertificatesSection({
         {!isUserEnrolled && (
           <Alert severity="info" sx={{ mt: 2 }}>
             <Typography variant="body2">
-              <strong>Ghi chú:</strong> Bạn cần tham gia khóa học và hoàn thành
-              tất cả các bài học để nhận chứng chỉ.
+              <span
+                dangerouslySetInnerHTML={{
+                  __html: translate("courses.CertificateNote"),
+                }}
+              />
             </Typography>
           </Alert>
         )}
@@ -338,9 +343,7 @@ export default function CourseCertificatesSection({
         {courseCompleted && (
           <Alert severity="success" sx={{ mt: 2 }}>
             <Typography variant="body2">
-              <strong>Chúc mừng!</strong> Bạn đã hoàn thành khóa học. Chứng chỉ
-              của bạn có thể xem trong tab "Chứng chỉ" trong trang hồ sơ học
-              viên.
+              {translate("courses.Congratulations")}
             </Typography>
           </Alert>
         )}

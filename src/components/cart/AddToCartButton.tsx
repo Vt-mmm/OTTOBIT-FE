@@ -11,6 +11,7 @@ import {
   getCartThunk,
 } from "store/cart/cartThunks";
 import { PATH_USER } from "routes/paths";
+import { useLocales } from "hooks";
 import {
   showSuccessToast,
   showErrorToast,
@@ -33,6 +34,7 @@ export default function AddToCartButton({
 }: AddToCartButtonProps) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { translate } = useLocales();
   const { operations, itemExistsCache } = useAppSelector((state) => state.cart);
 
   const isInCart = itemExistsCache[courseId] || false;
@@ -98,7 +100,7 @@ export default function AddToCartButton({
       const errorMessage =
         typeof error === "string"
           ? error
-          : error?.message || "Không thể thêm vào giỏ hàng";
+          : error?.message || translate("cart.CannotAddToCart");
 
       console.log("[AddToCart] Error message:", errorMessage);
 
@@ -107,12 +109,12 @@ export default function AddToCartButton({
         errorMessage.includes("already exists") ||
         errorMessage.includes("đã có trong giỏ")
       ) {
-        showWarningToast("Khóa học đã có trong giỏ hàng!");
+        showWarningToast(translate("cart.CourseInCart"));
       } else if (
         errorMessage.includes("already own") ||
         errorMessage.includes("đã sở hữu")
       ) {
-        showInfoToast("Bạn đã sở hữu khóa học này rồi!");
+        showInfoToast(translate("cart.AlreadyOwnCourse"));
       } else {
         showErrorToast(errorMessage);
       }
@@ -163,7 +165,7 @@ export default function AddToCartButton({
         fontWeight: 600,
       }}
     >
-      {isAdding ? "Đang thêm..." : "Thêm vào giỏ hàng"}
+      {isAdding ? translate("cart.Adding") : translate("cart.AddToCart")}
     </Button>
   );
 }
