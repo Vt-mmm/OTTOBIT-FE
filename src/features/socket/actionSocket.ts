@@ -17,7 +17,6 @@ export function getLastProgram() {
 // Convert string actions to ProgramAction format for Phaser with grouping
 function convertStringActionsToProgramActions(actions: string[]): any[] {
   if (actions.length === 0) return [];
-  console.log("actions", actions);
 
   const result: any[] = [];
   let i = 0;
@@ -150,15 +149,15 @@ export function connectActionSocket(
   options?: { host?: string; port?: number; protocol?: "ws" | "wss" }
 ) {
   const host = options?.host || ACTIONS_SERVER_CONFIG.HOST || "localhost";
-  const port = options?.port ?? parseInt(ACTIONS_SERVER_CONFIG.PORT || "3000");
+  // const port = options?.port ?? parseInt(ACTIONS_SERVER_CONFIG.PORT || "3000");
 
   // Force WSS for HTTPS pages (production)
   const isHttps =
     typeof window !== "undefined" && window.location.protocol === "https:";
-  const protocol = "http";
+  const protocol = "https";
 
   // NestJS Socket.IO default path is /socket.io
-  const url = `${protocol}://${host}:${port}`;
+  const url = `${protocol}://${host}`;
   let socket: Socket | null = null;
 
   const connect = () => {
