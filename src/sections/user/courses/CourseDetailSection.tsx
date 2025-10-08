@@ -318,7 +318,7 @@ export default function CourseDetailSection({
           maxWidth="lg"
           sx={{ pt: { xs: 10, md: 12 }, px: { xs: 2, sm: 3 } }}
         >
-          <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+          <Grid container spacing={3}>
             {/* Main Content */}
             <Grid item xs={12} md={8}>
               {/* Course Hero Section */}

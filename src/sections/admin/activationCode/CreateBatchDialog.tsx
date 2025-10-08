@@ -126,8 +126,10 @@ export default function CreateBatchDialog({
                       <Box>
                         <Typography variant="body1">{option.name}</Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {option.model} - {option.brand} | Giá:{" "}
-                          {option.price.toLocaleString()}đ
+                          {option.model} - {option.brand}
+                          {option.price != null && (
+                            <> | Giá: {option.price.toLocaleString()}đ</>
+                          )}
                         </Typography>
                       </Box>
                     </Box>

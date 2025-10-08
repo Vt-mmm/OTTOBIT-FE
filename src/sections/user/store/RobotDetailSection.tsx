@@ -22,6 +22,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "store/config";
 import { getRobotByIdThunk } from "store/robot/robotThunks";
+import { getImagesThunk } from "store/image/imageThunks";
 import { PATH_PUBLIC, PATH_USER } from "routes/paths";
 import RobotBOMSection from "sections/user/robot/RobotBOMSection";
 
@@ -37,6 +38,7 @@ export default function RobotDetailSection({
   const { currentRobot } = useAppSelector((state) => state.robot);
   const { data: robotData, isLoading, error } = currentRobot;
   const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { images } = useAppSelector((state) => state.image);
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -44,6 +46,14 @@ export default function RobotDetailSection({
   useEffect(() => {
     if (robotId) {
       dispatch(getRobotByIdThunk(robotId));
+      // Fetch gallery images for this robot
+      dispatch(
+        getImagesThunk({
+          robotId: robotId,
+          pageNumber: 1,
+          pageSize: 20,
+        })
+      );
     }
   }, [dispatch, robotId]);
 
@@ -76,8 +86,30 @@ export default function RobotDetailSection({
     );
   }
 
-  // Thumbnail images - in real app this would come from robotData.images
-  const thumbnails = robotData.imageUrl ? [robotData.imageUrl] : [];
+  // Combine main image + gallery images
+  const galleryImages = [];
+
+  // Add main image first (if exists)
+  if (robotData.imageUrl) {
+    galleryImages.push({
+      url: robotData.imageUrl,
+      isMain: true,
+    });
+  }
+
+  // Add gallery images from Image table
+  if (images.data?.items && images.data.items.length > 0) {
+    images.data.items.forEach((img) => {
+      galleryImages.push({
+        url: img.url,
+        isMain: false,
+      });
+    });
+  }
+
+  // Current selected image URL
+  const currentImageUrl =
+    galleryImages[selectedImage]?.url || robotData.imageUrl;
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -139,17 +171,20 @@ export default function RobotDetailSection({
                 mb: 2,
                 position: "relative",
                 overflow: "hidden",
+                border: "1px solid",
+                borderColor: "grey.200",
               }}
             >
-              {robotData.imageUrl ? (
+              {currentImageUrl ? (
                 <Box
                   component="img"
-                  src={robotData.imageUrl}
+                  src={currentImageUrl}
                   alt={robotData.name}
                   sx={{
                     maxWidth: "100%",
                     maxHeight: "100%",
                     objectFit: "contain",
+                    transition: "opacity 0.3s ease-in-out",
                   }}
                 />
               ) : (
@@ -160,9 +195,9 @@ export default function RobotDetailSection({
             </Box>
 
             {/* Thumbnail Gallery */}
-            {thumbnails.length > 0 && (
-              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                {thumbnails.map((thumb, index) => (
+            {galleryImages.length > 0 && (
+              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mt: 2 }}>
+                {galleryImages.map((image, index) => (
                   <Box
                     key={index}
                     onClick={() => setSelectedImage(index)}
@@ -179,14 +214,17 @@ export default function RobotDetailSection({
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
+                      position: "relative",
+                      transition: "all 0.2s ease-in-out",
                       "&:hover": {
                         borderColor: "primary.main",
+                        transform: "scale(1.05)",
                       },
                     }}
                   >
                     <Box
                       component="img"
-                      src={thumb}
+                      src={image.url}
                       alt={`${robotData.name} ${index + 1}`}
                       sx={{
                         maxWidth: "100%",
@@ -194,6 +232,24 @@ export default function RobotDetailSection({
                         objectFit: "contain",
                       }}
                     />
+                    {/* Main image badge */}
+                    {image.isMain && (
+                      <Chip
+                        label="Main"
+                        size="small"
+                        color="primary"
+                        sx={{
+                          position: "absolute",
+                          top: 2,
+                          right: 2,
+                          height: 16,
+                          fontSize: "0.65rem",
+                          "& .MuiChip-label": {
+                            px: 0.5,
+                          },
+                        }}
+                      />
+                    )}
                   </Box>
                 ))}
               </Box>

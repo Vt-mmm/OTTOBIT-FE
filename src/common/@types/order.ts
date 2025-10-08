@@ -1,115 +1,80 @@
-// ============================================================================
-// Order Types - API Request/Response Types
-// ============================================================================
+// Import PaymentTransactionResult from payment.ts
+import type { PaymentTransactionResult } from "./payment";
 
-import { PaymentMethod, PaymentStatus } from "./payment";
-
-// ============================================================================
-// Enums
-// ============================================================================
-
+// Order Status Enum
 export enum OrderStatus {
   Pending = 0,
   Paid = 1,
   Failed = 2,
   Cancelled = 3,
+  Refunded = 4,
 }
 
-// Re-export PaymentStatus for convenience
-export { PaymentStatus };
+// Re-export PaymentStatus and PaymentTransactionResult from payment.ts for convenience
+export { PaymentStatus } from "./payment";
+export type { PaymentTransactionResult } from "./payment";
 
-// ============================================================================
-// API Response Types
-// ============================================================================
-
-/**
- * Order result from API
- */
-export interface OrderResult {
-  id: string;
-  orderCode?: string;
-  userId: string;
-  total: number;
-  subtotal: number;
-  discountAmount: number;
-  status: OrderStatus;
-  paymentStatus: PaymentStatus;
-  paymentMethod: PaymentMethod;
-  itemsCount?: number;
-  createdAt: string;
-  updatedAt: string;
-  items?: OrderItemResult[];
-  paymentTransactions?: PaymentTransactionSummary[];
-}
-
-/**
- * Order item result
- */
+// Order Item Result
 export interface OrderItemResult {
   id: string;
   orderId: string;
   courseId: string;
   courseTitle: string;
-  courseThumbnail?: string;
   unitPrice: number;
-  createdAt: string;
-}
-
-/**
- * Payment transaction summary (in order context)
- */
-export interface PaymentTransactionSummary {
-  id: string;
-  orderId: string;
-  amount: number;
-  status: number;
-  method: number;
-  orderCode?: number;
-  createdAt: string;
-}
-
-/**
- * Order summary result (for list views)
- */
-export interface OrderSummaryResult {
-  id: string;
-  orderCode?: string;
-  total: number;
-  subtotal: number;
-  discountAmount: number;
-  status: OrderStatus;
-  paymentStatus: PaymentStatus;
-  paymentMethod: PaymentMethod;
-  itemsCount: number;
   createdAt: string;
   updatedAt: string;
 }
 
-// ============================================================================
-// API Request Types
-// ============================================================================
-
-/**
- * Create order from cart request
- */
-export interface CreateOrderFromCartRequest {
-  cartId: string;
+// Order Result
+export interface OrderResult {
+  id: string;
+  userId: string;
+  subtotal: number;
+  discountAmount: number;
+  total: number;
+  status: OrderStatus;
+  orderCode?: string; // Added for user-facing order reference
+  createdAt: string;
+  updatedAt: string;
+  items: OrderItemResult[];
+  paymentTransactions: PaymentTransactionResult[];
+  // Admin fields
+  userFullName?: string;
+  userEmail?: string;
 }
 
-/**
- * Get orders request (pagination)
- */
+// Pagination Response
+export interface OrdersResponse {
+  items: OrderResult[];
+  page: number;
+  size: number;
+  total: number;
+  totalPages: number;
+}
+
+// Request Types
 export interface GetOrdersRequest {
   page?: number;
   size?: number;
+  searchTerm?: string;
   status?: OrderStatus;
-  fromDate?: string;
-  toDate?: string;
+  orderBy?: string;
+  orderDirection?: string;
 }
 
-/**
- * Update order status request (admin)
- */
+export interface GetOrdersForAdminRequest extends GetOrdersRequest {
+  userId?: string;
+  includeDeleted?: boolean;
+}
+
+export interface CreateOrderFromCartRequest {
+  // No fields needed, uses current user's cart
+}
+
 export interface UpdateOrderStatusRequest {
   status: OrderStatus;
+}
+
+export interface CancelOrderRequest {
+  // No fields needed, uses orderId from URL
 }

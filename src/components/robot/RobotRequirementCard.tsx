@@ -7,10 +7,7 @@ import {
   Chip,
   Button,
 } from "@mui/material";
-import {
-  CheckCircle as CheckCircleIcon,
-  Warning as WarningIcon,
-} from "@mui/icons-material";
+import { CheckCircle as CheckCircleIcon } from "@mui/icons-material";
 import { useLocales } from "hooks";
 
 interface RobotRequirementCardProps {
@@ -65,71 +62,45 @@ export default function RobotRequirementCard({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "start",
-            mb: 1,
+            gap: 2,
           }}
         >
-          <Box>
-            <Typography variant="h6" component="div">
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h6" component="div" sx={{ mb: 0.5 }}>
               {robotName}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               {robotModel} - {robotBrand}
             </Typography>
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 0.5,
-              alignItems: "flex-end",
-            }}
-          >
-            {isRequired && (
-              <Chip
-                label={translate("common.Required")}
-                color="error"
-                size="small"
-              />
-            )}
-            {isOwned ? (
-              <Chip
-                icon={<CheckCircleIcon />}
-                label={translate("common.Activated")}
-                color="success"
-                size="small"
-              />
-            ) : (
-              <Chip
-                icon={<WarningIcon />}
-                label={translate("common.NotAvailable")}
-                color="warning"
-                size="small"
-              />
+
+            {/* Action buttons for not owned robots */}
+            {!isOwned && (
+              <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
+                <Button variant="contained" size="small" onClick={onActivate}>
+                  {translate("common.ActivateRobot")}
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  href="#"
+                  target="_blank"
+                >
+                  {translate("common.BuyRobot")}
+                </Button>
+              </Box>
             )}
           </Box>
+
+          {/* Status chips - simplified */}
+          {isOwned && (
+            <Chip
+              icon={<CheckCircleIcon />}
+              label={translate("common.Activated")}
+              color="success"
+              size="small"
+            />
+          )}
         </Box>
-
-        {!isOwned && (
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Button variant="contained" size="small" onClick={onActivate}>
-              {translate("common.ActivateRobot")}
-            </Button>
-            <Button variant="outlined" size="small" href="#" target="_blank">
-              {translate("common.BuyRobot")}
-            </Button>
-          </Box>
-        )}
-
-        {isOwned && (
-          <Typography
-            variant="body2"
-            color="success.main"
-            sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-          >
-            <CheckCircleIcon fontSize="small" />
-            {translate("common.YouOwnThisRobot")}
-          </Typography>
-        )}
       </CardContent>
     </Card>
   );

@@ -14,6 +14,7 @@ import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import CardMembershipIcon from "@mui/icons-material/CardMembership";
 import DescriptionIcon from "@mui/icons-material/Description";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { PATH_ADMIN, PATH_USER } from "routes/paths";
 import CollectionsBookmarkIcon from "@mui/icons-material/CollectionsBookmark";
 
@@ -112,6 +113,16 @@ function useConfigSidebar() {
           title: "Quản lý Ghi danh",
           path: PATH_ADMIN.enrollmentManagement,
           icon: <LibraryBooksIcon fontSize="small" />,
+        },
+      ],
+    },
+    {
+      missions: "Quản lý bán hàng",
+      listNav: [
+        {
+          title: "Quản lý Đơn hàng",
+          path: PATH_ADMIN.orders,
+          icon: <ShoppingCartIcon fontSize="small" />,
         },
       ],
     },

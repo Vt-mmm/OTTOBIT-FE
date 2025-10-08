@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Box, Typography, Chip, Alert } from "@mui/material";
 import {
   School as SchoolIcon,
@@ -8,10 +8,12 @@ import {
 } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "store/config";
 import { getCourseRobotsThunk } from "store/courseRobot/courseRobotThunks";
+import { getMyActivationCodesThunk } from "store/activationCode/activationCodeThunks";
 import RobotRequirementCard from "components/robot/RobotRequirementCard";
 import ActivateRobotDialog from "components/robot/ActivateRobotDialog";
 import { AddToCartButton } from "components/cart";
 import { CourseType } from "common/@types/course";
+import { CodeStatus } from "common/@types/activationCode";
 import { useLocales } from "../../../../hooks";
 
 interface CourseSidebarSectionProps {
@@ -33,6 +35,7 @@ export default function CourseSidebarSection({
   const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const { courseRobots } = useAppSelector((state) => state.courseRobot);
+  const { myCodes } = useAppSelector((state) => state.activationCode);
   const [activateDialogOpen, setActivateDialogOpen] = useState(false);
 
   // Use courseRobots.data from GET_ALL endpoint
@@ -41,23 +44,45 @@ export default function CourseSidebarSection({
   useEffect(() => {
     // Fetch robots required for this course
     dispatch(getCourseRobotsThunk({ courseId: course.id, pageSize: 100 }));
+    // Fetch user's activated robots
+    dispatch(
+      getMyActivationCodesThunk({
+        status: CodeStatus.Used,
+        pageNumber: 1,
+        pageSize: 100,
+      })
+    );
   }, [dispatch, course.id]);
 
-  const handleActivateSuccess = () => {
-    // TODO: Refresh after activation
-    dispatch(getCourseRobotsThunk({ courseId: course.id, pageSize: 100 }));
-  };
+  const handleActivateSuccess = useCallback(async () => {
+    // Refresh both course robots and activation codes
+    await Promise.all([
+      dispatch(getCourseRobotsThunk({ courseId: course.id, pageSize: 100 })),
+      dispatch(
+        getMyActivationCodesThunk({
+          status: CodeStatus.Used,
+          pageNumber: 1,
+          pageSize: 100,
+        })
+      ),
+    ]);
+  }, [dispatch, course.id]);
 
-  // TODO: Implement proper robot ownership checking
-  // For now, assume user doesn't own any robots (will be fixed later)
-  const isRobotOwned = (_robotId: string): boolean => {
-    return false; // Temporarily disabled
-  };
+  // Get list of activated robot IDs from activation codes
+  const activatedRobotIds = useMemo(() => {
+    if (!myCodes.data?.items) return new Set<string>();
 
-  // Check if all required robots are owned
-  const hasAllRequiredRobots = courseRobotsList
-    .filter((cr) => cr.isRequired)
-    .every((cr) => isRobotOwned(cr.robotId));
+    return new Set(
+      myCodes.data.items
+        .filter((code) => code.status === CodeStatus.Used && code.robotId)
+        .map((code) => code.robotId!)
+    );
+  }, [myCodes.data]);
+
+  // Check if user owns a specific robot
+  const isRobotOwned = (robotId: string): boolean => {
+    return activatedRobotIds.has(robotId);
+  };
 
   const requiredRobots = courseRobotsList.filter((cr) => cr.isRequired);
   const missingRequiredRobots = requiredRobots.filter(
@@ -174,15 +199,6 @@ export default function CourseSidebarSection({
                   {translate("courses.NeedRobots", {
                     count: missingRequiredRobots.length,
                   })}
-                </Typography>
-              </Alert>
-            )}
-
-            {/* Success message if has all required robots */}
-            {requiredRobots.length > 0 && hasAllRequiredRobots && (
-              <Alert severity="success" sx={{ mb: 1.5, py: 0.5 }}>
-                <Typography variant="caption">
-                  {translate("courses.AllRobots")}
                 </Typography>
               </Alert>
             )}

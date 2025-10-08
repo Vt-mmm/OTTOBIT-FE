@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -37,6 +37,16 @@ export default function ActivateRobotDialog({
   const [activationCode, setActivationCode] = useState("");
   const [codeError, setCodeError] = useState("");
 
+  // Use refs to store latest callbacks to avoid infinite loop
+  const onSuccessRef = useRef(onSuccess);
+  const onCloseRef = useRef(onClose);
+
+  // Update refs when callbacks change
+  useEffect(() => {
+    onSuccessRef.current = onSuccess;
+    onCloseRef.current = onClose;
+  }, [onSuccess, onClose]);
+
   useEffect(() => {
     if (!open) {
       // Reset when dialog closes
@@ -48,14 +58,16 @@ export default function ActivateRobotDialog({
 
   useEffect(() => {
     if (operations.redeemSuccess) {
-      // Wait a bit to show success message then close
+      // Call onSuccess immediately to refresh parent component using ref
+      onSuccessRef.current?.();
+
+      // Wait a bit to show success message then close dialog
       const timer = setTimeout(() => {
-        onSuccess?.();
-        onClose();
+        onCloseRef.current?.();
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [operations.redeemSuccess, onSuccess, onClose]);
+  }, [operations.redeemSuccess]);
 
   const validateCode = (code: string): boolean => {
     if (!code || code.trim().length === 0) {

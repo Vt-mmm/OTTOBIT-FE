@@ -167,6 +167,24 @@ export const deleteActivationCodeThunk = createAsyncThunk<string, string>(
   }
 );
 
+// Get My Activation Codes (User)
+export const getMyActivationCodesThunk = createAsyncThunk<
+  ActivationCodesResponse,
+  any
+>("activationCode/getMyCodes", async (params, { rejectWithValue }) => {
+  try {
+    const response = await callApiWithRetry(() =>
+      axiosClient.get(ROUTES_API_ACTIVATION_CODE.MY_CODES, { params })
+    );
+    return response.data.data || response.data;
+  } catch (error) {
+    const err = error as AxiosError<ErrorResponse>;
+    return rejectWithValue(
+      err.response?.data?.message || "Failed to fetch my activation codes"
+    );
+  }
+});
+
 // Redeem Activation Code (User)
 export const redeemActivationCodeThunk = createAsyncThunk<
   RedeemActivationCodeResponse,

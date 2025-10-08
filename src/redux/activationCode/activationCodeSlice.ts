@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { ActivationCodesResponse } from "common/@types/activationCode";
 import {
   getActivationCodesThunk,
+  getMyActivationCodesThunk,
   createActivationCodeBatchThunk,
   deleteActivationCodeThunk,
   updateActivationCodeStatusThunk,
@@ -16,6 +17,12 @@ interface ActivationCodeState {
     isLoading: boolean;
     error: string | null;
     lastQuery: any;
+  };
+  // My Activation Codes (User)
+  myCodes: {
+    data: ActivationCodesResponse | null;
+    isLoading: boolean;
+    error: string | null;
   };
   // Operations state
   operations: {
@@ -45,6 +52,11 @@ const initialState: ActivationCodeState = {
     isLoading: false,
     error: null,
     lastQuery: null,
+  },
+  myCodes: {
+    data: null,
+    isLoading: false,
+    error: null,
   },
   operations: {
     isCreating: false,
@@ -220,6 +232,22 @@ const activationCodeSlice = createSlice({
         state.operations.isRedeeming = false;
         state.operations.redeemError = action.payload as string;
         state.operations.redeemSuccess = false;
+      });
+
+    // Get My Activation Codes (User)
+    builder
+      .addCase(getMyActivationCodesThunk.pending, (state) => {
+        state.myCodes.isLoading = true;
+        state.myCodes.error = null;
+      })
+      .addCase(getMyActivationCodesThunk.fulfilled, (state, action) => {
+        state.myCodes.isLoading = false;
+        state.myCodes.data = action.payload;
+        state.myCodes.error = null;
+      })
+      .addCase(getMyActivationCodesThunk.rejected, (state, action) => {
+        state.myCodes.isLoading = false;
+        state.myCodes.error = action.payload as string;
       });
   },
 });
