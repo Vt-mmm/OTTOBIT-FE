@@ -153,7 +153,7 @@ export default function MicrobitDialog({
         );
       }
       // Inject Actions Server config from environment
-      const actionsHost = import.meta.env.VITE_ACTIONS_SERVER_HOST;
+      const actionsHost = import.meta.env.VITE_ACTIONS_SERVER_HOST_PY;
       const actionsPort = import.meta.env.VITE_ACTIONS_SERVER_PORT;
       if (actionsHost) {
         code = code.replace(
