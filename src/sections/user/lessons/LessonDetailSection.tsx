@@ -16,13 +16,17 @@ interface LessonDetailSectionProps {
   lessonId: string;
 }
 
-export default function LessonDetailSection({ lessonId }: LessonDetailSectionProps) {
+export default function LessonDetailSection({
+  lessonId,
+}: LessonDetailSectionProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  
-  const { data: lesson, isLoading: lessonLoading, error: lessonError } = useAppSelector(
-    (state) => state.lesson.currentLesson
-  );
+
+  const {
+    data: lesson,
+    isLoading: lessonLoading,
+    error: lessonError,
+  } = useAppSelector((state) => state.lesson.currentLesson);
 
   useEffect(() => {
     // Only fetch if lesson not already loaded or lessonId changed
@@ -92,7 +96,7 @@ export default function LessonDetailSection({ lessonId }: LessonDetailSectionPro
   return (
     <Box sx={{ minHeight: "100vh" }}>
       {/* Interactive Map Selector with Tablet UI - Fix sát header */}
-      <LessonMapSelectorSection 
+      <LessonMapSelectorSection
         courseId={lesson.courseId || ""}
         lessonId={lessonId}
         onChallengeSelect={handleChallengeSelect}

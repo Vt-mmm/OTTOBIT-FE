@@ -47,6 +47,8 @@ export const PATH_USER = {
   // Shopping cart
   cart: path(ROOTS_USER, "/cart"),
   checkout: path(ROOTS_USER, "/checkout"),
+  orders: path(ROOTS_USER, "/orders"),
+  orderDetail: path(ROOTS_USER, "/orders/:id"),
   // User management pages - myCourses, myRobots, myCertificates moved to Student Profile tabs
   challenges: path(ROOTS_USER, "/challenges"),
   challengeDetail: path(ROOTS_USER, "/challenges/:id"),

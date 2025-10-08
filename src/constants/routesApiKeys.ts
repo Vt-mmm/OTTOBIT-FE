@@ -26,6 +26,7 @@ const ROOTS_CERTIFICATE_TEMPLATE = "/api/v1/certificate-templates";
 const ROOTS_CART = "/api/v1/cart";
 const ROOTS_CART_ITEM = "/api/v1/cart/items";
 const ROOTS_ORDER = "/api/v1/orders";
+const ROOTS_ORDER_ITEM = "/api/v1/order-items";
 const ROOTS_PAYMENT_TRANSACTION = "/api/v1/payment-transactions";
 const ROOTS_PAYOS = "/api/v1/payos";
 
@@ -47,7 +48,8 @@ export const ROUTES_API_AUTH = {
 
 // Account profile endpoints
 export const ROUTES_API_ACCOUNT = {
-  PROFILE: path(ROOTS_ACCOUNT, `/profile`), // GET/PUT /api/v1/accounts/profile
+  GET_PROFILE: path(ROOTS_ACCOUNT, `/profile`), // GET /api/v1/accounts/profile
+  UPDATE_PROFILE: path(ROOTS_ACCOUNT, `/profile`), // PUT /api/v1/accounts/profile
 };
 
 export const ROUTES_API_STUDENT = {
@@ -129,6 +131,8 @@ export const ROUTES_API_SUBMISSION = {
   BY_CHALLENGE: (challengeId: string) =>
     path(ROOTS_SUBMISSION, `/by-challenge/${challengeId}`), // GET /api/v1/submissions/by-challenge/{challengeId}
   MY_SUBMISSIONS: path(ROOTS_SUBMISSION, `/my-submissions`), // GET /api/v1/submissions/my-submissions (User)
+  BEST_BY_CHALLENGE: (challengeId: string) =>
+    path(ROOTS_SUBMISSION, `/best/${challengeId}`), // GET /api/v1/submissions/best/{challengeId} (User)
 };
 
 export const ROUTES_API_MAP = {
@@ -240,6 +244,7 @@ export const ROUTES_API_ACTIVATION_CODE = {
   ADMIN_EXPORT_CSV: path(ROOTS_ACTIVATION_CODE, `/export-csv`), // GET /api/v1/activation-codes/export-csv (Admin)
   ADMIN_UPDATE_STATUS: (id: string) =>
     path(ROOTS_ACTIVATION_CODE, `/${id}/status`), // PUT /api/v1/activation-codes/{id}/status (Admin)
+  MY_CODES: path(ROOTS_ACTIVATION_CODE, `/my`), // GET /api/v1/activation-codes/my (User)
 };
 
 // New: Robot-Component endpoints
@@ -319,6 +324,16 @@ export const ROUTES_API_ORDER = {
   GET_ORDERS_ADMIN: path(ROOTS_ORDER, `/admin`), // GET /api/v1/orders/admin (Admin - paginated)
   GET_BY_ID_ADMIN: (orderId: string) => path(ROOTS_ORDER, `/admin/${orderId}`), // GET /api/v1/orders/admin/{orderId} (Admin)
   UPDATE_STATUS: (orderId: string) => path(ROOTS_ORDER, `/${orderId}/status`), // PUT /api/v1/orders/{orderId}/status (Admin)
+};
+
+// Order Item endpoints
+export const ROUTES_API_ORDER_ITEM = {
+  // User endpoints
+  GET_BY_ORDER: (orderId: string) =>
+    path(ROOTS_ORDER_ITEM, `/order/${orderId}`), // GET /api/v1/order-items/order/{orderId} (User/Admin)
+
+  // Admin endpoints
+  VALIDATE: path(ROOTS_ORDER_ITEM, `/validate`), // POST /api/v1/order-items/validate (Admin)
 };
 
 // Payment Transaction endpoints

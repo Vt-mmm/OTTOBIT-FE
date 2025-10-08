@@ -19,4 +19,5 @@ export * from "./courseRobot";
 export * from "./activationCode";
 export * from "./cart";
 export * from "./order";
+export * from "./orderItem";
 export * from "./payment";

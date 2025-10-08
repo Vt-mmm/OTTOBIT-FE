@@ -56,6 +56,9 @@ const ComponentDetailPage = lazy(
 const CartPage = lazy(() => import("pages/user/CartPage"));
 // Checkout page
 const CheckoutPage = lazy(() => import("pages/user/CheckoutPage"));
+// Orders page
+const OrdersPage = lazy(() => import("pages/user/OrdersPage"));
+const OrderDetailPage = lazy(() => import("pages/user/OrderDetailPage"));
 // My Robots page
 // Error pages
 const Page404 = lazy(() => import("pages/error/Page404"));
@@ -199,6 +202,13 @@ function AppRouter() {
 
           {/* Checkout */}
           <ReactRoute path={PATH_USER.checkout} element={<CheckoutPage />} />
+
+          {/* Orders */}
+          <ReactRoute path={PATH_USER.orders} element={<OrdersPage />} />
+          <ReactRoute
+            path={PATH_USER.orderDetail}
+            element={<OrderDetailPage />}
+          />
 
           {/* User Store Routes */}
           <ReactRoute path={PATH_USER.store} element={<StorePage />} />

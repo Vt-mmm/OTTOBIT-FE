@@ -13,6 +13,7 @@ import MemoryIcon from "@mui/icons-material/Memory";
 import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import CardMembershipIcon from "@mui/icons-material/CardMembership";
 import DescriptionIcon from "@mui/icons-material/Description";
+import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import { PATH_ADMIN, PATH_USER } from "routes/paths";
 import CollectionsBookmarkIcon from "@mui/icons-material/CollectionsBookmark";
 
@@ -124,6 +125,11 @@ function useConfigSidebar() {
           title: "Hồ sơ",
           path: PATH_USER.profile,
           icon: <PersonIcon fontSize="small" />,
+        },
+        {
+          title: "Đơn hàng của tôi",
+          path: PATH_USER.orders,
+          icon: <ShoppingBagIcon fontSize="small" />,
         },
         {
           title: "Bảo mật",

@@ -20,11 +20,23 @@ export default function PaymentCancelPage() {
   // Get payment params from URL
   const orderCode = searchParams.get("orderCode");
   const cancel = searchParams.get("cancel");
+  const status = searchParams.get("status");
+  const code = searchParams.get("code");
 
   useEffect(() => {
+    // Check if this is actually a successful payment
+    // PayOS sometimes redirects to cancel-url even for successful payments
+    if (cancel === "false" || status === "PAID" || code === "00") {
+      console.log("Payment successful, redirecting to return page...");
+      // Redirect to return-url with all params
+      const params = new URLSearchParams(window.location.search);
+      navigate(`/auth/return-url?${params.toString()}`, { replace: true });
+      return;
+    }
+
     // Log cancellation for analytics (optional)
     console.log("Payment cancelled", { orderCode, cancel });
-  }, [orderCode, cancel]);
+  }, [orderCode, cancel, status, code, navigate]);
 
   const handleRetryCheckout = () => {
     navigate(PATH_USER.cart);

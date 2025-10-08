@@ -6,12 +6,14 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUpOutlined";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEventsOutlined";
 import SmartToyIcon from "@mui/icons-material/SmartToyOutlined";
 import CardMembershipIcon from "@mui/icons-material/CardMembershipOutlined";
+import NoteAltIcon from "@mui/icons-material/NoteAltOutlined";
 import OverviewTab from "../tabs/OverviewTab";
 import EnrolledCoursesTab from "../tabs/EnrolledCoursesTab";
 import LearningProgressTab from "../tabs/LearningProgressTab";
 import AchievementsTab from "../tabs/AchievementsTab";
 import MyRobotsTab from "../tabs/MyRobotsTab";
 import MyCertificatesTab from "../tabs/MyCertificatesTab";
+import MyNotesTab from "../tabs/MyNotesTab";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -76,6 +78,7 @@ export default function ProfileContentTabs({
     { label: "Khóa học", icon: <SchoolIcon /> },
     { label: "Tiến độ", icon: <TrendingUpIcon /> },
     { label: "Thành tích", icon: <EmojiEventsIcon /> },
+    { label: "Ghi chú", icon: <NoteAltIcon /> },
     { label: "Robots", icon: <SmartToyIcon /> },
     { label: "Chứng chỉ", icon: <CardMembershipIcon /> },
   ];
@@ -168,10 +171,14 @@ export default function ProfileContentTabs({
         </TabPanel>
 
         <TabPanel value={value} index={4}>
-          <MyRobotsTab loading={loading} />
+          <MyNotesTab loading={loading} />
         </TabPanel>
 
         <TabPanel value={value} index={5}>
+          <MyRobotsTab loading={loading} />
+        </TabPanel>
+
+        <TabPanel value={value} index={6}>
           <MyCertificatesTab loading={loading} />
         </TabPanel>
       </Box>
