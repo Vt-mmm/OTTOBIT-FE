@@ -196,7 +196,7 @@ const SecuritySettings: React.FC = () => {
     {
       icon: <LockIcon />,
       title: "Đổi mật khẩu",
-      description: "Cập nhật mật khẩu để bảo mật tài khoản",
+      description: translate("profile.UpdatePasswordSecurity"),
       action: "Đổi mật khẩu",
       onClick: () => setOpenChangePassword(true),
     },

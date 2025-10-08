@@ -58,5 +58,9 @@
   "Male": "Nam",
   "Female": "Nữ",
   "Other": "Khác",
-  "PreferNotToSay": "Không tiết lộ"
+  "PreferNotToSay": "Không tiết lộ",
+  "EditProfile": "Chỉnh sửa hồ sơ",
+  "Saving": "Đang lưu...",
+  "SaveChanges": "Lưu thay đổi",
+  "UpdatePasswordSecurity": "Cập nhật mật khẩu để bảo mật tài khoản"
 }

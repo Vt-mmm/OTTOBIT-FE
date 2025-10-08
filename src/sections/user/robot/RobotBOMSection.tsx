@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { Memory as ComponentIcon } from "@mui/icons-material";
 import { AppDispatch } from "store/config";
+import { useLocales } from "hooks";
 import { getRobotComponentsThunk } from "store/robotComponent/robotComponentThunks";
 
 interface RobotBOMSectionProps {
@@ -23,6 +24,7 @@ interface RobotBOMSectionProps {
  * Dùng trong trang Robot Detail để user xem danh sách linh kiện cần thiết
  */
 export default function RobotBOMSection({ robotId }: RobotBOMSectionProps) {
+  const { translate } = useLocales();
   const dispatch = useDispatch<AppDispatch>();
 
   const { robotComponents, isLoading } = useSelector(
@@ -61,7 +63,7 @@ export default function RobotBOMSection({ robotId }: RobotBOMSectionProps) {
     return (
       <Box>
         <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
-          📦 Danh sách linh kiện (BOM)
+          {translate("common.ComponentsBOM")}
         </Typography>
         <Paper
           elevation={0}
@@ -86,7 +88,7 @@ export default function RobotBOMSection({ robotId }: RobotBOMSectionProps) {
       {/* Header */}
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
         <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          📦 Danh sách linh kiện (BOM)
+          {translate("common.ComponentsBOM")}
         </Typography>
         <Chip
           label={`${components.length} loại • ${totalComponents} cái`}

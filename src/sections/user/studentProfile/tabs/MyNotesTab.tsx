@@ -32,6 +32,7 @@ import {
   School as SchoolIcon,
 } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "store/config";
+import { useLocales } from "hooks";
 import {
   fetchMyLessonNotes,
   deleteLessonNote,
@@ -44,6 +45,7 @@ interface MyNotesTabProps {
 }
 
 export default function MyNotesTab({ loading }: MyNotesTabProps) {
+  const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const { myNotes, isLoading, isDeleting } = useAppSelector(
     (state) => state.lessonNote
@@ -63,7 +65,8 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
 
     if (myNotes?.items) {
       myNotes.items.forEach((note) => {
-        const courseTitle = note.courseTitle || "Khóa học không xác định";
+        const courseTitle =
+          note.courseTitle || translate("student.UndefinedCourse");
         map.set(courseTitle, (map.get(courseTitle) || 0) + 1);
       });
     }
@@ -89,7 +92,8 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
     if (selectedCourse !== "all") {
       filtered = filtered.filter(
         (note) =>
-          (note.courseTitle || "Khóa học không xác định") === selectedCourse
+          (note.courseTitle || translate("student.UndefinedCourse")) ===
+          selectedCourse
       );
     }
 
@@ -101,7 +105,8 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
     const groups = new Map<string, typeof filteredNotes>();
 
     filteredNotes.forEach((note) => {
-      const courseTitle = note.courseTitle || "Khóa học không xác định";
+      const courseTitle =
+        note.courseTitle || translate("student.UndefinedCourse");
       if (!groups.has(courseTitle)) {
         groups.set(courseTitle, []);
       }
@@ -112,7 +117,7 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
   }, [filteredNotes]);
 
   const handleDelete = async (noteId: string) => {
-    if (window.confirm("Bạn có chắc muốn xóa ghi chú này?")) {
+    if (window.confirm(translate("student.ConfirmDeleteNote"))) {
       await dispatch(deleteLessonNote(noteId));
       // Reload notes after delete
       dispatch(fetchMyLessonNotes({ pageSize: 100 }));
@@ -134,11 +139,10 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
       <Box sx={{ textAlign: "center", py: 8 }}>
         <NoteIcon sx={{ fontSize: 80, color: "text.disabled", mb: 2 }} />
         <Typography variant="h5" gutterBottom color="text.secondary">
-          Chưa có ghi chú nào
+          {translate("student.NoNotes")}
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Bạn chưa tạo ghi chú trong các bài học. Hãy bắt đầu học và ghi chú
-          những điều quan trọng!
+          {translate("lessons.CreateFirstNote")}
         </Typography>
       </Box>
     );
@@ -152,7 +156,7 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
           {/* Search */}
           <TextField
             fullWidth
-            placeholder="Tìm kiếm ghi chú..."
+            placeholder={translate("student.SearchNotes")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             InputProps={{
@@ -166,10 +170,10 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
 
           {/* Course Filter */}
           <FormControl sx={{ minWidth: 200 }}>
-            <InputLabel>Khóa học</InputLabel>
+            <InputLabel>{translate("student.Course")}</InputLabel>
             <Select
               value={selectedCourse}
-              label="Khóa học"
+              label={translate("student.Course")}
               onChange={(e) => setSelectedCourse(e.target.value)}
               startAdornment={
                 <InputAdornment position="start">
@@ -191,7 +195,7 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
         <Stack direction="row" spacing={1} alignItems="center">
           <Chip
             icon={<NoteIcon />}
-            label={`${filteredNotes.length} ghi chú`}
+            label={`${filteredNotes.length} ${translate("student.Notes")}`}
             size="small"
             color="primary"
             variant="outlined"
@@ -209,7 +213,7 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
       {/* No results */}
       {filteredNotes.length === 0 && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Không tìm thấy ghi chú nào phù hợp với tìm kiếm của bạn.
+          {translate("student.NoNotesFound")}
         </Alert>
       )}
 
@@ -230,7 +234,10 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
                     <Typography variant="h6" sx={{ flex: 1 }}>
                       {courseTitle}
                     </Typography>
-                    <Chip label={`${notes.length} ghi chú`} size="small" />
+                    <Chip
+                      label={`${notes.length} ${translate("student.Notes")}`}
+                      size="small"
+                    />
                   </Stack>
                 </AccordionSummary>
 

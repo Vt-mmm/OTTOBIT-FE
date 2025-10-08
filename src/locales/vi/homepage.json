@@ -77,5 +77,15 @@
   "LetImagination": "Hãy để trí tưởng tượng bạn chảy tràn!",
   "InteractiveShowcase": "Giới thiệu tương tác",
   "InteractWith": "Tương tác với",
-  "Technology": "Công nghệ"
+  "Technology": "Công nghệ",
+  "JoinExperienceSTEM": "Tham gia cùng chúng tôi để trải nghiệm những công nghệ STEM tuyệt vời này!",
+  "STEMCourses": "Khóa học STEM",
+  "ViewAllCourses": "Xem tất cả khóa học",
+  "MockCourse1Desc": "Học cơ bản về robotics, từ lắp ráp đến lập trình điều khiển robot đơn giản",
+  "MockCourse2Desc": "Lập trình trực quan dành cho trẻ em, học cách tư duy logic thông qua game và animation",
+  "MockCourse3Desc": "Khám phá thế giới trí tuệ nhân tạo qua các dự án thú vị và dễ hiểu",
+  "MockCourse4Desc": "Làm việc nhóm thực hiện các dự án STEM tích hợp, từ ý tưởng đến sản phẩm",
+  "LevelBasic": "Cơ bản",
+  "LevelIntermediate": "Trung cấp",
+  "LevelAdvanced": "Nâng cao"
 }

@@ -7,6 +7,7 @@ import {
   LinearProgress,
 } from "@mui/material";
 import { motion } from "framer-motion";
+import { useLocales } from "hooks";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEventsOutlined";
 
 interface StarBucket {
@@ -26,6 +27,7 @@ export default function AchievementsTab({
   starBuckets,
   loading,
 }: AchievementsTabProps) {
+  const { translate } = useLocales();
   const totalChallenges = challengeBestStars.size;
   const totalStars = Array.from(challengeBestStars.values()).reduce(
     (sum, star) => sum + star,
@@ -94,7 +96,7 @@ export default function AchievementsTab({
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
               <EmojiEventsIcon />
               <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                Tổng quan thành tích
+                {translate("student.AchievementsOverview")}
               </Typography>
             </Box>
             <Box

@@ -223,7 +223,7 @@ export default function OverviewTab({
               }}
             >
               <Typography variant="body2">
-                Chưa có dữ liệu tiến độ học tập
+                {translate("student.NoProgressData")}
               </Typography>
             </Box>
           )}

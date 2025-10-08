@@ -222,11 +222,11 @@ export default function EnrolledCoursesTab({
           variant="h6"
           sx={{ fontWeight: 600, fontSize: { xs: "1.125rem", sm: "1.25rem" } }}
         >
-          Khóa học của tôi
+          {translate("student.MyCourses")}
         </Typography>
         <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
           <Chip
-            label={`Đang học (${inProgress.length})`}
+            label={`${translate("student.Learning")} (${inProgress.length})`}
             color={tab === "IN_PROGRESS" ? "primary" : "default"}
             onClick={() => setTab("IN_PROGRESS")}
             variant={tab === "IN_PROGRESS" ? "filled" : "outlined"}
@@ -263,13 +263,13 @@ export default function EnrolledCoursesTab({
         >
           <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
             {tab === "IN_PROGRESS"
-              ? "Không có khóa học đang học"
-              : "Chưa hoàn thành khóa học nào"}
+              ? translate("student.NoActiveCoursesProgress")
+              : translate("student.NoCourseCompleted")}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             {tab === "IN_PROGRESS"
-              ? "Hãy đăng ký khóa học mới để bắt đầu học tập!"
-              : "Hoàn thành các khóa học để nhận chứng chỉ."}
+              ? translate("student.EnrollNewCourse")
+              : translate("student.CompleteCourses")}
           </Typography>
         </Paper>
       )}
@@ -434,10 +434,14 @@ export default function EnrolledCoursesTab({
                         fontSize: { xs: "0.9375rem", sm: "1rem" },
                       }}
                     >
-                      {enrollment.courseTitle || "Khóa học"}
+                      {enrollment.courseTitle || translate("student.Course")}
                     </Typography>
                     <Tooltip
-                      title={isOpen ? "Thu gọn" : "Xem các bài học đã tham gia"}
+                      title={
+                        isOpen
+                          ? translate("student.Collapse")
+                          : translate("student.ViewJoinedLessons")
+                      }
                     >
                       <IconButton
                         size="small"
@@ -543,10 +547,10 @@ export default function EnrolledCoursesTab({
                               : "default";
                           const statusText =
                             lp.status === LessonStatus.Completed
-                              ? "Hoàn thành"
+                              ? translate("student.Completed")
                               : lp.status === LessonStatus.InProgress
-                              ? "Đang học"
-                              : "Chưa bắt đầu";
+                              ? translate("student.Learning")
+                              : translate("student.NotStarted");
                           return (
                             <Paper
                               key={lp.id}

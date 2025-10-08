@@ -58,5 +58,9 @@
   "Male": "Male",
   "Female": "Female",
   "Other": "Other",
-  "PreferNotToSay": "Prefer not to say"
+  "PreferNotToSay": "Prefer not to say",
+  "EditProfile": "Edit Profile",
+  "Saving": "Saving...",
+  "SaveChanges": "Save Changes",
+  "UpdatePasswordSecurity": "Update password for account security"
 }

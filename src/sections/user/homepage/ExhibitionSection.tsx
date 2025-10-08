@@ -13,8 +13,10 @@ import {
   ViewModule as BlocklyIcon,
   Science as STEMIcon,
 } from "@mui/icons-material";
+import { useLocales } from "hooks";
 
 const ExhibitionSection: React.FC = () => {
+  const { translate } = useLocales();
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
@@ -343,8 +345,7 @@ const ExhibitionSection: React.FC = () => {
                 mx: "auto",
               }}
             >
-              Tham gia cùng chúng tôi để trải nghiệm những công nghệ STEM tuyệt
-              vời này!
+              {translate("homepage.JoinExperienceSTEM")}
             </Typography>
           </Box>
         </motion.div>
