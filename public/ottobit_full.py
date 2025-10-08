@@ -286,25 +286,24 @@ class Robot:
 
     def collect(self, n=1, color=None):
         col = str(color or "").lower()
-        if col not in ("yellow", "green", "red", "blue"):
-            return
         
-        # Append action based on color
-        if col == "yellow":
-            append_action('collectYellow')
-        elif col == "red":
-            append_action('collectRed')
-        elif col == "blue":
-            append_action('collectBlue')
-        elif col == "green":
-            append_action('collectGreen')
-            
         for _ in range(int(n)):
             c = _cell_counts()
             if c.get(col, 0) > 0:
                 c[col] -= 1
                 try:
                     _victory_collected[col] += 1
+                    if col not in ("yellow", "green", "red", "blue"):
+                        return
+                    # Append action based on color
+                    if col == "yellow":
+                        append_action('collectYellow')
+                    elif col == "red":
+                        append_action('collectRed')
+                    elif col == "blue":
+                        append_action('collectBlue')
+                    elif col == "green":
+                        append_action('collectGreen')
                 except:
                     pass
         for _ in range(int(n)):
