@@ -88,4 +88,6 @@ export const PATH_ADMIN = {
   orderManagement: path(ROOTS_ADMIN_DASHBOARD, "/order-management"),
   orders: path(ROOTS_ADMIN_DASHBOARD, "/orders"),
   orderDetail: path(ROOTS_ADMIN_DASHBOARD, "/orders/:id"),
+  submissions: path(ROOTS_ADMIN_DASHBOARD, "/submissions"),
+  submissionDetail: path(ROOTS_ADMIN_DASHBOARD, "/submissions/:id"),
 };

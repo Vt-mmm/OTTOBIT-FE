@@ -1,13 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { SubmissionResult, SubmissionsResponse } from "common/@types/submission";
+import {
+  SubmissionResult,
+  SubmissionsResponse,
+} from "common/@types/submission";
 import {
   getMySubmissionsThunk,
-  getSubmissionsThunk,
   getSubmissionByIdThunk,
-  getSubmissionsByChallengeThunk,
   createSubmissionThunk,
-  updateSubmissionThunk,
-  deleteSubmissionThunk,
+  getSubmissionsForAdminThunk,
+  getSubmissionByIdForAdminThunk,
 } from "./submissionThunks";
 
 interface SubmissionState {
@@ -19,21 +20,20 @@ interface SubmissionState {
     lastQuery: any;
   };
   // All submissions (admin view)
-  submissions: {
+  adminSubmissions: {
     data: SubmissionsResponse | null;
     isLoading: boolean;
     error: string | null;
     lastQuery: any;
   };
-  // Challenge submissions (submissions for a specific challenge)
-  challengeSubmissions: {
-    data: SubmissionsResponse | null;
+  // Current submission (user)
+  currentSubmission: {
+    data: SubmissionResult | null;
     isLoading: boolean;
     error: string | null;
-    challengeId: string | null;
   };
-  // Current submission
-  currentSubmission: {
+  // Admin submission detail
+  adminSubmission: {
     data: SubmissionResult | null;
     isLoading: boolean;
     error: string | null;
@@ -41,11 +41,7 @@ interface SubmissionState {
   // Operations state
   operations: {
     isSubmitting: boolean;
-    isUpdating: boolean;
-    isDeleting: boolean;
     submitError: string | null;
-    updateError: string | null;
-    deleteError: string | null;
   };
   // Draft submission (for auto-save)
   draft: {
@@ -62,30 +58,25 @@ const initialState: SubmissionState = {
     error: null,
     lastQuery: null,
   },
-  submissions: {
+  adminSubmissions: {
     data: null,
     isLoading: false,
     error: null,
     lastQuery: null,
-  },
-  challengeSubmissions: {
-    data: null,
-    isLoading: false,
-    error: null,
-    challengeId: null,
   },
   currentSubmission: {
     data: null,
     isLoading: false,
     error: null,
   },
+  adminSubmission: {
+    data: null,
+    isLoading: false,
+    error: null,
+  },
   operations: {
     isSubmitting: false,
-    isUpdating: false,
-    isDeleting: false,
     submitError: null,
-    updateError: null,
-    deleteError: null,
   },
   draft: {
     challengeId: null,
@@ -105,24 +96,23 @@ const submissionSlice = createSlice({
       state.mySubmissions.lastQuery = null;
     },
 
-    // Clear submissions
-    clearSubmissions: (state) => {
-      state.submissions.data = null;
-      state.submissions.error = null;
-      state.submissions.lastQuery = null;
-    },
-
-    // Clear challenge submissions
-    clearChallengeSubmissions: (state) => {
-      state.challengeSubmissions.data = null;
-      state.challengeSubmissions.error = null;
-      state.challengeSubmissions.challengeId = null;
+    // Clear admin submissions
+    clearAdminSubmissions: (state) => {
+      state.adminSubmissions.data = null;
+      state.adminSubmissions.error = null;
+      state.adminSubmissions.lastQuery = null;
     },
 
     // Clear current submission
     clearCurrentSubmission: (state) => {
       state.currentSubmission.data = null;
       state.currentSubmission.error = null;
+    },
+
+    // Clear admin submission detail
+    clearAdminSubmission: (state) => {
+      state.adminSubmission.data = null;
+      state.adminSubmission.error = null;
     },
 
     // Set current submission
@@ -148,67 +138,13 @@ const submissionSlice = createSlice({
       state.draft.lastSaved = null;
     },
 
-    // Load draft for specific challenge
-    loadDraft: (
-      state,
-      action: PayloadAction<string>
-    ) => {
-      const challengeId = action.payload;
-      if (state.draft.challengeId !== challengeId) {
-        // If challengeId doesn't match, clear the current draft
-        state.draft.challengeId = null;
-        state.draft.codeJson = null;
-        state.draft.lastSaved = null;
-      }
-      // The draft state is already in the correct state for the challengeId
-    },
-
     // Clear all errors
     clearSubmissionErrors: (state) => {
       state.mySubmissions.error = null;
-      state.submissions.error = null;
-      state.challengeSubmissions.error = null;
+      state.adminSubmissions.error = null;
       state.currentSubmission.error = null;
+      state.adminSubmission.error = null;
       state.operations.submitError = null;
-      state.operations.updateError = null;
-      state.operations.deleteError = null;
-    },
-
-    // Update submission star rating (optimistic update)
-    updateSubmissionStar: (
-      state,
-      action: PayloadAction<{ id: string; star: number }>
-    ) => {
-      const { id, star } = action.payload;
-
-      // Update in current submission
-      if (state.currentSubmission.data?.id === id) {
-        state.currentSubmission.data.star = star;
-      }
-
-      // Update in my submissions
-      if (state.mySubmissions.data?.items) {
-        const submission = state.mySubmissions.data.items.find(s => s.id === id);
-        if (submission) {
-          submission.star = star;
-        }
-      }
-
-      // Update in all submissions
-      if (state.submissions.data?.items) {
-        const submission = state.submissions.data.items.find(s => s.id === id);
-        if (submission) {
-          submission.star = star;
-        }
-      }
-
-      // Update in challenge submissions
-      if (state.challengeSubmissions.data?.items) {
-        const submission = state.challengeSubmissions.data.items.find(s => s.id === id);
-        if (submission) {
-          submission.star = star;
-        }
-      }
     },
 
     // Reset entire state
@@ -231,26 +167,11 @@ const submissionSlice = createSlice({
       })
       .addCase(getMySubmissionsThunk.rejected, (state, action) => {
         state.mySubmissions.isLoading = false;
-        state.mySubmissions.error = action.payload || "Failed to fetch my submissions";
+        state.mySubmissions.error =
+          action.payload || "Failed to fetch my submissions";
       })
 
-      // Get submissions (admin)
-      .addCase(getSubmissionsThunk.pending, (state, action) => {
-        state.submissions.isLoading = true;
-        state.submissions.error = null;
-        state.submissions.lastQuery = action.meta.arg;
-      })
-      .addCase(getSubmissionsThunk.fulfilled, (state, action) => {
-        state.submissions.isLoading = false;
-        state.submissions.error = null;
-        state.submissions.data = action.payload;
-      })
-      .addCase(getSubmissionsThunk.rejected, (state, action) => {
-        state.submissions.isLoading = false;
-        state.submissions.error = action.payload || "Failed to fetch submissions";
-      })
-
-      // Get submission by ID
+      // Get submission by ID (User)
       .addCase(getSubmissionByIdThunk.pending, (state) => {
         state.currentSubmission.isLoading = true;
         state.currentSubmission.error = null;
@@ -262,23 +183,8 @@ const submissionSlice = createSlice({
       })
       .addCase(getSubmissionByIdThunk.rejected, (state, action) => {
         state.currentSubmission.isLoading = false;
-        state.currentSubmission.error = action.payload || "Failed to fetch submission";
-      })
-
-      // Get submissions by challenge
-      .addCase(getSubmissionsByChallengeThunk.pending, (state, action) => {
-        state.challengeSubmissions.isLoading = true;
-        state.challengeSubmissions.error = null;
-        state.challengeSubmissions.challengeId = action.meta.arg.challengeId;
-      })
-      .addCase(getSubmissionsByChallengeThunk.fulfilled, (state, action) => {
-        state.challengeSubmissions.isLoading = false;
-        state.challengeSubmissions.error = null;
-        state.challengeSubmissions.data = action.payload;
-      })
-      .addCase(getSubmissionsByChallengeThunk.rejected, (state, action) => {
-        state.challengeSubmissions.isLoading = false;
-        state.challengeSubmissions.error = action.payload || "Failed to fetch challenge submissions";
+        state.currentSubmission.error =
+          action.payload || "Failed to fetch submission";
       })
 
       // Create submission (submit code)
@@ -289,7 +195,7 @@ const submissionSlice = createSlice({
       .addCase(createSubmissionThunk.fulfilled, (state, action) => {
         state.operations.isSubmitting = false;
         state.operations.submitError = null;
-        
+
         // Clear draft for this challenge
         if (state.draft.challengeId === action.payload.challengeId) {
           state.draft.challengeId = null;
@@ -302,147 +208,59 @@ const submissionSlice = createSlice({
           state.mySubmissions.data.items.unshift(action.payload);
           state.mySubmissions.data.total += 1;
         }
-
-        // Add to challenge submissions if same challenge
-        if (state.challengeSubmissions.challengeId === action.payload.challengeId && state.challengeSubmissions.data?.items) {
-          state.challengeSubmissions.data.items.unshift(action.payload);
-          state.challengeSubmissions.data.total += 1;
-        }
       })
       .addCase(createSubmissionThunk.rejected, (state, action) => {
         state.operations.isSubmitting = false;
-        state.operations.submitError = action.payload || "Failed to submit solution";
+        state.operations.submitError =
+          action.payload || "Failed to submit solution";
       })
 
-      // Update submission
-      .addCase(updateSubmissionThunk.pending, (state) => {
-        state.operations.isUpdating = true;
-        state.operations.updateError = null;
+      // Get submissions for Admin (paginated with filters)
+      .addCase(getSubmissionsForAdminThunk.pending, (state, action) => {
+        state.adminSubmissions.isLoading = true;
+        state.adminSubmissions.error = null;
+        state.adminSubmissions.lastQuery = action.meta.arg;
       })
-      .addCase(updateSubmissionThunk.fulfilled, (state, action) => {
-        state.operations.isUpdating = false;
-        state.operations.updateError = null;
-
-        // Update current submission if same ID
-        if (state.currentSubmission.data?.id === action.payload.id) {
-          state.currentSubmission.data = action.payload;
-        }
-
-        // Update in my submissions
-        if (state.mySubmissions.data?.items) {
-          const index = state.mySubmissions.data.items.findIndex(
-            (submission) => submission.id === action.payload.id
-          );
-          if (index !== -1) {
-            state.mySubmissions.data.items[index] = action.payload;
-          }
-        }
-
-        // Update in all submissions
-        if (state.submissions.data?.items) {
-          const index = state.submissions.data.items.findIndex(
-            (submission) => submission.id === action.payload.id
-          );
-          if (index !== -1) {
-            state.submissions.data.items[index] = action.payload;
-          }
-        }
-
-        // Update in challenge submissions
-        if (state.challengeSubmissions.data?.items) {
-          const index = state.challengeSubmissions.data.items.findIndex(
-            (submission) => submission.id === action.payload.id
-          );
-          if (index !== -1) {
-            state.challengeSubmissions.data.items[index] = action.payload;
-          }
-        }
+      .addCase(getSubmissionsForAdminThunk.fulfilled, (state, action) => {
+        state.adminSubmissions.isLoading = false;
+        state.adminSubmissions.error = null;
+        state.adminSubmissions.data = action.payload;
       })
-      .addCase(updateSubmissionThunk.rejected, (state, action) => {
-        state.operations.isUpdating = false;
-        state.operations.updateError = action.payload || "Failed to update submission";
+      .addCase(getSubmissionsForAdminThunk.rejected, (state, action) => {
+        state.adminSubmissions.isLoading = false;
+        state.adminSubmissions.error =
+          action.payload || "Failed to fetch submissions";
       })
 
-      // Delete submission
-      .addCase(deleteSubmissionThunk.pending, (state) => {
-        state.operations.isDeleting = true;
-        state.operations.deleteError = null;
+      // Get submission by ID for Admin
+      .addCase(getSubmissionByIdForAdminThunk.pending, (state) => {
+        state.adminSubmission.isLoading = true;
+        state.adminSubmission.error = null;
       })
-      .addCase(deleteSubmissionThunk.fulfilled, (state, action) => {
-        state.operations.isDeleting = false;
-        state.operations.deleteError = null;
-
-        const submissionId = action.payload;
-
-        // Clear current submission if same ID
-        if (state.currentSubmission.data?.id === submissionId) {
-          state.currentSubmission.data = null;
-        }
-
-        // Remove from my submissions
-        if (state.mySubmissions.data?.items) {
-          const index = state.mySubmissions.data.items.findIndex(
-            (submission) => submission.id === submissionId
-          );
-          if (index !== -1) {
-            state.mySubmissions.data.items.splice(index, 1);
-            state.mySubmissions.data.total -= 1;
-          }
-        }
-
-        // Remove from all submissions
-        if (state.submissions.data?.items) {
-          const index = state.submissions.data.items.findIndex(
-            (submission) => submission.id === submissionId
-          );
-          if (index !== -1) {
-            state.submissions.data.items.splice(index, 1);
-            state.submissions.data.total -= 1;
-          }
-        }
-
-        // Remove from challenge submissions
-        if (state.challengeSubmissions.data?.items) {
-          const index = state.challengeSubmissions.data.items.findIndex(
-            (submission) => submission.id === submissionId
-          );
-          if (index !== -1) {
-            state.challengeSubmissions.data.items.splice(index, 1);
-            state.challengeSubmissions.data.total -= 1;
-          }
-        }
+      .addCase(getSubmissionByIdForAdminThunk.fulfilled, (state, action) => {
+        state.adminSubmission.isLoading = false;
+        state.adminSubmission.error = null;
+        state.adminSubmission.data = action.payload;
       })
-      .addCase(deleteSubmissionThunk.rejected, (state, action) => {
-        state.operations.isDeleting = false;
-        state.operations.deleteError = action.payload || "Failed to delete submission";
+      .addCase(getSubmissionByIdForAdminThunk.rejected, (state, action) => {
+        state.adminSubmission.isLoading = false;
+        state.adminSubmission.error =
+          action.payload || "Failed to fetch submission";
       });
   },
 });
 
 export const {
   clearMySubmissions,
-  clearSubmissions,
-  clearChallengeSubmissions,
+  clearAdminSubmissions,
   clearCurrentSubmission,
+  clearAdminSubmission,
   setCurrentSubmission,
   saveDraft,
   clearDraft,
-  loadDraft,
   clearSubmissionErrors,
-  updateSubmissionStar,
   resetSubmissionState,
 } = submissionSlice.actions;
-
-// Export thunks
-export {
-  getMySubmissionsThunk as getMySubmissions,
-  getSubmissionsThunk as getSubmissions,
-  getSubmissionByIdThunk as getSubmissionById,
-  getSubmissionsByChallengeThunk as getSubmissionsByChallenge,
-  createSubmissionThunk as createSubmission,
-  updateSubmissionThunk as updateSubmission,
-  deleteSubmissionThunk as deleteSubmission,
-};
 
 const submissionReducer = submissionSlice.reducer;
 export default submissionReducer;

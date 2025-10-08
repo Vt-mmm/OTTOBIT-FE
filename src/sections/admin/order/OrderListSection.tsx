@@ -22,6 +22,11 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
 import {
   Visibility as VisibilityIcon,
@@ -48,6 +53,19 @@ export default function OrderListSection() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "">("");
   const [searchInput, setSearchInput] = useState("");
+
+  // Confirmation dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    orderId: string | null;
+    currentStatus: OrderStatus | null;
+    newStatus: OrderStatus | null;
+  }>({
+    open: false,
+    orderId: null,
+    currentStatus: null,
+    newStatus: null,
+  });
 
   const items = adminOrders.data?.items || [];
   const total = adminOrders.data?.total || 0;
@@ -98,8 +116,63 @@ export default function OrderListSection() {
     navigate(PATH_ADMIN.orderDetail.replace(":id", orderId));
   };
 
-  const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
-    await dispatch(updateOrderStatusThunk({ orderId, status: newStatus }));
+  const handleStatusChangeRequest = (
+    orderId: string,
+    currentStatus: OrderStatus,
+    newStatus: OrderStatus
+  ) => {
+    // Open confirmation dialog
+    setConfirmDialog({
+      open: true,
+      orderId,
+      currentStatus,
+      newStatus,
+    });
+  };
+
+  const handleConfirmStatusChange = async () => {
+    if (!confirmDialog.orderId || confirmDialog.newStatus === null) return;
+
+    await dispatch(
+      updateOrderStatusThunk({
+        orderId: confirmDialog.orderId,
+        status: confirmDialog.newStatus,
+      })
+    );
+
+    // Close dialog
+    setConfirmDialog({
+      open: false,
+      orderId: null,
+      currentStatus: null,
+      newStatus: null,
+    });
+  };
+
+  const handleCancelStatusChange = () => {
+    setConfirmDialog({
+      open: false,
+      orderId: null,
+      currentStatus: null,
+      newStatus: null,
+    });
+  };
+
+  const getStatusLabel = (status: OrderStatus) => {
+    switch (status) {
+      case OrderStatus.Pending:
+        return "Pending";
+      case OrderStatus.Paid:
+        return "Paid";
+      case OrderStatus.Failed:
+        return "Failed";
+      case OrderStatus.Cancelled:
+        return "Cancelled";
+      case OrderStatus.Refunded:
+        return "Refunded";
+      default:
+        return "Unknown";
+    }
   };
 
   const formatCurrency = (amount: number) => {
@@ -228,7 +301,10 @@ export default function OrderListSection() {
                   items.map((order: OrderResult) => (
                     <TableRow key={order.id} hover>
                       <TableCell>
-                        <Typography variant="body2" sx={{ fontFamily: "monospace" }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontFamily: "monospace" }}
+                        >
                           {order.id.substring(0, 8)}...
                         </Typography>
                       </TableCell>
@@ -257,8 +333,9 @@ export default function OrderListSection() {
                           <Select
                             value={order.status}
                             onChange={(e) =>
-                              handleStatusChange(
+                              handleStatusChangeRequest(
                                 order.id,
+                                order.status,
                                 e.target.value as OrderStatus
                               )
                             }
@@ -291,7 +368,11 @@ export default function OrderListSection() {
                               />
                             </MenuItem>
                             <MenuItem value={OrderStatus.Refunded}>
-                              <Chip label="Refunded" size="small" color="info" />
+                              <Chip
+                                label="Refunded"
+                                size="small"
+                                color="info"
+                              />
                             </MenuItem>
                           </Select>
                         </FormControl>
@@ -328,7 +409,52 @@ export default function OrderListSection() {
           />
         </Paper>
       </Stack>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={confirmDialog.open}
+        onClose={handleCancelStatusChange}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Confirm Status Change</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to change the order status from{" "}
+            <strong>
+              {confirmDialog.currentStatus !== null &&
+                getStatusLabel(confirmDialog.currentStatus)}
+            </strong>{" "}
+            to{" "}
+            <strong>
+              {confirmDialog.newStatus !== null &&
+                getStatusLabel(confirmDialog.newStatus)}
+            </strong>
+            ?
+          </DialogContentText>
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            This action will update the order status and may trigger automated
+            processes (e.g., enrollment creation for Paid orders).
+          </Alert>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={handleCancelStatusChange}
+            disabled={operations.isUpdatingStatus}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmStatusChange}
+            variant="contained"
+            color="primary"
+            disabled={operations.isUpdatingStatus}
+            autoFocus
+          >
+            {operations.isUpdatingStatus ? "Updating..." : "Confirm"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
-
