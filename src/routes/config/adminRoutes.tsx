@@ -56,6 +56,12 @@ const OrderManagementPage = lazy(
   () => import("pages/admin/OrderManagementPage")
 );
 const OrderDetailPage = lazy(() => import("pages/admin/OrderDetailPage"));
+const SubmissionManagementPage = lazy(
+  () => import("pages/admin/SubmissionManagementPage")
+);
+const SubmissionDetailPage = lazy(
+  () => import("pages/admin/SubmissionDetailPage")
+);
 
 export const adminRoutes: Route[] = [
   {
@@ -156,6 +162,16 @@ export const adminRoutes: Route[] = [
   {
     path: PATH_ADMIN.orderDetail,
     component: <OrderDetailPage />,
+    index: false,
+  },
+  {
+    path: PATH_ADMIN.submissions,
+    component: <SubmissionManagementPage />,
+    index: false,
+  },
+  {
+    path: PATH_ADMIN.submissionDetail,
+    component: <SubmissionDetailPage />,
     index: false,
   },
   {

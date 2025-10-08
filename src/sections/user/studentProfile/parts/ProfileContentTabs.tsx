@@ -7,6 +7,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEventsOutlined";
 import SmartToyIcon from "@mui/icons-material/SmartToyOutlined";
 import CardMembershipIcon from "@mui/icons-material/CardMembershipOutlined";
 import NoteAltIcon from "@mui/icons-material/NoteAltOutlined";
+import AssignmentIcon from "@mui/icons-material/AssignmentOutlined";
 import OverviewTab from "../tabs/OverviewTab";
 import EnrolledCoursesTab from "../tabs/EnrolledCoursesTab";
 import LearningProgressTab from "../tabs/LearningProgressTab";
@@ -14,7 +15,7 @@ import AchievementsTab from "../tabs/AchievementsTab";
 import MyRobotsTab from "../tabs/MyRobotsTab";
 import MyCertificatesTab from "../tabs/MyCertificatesTab";
 import MyNotesTab from "../tabs/MyNotesTab";
-import { useLocales } from "../../../../hooks";
+import MySubmissionsTab from "../tabs/MySubmissionsTab";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -68,7 +69,6 @@ export default function ProfileContentTabs({
   starBuckets,
   loading,
 }: ProfileContentTabsProps) {
-  const { translate } = useLocales();
   const [value, setValue] = useState(0);
 
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -76,13 +76,14 @@ export default function ProfileContentTabs({
   };
 
   const tabs = [
-    { label: translate("student.Overview"), icon: <DashboardIcon /> },
-    { label: translate("student.Courses"), icon: <SchoolIcon /> },
-    { label: translate("student.Progress"), icon: <TrendingUpIcon /> },
-    { label: translate("student.Achievements"), icon: <EmojiEventsIcon /> },
-    { label: translate("student.Notes"), icon: <NoteAltIcon /> },
-    { label: translate("student.Robots"), icon: <SmartToyIcon /> },
-    { label: translate("student.Certificates"), icon: <CardMembershipIcon /> },
+    { label: "Tổng quan", icon: <DashboardIcon /> },
+    { label: "Khóa học", icon: <SchoolIcon /> },
+    { label: "Tiến độ", icon: <TrendingUpIcon /> },
+    { label: "Thành tích", icon: <EmojiEventsIcon /> },
+    { label: "Bài nộp", icon: <AssignmentIcon /> },
+    { label: "Ghi chú", icon: <NoteAltIcon /> },
+    { label: "Robots", icon: <SmartToyIcon /> },
+    { label: "Chứng chỉ", icon: <CardMembershipIcon /> },
   ];
 
   return (
@@ -108,14 +109,14 @@ export default function ProfileContentTabs({
             px: { xs: 1, sm: 2 },
             minHeight: { xs: 56, sm: 64 },
             "& .MuiTab-root": {
-              minHeight: { xs: 56, sm: 64 },
+              minHeight: { xs: 48, sm: 56 },
               textTransform: "none",
-              fontSize: { xs: "0.875rem", sm: "1rem" },
+              fontSize: { xs: "0.8125rem", sm: "0.875rem" },
               fontWeight: 600,
               color: "text.secondary",
-              mr: { xs: 1, sm: 2 },
-              minWidth: { xs: "auto", sm: 120 },
-              px: { xs: 1, sm: 2 },
+              mr: { xs: 0.5, sm: 1 },
+              minWidth: { xs: "auto", sm: 90 },
+              px: { xs: 1, sm: 1.5 },
               "&.Mui-selected": {
                 color: "primary.main",
               },
@@ -173,14 +174,18 @@ export default function ProfileContentTabs({
         </TabPanel>
 
         <TabPanel value={value} index={4}>
-          <MyNotesTab loading={loading} />
+          <MySubmissionsTab />
         </TabPanel>
 
         <TabPanel value={value} index={5}>
-          <MyRobotsTab loading={loading} />
+          <MyNotesTab loading={loading} />
         </TabPanel>
 
         <TabPanel value={value} index={6}>
+          <MyRobotsTab loading={loading} />
+        </TabPanel>
+
+        <TabPanel value={value} index={7}>
           <MyCertificatesTab loading={loading} />
         </TabPanel>
       </Box>

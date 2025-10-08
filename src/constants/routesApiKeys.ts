@@ -119,20 +119,15 @@ export const ROUTES_API_ENROLLMENT = {
 };
 
 export const ROUTES_API_SUBMISSION = {
-  // Submission endpoints
+  // User endpoints
+  CREATE: ROOTS_SUBMISSION, // POST /api/v1/submissions
+  GET_BY_ID: (id: string) => path(ROOTS_SUBMISSION, `/${id}`), // GET /api/v1/submissions/{id} (User only)
+  MY_SUBMISSIONS: path(ROOTS_SUBMISSION, `/my-submissions`), // GET /api/v1/submissions/my-submissions
+  BEST: ROOTS_SUBMISSION + "/best", // GET /api/v1/submissions/best
+
+  // Admin endpoints
   ADMIN_GET_ALL: ROOTS_SUBMISSION, // GET /api/v1/submissions (Admin)
-  // Backward-compatible alias
-  GET_ALL: ROOTS_SUBMISSION,
-  GET_BY_ID: (id: string) => path(ROOTS_SUBMISSION, `/${id}`), // GET /api/v1/submissions/{id} (User/Admin)
-  CREATE: ROOTS_SUBMISSION, // POST /api/v1/submissions (User)
-  // Legacy endpoints kept for compatibility; backend may not implement anymore
-  UPDATE: (id: string) => path(ROOTS_SUBMISSION, `/${id}`), // PUT /api/v1/submissions/{id}
-  DELETE: (id: string) => path(ROOTS_SUBMISSION, `/${id}`), // DELETE /api/v1/submissions/{id}
-  BY_CHALLENGE: (challengeId: string) =>
-    path(ROOTS_SUBMISSION, `/by-challenge/${challengeId}`), // GET /api/v1/submissions/by-challenge/{challengeId}
-  MY_SUBMISSIONS: path(ROOTS_SUBMISSION, `/my-submissions`), // GET /api/v1/submissions/my-submissions (User)
-  BEST_BY_CHALLENGE: (challengeId: string) =>
-    path(ROOTS_SUBMISSION, `/best/${challengeId}`), // GET /api/v1/submissions/best/{challengeId} (User)
+  ADMIN_GET_BY_ID: (id: string) => path(ROOTS_SUBMISSION, `/admin/${id}`), // GET /api/v1/submissions/admin/{id} (Admin)
 };
 
 export const ROUTES_API_MAP = {
