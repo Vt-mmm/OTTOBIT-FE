@@ -12,18 +12,23 @@ import { useAppDispatch, useAppSelector } from "store/config";
 import { resendEmailConfirmation, clearAuthErrors } from "store/auth/authSlice";
 import { ResendEmailFormData } from "common/@types/form";
 import { PATH_AUTH } from "routes/paths";
-
-// Validation schema
-const schema = yup.object().shape({
-  email: yup.string().email("Email không hợp lệ").required("Email là bắt buộc"),
-});
+import { useLocales } from "hooks";
 
 const ResendEmailForm: React.FC = () => {
+  const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const { isLoading } = useAppSelector((state) => state.auth);
   const [localError, setLocalError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isLocalSuccess, setIsLocalSuccess] = useState(false);
+
+  // Validation schema - PHẢI đặt trong component để dùng translate
+  const schema = yup.object().shape({
+    email: yup
+      .string()
+      .email(translate("auth.EmailInvalid"))
+      .required(translate("auth.EmailRequired")),
+  });
 
   // Clear auth errors when component mounts
   useEffect(() => {
@@ -47,11 +52,10 @@ const ResendEmailForm: React.FC = () => {
     setIsLocalSuccess(false);
     try {
       const result = await dispatch(resendEmailConfirmation(data)).unwrap();
-      // Lưu success message từ API response
-      setSuccessMessage(result || "Email xác nhận đã được gửi thành công!");
+      setSuccessMessage(result || translate("auth.EmailConfirmationSent"));
       setIsLocalSuccess(true);
     } catch (error: any) {
-      setLocalError(error || "Gửi lại email xác nhận thất bại");
+      setLocalError(error || translate("auth.ResendEmailFailed"));
     }
   };
 
@@ -96,7 +100,7 @@ const ResendEmailForm: React.FC = () => {
             mb: 2,
           }}
         >
-          Email đã được gửi!
+          {translate("auth.EmailSentSuccessfully")}
         </Typography>
         <Typography
           variant="body1"
@@ -106,8 +110,7 @@ const ResendEmailForm: React.FC = () => {
             lineHeight: 1.6,
           }}
         >
-          {successMessage ||
-            "Chúng tôi đã gửi email xác nhận đến địa chỉ email của bạn. Vui lòng kiểm tra hộp thư và làm theo hướng dẫn để xác nhận tài khoản."}
+          {successMessage || translate("auth.ResendEmailSuccessContent")}
         </Typography>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <LoadingButton
@@ -122,7 +125,7 @@ const ResendEmailForm: React.FC = () => {
               },
             }}
           >
-            Gửi lại email khác
+            {translate("auth.ResendAnotherEmail")}
           </LoadingButton>
           <Link
             component={RouterLink}
@@ -135,7 +138,7 @@ const ResendEmailForm: React.FC = () => {
               },
             }}
           >
-            Quay lại đăng nhập
+            {translate("auth.BackToLogin")}
           </Link>
         </Box>
       </Box>
@@ -165,7 +168,7 @@ const ResendEmailForm: React.FC = () => {
             mb: 1,
           }}
         >
-          Gửi lại email xác nhận
+          {translate("auth.ResendEmailTitle")}
         </Typography>
         <Typography
           variant="body1"
@@ -174,7 +177,7 @@ const ResendEmailForm: React.FC = () => {
             lineHeight: 1.6,
           }}
         >
-          Nhập địa chỉ email của bạn để nhận email xác nhận mới
+          {translate("auth.ResendEmailContent")}
         </Typography>
       </Box>
 
@@ -187,7 +190,7 @@ const ResendEmailForm: React.FC = () => {
 
         <Box sx={{ mb: 3 }}>
           <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-            Email
+            {translate("auth.Email")}
           </Typography>
           <Controller
             name="email"
@@ -196,7 +199,7 @@ const ResendEmailForm: React.FC = () => {
               <TextField
                 {...field}
                 fullWidth
-                placeholder="Nhập địa chỉ email của bạn"
+                placeholder={translate("auth.EmailPlaceholder")}
                 error={!!errors.email}
                 helperText={errors.email?.message}
                 disabled={isLoading}
@@ -230,7 +233,9 @@ const ResendEmailForm: React.FC = () => {
             },
           }}
         >
-          {isLoading ? "Đang gửi..." : "Gửi lại email xác nhận"}
+          {isLoading
+            ? translate("auth.Sending")
+            : translate("auth.ResendEmailButton")}
         </LoadingButton>
       </form>
 
@@ -251,7 +256,7 @@ const ResendEmailForm: React.FC = () => {
           }}
         >
           <ArrowBackIcon sx={{ mr: 1, fontSize: "1rem" }} />
-          Quay lại đăng nhập
+          {translate("auth.BackToLogin")}
         </Link>
       </Box>
     </Box>

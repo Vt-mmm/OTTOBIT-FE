@@ -5,10 +5,12 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import LockResetIcon from "@mui/icons-material/LockReset";
 import { Link as RouterLink } from "react-router-dom";
 import { PATH_AUTH, PATH_PUBLIC } from "routes/paths";
-// Logo placeholder sẽ thay thế sau
 import { ForgotPasswordForm } from "sections/auth";
+import { LanguageSwitcher } from "components/common";
+import { useLocales } from "hooks";
 
 const ForgotPassword: React.FC = () => {
+  const { translate } = useLocales();
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleSuccessSubmit = () => {
@@ -52,8 +54,20 @@ const ForgotPassword: React.FC = () => {
           }}
         >
           <ArrowBackIcon sx={{ mr: 1, fontSize: "0.9rem" }} />
-          Trở về trang chủ
+          {translate("auth.BackToHomepage2")}
         </Link>
+      </Box>
+
+      {/* Language Switcher - Top right */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: 30,
+          right: 30,
+          zIndex: 2,
+        }}
+      >
+        <LanguageSwitcher />
       </Box>
 
       <Grid container sx={{ flex: 1, minHeight: "100vh" }}>
@@ -141,7 +155,7 @@ const ForgotPassword: React.FC = () => {
                 fontWeight={700}
                 sx={{ mb: 2, color: "#1a1a1a" }}
               >
-                Quên mật khẩu?
+                {translate("auth.ForgotPasswordTitle")}
               </Typography>
 
               <Typography
@@ -151,8 +165,8 @@ const ForgotPassword: React.FC = () => {
                 sx={{ maxWidth: 400, mx: "auto", lineHeight: 1.6 }}
               >
                 {isSubmitted
-                  ? "Kiểm tra email của bạn để tiếp tục"
-                  : "Nhập email của bạn để nhận liên kết đặt lại mật khẩu"}
+                  ? translate("auth.ForgotPasswordContentAfterSubmit")
+                  : translate("auth.ForgotPasswordContent")}
               </Typography>
             </Box>
 
@@ -189,15 +203,14 @@ const ForgotPassword: React.FC = () => {
                     color="#22c55e"
                     sx={{ mb: 2 }}
                   >
-                    Email đã được gửi!
+                    {translate("auth.EmailSent")}
                   </Typography>
                   <Typography
                     variant="body1"
                     color="text.secondary"
                     sx={{ maxWidth: 400, mx: "auto", lineHeight: 1.6 }}
                   >
-                    Yêu cầu đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra
-                    email của bạn để tiếp tục.
+                    {translate("auth.EmailSentContent")}
                   </Typography>
                 </Box>
 
@@ -220,7 +233,7 @@ const ForgotPassword: React.FC = () => {
                       },
                     }}
                   >
-                    Trở về trang đăng nhập
+                    {translate("auth.BackToLoginFromForgot")}
                   </Link>
                 </motion.div>
               </Box>
@@ -242,7 +255,7 @@ const ForgotPassword: React.FC = () => {
                     },
                   }}
                 >
-                  Quay lại đăng nhập
+                  {translate("auth.BackToLogin")}
                 </Link>
               </Box>
             )}

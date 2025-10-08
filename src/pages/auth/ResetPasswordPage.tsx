@@ -15,10 +15,12 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import { PATH_AUTH, PATH_PUBLIC } from "routes/paths";
-// Logo placeholder sẽ thay thế sau
 import { ResetPasswordForm } from "sections/auth";
+import { LanguageSwitcher } from "components/common";
+import { useLocales } from "hooks";
 
 const ResetPassword: React.FC = () => {
+  const { translate } = useLocales();
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,19 +43,15 @@ const ResetPassword: React.FC = () => {
       setResetToken(tokenParam);
       setIsValidToken(true);
     } else {
-      setErrorMessage(
-        "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn."
-      );
+      setErrorMessage(translate("auth.InvalidOrExpiredTokenContent"));
       setIsValidToken(false);
     }
     setIsValidatingToken(false);
-  }, [location]);
+  }, [location, translate]);
 
   const handleResetSuccess = () => {
     setIsSubmitted(true);
-    setSuccessMessage(
-      "Mật khẩu đã được đặt lại thành công. Bạn có thể đăng nhập bằng mật khẩu mới."
-    );
+    setSuccessMessage(translate("auth.ResetPasswordSuccess"));
   };
 
   const handleResetError = (message: string) => {
@@ -95,8 +93,20 @@ const ResetPassword: React.FC = () => {
           }}
         >
           <ArrowBackIcon sx={{ mr: 1, fontSize: "0.9rem" }} />
-          Trở về trang chủ
+          {translate("auth.BackToHomepage2")}
         </Link>
+      </Box>
+
+      {/* Language Switcher - Top right */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: 30,
+          right: 30,
+          zIndex: 2,
+        }}
+      >
+        <LanguageSwitcher />
       </Box>
 
       <Paper
@@ -169,17 +179,19 @@ const ResetPassword: React.FC = () => {
               }}
             />
             <Typography variant="h5" fontWeight={600} sx={{ mb: 1 }}>
-              {isSubmitted ? "Đặt lại mật khẩu thành công" : "Đặt lại mật khẩu"}
+              {isSubmitted
+                ? translate("auth.ResetPasswordSuccessTitle")
+                : translate("auth.ResetPasswordTitle")}
             </Typography>
 
             <Typography variant="body1" color="text.secondary">
               {isSubmitted
-                ? "Mật khẩu của bạn đã được cập nhật"
+                ? translate("auth.ResetPasswordUpdated")
                 : isValidatingToken
-                ? "Đang xác thực thông tin..."
+                ? translate("auth.ValidatingInfo")
                 : isValidToken
-                ? "Tạo mật khẩu mới cho tài khoản của bạn"
-                : "Liên kết không hợp lệ hoặc đã hết hạn"}
+                ? translate("auth.CreateNewPassword")
+                : translate("auth.InvalidOrExpiredLink")}
             </Typography>
           </Box>
 
@@ -240,7 +252,7 @@ const ResetPassword: React.FC = () => {
                   },
                 }}
               >
-                Trở về trang đăng nhập
+                {translate("auth.BackToLogin")}
               </Button>
 
               {!isValidToken && !isValidatingToken && (
@@ -259,7 +271,7 @@ const ResetPassword: React.FC = () => {
                     },
                   }}
                 >
-                  Yêu cầu liên kết mới
+                  {translate("auth.RequestNewLink")}
                 </Button>
               )}
             </Box>

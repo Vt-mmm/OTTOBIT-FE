@@ -12,6 +12,9 @@ import { ottobit } from "store/config";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { setupAxiosInterceptors } from "axiosClient";
 
+// Import i18n configuration
+import "locales/i18n";
+
 // Create an internal AppContent component to use hooks
 const AppContent = () => {
   // Initialize axios interceptors

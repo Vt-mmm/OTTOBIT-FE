@@ -2,6 +2,7 @@ import React from "react";
 import { Box, Container, Paper, Typography } from "@mui/material";
 import { motion } from "framer-motion";
 import ResendEmailForm from "sections/auth/ResendEmailForm";
+import { LanguageSwitcher } from "components/common";
 
 const ResendEmailConfirmationPage: React.FC = () => {
   return (
@@ -13,8 +14,20 @@ const ResendEmailConfirmationPage: React.FC = () => {
         alignItems: "center",
         justifyContent: "center",
         py: 4,
+        position: "relative",
       }}
     >
+      {/* Language Switcher - Top right */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: 30,
+          right: 30,
+          zIndex: 2,
+        }}
+      >
+        <LanguageSwitcher />
+      </Box>
       <Container maxWidth="sm">
         <Box
           component={motion.div}

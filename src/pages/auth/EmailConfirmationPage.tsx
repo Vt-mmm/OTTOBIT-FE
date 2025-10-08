@@ -2,6 +2,7 @@ import React from "react";
 import { useSearchParams, Navigate } from "react-router-dom";
 import { Box } from "@mui/material";
 import EmailConfirmationSection from "sections/auth/EmailConfirmationSection";
+import { LanguageSwitcher } from "components/common";
 import { PATH_AUTH } from "routes/paths";
 
 const EmailConfirmationPage: React.FC = () => {
@@ -25,8 +26,20 @@ const EmailConfirmationPage: React.FC = () => {
         justifyContent: "center",
         p: 0,
         m: 0,
+        position: "relative",
       }}
     >
+      {/* Language Switcher - Top right */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: 30,
+          right: 30,
+          zIndex: 2,
+        }}
+      >
+        <LanguageSwitcher />
+      </Box>
       <EmailConfirmationSection userId={userId} token={token} />
     </Box>
   );
