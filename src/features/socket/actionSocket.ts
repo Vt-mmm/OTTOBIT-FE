@@ -17,6 +17,7 @@ export function getLastProgram() {
 // Convert string actions to ProgramAction format for Phaser with grouping
 function convertStringActionsToProgramActions(actions: string[]): any[] {
   if (actions.length === 0) return [];
+  console.log("actions", actions);
 
   const result: any[] = [];
   let i = 0;
