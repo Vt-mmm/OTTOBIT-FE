@@ -21,7 +21,7 @@ import {
   Code as CodeIcon,
 } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "store/config";
-import { getSubmissionByIdForAdminThunk } from "redux/submission/submissionThunks";
+import { getSubmissionByIdForAdminThunk } from "store/submission/submissionThunks";
 import { useNavigate, useParams } from "react-router-dom";
 import { PATH_ADMIN } from "routes/paths";
 
