@@ -1,10 +1,4 @@
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-} from "@mui/material";
+import { Box, Card, CardContent, Typography, Button } from "@mui/material";
 import {
   School as SchoolIcon,
   PersonAdd as PersonAddIcon,
@@ -13,6 +7,7 @@ import TrackChangesOutlinedIcon from "@mui/icons-material/TrackChangesOutlined";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
 import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import { motion } from "framer-motion";
+import { useLocales } from "../../../hooks";
 
 interface StudentProfileEmptyProps {
   onCreateProfile: () => void;
@@ -21,6 +16,8 @@ interface StudentProfileEmptyProps {
 export default function StudentProfileEmpty({
   onCreateProfile,
 }: StudentProfileEmptyProps) {
+  const { translate } = useLocales();
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -45,7 +42,7 @@ export default function StudentProfileEmpty({
             bgcolor: "primary.main",
           }}
         />
-        
+
         <CardContent sx={{ p: { xs: 4, md: 6 } }}>
           <Box
             sx={{
@@ -73,15 +70,21 @@ export default function StudentProfileEmpty({
               fontSize: { xs: "1.75rem", md: "2.5rem" },
             }}
           >
-            Chào mừng đến với OttoBit!
+            {translate("student.WelcomeToOttobit")}
           </Typography>
 
           <Typography
             variant="h6"
             color="text.secondary"
-            sx={{ mb: 5, maxWidth: 500, mx: "auto", fontWeight: 400, lineHeight: 1.6 }}
+            sx={{
+              mb: 5,
+              maxWidth: 500,
+              mx: "auto",
+              fontWeight: 400,
+              lineHeight: 1.6,
+            }}
           >
-            Tạo hồ sơ học sinh để bắt đầu hành trình khám phá lập trình và robot học
+            {translate("student.CreateProfileDesc")}
           </Typography>
 
           <Box
@@ -95,23 +98,23 @@ export default function StudentProfileEmpty({
             }}
           >
             {[
-              { 
-                IconComponent: TrackChangesOutlinedIcon, 
-                title: "Theo dõi tiến độ", 
-                desc: "Lịch sử học tập chi tiết",
-                colorKey: "primary"
+              {
+                IconComponent: TrackChangesOutlinedIcon,
+                title: translate("student.TrackProgress"),
+                desc: translate("student.ViewStatistics"),
+                colorKey: "primary",
               },
-              { 
-                IconComponent: EmojiEventsOutlinedIcon, 
-                title: "Lưu thành tích", 
-                desc: "Nhận huy hiệu và chứng chỉ",
-                colorKey: "warning"
+              {
+                IconComponent: EmojiEventsOutlinedIcon,
+                title: translate("student.EarnAchievements"),
+                desc: translate("student.ViewStatistics"),
+                colorKey: "warning",
               },
-              { 
-                IconComponent: BarChartOutlinedIcon, 
-                title: "Phân tích", 
-                desc: "Biết điểm mạnh của bạn",
-                colorKey: "success"
+              {
+                IconComponent: BarChartOutlinedIcon,
+                title: translate("student.AccessPersonalized"),
+                desc: translate("student.ViewStatistics"),
+                colorKey: "success",
               },
             ].map((item, index) => (
               <Box
@@ -143,12 +146,21 @@ export default function StudentProfileEmpty({
                     mb: 2,
                   }}
                 >
-                  <item.IconComponent sx={{ fontSize: 28, color: `${item.colorKey}.main` }} />
+                  <item.IconComponent
+                    sx={{ fontSize: 28, color: `${item.colorKey}.main` }}
+                  />
                 </Box>
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 600, mb: 0.5 }}
+                >
                   {item.title}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.875rem" }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: "0.875rem" }}
+                >
                   {item.desc}
                 </Typography>
               </Box>
@@ -176,7 +188,7 @@ export default function StudentProfileEmpty({
               transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
             }}
           >
-            Bắt đầu ngay
+            {translate("student.CreateProfileNow")}
           </Button>
 
           <Typography
@@ -184,7 +196,7 @@ export default function StudentProfileEmpty({
             color="text.secondary"
             sx={{ display: "block", mt: 3, opacity: 0.8, fontStyle: "italic" }}
           >
-            ✨ Chỉ mất 2 phút để thiết lập hồ sơ của bạn
+            {translate("student.QuickSetup")}
           </Typography>
         </CardContent>
       </Card>

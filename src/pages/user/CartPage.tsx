@@ -6,10 +6,13 @@ import { getCartThunk, validateCartThunk } from "store/cart/cartThunks";
 import Header from "layout/components/header/Header";
 import Footer from "layout/components/footer/Footer";
 import { CartItemsList, CartSummaryCard, DiscountSection } from "sections/cart";
+import { LanguageSwitcher } from "components/common";
 import { PATH_USER } from "routes/paths";
+import { useLocales } from "hooks";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 
 export default function CartPage() {
+  const { translate } = useLocales();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { cart, validation } = useAppSelector((state) => state.cart);
@@ -45,8 +48,27 @@ export default function CartPage() {
   const isEmpty = !cartData || cartData.itemsCount === 0;
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+        position: "relative",
+      }}
+    >
       <Header />
+
+      {/* Language Switcher - Top right */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: { xs: 80, md: 90 },
+          right: { xs: 16, md: 32 },
+          zIndex: 999,
+        }}
+      >
+        <LanguageSwitcher />
+      </Box>
 
       <Box
         sx={{
@@ -64,11 +86,13 @@ export default function CartPage() {
               fontWeight={700}
               sx={{ mb: 1, color: "#1a1a1a" }}
             >
-              Giỏ Hàng
+              {translate("cart.Title")}
             </Typography>
             {!isEmpty && (
               <Typography variant="body1" color="text.secondary">
-                {cartData?.itemsCount} khóa học đang chờ bạn
+                {translate("cart.ItemsWaiting", {
+                  count: cartData?.itemsCount,
+                })}
               </Typography>
             )}
           </Box>
@@ -86,7 +110,7 @@ export default function CartPage() {
                 onClose={() => setShowValidationErrors(false)}
               >
                 <Typography variant="body2" fontWeight={600} gutterBottom>
-                  Không thể tiếp tục thanh toán:
+                  {translate("cart.ValidationErrorTitle")}
                 </Typography>
                 <ul style={{ margin: 0, paddingLeft: 20 }}>
                   {validation.cartValidation.errors?.map((error, index) => (
@@ -128,15 +152,14 @@ export default function CartPage() {
                 gutterBottom
                 sx={{ mb: 2 }}
               >
-                Giỏ hàng trống
+                {translate("cart.EmptyCartTitle")}
               </Typography>
               <Typography
                 variant="body1"
                 color="text.secondary"
                 sx={{ mb: 4, maxWidth: 400, mx: "auto" }}
               >
-                Hãy khám phá các khóa học STEM thú vị và thêm vào giỏ hàng để
-                bắt đầu hành trình học tập!
+                {translate("cart.EmptyCartContent")}
               </Typography>
               <Button
                 variant="contained"
@@ -155,7 +178,7 @@ export default function CartPage() {
                   },
                 }}
               >
-                Khám Phá Khóa Học
+                {translate("cart.ExploreCourses")}
               </Button>
             </Box>
           ) : (

@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { PATH_USER } from "routes/paths";
+import { useLocales } from "hooks";
 import { useEffect, useMemo, useState } from "react";
 import { LessonStatus } from "common/@types/lessonProgress";
 import { axiosClient } from "axiosClient/axiosClient";
@@ -366,7 +367,7 @@ export default function EnrolledCoursesTab({
                   ...m,
                   [enrollment.courseId]: {
                     loading: false,
-                    error: e?.message || "Không thể tải bài học",
+                    error: e?.message || translate("student.CannotLoadLessons"),
                     items: [],
                     page: 1,
                     size: 10,
@@ -499,7 +500,7 @@ export default function EnrolledCoursesTab({
                         whiteSpace: "nowrap",
                       }}
                     >
-                      Tiếp tục học
+                      {translate("courses.ContinueLearning")}
                     </Button>
                   )}
                 </Box>
@@ -524,7 +525,7 @@ export default function EnrolledCoursesTab({
                       <Stack spacing={1.25}>
                         {lessonsState.items.length === 0 && (
                           <Typography variant="body2" color="text.secondary">
-                            Chưa tham gia bài học nào.
+                            {translate("student.NoLessonsJoined")}
                           </Typography>
                         )}
                         {lessonsState.items.map((lp) => {

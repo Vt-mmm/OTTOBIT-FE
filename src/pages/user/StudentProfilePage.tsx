@@ -3,16 +3,33 @@ import { Container, Box } from "@mui/material";
 import { motion } from "framer-motion";
 import { Header } from "layout/components/header";
 import { StudentProfileSection } from "sections/user/studentProfile";
+import { LanguageSwitcher } from "components/common";
+import { useLocales } from "hooks";
 
 const StudentProfilePage: React.FC = () => {
+  const { translate } = useLocales();
+
   const handleStudentCreated = () => {
     // Có thể thêm logic sau khi tạo student profile thành công
-    console.log("Student profile created successfully!");
+    console.log(translate("student.StudentProfileCreated"));
   };
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header />
+
+      {/* Language Switcher */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: { xs: 80, md: 90 },
+          right: { xs: 16, md: 32 },
+          zIndex: 999,
+        }}
+      >
+        <LanguageSwitcher />
+      </Box>
+
       <Box
         sx={{
           flex: 1,

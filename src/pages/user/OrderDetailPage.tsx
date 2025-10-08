@@ -17,7 +17,9 @@ import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import { Sidebar } from "layout/sidebar";
 import { UserProfileHeader } from "layout/components/header";
+import { LanguageSwitcher } from "components/common";
 import { useAppDispatch, useAppSelector } from "store/config";
+import { useLocales } from "hooks";
 import { getOrderByIdThunk } from "store/order/orderThunks";
 import { getOrderItemsThunk } from "store/orderItem/orderItemThunks";
 import { OrderStatus, PaymentStatus } from "common/@types/order";
@@ -28,6 +30,7 @@ import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 
 const OrderDetailPage: React.FC = () => {
+  const { translate } = useLocales();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { id: orderId } = useParams<{ id: string }>();
@@ -88,13 +91,13 @@ const OrderDetailPage: React.FC = () => {
   const getStatusText = (status: OrderStatus) => {
     switch (status) {
       case OrderStatus.Paid:
-        return "Đã thanh toán";
+        return translate("orders.StatusPaid");
       case OrderStatus.Pending:
-        return "Chờ xử lý";
+        return translate("orders.StatusPending");
       case OrderStatus.Cancelled:
-        return "Đã hủy";
+        return translate("orders.StatusCancelled");
       case OrderStatus.Failed:
-        return "Thất bại";
+        return translate("orders.StatusFailed");
       default:
         return status;
     }
@@ -103,13 +106,13 @@ const OrderDetailPage: React.FC = () => {
   const getPaymentStatusText = (status: PaymentStatus) => {
     switch (status) {
       case PaymentStatus.Succeeded:
-        return "Đã thanh toán";
+        return translate("orders.PaymentSucceeded");
       case PaymentStatus.Pending:
-        return "Chờ thanh toán";
+        return translate("orders.PaymentPending");
       case PaymentStatus.Failed:
-        return "Thanh toán thất bại";
+        return translate("orders.PaymentFailed");
       case PaymentStatus.Cancelled:
-        return "Đã hủy";
+        return translate("orders.StatusCancelled");
       default:
         return status;
     }
@@ -135,8 +138,22 @@ const OrderDetailPage: React.FC = () => {
   const itemsCount = items?.length ?? 0;
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "common.white" }}>
-      <UserProfileHeader title="Chi tiết đơn hàng" />
+    <Box
+      sx={{ minHeight: "100vh", bgcolor: "common.white", position: "relative" }}
+    >
+      <UserProfileHeader title={translate("orders.OrderDetailTitle")} />
+
+      {/* Language Switcher - Top right */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: { xs: 80, md: 90 },
+          right: { xs: 16, md: 32 },
+          zIndex: 999,
+        }}
+      >
+        <LanguageSwitcher />
+      </Box>
       <Box sx={{ display: "flex", minHeight: "calc(100vh - 64px)" }}>
         {/* Sidebar */}
         <Sidebar openNav={false} onCloseNav={() => {}} />
@@ -181,7 +198,7 @@ const OrderDetailPage: React.FC = () => {
                     },
                   }}
                 >
-                  Quay lại danh sách đơn hàng
+                  {translate("orders.BackToOrders")}
                 </Button>
 
                 {/* Loading State */}
@@ -235,10 +252,12 @@ const OrderDetailPage: React.FC = () => {
                               fontWeight={700}
                               sx={{ mb: 1 }}
                             >
-                              Đơn hàng #{orderData.id.substring(0, 8)}
+                              {translate("orders.OrderPrefix")}
+                              {orderData.id.substring(0, 8)}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              Đặt hàng lúc: {formatDate(orderData.createdAt)}
+                              {translate("orders.OrderCreated")}:{" "}
+                              {formatDate(orderData.createdAt)}
                             </Typography>
                           </Box>
                           <Box
@@ -267,7 +286,7 @@ const OrderDetailPage: React.FC = () => {
                               color="text.secondary"
                               sx={{ mb: 1 }}
                             >
-                              Tạm tính
+                              {translate("orders.SubTotal")}
                             </Typography>
                             <Typography variant="h6" fontWeight={600}>
                               {orderData.subtotal.toLocaleString("vi-VN")} ₫
@@ -279,7 +298,7 @@ const OrderDetailPage: React.FC = () => {
                               color="text.secondary"
                               sx={{ mb: 1 }}
                             >
-                              Giảm giá
+                              {translate("orders.Discount")}
                             </Typography>
                             <Typography
                               variant="h6"
@@ -297,7 +316,7 @@ const OrderDetailPage: React.FC = () => {
                               color="text.secondary"
                               sx={{ mb: 1 }}
                             >
-                              Số khóa học
+                              {translate("orders.ItemsCount")}
                             </Typography>
                             <Typography variant="h6" fontWeight={600}>
                               {itemsCount}
@@ -309,7 +328,7 @@ const OrderDetailPage: React.FC = () => {
                               color="text.secondary"
                               sx={{ mb: 1 }}
                             >
-                              Tổng cộng
+                              {translate("orders.Total")}
                             </Typography>
                             <Typography
                               variant="h6"
@@ -337,7 +356,7 @@ const OrderDetailPage: React.FC = () => {
                           fontWeight={600}
                           sx={{ mb: 3 }}
                         >
-                          Khóa học đã mua ({itemsCount})
+                          {translate("orders.OrderItems")} ({itemsCount})
                         </Typography>
 
                         {/* No items */}
@@ -352,7 +371,7 @@ const OrderDetailPage: React.FC = () => {
                               sx={{ fontSize: 48, color: "#9e9e9e", mb: 2 }}
                             />
                             <Typography variant="body1" color="text.secondary">
-                              Không có khóa học nào
+                              {translate("orders.NoCourses")}
                             </Typography>
                           </Box>
                         )}
@@ -457,7 +476,7 @@ const OrderDetailPage: React.FC = () => {
                                       },
                                     }}
                                   >
-                                    Vào học
+                                    {translate("orders.GoToCourse")}
                                   </Button>
                                 </Box>
                               </Paper>

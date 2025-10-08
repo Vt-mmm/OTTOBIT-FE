@@ -23,11 +23,14 @@ import { clearLastCreatedOrder } from "store/order/orderSlice";
 import { clearPaymentLink } from "store/payment/paymentSlice";
 import Header from "layout/components/header/Header";
 import Footer from "layout/components/footer/Footer";
+import { LanguageSwitcher } from "components/common";
 import { PaymentMethod } from "common/@types/payment";
 import { PATH_USER } from "routes/paths";
 import LockIcon from "@mui/icons-material/Lock";
+import { useLocales } from "hooks";
 
 export default function CheckoutPage() {
+  const { translate } = useLocales();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { cart } = useAppSelector((state) => state.cart);
@@ -66,7 +69,7 @@ export default function CheckoutPage() {
 
       // Validate cart exists
       if (!cartData || !cartData.id) {
-        throw new Error("Cart not found");
+        throw new Error(translate("checkout.CartNotFound"));
       }
 
       // Step 1: Create order from cart
@@ -75,13 +78,13 @@ export default function CheckoutPage() {
       ).unwrap();
 
       if (!orderResult || !orderResult.id) {
-        throw new Error("Failed to create order");
+        throw new Error(translate("checkout.OrderCreationFailed"));
       }
 
       // Step 2: Get payment transaction ID from order
       const paymentTransaction = orderResult.paymentTransactions?.[0];
       if (!paymentTransaction || !paymentTransaction.id) {
-        throw new Error("Payment transaction not created");
+        throw new Error(translate("checkout.PaymentTransactionNotCreated"));
       }
 
       // Step 3: Initiate payment (create PayOS link)
@@ -95,7 +98,7 @@ export default function CheckoutPage() {
       // PayLink will trigger redirect in useEffect
     } catch (err: any) {
       console.error("Checkout error:", err);
-      setError(err.message || "Failed to process checkout");
+      setError(err.message || translate("checkout.CheckoutProcessFailed"));
     }
   };
 
@@ -126,8 +129,27 @@ export default function CheckoutPage() {
   }
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+        position: "relative",
+      }}
+    >
       <Header />
+
+      {/* Language Switcher - Top right */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: { xs: 80, md: 90 },
+          right: { xs: 16, md: 32 },
+          zIndex: 999,
+        }}
+      >
+        <LanguageSwitcher />
+      </Box>
 
       <Box sx={{ flexGrow: 1, bgcolor: "#f5f5f5", pt: 12, pb: 8 }}>
         <Container maxWidth="xl">
@@ -139,10 +161,10 @@ export default function CheckoutPage() {
               color="text.primary"
               sx={{ mb: 1 }}
             >
-              Thanh Toán
+              {translate("checkout.Title")}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Hoàn tất đơn hàng của bạn
+              {translate("checkout.CompleteOrder")}
             </Typography>
           </Box>
 
@@ -186,7 +208,7 @@ export default function CheckoutPage() {
                     color="text.primary"
                     sx={{ mb: 3 }}
                   >
-                    Chi Tiết Đơn Hàng
+                    {translate("checkout.OrderDetails")}
                   </Typography>
 
                   {cartData &&
@@ -265,7 +287,7 @@ export default function CheckoutPage() {
                     color="text.primary"
                     sx={{ mb: 3 }}
                   >
-                    Phương Thức Thanh Toán
+                    {translate("checkout.PaymentMethod")}
                   </Typography>
 
                   <FormControl component="fieldset" fullWidth>
@@ -298,13 +320,13 @@ export default function CheckoutPage() {
                           label={
                             <Box>
                               <Typography fontWeight={600} color="text.primary">
-                                Thanh toán qua PayOS
+                                PayOS
                               </Typography>
                               <Typography
                                 variant="caption"
                                 color="text.secondary"
                               >
-                                Chuyển khoản ngân hàng qua cổng PayOS
+                                {translate("checkout.PayOSDescription")}
                               </Typography>
                             </Box>
                           }
@@ -334,7 +356,7 @@ export default function CheckoutPage() {
                     color="text.primary"
                     sx={{ mb: 3 }}
                   >
-                    Tóm Tắt Đơn Hàng
+                    {translate("checkout.OrderSummary")}
                   </Typography>
 
                   {cartData && (
@@ -348,7 +370,7 @@ export default function CheckoutPage() {
                           }}
                         >
                           <Typography color="text.secondary">
-                            Số lượng khóa học:
+                            {translate("checkout.CourseQuantity")}
                           </Typography>
                           <Typography fontWeight={600} color="text.primary">
                             {cartData.itemsCount}
@@ -363,7 +385,7 @@ export default function CheckoutPage() {
                           }}
                         >
                           <Typography color="text.secondary">
-                            Tạm tính:
+                            {translate("checkout.SubTotal")}
                           </Typography>
                           <Typography fontWeight={600} color="text.primary">
                             {cartData.subtotal.toLocaleString("vi-VN")} ₫
@@ -379,7 +401,7 @@ export default function CheckoutPage() {
                             }}
                           >
                             <Typography color="error.main">
-                              Giảm giá:
+                              {translate("checkout.Discount")}
                             </Typography>
                             <Typography fontWeight={600} color="error.main">
                               -{cartData.discountAmount.toLocaleString("vi-VN")}{" "}
@@ -402,7 +424,7 @@ export default function CheckoutPage() {
                             fontWeight={700}
                             color="text.primary"
                           >
-                            Tổng cộng:
+                            {translate("checkout.TotalAmount")}
                           </Typography>
                           <Typography
                             variant="h5"
@@ -454,7 +476,7 @@ export default function CheckoutPage() {
                           ) : (
                             <>
                               <LockIcon sx={{ mr: 1, fontSize: 20 }} />
-                              Thanh Toán An Toàn
+                              {translate("checkout.SecurePayment")}
                             </>
                           )}
                         </Button>
@@ -481,7 +503,7 @@ export default function CheckoutPage() {
                             },
                           }}
                         >
-                          Quay Lại Giỏ Hàng
+                          {translate("checkout.BackToCart")}
                         </Button>
                       </Box>
 
@@ -505,10 +527,10 @@ export default function CheckoutPage() {
                           fontWeight={600}
                           sx={{ mb: 0.5 }}
                         >
-                          Thanh toán được bảo mật bởi PayOS
+                          {translate("checkout.SecuredByPayOS")}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          Giao dịch an toàn và được mã hóa
+                          {translate("checkout.SecureEncrypted")}
                         </Typography>
                       </Box>
                     </>

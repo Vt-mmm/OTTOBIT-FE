@@ -1,5 +1,6 @@
 import { Box, Card, CardContent, Stack, Typography } from "@mui/material";
 import { NoteAlt as NoteIcon } from "@mui/icons-material";
+import { useLocales } from "hooks";
 import type { LessonNote } from "common/@types/lessonNote";
 import NoteItem from "./NoteItem";
 
@@ -20,6 +21,8 @@ export default function NoteList({
   isUpdating = false,
   isDeleting = false,
 }: NoteListProps) {
+  const { translate } = useLocales();
+
   if (notes.length === 0) {
     return (
       <Card>
@@ -35,11 +38,10 @@ export default function NoteList({
           >
             <NoteIcon sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              Chưa có ghi chú nào
+              {translate("lessons.NoNotesYet")}
             </Typography>
             <Typography variant="body2" color="text.secondary" align="center">
-              Hãy tạo ghi chú đầu tiên để ghi lại những điểm quan trọng trong
-              bài học!
+              {translate("lessons.CreateFirstNote")}
             </Typography>
           </Box>
         </CardContent>

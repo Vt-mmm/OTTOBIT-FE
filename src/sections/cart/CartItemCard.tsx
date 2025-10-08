@@ -19,12 +19,14 @@ import { useAppDispatch } from "store/config";
 import { removeCartItemThunk, getCartThunk } from "store/cart/cartThunks";
 import { useNavigate } from "react-router-dom";
 import { showSuccessToast, showErrorToast } from "utils/toast";
+import { useLocales } from "../../hooks";
 
 interface CartItemCardProps {
   item: CartItemResult;
 }
 
 export default function CartItemCard({ item }: CartItemCardProps) {
+  const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [isRemoving, setIsRemoving] = useState(false);
@@ -157,11 +159,12 @@ export default function CartItemCard({ item }: CartItemCardProps) {
         open={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
       >
-        <DialogTitle>Xác nhận xóa</DialogTitle>
+        <DialogTitle>{translate("cart.ConfirmDelete")}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Bạn có chắc chắn muốn xóa khóa học "{item.courseTitle}" khỏi giỏ
-            hàng?
+            {translate("cart.DeleteConfirmMessage", {
+              courseTitle: item.courseTitle,
+            })}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -169,7 +172,7 @@ export default function CartItemCard({ item }: CartItemCardProps) {
             onClick={() => setShowDeleteDialog(false)}
             disabled={isRemoving}
           >
-            Hủy
+            {translate("cart.Cancel")}
           </Button>
           <Button
             onClick={handleRemove}
@@ -177,7 +180,7 @@ export default function CartItemCard({ item }: CartItemCardProps) {
             variant="contained"
             disabled={isRemoving}
           >
-            {isRemoving ? "Đang xóa..." : "Xóa"}
+            {isRemoving ? translate("cart.Deleting") : translate("cart.Delete")}
           </Button>
         </DialogActions>
       </Dialog>

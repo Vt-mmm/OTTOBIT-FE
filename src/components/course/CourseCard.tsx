@@ -4,6 +4,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { CourseType } from "common/@types/course";
+import { useLocales } from "hooks";
 
 interface CourseCardProps {
   id: string;
@@ -69,6 +70,7 @@ export default function CourseCard({
   price = 0, // Default to 0 if not provided
   type = CourseType.Free, // Default to Free if not provided
 }: CourseCardProps) {
+  const { translate } = useLocales();
   const [imgSrc, setImgSrc] = useState<string>(
     imageUrl || getPlaceholderImage(id)
   );
@@ -78,7 +80,9 @@ export default function CourseCard({
 
   // Determine course pricing display based on backend data
   const isFree = type === CourseType.Free || price === 0;
-  const priceDisplay = isFree ? "Miễn phí" : `${price.toLocaleString()} VND`;
+  const priceDisplay = isFree
+    ? translate("courses.Free")
+    : `${price.toLocaleString()} VND`;
 
   const handleImageError = () => {
     setImgSrc(DEFAULT_FALLBACK);
@@ -277,7 +281,7 @@ export default function CourseCard({
             {lessonsCount !== undefined && (
               <Box sx={{ display: "flex", alignItems: "center" }}>
                 <MenuBookIcon sx={{ fontSize: "0.9rem", mr: 0.3 }} />
-                {lessonsCount} bài học
+                {lessonsCount} {translate("courses.Lessons")}
               </Box>
             )}
 
@@ -285,7 +289,8 @@ export default function CourseCard({
             {enrollmentsCount !== undefined && (
               <Box sx={{ display: "flex", alignItems: "center" }}>
                 <PeopleIcon sx={{ fontSize: "0.9rem", mr: 0.3 }} />
-                {enrollmentsCount.toLocaleString()} học viên
+                {enrollmentsCount.toLocaleString()}{" "}
+                {translate("courses.Students")}
               </Box>
             )}
 
@@ -336,7 +341,9 @@ export default function CourseCard({
                   },
                 }}
               >
-                {isFree ? "Tham gia miễn phí" : "Tham gia khóa học"}
+                {isFree
+                  ? translate("courses.JoinFree")
+                  : translate("courses.JoinCourse")}
               </Button>
             ) : (
               <Button
@@ -356,7 +363,7 @@ export default function CourseCard({
                   },
                 }}
               >
-                Tiếp tục học
+                {translate("courses.ContinueLearning")}
               </Button>
             )}
           </Box>

@@ -20,6 +20,7 @@ import {
 } from "@mui/icons-material";
 import type { CertificateResult } from "common/@types/certificate";
 import { toast } from "react-toastify";
+import { useLocales } from "../../../hooks";
 
 interface CertificateViewerDialogProps {
   open: boolean;
@@ -32,12 +33,13 @@ export default function CertificateViewerDialog({
   onClose,
   certificate,
 }: CertificateViewerDialogProps) {
+  const { translate } = useLocales();
   const [isDownloading, setIsDownloading] = useState(false);
 
   // Copy verification code
   const handleCopyVerificationCode = () => {
     navigator.clipboard.writeText(certificate.verificationCode);
-    toast.success("Đã sao chép mã xác thực!");
+    toast.success(translate("certificates.VerificationCodeCopied"));
   };
 
   // Download PDF (placeholder - team can implement with html2canvas + jsPDF)
@@ -52,11 +54,9 @@ export default function CertificateViewerDialog({
       // pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
       // pdf.save(`Certificate-${certificate.certificateNo}.pdf`);
 
-      toast.info(
-        "Tính năng download PDF đang được phát triển. Vui lòng chụp màn hình hoặc liên hệ admin."
-      );
+      toast.info(translate("certificates.PDFFeatureDevelopment"));
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi tải xuống!");
+      toast.error(translate("certificates.DownloadError"));
     } finally {
       setIsDownloading(false);
     }
@@ -73,8 +73,14 @@ export default function CertificateViewerDialog({
       }}
     >
       <DialogTitle>
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">Chứng chỉ của bạn</Typography>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Typography variant="h6">
+            {translate("certificates.YourCertificate")}
+          </Typography>
           <IconButton onClick={onClose} size="small">
             <CloseIcon />
           </IconButton>
@@ -86,8 +92,11 @@ export default function CertificateViewerDialog({
           {/* Info Alert */}
           <Alert severity="info">
             <Typography variant="body2">
-              <strong>Lưu ý:</strong> Đây là chứng chỉ điện tử của bạn. Bạn có
-              thể tải xuống hoặc chia sẻ mã xác thực để xác minh tính hợp lệ.
+              <span
+                dangerouslySetInnerHTML={{
+                  __html: translate("certificates.InfoNote"),
+                }}
+              />
             </Typography>
           </Alert>
 
@@ -118,14 +127,14 @@ export default function CertificateViewerDialog({
                   textShadow: "0 2px 8px rgba(0,0,0,0.2)",
                 }}
               >
-                CHỨNG CHỈ HOÀN THÀNH
+                {translate("certificates.CompletionCertificate")}
               </Typography>
 
               <Typography
                 variant="h6"
                 sx={{ mb: 2, opacity: 0.9, fontWeight: 300 }}
               >
-                Chứng nhận rằng
+                {translate("certificates.CertifyThat")}
               </Typography>
 
               <Typography
@@ -143,7 +152,7 @@ export default function CertificateViewerDialog({
                 variant="h6"
                 sx={{ mb: 2, opacity: 0.9, fontWeight: 300 }}
               >
-                đã hoàn thành xuất sắc khóa học
+                {translate("certificates.HasCompleted")}
               </Typography>
 
               <Typography
@@ -168,7 +177,7 @@ export default function CertificateViewerDialog({
                 }}
               >
                 <Typography variant="body1" sx={{ mb: 1, opacity: 0.9 }}>
-                  Cấp ngày:{" "}
+                  {translate("certificates.IssuedOn")}:{" "}
                   {new Date(certificate.issuedAt).toLocaleDateString("vi-VN", {
                     day: "2-digit",
                     month: "2-digit",
@@ -216,7 +225,7 @@ export default function CertificateViewerDialog({
           >
             <Stack spacing={2}>
               <Typography variant="subtitle2" fontWeight={600}>
-                Mã xác thực chứng chỉ
+                {translate("certificates.VerificationCode")}
               </Typography>
               <Stack direction="row" spacing={2} alignItems="center">
                 <Box
@@ -246,11 +255,11 @@ export default function CertificateViewerDialog({
                   startIcon={<CopyIcon />}
                   onClick={handleCopyVerificationCode}
                 >
-                  Sao chép
+                  {translate("certificates.CopyVerificationCode")}
                 </Button>
               </Stack>
               <Typography variant="caption" color="text.secondary">
-                Sử dụng mã này để xác minh tính hợp lệ của chứng chỉ
+                {translate("certificates.UseCodeToVerify")}
               </Typography>
             </Stack>
           </Paper>
@@ -259,7 +268,7 @@ export default function CertificateViewerDialog({
 
       <DialogActions sx={{ px: 3, pb: 3 }}>
         <Button onClick={onClose} size="large">
-          Đóng
+          {translate("certificates.Close")}
         </Button>
         <Button
           variant="contained"
@@ -270,7 +279,9 @@ export default function CertificateViewerDialog({
           disabled={isDownloading}
           size="large"
         >
-          {isDownloading ? "Đang tải..." : "Tải xuống PDF"}
+          {isDownloading
+            ? translate("certificates.Downloading")
+            : translate("certificates.DownloadPDF")}
         </Button>
       </DialogActions>
     </Dialog>

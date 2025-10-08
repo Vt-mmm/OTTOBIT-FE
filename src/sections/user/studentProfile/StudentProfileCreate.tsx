@@ -25,6 +25,7 @@ import { useAppDispatch, useAppSelector } from "store/config";
 import { createStudentThunk } from "store/student/studentThunks";
 import { CreateStudentRequest } from "common/@types/student";
 import { alpha } from "@mui/material/styles";
+import { useLocales } from "../../../hooks";
 
 interface StudentProfileCreateProps {
   onStudentCreated: () => void;
@@ -37,6 +38,7 @@ export default function StudentProfileCreate({
 }: StudentProfileCreateProps) {
   const dispatch = useAppDispatch();
   const { operations } = useAppSelector((state) => state.student);
+  const { translate } = useLocales();
   const createError = operations?.createError;
   const isCreating = operations?.isCreating;
 
@@ -63,25 +65,27 @@ export default function StudentProfileCreate({
     };
 
     if (!formData.fullname.trim()) {
-      newErrors.fullname = "Vui lòng nhập họ và tên";
+      newErrors.fullname = translate("student.EnterFullName");
     } else if (formData.fullname.trim().length < 2) {
-      newErrors.fullname = "Họ và tên phải có ít nhất 2 ký tự";
+      newErrors.fullname = translate("student.NameMinLength");
     }
 
     if (formData.phoneNumber && !/^[0-9]{10,11}$/.test(formData.phoneNumber)) {
-      newErrors.phoneNumber = "Số điện thoại phải có 10-11 chữ số";
+      newErrors.phoneNumber = translate("student.PhoneInvalid");
     }
 
     if (!formData.dateOfBirth) {
-      newErrors.dateOfBirth = "Vui lòng chọn ngày sinh";
+      newErrors.dateOfBirth = translate("student.SelectDateOfBirth");
     } else if (dayjs().diff(formData.dateOfBirth, "year") < 5) {
-      newErrors.dateOfBirth = "Tuổi phải từ 5 tuổi trở lên";
+      newErrors.dateOfBirth = translate("student.MinAge");
     } else if (dayjs().diff(formData.dateOfBirth, "year") > 100) {
-      newErrors.dateOfBirth = "Tuổi không hợp lệ";
+      newErrors.dateOfBirth = translate("student.InvalidAge");
     }
 
     setErrors(newErrors);
-    return !newErrors.fullname && !newErrors.phoneNumber && !newErrors.dateOfBirth;
+    return (
+      !newErrors.fullname && !newErrors.phoneNumber && !newErrors.dateOfBirth
+    );
   };
 
   const handleSubmit = async () => {
@@ -208,7 +212,7 @@ export default function StudentProfileCreate({
               placeholder="Nhập địa chỉ (Tùy chọn)"
             />
 
-            <Box sx={{ display: 'flex', gap: 2 }}>
+            <Box sx={{ display: "flex", gap: 2 }}>
               <TextField
                 fullWidth
                 label="Tỉnh/Thành phố"
@@ -274,7 +278,7 @@ export default function StudentProfileCreate({
                 disabled={isCreating}
                 sx={{ minWidth: 120 }}
               >
-                Hủy
+                {translate("student.Cancel")}
               </Button>
               <Button
                 variant="contained"
@@ -285,7 +289,9 @@ export default function StudentProfileCreate({
                 }
                 sx={{ minWidth: 120 }}
               >
-                {isCreating ? "Đang tạo..." : " Tạo hồ sơ"}
+                {isCreating
+                  ? translate("student.CreatingProfile")
+                  : translate("student.Create")}
               </Button>
             </Box>
           </Box>

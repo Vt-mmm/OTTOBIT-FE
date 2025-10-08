@@ -6,38 +6,38 @@ import {
   Code as CodeIcon,
   Build as BuildIcon,
 } from "@mui/icons-material";
+import { useLocales } from "../../../hooks";
 
 const InteractiveShowcaseSection: React.FC = () => {
+  const { translate } = useLocales();
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   const showcaseData = [
     {
-      title: "Visual Programming",
-      description:
-        "Học lập trình thông qua giao diện kéo thả trực quan với Blockly",
+      title: translate("homepage.VisualProgramming"),
+      description: translate("homepage.VisualProgrammingDesc"),
       image: "/asset/BlockLy.png",
       icon: <CodeIcon />,
       color: "#22c55e",
       features: [
-        "Không cần kiến thức lập trình trước",
-        "Tạo code JavaScript tự động",
-        "Hỗ trợ nhiều ngôn ngữ",
-        "Giao diện thân thiện",
+        translate("homepage.NoCodeNeeded"),
+        translate("homepage.AutoJavaScript"),
+        translate("homepage.MultiLanguage"),
+        translate("homepage.FriendlyInterface"),
       ],
     },
     {
-      title: "Ottobit Robot",
-      description:
-        "Khám phá thế giới robotics với Ottobit - Robot thông minh có thể nhảy múa, tránh vật cản và tương tác",
+      title: translate("homepage.OttoBitRobot"),
+      description: translate("homepage.OttoBitRobotDesc"),
       image: "/OttoDIY/58077_854482.png",
       icon: <BuildIcon />,
       color: "#16a34a",
       features: [
-        "Robot có thể di chuyển và nhảy múa",
-        "Cảm biến siêu âm tránh vật cản",
-        "Lập trình bằng Blockly",
-        "Thiết kế đáng yêu và thân thiện",
+        translate("homepage.CanMoveDance"),
+        translate("homepage.UltrasonicSensor"),
+        translate("homepage.BlocklyProgramming"),
+        translate("homepage.CuteFriendly"),
       ],
     },
   ];
@@ -120,7 +120,7 @@ const InteractiveShowcaseSection: React.FC = () => {
                 letterSpacing: 2,
               }}
             >
-              Interactive Showcase
+              {translate("homepage.InteractiveShowcase")}
             </Typography>
             <Typography
               variant="h2"
@@ -128,21 +128,35 @@ const InteractiveShowcaseSection: React.FC = () => {
                 fontWeight: 700,
                 color: "#1a1a1a",
                 mb: 3,
-                fontSize: { xs: "2rem", md: "3.5rem" },
-                lineHeight: 1.2,
+                fontSize: {
+                  xs: "1.75rem",
+                  sm: "2.25rem",
+                  md: "3rem",
+                  lg: "3.5rem",
+                },
+                lineHeight: { xs: 1.3, md: 1.2 },
+                textAlign: "center",
+                px: { xs: 2, sm: 0 }, // Add padding for mobile
+                wordBreak: "break-word", // Handle long words
               }}
             >
-              Tương tác với
+              {translate("homepage.InteractWith")}
               <Box component="span" sx={{ color: "#22c55e" }}>
                 {" "}
-                Công nghệ
+                {translate("homepage.Technology")}
               </Box>
             </Typography>
           </Box>
         </motion.div>
 
         {/* Showcase Content - Vertical Layout */}
-        <Box sx={{ display: "flex", flexDirection: "column", gap: { xs: 8, md: 12 } }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: { xs: 8, md: 12 },
+          }}
+        >
           {showcaseData.map((item, index) => (
             <motion.div
               key={index}
@@ -159,8 +173,15 @@ const InteractiveShowcaseSection: React.FC = () => {
                   minHeight: "600px",
                   py: { xs: 4, md: 6 },
                   borderRadius: "24px",
-                  background: index % 2 === 0 ? "rgba(34, 197, 94, 0.03)" : "rgba(22, 163, 74, 0.03)",
-                  border: `1px solid ${index % 2 === 0 ? "rgba(34, 197, 94, 0.1)" : "rgba(22, 163, 74, 0.1)"}`,
+                  background:
+                    index % 2 === 0
+                      ? "rgba(34, 197, 94, 0.03)"
+                      : "rgba(22, 163, 74, 0.03)",
+                  border: `1px solid ${
+                    index % 2 === 0
+                      ? "rgba(34, 197, 94, 0.1)"
+                      : "rgba(22, 163, 74, 0.1)"
+                  }`,
                   px: { xs: 3, md: 4 },
                 }}
               >
@@ -286,7 +307,7 @@ const InteractiveShowcaseSection: React.FC = () => {
                         },
                       }}
                     >
-                      Trải nghiệm ngay
+                      {translate("homepage.ExperienceNow")}
                     </Button>
                   </motion.div>
                 </Box>

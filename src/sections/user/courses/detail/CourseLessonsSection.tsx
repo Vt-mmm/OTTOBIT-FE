@@ -25,6 +25,7 @@ import {
   getLessonStatusText,
   getLessonButtonText,
 } from "../../../../utils/lessonUtils";
+import { useLocales } from "../../../../hooks";
 
 interface CourseLessonsSectionProps {
   lessons: Lesson[];
@@ -39,6 +40,7 @@ export default function CourseLessonsSection({
   isUserEnrolled,
   onLessonClick,
 }: CourseLessonsSectionProps) {
+  const { translate } = useLocales();
   return (
     <Box
       sx={{
@@ -58,10 +60,10 @@ export default function CourseLessonsSection({
           gutterBottom
           sx={{ fontWeight: 600, fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
         >
-          Nội dung khóa học
+          {translate("courses.CourseContent")}
         </Typography>
         <Typography variant="body2" color="text.secondary" gutterBottom>
-          {lessons.length} bài học • Khoảng 4-6 giờ
+          {translate("courses.LessonsCount", { count: lessons.length })}
         </Typography>
       </Box>
 
@@ -69,10 +71,10 @@ export default function CourseLessonsSection({
         <Box sx={{ textAlign: "center", py: 6 }}>
           <SchoolIcon sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
-            Chưa có bài học nào
+            {translate("courses.NoLessonsYet")}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Khóa học này chưa có bài học nào được tạo.
+            {translate("courses.NoLessonsInCourse")}
           </Typography>
         </Box>
       ) : (

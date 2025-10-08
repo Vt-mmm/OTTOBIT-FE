@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { Add as AddIcon } from "@mui/icons-material";
+import { useLocales } from "hooks";
 import { useAppDispatch, useAppSelector } from "store/config";
 import {
   createLessonNote,
@@ -31,6 +32,7 @@ export default function LessonNotesPanel({
   currentTimestamp,
   onTimestampClick,
 }: LessonNotesPanelProps) {
+  const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const { myNotes, isCreating, isUpdating, isDeleting } = useAppSelector(
     (state) => state.lessonNote
@@ -127,7 +129,7 @@ export default function LessonNotesPanel({
         alignItems="center"
         sx={{ mb: 2 }}
       >
-        <Typography variant="h6">Ghi chú của tôi</Typography>
+        <Typography variant="h6">{translate("lessons.MyNotes")}</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}

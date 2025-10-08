@@ -8,12 +8,14 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useAppSelector } from "store/config";
+import { useLocales } from "../../hooks";
 
 interface CartSummaryCardProps {
   onCheckout: () => void;
 }
 
 export default function CartSummaryCard({ onCheckout }: CartSummaryCardProps) {
+  const { translate } = useLocales();
   const { cart } = useAppSelector((state) => state.cart);
   const { operations } = useAppSelector((state) => state.cart);
 
@@ -54,7 +56,9 @@ export default function CartSummaryCard({ onCheckout }: CartSummaryCardProps) {
             <Box
               sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}
             >
-              <Typography color="text.secondary">Số lượng khóa học:</Typography>
+              <Typography color="text.secondary">
+                {translate("cart.CourseQuantity")}
+              </Typography>
               <Typography fontWeight={500}>{cartData.itemsCount}</Typography>
             </Box>
 
@@ -62,7 +66,9 @@ export default function CartSummaryCard({ onCheckout }: CartSummaryCardProps) {
             <Box
               sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}
             >
-              <Typography color="text.secondary">Tạm tính:</Typography>
+              <Typography color="text.secondary">
+                {translate("cart.Subtotal")}
+              </Typography>
               <Typography fontWeight={500}>
                 {cartData.subtotal.toLocaleString("vi-VN")} ₫
               </Typography>
@@ -77,7 +83,9 @@ export default function CartSummaryCard({ onCheckout }: CartSummaryCardProps) {
                   mb: 1.5,
                 }}
               >
-                <Typography color="error.main">Giảm giá:</Typography>
+                <Typography color="error.main">
+                  {translate("cart.Discount")}
+                </Typography>
                 <Typography fontWeight={500} color="error.main">
                   -{cartData.discountAmount.toLocaleString("vi-VN")} ₫
                 </Typography>
@@ -91,7 +99,7 @@ export default function CartSummaryCard({ onCheckout }: CartSummaryCardProps) {
               sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}
             >
               <Typography variant="h6" fontWeight={600}>
-                Tổng cộng:
+                {translate("cart.Total")}
               </Typography>
               <Typography variant="h6" fontWeight={600} color="primary.main">
                 {cartData.total.toLocaleString("vi-VN")} ₫
@@ -116,7 +124,7 @@ export default function CartSummaryCard({ onCheckout }: CartSummaryCardProps) {
                 },
               }}
             >
-              Thanh Toán
+              {translate("cart.Checkout")}
             </Button>
 
             {/* Info Text */}
@@ -125,8 +133,7 @@ export default function CartSummaryCard({ onCheckout }: CartSummaryCardProps) {
               color="text.secondary"
               sx={{ display: "block", mt: 2, textAlign: "center" }}
             >
-              Bằng việc tiếp tục thanh toán, bạn đồng ý với điều khoản sử dụng
-              của chúng tôi
+              {translate("cart.CheckoutAgreement")}
             </Typography>
           </>
         )}

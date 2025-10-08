@@ -35,51 +35,69 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useAppDispatch, useAppSelector } from "store/config";
-import { changePasswordThunk, forgotPasswordThunk, resetPasswordThunk } from "store/account/accountSlice";
-import { AccountChangePasswordForm, ForgotPasswordForm, ResetPasswordForm } from "common/@types";
+import {
+  changePasswordThunk,
+  forgotPasswordThunk,
+  resetPasswordThunk,
+} from "store/account/accountSlice";
+import {
+  AccountChangePasswordForm,
+  ForgotPasswordForm,
+  ResetPasswordForm,
+} from "common/@types";
 import { alpha } from "@mui/material/styles";
-
-// Validation schemas
-const changePasswordSchema = yup.object().shape({
-  currentPassword: yup.string().required("Mật khẩu hiện tại là bắt buộc"),
-  newPassword: yup
-    .string()
-    .min(6, "Mật khẩu mới phải có ít nhất 6 ký tự")
-    .required("Mật khẩu mới là bắt buộc"),
-  confirmNewPassword: yup
-    .string()
-    .oneOf([yup.ref("newPassword")], "Xác nhận mật khẩu không khớp")
-    .required("Xác nhận mật khẩu là bắt buộc"),
-});
-
-const forgotPasswordSchema = yup.object().shape({
-  email: yup
-    .string()
-    .email("Email không hợp lệ")
-    .required("Email là bắt buộc"),
-});
-
-const resetPasswordSchema = yup.object().shape({
-  email: yup
-    .string()
-    .email("Email không hợp lệ")
-    .required("Email là bắt buộc"),
-  resetToken: yup.string().required("Token là bắt buộc"),
-  newPassword: yup
-    .string()
-    .min(6, "Mật khẩu mới phải có ít nhất 6 ký tự")
-    .required("Mật khẩu mới là bắt buộc"),
-  confirmNewPassword: yup
-    .string()
-    .oneOf([yup.ref("newPassword")], "Xác nhận mật khẩu không khớp")
-    .required("Xác nhận mật khẩu là bắt buộc"),
-});
+import { useLocales } from "../../../hooks";
 
 const SecuritySettings: React.FC = () => {
   const dispatch = useAppDispatch();
+  const { translate } = useLocales();
   const { isLoading, isError, errorMessage } = useAppSelector(
     (state) => state.account
   );
+
+  // Validation schemas - MUST be inside component to use translate
+  const changePasswordSchema = yup.object().shape({
+    currentPassword: yup
+      .string()
+      .required(translate("profile.CurrentPassword") + " là bắt buộc"),
+    newPassword: yup
+      .string()
+      .min(6, translate("profile.NewPassword") + " phải có ít nhất 6 ký tự")
+      .required(translate("profile.NewPassword") + " là bắt buộc"),
+    confirmNewPassword: yup
+      .string()
+      .oneOf(
+        [yup.ref("newPassword")],
+        translate("profile.ConfirmPassword") + " không khớp"
+      )
+      .required(translate("profile.ConfirmPassword") + " là bắt buộc"),
+  });
+
+  const forgotPasswordSchema = yup.object().shape({
+    email: yup
+      .string()
+      .email("Email không hợp lệ")
+      .required("Email là bắt buộc"),
+  });
+
+  const resetPasswordSchema = yup.object().shape({
+    email: yup
+      .string()
+      .email("Email không hợp lệ")
+      .required("Email là bắt buộc"),
+    resetToken: yup.string().required("Token là bắt buộc"),
+    newPassword: yup
+      .string()
+      .min(6, translate("profile.NewPassword") + " phải có ít nhất 6 ký tự")
+      .required(translate("profile.NewPassword") + " là bắt buộc"),
+    confirmNewPassword: yup
+      .string()
+      .oneOf(
+        [yup.ref("newPassword")],
+        translate("profile.ConfirmPassword") + " không khớp"
+      )
+      .required(translate("profile.ConfirmPassword") + " là bắt buộc"),
+  });
 
   const [openChangePassword, setOpenChangePassword] = useState(false);
   const [openForgotPassword, setOpenForgotPassword] = useState(false);
@@ -208,19 +226,33 @@ const SecuritySettings: React.FC = () => {
         <Card
           sx={{
             borderRadius: 2,
-            boxShadow: 'none',
+            boxShadow: "none",
             border: (t) => `1px solid ${t.palette.divider}`,
-            bgcolor: 'background.paper'
+            bgcolor: "background.paper",
           }}
         >
           <CardContent sx={{ p: 2 }}>
             {/* Header (compact/neutral) */}
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <Box sx={{ width: 36, height: 36, borderRadius: 1, bgcolor: (t) => alpha(t.palette.text.primary, 0.06), display: 'flex', alignItems: 'center', justifyContent: 'center', mr: 1.5 }}>
-                <SecurityIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Box
+                sx={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 1,
+                  bgcolor: (t) => alpha(t.palette.text.primary, 0.06),
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  mr: 1.5,
+                }}
+              >
+                <SecurityIcon sx={{ color: "text.secondary", fontSize: 20 }} />
               </Box>
               <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontWeight: 600, color: "text.primary" }}
+                >
                   Cài đặt bảo mật
                 </Typography>
               </Box>
@@ -234,10 +266,10 @@ const SecuritySettings: React.FC = () => {
                     sx={{
                       borderRadius: 2,
                       mb: 0.5,
-                      '&:hover': {
+                      "&:hover": {
                         bgcolor: (t) => t.palette.action.hover,
                       },
-                      transition: 'background-color 0.2s ease',
+                      transition: "background-color 0.2s ease",
                     }}
                   >
                     <ListItemIcon>
@@ -253,13 +285,16 @@ const SecuritySettings: React.FC = () => {
                         }}
                       >
                         {React.cloneElement(feature.icon, {
-                          sx: { color: 'text.secondary', fontSize: 18 },
+                          sx: { color: "text.secondary", fontSize: 18 },
                         })}
                       </Box>
                     </ListItemIcon>
                     <ListItemText
                       primary={
-                        <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                        <Typography
+                          variant="body1"
+                          sx={{ fontWeight: 600, color: "text.primary" }}
+                        >
                           {feature.title}
                         </Typography>
                       }
@@ -463,7 +498,7 @@ const SecuritySettings: React.FC = () => {
                 fontWeight: 600,
               }}
             >
-              Hủy
+              {translate("profile.Cancel")}
             </Button>
             <Button
               type="submit"
@@ -482,7 +517,7 @@ const SecuritySettings: React.FC = () => {
               {isLoading ? (
                 <CircularProgress size={20} color="inherit" />
               ) : (
-                "Đổi mật khẩu"
+                translate("profile.ChangePasswordBtn")
               )}
             </Button>
           </DialogActions>
@@ -699,7 +734,7 @@ const SecuritySettings: React.FC = () => {
 
           <DialogActions sx={{ p: 3, pt: 1 }}>
             <Button onClick={handleCloseResetDialog} sx={{ color: "#666" }}>
-              Hủy
+              {translate("profile.Cancel")}
             </Button>
             <Button
               type="submit"
@@ -713,7 +748,11 @@ const SecuritySettings: React.FC = () => {
                 },
               }}
             >
-              {isLoading ? <CircularProgress size={20} /> : "Đặt lại mật khẩu"}
+              {isLoading ? (
+                <CircularProgress size={20} />
+              ) : (
+                translate("profile.ResetPasswordBtn")
+              )}
             </Button>
           </DialogActions>
         </form>

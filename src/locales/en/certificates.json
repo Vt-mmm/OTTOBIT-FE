@@ -1,0 +1,22 @@
+{
+  "YourCertificate": "Your Certificate",
+  "VerificationCodeCopied": "Verification code copied!",
+  "PDFFeatureDevelopment": "PDF download feature is in development. Please take a screenshot or contact admin.",
+  "DownloadError": "An error occurred during download!",
+  "CopyCode": "Copy Code",
+  "DownloadPDF": "Download PDF",
+  "Close": "Close",
+  "VerificationCode": "Verification Code",
+  "IssuedOn": "Issued on",
+  "ValidCertificate": "This is a valid certificate issued by Ottobit Academy",
+  "InfoNote": "<strong>Note:</strong> This is your electronic certificate. You can download it or share the verification code to verify its validity.",
+  "CompletionCertificate": "COMPLETION CERTIFICATE",
+  "CertifyThat": "This certifies that",
+  "HasCompleted": "has successfully completed",
+  "WithScore": "with a score of",
+  "CertificateNo": "Certificate No.",
+  "AwardedBy": "Awarded by Ottobit Academy",
+  "CopyVerificationCode": "Copy",
+  "UseCodeToVerify": "Use this code to verify the certificate's validity",
+  "Downloading": "Downloading..."
+}

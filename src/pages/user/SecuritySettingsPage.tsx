@@ -4,30 +4,46 @@ import { motion } from "framer-motion";
 import { Sidebar } from "layout/sidebar";
 import { UserProfileHeader } from "layout/components/header";
 import { SecuritySettings } from "sections/user/profile";
+import { LanguageSwitcher } from "components/common";
+import { useLocales } from "hooks";
 
 const SecuritySettingsPage: React.FC = () => {
+  const { translate } = useLocales();
+
   return (
     <>
       <Box sx={{ minHeight: "100vh", bgcolor: "common.white" }}>
-      <UserProfileHeader title="Bảo mật tài khoản" />
-      <Box sx={{ display: "flex", minHeight: "calc(100vh - 64px)" }}>
-      {/* Shared Sidebar */}
-               <Sidebar openNav={false} onCloseNav={() => {}} />
-      
-      {/* Main content area */}
-      <Box
-      component="main"
-      sx={{
-      flexGrow: 1,
-      width: { lg: `calc(100% - 280px)` },
-      bgcolor: "common.white",
-        pl: { xs: 3, md: 4 },
-        }}
-      >
-      <Container
-      maxWidth={false}
-      disableGutters
-        sx={{ pt: { xs: 3, md: 4 }, pb: 6, px: 0 }}
+        <UserProfileHeader title={translate("profile.SecuritySettingsTitle")} />
+
+        {/* Language Switcher */}
+        <Box
+          sx={{
+            position: "absolute",
+            top: { xs: 80, md: 90 },
+            right: { xs: 16, md: 32 },
+            zIndex: 999,
+          }}
+        >
+          <LanguageSwitcher />
+        </Box>
+        <Box sx={{ display: "flex", minHeight: "calc(100vh - 64px)" }}>
+          {/* Shared Sidebar */}
+          <Sidebar openNav={false} onCloseNav={() => {}} />
+
+          {/* Main content area */}
+          <Box
+            component="main"
+            sx={{
+              flexGrow: 1,
+              width: { lg: `calc(100% - 280px)` },
+              bgcolor: "common.white",
+              pl: { xs: 3, md: 4 },
+            }}
+          >
+            <Container
+              maxWidth={false}
+              disableGutters
+              sx={{ pt: { xs: 3, md: 4 }, pb: 6, px: 0 }}
             >
               <motion.div
                 initial={{ opacity: 0, y: 20 }}

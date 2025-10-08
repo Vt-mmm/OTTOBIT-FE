@@ -13,6 +13,7 @@ import {
   Person as PersonIcon,
 } from "@mui/icons-material";
 import { CourseType } from "common/@types/course";
+import { useLocales } from "../../../../hooks";
 
 interface CourseHeroSectionProps {
   course: {
@@ -42,6 +43,8 @@ export default function CourseHeroSection({
   courseRating,
   totalRatings,
 }: CourseHeroSectionProps) {
+  const { translate } = useLocales();
+
   return (
     <Box sx={{ mb: 4 }}>
       <Typography variant="h3" component="h1" sx={{ fontWeight: 700, mb: 2 }}>
@@ -62,20 +65,23 @@ export default function CourseHeroSection({
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Rating value={courseRating} readOnly size="small" precision={0.1} />
           <Typography variant="body2" color="text.secondary">
-            {courseRating} ({totalRatings.toLocaleString()} đánh giá)
+            {courseRating} ({totalRatings.toLocaleString()}{" "}
+            {translate("courses.Ratings")})
           </Typography>
         </Box>
 
         <Chip
           icon={<SchoolIcon />}
-          label={`${lessons.length} bài học`}
+          label={`${lessons.length} ${translate("courses.LessonsText")}`}
           color="primary"
           variant="outlined"
         />
         {course.enrollmentsCount !== undefined && (
           <Chip
             icon={<PersonIcon />}
-            label={`${course.enrollmentsCount.toLocaleString()} học viên`}
+            label={`${course.enrollmentsCount.toLocaleString()} ${translate(
+              "courses.Students"
+            )}`}
             color="secondary"
             variant="outlined"
           />
@@ -90,7 +96,7 @@ export default function CourseHeroSection({
           </Avatar>
           <Box>
             <Typography variant="body2" color="text.secondary">
-              Được tạo bởi
+              {translate("courses.CreatedBy")}
             </Typography>
             <Typography variant="subtitle2" fontWeight={600}>
               {course.createdByName} • Ottobit
@@ -111,11 +117,12 @@ export default function CourseHeroSection({
           }}
         >
           <Typography variant="h6" sx={{ mb: 2, color: "#2e7d32" }}>
-            Bắt đầu hành trình học tập của bạn!
+            {translate("courses.StartLearningJourney")}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Tham gia {course.enrollmentsCount || 0} học viên khác và khám phá
-            thế giới lập trình robot thú vị.
+            {translate("courses.JoinOtherStudents", {
+              count: course.enrollmentsCount || 0,
+            })}
           </Typography>
           <Button
             variant="contained"
@@ -143,12 +150,14 @@ export default function CourseHeroSection({
             {isEnrolling ? (
               <>
                 <CircularProgress size={20} sx={{ mr: 1, color: "white" }} />
-                Đang xử lý...
+                {translate("courses.Processing")}
               </>
             ) : course.type === CourseType.Free || (course.price ?? 0) === 0 ? (
-              "Tham gia khóa học miễn phí"
+              translate("courses.JoinFreeCourse")
             ) : (
-              `Tham gia khóa học - ${(course.price ?? 0).toLocaleString()} VND`
+              translate("courses.JoinPaidCourse", {
+                price: (course.price ?? 0).toLocaleString(),
+              })
             )}
           </Button>
         </Box>
@@ -168,7 +177,7 @@ export default function CourseHeroSection({
               variant="body1"
               sx={{ color: "#2e7d32", fontWeight: 600 }}
             >
-              Bạn đã tham gia khóa học này!
+              {translate("courses.AlreadyJoined")}
             </Typography>
           </Box>
         </Box>

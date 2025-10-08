@@ -11,9 +11,12 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Cancel } from "@mui/icons-material";
 import Header from "layout/components/header/Header";
 import Footer from "layout/components/footer/Footer";
+import { LanguageSwitcher } from "components/common";
 import { PATH_USER } from "routes/paths";
+import { useLocales } from "hooks";
 
 export default function PaymentCancelPage() {
+  const { translate } = useLocales();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -47,8 +50,27 @@ export default function PaymentCancelPage() {
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+        position: "relative",
+      }}
+    >
       <Header />
+
+      {/* Language Switcher - Top right */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: { xs: 80, md: 90 },
+          right: { xs: 16, md: 32 },
+          zIndex: 999,
+        }}
+      >
+        <LanguageSwitcher />
+      </Box>
 
       <Box
         sx={{
@@ -88,10 +110,10 @@ export default function PaymentCancelPage() {
                 />
               </Box>
               <Typography variant="h3" fontWeight={700} gutterBottom>
-                Thanh Toán Đã Bị Hủy
+                {translate("payment.PaymentCancelled")}
               </Typography>
               <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-                Bạn đã hủy quá trình thanh toán.
+                {translate("payment.PaymentWasCancelled")}
               </Typography>
               {orderCode && (
                 <Typography
@@ -99,12 +121,12 @@ export default function PaymentCancelPage() {
                   color="text.secondary"
                   sx={{ mb: 4 }}
                 >
-                  Mã đơn hàng: <strong>{orderCode}</strong>
+                  {translate("payment.OrderNumber")}:{" "}
+                  <strong>{orderCode}</strong>
                 </Typography>
               )}
               <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-                Các sản phẩm vẫn còn trong giỏ hàng của bạn. Bạn có thể thử lại
-                bất cứ lúc nào.
+                {translate("payment.ItemsStillInCart")}
               </Typography>
 
               <Box
@@ -137,7 +159,7 @@ export default function PaymentCancelPage() {
                     },
                   }}
                 >
-                  Quay Lại Giỏ Hàng
+                  {translate("payment.BackToCart")}
                 </Button>
                 <Button
                   variant="outlined"
@@ -157,7 +179,7 @@ export default function PaymentCancelPage() {
                     },
                   }}
                 >
-                  Tiếp Tục Khám Phá
+                  {translate("payment.ContinueExploring")}
                 </Button>
               </Box>
             </CardContent>
@@ -178,11 +200,10 @@ export default function PaymentCancelPage() {
                 fontWeight={600}
                 gutterBottom
               >
-                Cần hỗ trợ?
+                {translate("payment.NeedHelp")}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Nếu bạn gặp vấn đề trong quá trình thanh toán, vui lòng liên hệ
-                với chúng tôi qua email:{" "}
+                {translate("payment.ContactSupport")}{" "}
                 <strong style={{ color: "#667eea" }}>
                   support@ottobit.edu.vn
                 </strong>

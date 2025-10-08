@@ -11,6 +11,7 @@ import {
   CheckCircle as CheckCircleIcon,
   Warning as WarningIcon,
 } from "@mui/icons-material";
+import { useLocales } from "hooks";
 
 interface RobotRequirementCardProps {
   robotName: string;
@@ -31,6 +32,8 @@ export default function RobotRequirementCard({
   isOwned,
   onActivate,
 }: RobotRequirementCardProps) {
+  const { translate } = useLocales();
+
   return (
     <Card
       sx={{
@@ -57,7 +60,14 @@ export default function RobotRequirementCard({
         />
       )}
       <CardContent sx={{ flex: 1 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "start", mb: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "start",
+            mb: 1,
+          }}
+        >
           <Box>
             <Typography variant="h6" component="div">
               {robotName}
@@ -66,10 +76,17 @@ export default function RobotRequirementCard({
               {robotModel} - {robotBrand}
             </Typography>
           </Box>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, alignItems: "flex-end" }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 0.5,
+              alignItems: "flex-end",
+            }}
+          >
             {isRequired && (
               <Chip
-                label="Bắt buộc"
+                label={translate("common.Required")}
                 color="error"
                 size="small"
               />
@@ -77,14 +94,14 @@ export default function RobotRequirementCard({
             {isOwned ? (
               <Chip
                 icon={<CheckCircleIcon />}
-                label="Đã kích hoạt"
+                label={translate("common.Activated")}
                 color="success"
                 size="small"
               />
             ) : (
               <Chip
                 icon={<WarningIcon />}
-                label="Chưa có"
+                label={translate("common.NotAvailable")}
                 color="warning"
                 size="small"
               />
@@ -94,28 +111,23 @@ export default function RobotRequirementCard({
 
         {!isOwned && (
           <Box sx={{ display: "flex", gap: 1 }}>
-            <Button
-              variant="contained"
-              size="small"
-              onClick={onActivate}
-            >
-              Kích hoạt Robot
+            <Button variant="contained" size="small" onClick={onActivate}>
+              {translate("common.ActivateRobot")}
             </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              href="#"
-              target="_blank"
-            >
-              Mua Robot
+            <Button variant="outlined" size="small" href="#" target="_blank">
+              {translate("common.BuyRobot")}
             </Button>
           </Box>
         )}
 
         {isOwned && (
-          <Typography variant="body2" color="success.main" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <Typography
+            variant="body2"
+            color="success.main"
+            sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+          >
             <CheckCircleIcon fontSize="small" />
-            Bạn đã sở hữu robot này
+            {translate("common.YouOwnThisRobot")}
           </Typography>
         )}
       </CardContent>

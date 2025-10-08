@@ -28,6 +28,7 @@ import StudentProfileRequiredDialog from "./StudentProfileRequiredDialog";
 
 type SortOption = "newest" | "oldest" | "alphabetical" | "popular";
 import CourseCard from "../../../components/course/CourseCard";
+import { useLocales } from "../../../hooks";
 
 interface CourseListingSectionProps {
   searchQuery: string;
@@ -36,6 +37,7 @@ interface CourseListingSectionProps {
 export default function CourseListingSection({
   searchQuery,
 }: CourseListingSectionProps) {
+  const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const {
@@ -177,7 +179,7 @@ export default function CourseListingSection({
 
       setSnackbar({
         open: true,
-        message: "Tham gia khóa học thành công!",
+        message: translate("courses.EnrollmentSuccess"),
         severity: "success",
       });
 
@@ -207,7 +209,7 @@ export default function CourseListingSection({
           message:
             typeof error === "string"
               ? error
-              : "Không thể tham gia khóa học. Vui lòng thử lại.",
+              : translate("courses.EnrollmentError"),
           severity: "error",
         });
       }
@@ -293,30 +295,51 @@ export default function CourseListingSection({
       >
         <Typography variant="h6" sx={{ color: "#666" }}>
           {searchQuery ? (
-            <>
-              Tìm thấy <strong>{filteredAndSortedCourses.length}</strong> khóa
-              học cho "{searchQuery}"
-            </>
+            <span
+              dangerouslySetInnerHTML={{
+                __html: translate("courses.FoundCoursesFor", {
+                  count: filteredAndSortedCourses.length,
+                  query: searchQuery,
+                }),
+              }}
+            />
           ) : (
             <>
-              Tìm thấy <strong>{filteredAndSortedCourses.length}</strong> khóa
-              học (Trang {currentPage} / {Math.max(1, totalPages)})
+              <span
+                dangerouslySetInnerHTML={{
+                  __html: translate("courses.FoundCourses", {
+                    count: filteredAndSortedCourses.length,
+                  }),
+                }}
+              />{" "}
+              {translate("courses.PageInfo", {
+                current: currentPage,
+                total: Math.max(1, totalPages),
+              })}
             </>
           )}
         </Typography>
 
         {/* Sort Dropdown */}
         <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel>Sắp xếp theo</InputLabel>
+          <InputLabel>{translate("courses.SortBy")}</InputLabel>
           <Select
             value={sortBy}
-            label="Sắp xếp theo"
+            label={translate("courses.SortBy")}
             onChange={(e) => handleSortChange(e.target.value as SortOption)}
           >
-            <MenuItem value="newest">Mới nhất</MenuItem>
-            <MenuItem value="popular">Phổ biến nhất</MenuItem>
-            <MenuItem value="alphabetical">Tên A-Z</MenuItem>
-            <MenuItem value="oldest">Cũ nhất</MenuItem>
+            <MenuItem value="newest">
+              {translate("courses.SortByNewest")}
+            </MenuItem>
+            <MenuItem value="popular">
+              {translate("courses.SortByPopular")}
+            </MenuItem>
+            <MenuItem value="alphabetical">
+              {translate("courses.CourseName")}
+            </MenuItem>
+            <MenuItem value="oldest">
+              {translate("courses.SortByOldest")}
+            </MenuItem>
           </Select>
         </FormControl>
       </Box>
@@ -326,10 +349,10 @@ export default function CourseListingSection({
         <Box sx={{ textAlign: "center", py: 8 }}>
           <Alert severity="info">
             {courses?.items?.length === 0
-              ? "Chưa có khóa học nào được tạo."
+              ? translate("courses.NoCourses")
               : searchQuery
-              ? `Không tìm thấy khóa học nào với từ khóa "${searchQuery}".`
-              : "Không tìm thấy khóa học nào."}
+              ? translate("courses.NoCoursesForQuery", { query: searchQuery })
+              : translate("courses.NoCoursesFound")}
           </Alert>
         </Box>
       ) : (

@@ -17,6 +17,7 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { PATH_USER } from "../../../routes/paths";
+import { useLocales } from "../../../hooks";
 
 interface StudentProfileRequiredDialogProps {
   open: boolean;
@@ -31,6 +32,7 @@ export default function StudentProfileRequiredDialog({
   courseName = "khóa học này",
   onCreateProfile,
 }: StudentProfileRequiredDialogProps) {
+  const { translate } = useLocales();
   const navigate = useNavigate();
 
   const handleCreateProfile = () => {
@@ -73,31 +75,41 @@ export default function StudentProfileRequiredDialog({
           <SchoolIcon sx={{ fontSize: 32 }} />
         </Avatar>
         <Typography variant="h5" component="div" sx={{ fontWeight: "bold" }}>
-          🎓 Tạo Hồ Sơ Học Sinh
+          🎓 {translate("courses.CreateStudentProfile")}
         </Typography>
       </DialogTitle>
 
       <DialogContent>
         <Alert severity="info" sx={{ mb: 3 }}>
           <Typography variant="body1">
-            Để tham gia <strong>{courseName}</strong>, bạn cần tạo hồ sơ học sinh trước.
+            <span
+              dangerouslySetInnerHTML={{
+                __html: translate("courses.ProfileRequiredFor", { courseName }),
+              }}
+            />
           </Typography>
         </Alert>
 
         <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+          <Typography
+            variant="h6"
+            sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}
+          >
             <PersonIcon color="primary" />
-            Hồ sơ học sinh giúp bạn:
+            {translate("courses.ProfileBenefitsTitle")}
           </Typography>
-          
+
           <Box sx={{ pl: 3 }}>
             {[
-              "Theo dõi tiến độ học tập cá nhân",
-              "Lưu trữ kết quả bài tập và thành tích",
-              "Tham gia đầy đủ các khóa học và thử thách",
-              "Nhận chứng chỉ khi hoàn thành khóa học",
+              translate("courses.TrackProgress"),
+              translate("courses.SaveResults"),
+              translate("courses.JoinCourses"),
+              translate("courses.EarnCertificates"),
             ].map((benefit, index) => (
-              <Box key={index} sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+              <Box
+                key={index}
+                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
+              >
                 <CheckIcon color="success" sx={{ fontSize: 20 }} />
                 <Typography variant="body2" color="text.secondary">
                   {benefit}
@@ -109,26 +121,30 @@ export default function StudentProfileRequiredDialog({
 
         <Divider sx={{ my: 2 }} />
 
-        <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center" }}>
-          Chỉ mất 2 phút để tạo hồ sơ và bắt đầu hành trình học tập!
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ textAlign: "center" }}
+        >
+          {translate("courses.QuickSetup")}
         </Typography>
       </DialogContent>
 
       <DialogActions sx={{ justifyContent: "space-between", p: 3 }}>
         <Button onClick={onClose} color="inherit">
-          Để sau
+          {translate("courses.Later")}
         </Button>
-        
+
         <Box sx={{ display: "flex", gap: 1 }}>
           <Button onClick={handleViewMore} variant="outlined">
-            Xem thêm
+            {translate("courses.ViewMore")}
           </Button>
-          <Button 
-            onClick={handleCreateProfile} 
-            variant="contained" 
+          <Button
+            onClick={handleCreateProfile}
+            variant="contained"
             startIcon={<PersonIcon />}
           >
-            Tạo hồ sơ ngay
+            {translate("courses.CreateProfileNow")}
           </Button>
         </Box>
       </DialogActions>

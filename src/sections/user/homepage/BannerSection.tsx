@@ -1,8 +1,11 @@
 import React from "react";
 import { Box, Button, Container, Typography } from "@mui/material";
 import { motion } from "framer-motion";
+import { useLocales } from "../../../hooks";
 
 const BannerSection: React.FC = () => {
+  const { translate } = useLocales();
+
   return (
     <Box
       sx={{
@@ -84,7 +87,7 @@ const BannerSection: React.FC = () => {
               mb: { xs: 2, sm: 3 },
             }}
           >
-            HỘI THẢO STEM GIÁO DỤC & CÔNG NGHỆ TƯƠNG LAI
+            {translate("homepage.STEMWorkshop")}
           </Typography>
           <Typography
             variant="body1"
@@ -96,7 +99,7 @@ const BannerSection: React.FC = () => {
               opacity: 0.9,
             }}
           >
-            KHÁM PHÁ ROBOTICS, AI & LẬP TRÌNH TẠI OTTOBIT
+            {translate("homepage.DiscoverRoboticsAI")}
           </Typography>
 
           <Typography
@@ -132,7 +135,7 @@ const BannerSection: React.FC = () => {
                 },
               }}
             >
-              THAM GIA NGAY
+              {translate("homepage.JoinUs")}
             </Button>
           </motion.div>
 

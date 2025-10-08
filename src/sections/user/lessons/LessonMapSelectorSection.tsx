@@ -18,6 +18,7 @@ import { SubmissionResult } from "../../../common/@types/submission";
 import { navigateToStudio } from "../../../utils/studioNavigation";
 import LessonHeroSection, { LessonInfo } from "./LessonHeroSection";
 import LessonTabletSection from "./LessonTabletSection";
+import { useLocales } from "hooks";
 
 interface LessonMapSelectorSectionProps {
   courseId: string;
@@ -32,6 +33,7 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
   onChallengeSelect,
   onBackToCourse,
 }) => {
+  const { translate } = useLocales();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
@@ -139,7 +141,7 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
       >
         <div>
           <CircularProgress />
-          <p>Đang tải thông tin bài học...</p>
+          <p>{translate("lessons.LoadingLessonInfo")}</p>
         </div>
       </Box>
     );

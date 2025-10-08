@@ -11,6 +11,7 @@ import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getLessonByIdThunk } from "../../../redux/lesson/lessonThunks";
 import LessonMapSelectorSection from "./LessonMapSelectorSection";
 import { PATH_USER } from "../../../routes/paths";
+import { useLocales } from "../../../hooks";
 
 interface LessonDetailSectionProps {
   lessonId: string;
@@ -21,6 +22,7 @@ export default function LessonDetailSection({
 }: LessonDetailSectionProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { translate } = useLocales();
 
   const {
     data: lesson,
@@ -83,10 +85,10 @@ export default function LessonDetailSection({
       <Container>
         <Box sx={{ textAlign: "center", py: 8 }}>
           <Typography variant="h5" color="text.secondary" gutterBottom>
-            Không tìm thấy bài học
+            {translate("lessons.LessonNotFoundTitle")}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Bài học không tồn tại hoặc đã bị xóa.
+            {translate("lessons.LessonNotFoundDesc")}
           </Typography>
         </Box>
       </Container>

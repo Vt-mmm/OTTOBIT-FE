@@ -5,7 +5,7 @@ import { useLocales } from "hooks";
 import { Language } from "common/enums/language.enum";
 
 export default function LanguageSwitcher() {
-  const { currentLang, onChangeLang } = useLocales();
+  const { currentLang, onChangeLang, translate } = useLocales();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -56,13 +56,13 @@ export default function LanguageSwitcher() {
           onClick={() => handleLanguageChange(Language.VI)}
           selected={currentLang === Language.VI}
         >
-          Tiếng Việt
+          {translate("common.Vietnamese")}
         </MenuItem>
         <MenuItem
           onClick={() => handleLanguageChange(Language.EN)}
           selected={currentLang === Language.EN}
         >
-          English
+          {translate("common.English")}
         </MenuItem>
       </Menu>
     </Box>

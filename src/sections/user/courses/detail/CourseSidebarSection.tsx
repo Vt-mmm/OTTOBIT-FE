@@ -12,6 +12,7 @@ import RobotRequirementCard from "components/robot/RobotRequirementCard";
 import ActivateRobotDialog from "components/robot/ActivateRobotDialog";
 import { AddToCartButton } from "components/cart";
 import { CourseType } from "common/@types/course";
+import { useLocales } from "../../../../hooks";
 
 interface CourseSidebarSectionProps {
   course: {
@@ -29,6 +30,7 @@ export default function CourseSidebarSection({
   course,
   lessons,
 }: CourseSidebarSectionProps) {
+  const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const { courseRobots } = useAppSelector((state) => state.courseRobot);
   const [activateDialogOpen, setActivateDialogOpen] = useState(false);
@@ -85,12 +87,12 @@ export default function CourseSidebarSection({
             }}
           >
             <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-              Nội dung khóa học
+              {translate("courses.CourseContent")}
             </Typography>
             <Chip
               label={
                 course.type === CourseType.Free || (course.price ?? 0) === 0
-                  ? "Miễn phí"
+                  ? translate("courses.Free")
                   : `${(course.price ?? 0).toLocaleString()} VND`
               }
               size="small"
@@ -110,17 +112,23 @@ export default function CourseSidebarSection({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <SchoolIcon fontSize="small" sx={{ color: "#1976d2" }} />
-              <Typography variant="body2">{lessons.length} bài học</Typography>
+              <Typography variant="body2">
+                {lessons.length} {translate("courses.LessonsText")}
+              </Typography>
             </Box>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <AccessTimeIcon fontSize="small" sx={{ color: "#1976d2" }} />
-              <Typography variant="body2">Khoảng 4-6 giờ</Typography>
+              <Typography variant="body2">
+                {translate("courses.AboutHours", { hours: "4-6" })}
+              </Typography>
             </Box>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <CertificateIcon fontSize="small" sx={{ color: "#1976d2" }} />
-              <Typography variant="body2">Chứng chỉ hoàn thành</Typography>
+              <Typography variant="body2">
+                {translate("courses.Certificate")}
+              </Typography>
             </Box>
           </Box>
 
@@ -155,7 +163,7 @@ export default function CourseSidebarSection({
             >
               <RobotIcon sx={{ color: "#1976d2", fontSize: 20 }} />
               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                Robots Yêu cầu
+                {translate("courses.RobotsRequired")}
               </Typography>
             </Box>
 
@@ -163,7 +171,9 @@ export default function CourseSidebarSection({
             {missingRequiredRobots.length > 0 && (
               <Alert severity="warning" sx={{ mb: 1.5, py: 0.5 }}>
                 <Typography variant="caption">
-                  Cần {missingRequiredRobots.length} robot bắt buộc
+                  {translate("courses.NeedRobots", {
+                    count: missingRequiredRobots.length,
+                  })}
                 </Typography>
               </Alert>
             )}
@@ -171,7 +181,9 @@ export default function CourseSidebarSection({
             {/* Success message if has all required robots */}
             {requiredRobots.length > 0 && hasAllRequiredRobots && (
               <Alert severity="success" sx={{ mb: 1.5, py: 0.5 }}>
-                <Typography variant="caption">Đủ robots ✓</Typography>
+                <Typography variant="caption">
+                  {translate("courses.AllRobots")}
+                </Typography>
               </Alert>
             )}
 
@@ -206,16 +218,16 @@ export default function CourseSidebarSection({
       >
         <Box sx={{ p: 2.5 }}>
           <Typography variant="subtitle1" sx={{ mb: 1.5, fontWeight: 600 }}>
-            Kỹ năng bạn sẽ học được
+            {translate("courses.SkillsYouWillLearn")}
           </Typography>
 
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
             {[
-              "Lập trình Blockly",
-              "Điều khiển Robot",
-              "Tư duy logic",
-              "Giải quyết vấn đề",
-              "STEM",
+              translate("courses.SkillBlockly"),
+              translate("courses.SkillRobotControl"),
+              translate("courses.SkillLogicalThinking"),
+              translate("courses.SkillProblemSolving"),
+              translate("courses.SkillSTEM"),
             ].map((skill) => (
               <Chip
                 key={skill}
