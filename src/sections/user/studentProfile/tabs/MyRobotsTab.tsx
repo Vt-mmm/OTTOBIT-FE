@@ -18,6 +18,7 @@ import {
 import { useAppDispatch, useAppSelector } from "store/config";
 import { getRobotsThunk } from "store/robot/robotThunks";
 import ActivateRobotDialog from "components/robot/ActivateRobotDialog";
+import { useLocales } from "hooks";
 
 interface MyRobotsTabProps {
   loading?: boolean;
@@ -26,6 +27,7 @@ interface MyRobotsTabProps {
 export default function MyRobotsTab({
   loading: externalLoading,
 }: MyRobotsTabProps) {
+  const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const { robots } = useAppSelector((state) => state.robot);
   const [activateDialogOpen, setActivateDialogOpen] = useState(false);
@@ -138,7 +140,7 @@ export default function MyRobotsTab({
             width: { xs: "100%", sm: "auto" },
           }}
         >
-          Kích hoạt Robot
+          {translate("student.ActivateRobot")}
         </Button>
       </Box>
 
@@ -160,10 +162,10 @@ export default function MyRobotsTab({
         >
           <RobotIcon sx={{ fontSize: 80, color: "text.disabled", mb: 2 }} />
           <Typography variant="h6" gutterBottom>
-            Bạn chưa có robot nào
+            {translate("common.NotAvailable")}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Kích hoạt robot đầu tiên của bạn để bắt đầu học lập trình
+            {translate("student.ActivateFirstRobot")}
           </Typography>
           <Button
             variant="contained"
@@ -173,7 +175,7 @@ export default function MyRobotsTab({
               px: { xs: 4, sm: 3 },
             }}
           >
-            Kích hoạt Robot
+            {translate("student.ActivateRobot")}
           </Button>
         </Card>
       ) : (

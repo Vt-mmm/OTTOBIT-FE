@@ -20,93 +20,93 @@ import {
   Psychology,
   Science,
 } from "@mui/icons-material";
+import { useLocales } from "hooks";
 
-// Course data
-const coursesData = [
-  {
-    id: 1,
-    title: "Robotics Fundamentals",
-    description:
-      "Học cơ bản về robotics, từ lắp ráp đến lập trình điều khiển robot đơn giản",
-    level: "Cơ bản",
-    duration: "8 tuần",
-    students: 1250,
-    rating: 4.8,
-    image: "https://placehold.co/400x200/22c55e/ffffff?text=🤖+Robotics",
-    instructor: "TS. Nguyễn Văn A",
-    price: "2,500,000đ",
-    category: "Robotics",
-    icon: <Engineering sx={{ fontSize: 24 }} />,
-    color: "#22c55e",
-    skills: ["Arduino", "C++", "Sensor", "Motor Control"],
-  },
-  {
-    id: 2,
-    title: "Visual Programming với Scratch",
-    description:
-      "Lập trình trực quan dành cho trẻ em, học cách tư duy logic thông qua game và animation",
-    level: "Cơ bản",
-    duration: "6 tuần",
-    students: 2100,
-    rating: 4.9,
-    image: "https://placehold.co/400x200/16a34a/ffffff?text=💻+Scratch",
-    instructor: "ThS. Trần Thị B",
-    price: "1,800,000đ",
-    category: "Programming",
-    icon: <Computer sx={{ fontSize: 24 }} />,
-    color: "#16a34a",
-    skills: ["Scratch", "Logic", "Animation", "Game Design"],
-  },
-  {
-    id: 3,
-    title: "AI & Machine Learning for Kids",
-    description:
-      "Khám phá thế giới trí tuệ nhân tạo qua các dự án thú vị và dễ hiểu",
-    level: "Trung cấp",
-    duration: "10 tuần",
-    students: 850,
-    rating: 4.7,
-    image: "https://placehold.co/400x200/15803d/ffffff?text=🧠+AI",
-    instructor: "PGS. Lê Văn C",
-    price: "3,200,000đ",
-    category: "AI",
-    icon: <Psychology sx={{ fontSize: 24 }} />,
-    color: "#15803d",
-    skills: ["Python", "TensorFlow", "Data Science", "Neural Networks"],
-  },
-  {
-    id: 4,
-    title: "STEM Project Lab",
-    description:
-      "Làm việc nhóm thực hiện các dự án STEM tích hợp, từ ý tưởng đến sản phẩm",
-    level: "Nâng cao",
-    duration: "12 tuần",
-    students: 650,
-    rating: 4.9,
-    image: "https://placehold.co/400x200/166534/ffffff?text=🔬+STEM",
-    instructor: "TS. Phạm Văn D",
-    price: "4,000,000đ",
-    category: "Project",
-    icon: <Science sx={{ fontSize: 24 }} />,
-    color: "#166534",
-    skills: ["Research", "Design Thinking", "Prototyping", "Presentation"],
-  },
-];
+// Course data function
+function getCourseData(translate: (key: string) => string) {
+  return [
+    {
+      id: 1,
+      title: "Robotics Fundamentals",
+      description: translate("homepage.MockCourse1Desc"),
+      level: translate("homepage.LevelBasic"),
+      duration: "8 tuần",
+      students: 1250,
+      rating: 4.8,
+      image: "https://placehold.co/400x200/22c55e/ffffff?text=🤖+Robotics",
+      instructor: "TS. Nguyễn Văn A",
+      price: "2,500,000đ",
+      category: "Robotics",
+      icon: <Engineering sx={{ fontSize: 24 }} />,
+      color: "#22c55e",
+      skills: ["Arduino", "C++", "Sensor", "Motor Control"],
+    },
+    {
+      id: 2,
+      title: "Visual Programming với Scratch",
+      description: translate("homepage.MockCourse2Desc"),
+      level: translate("homepage.LevelBasic"),
+      duration: "6 tuần",
+      students: 2100,
+      rating: 4.9,
+      image: "https://placehold.co/400x200/16a34a/ffffff?text=💻+Scratch",
+      instructor: "ThS. Trần Thị B",
+      price: "1,800,000đ",
+      category: "Programming",
+      icon: <Computer sx={{ fontSize: 24 }} />,
+      color: "#16a34a",
+      skills: ["Scratch", "Logic", "Animation", "Game Design"],
+    },
+    {
+      id: 3,
+      title: "AI & Machine Learning for Kids",
+      description: translate("homepage.MockCourse3Desc"),
+      level: translate("homepage.LevelIntermediate"),
+      duration: "10 tuần",
+      students: 850,
+      rating: 4.7,
+      image: "https://placehold.co/400x200/15803d/ffffff?text=🧠+AI",
+      instructor: "PGS. Lê Văn C",
+      price: "3,200,000đ",
+      category: "AI",
+      icon: <Psychology sx={{ fontSize: 24 }} />,
+      color: "#15803d",
+      skills: ["Python", "TensorFlow", "Data Science", "Neural Networks"],
+    },
+    {
+      id: 4,
+      title: "STEM Project Lab",
+      description: translate("homepage.MockCourse4Desc"),
+      level: translate("homepage.LevelAdvanced"),
+      duration: "12 tuần",
+      students: 650,
+      rating: 4.9,
+      image: "https://placehold.co/400x200/166534/ffffff?text=🔬+STEM",
+      instructor: "TS. Phạm Văn D",
+      price: "4,000,000đ",
+      category: "Project",
+      icon: <Science sx={{ fontSize: 24 }} />,
+      color: "#166534",
+      skills: ["Research", "Design Thinking", "Prototyping", "Presentation"],
+    },
+  ];
+}
 
 const CourseCard: React.FC<{
-  course: (typeof coursesData)[0];
+  course: any;
   index: number;
 }> = ({ course, index }) => {
+  const { translate } = useLocales();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
 
   const getLevelColor = (level: string) => {
     switch (level) {
-      case "Cơ bản":
+      case translate("homepage.LevelBasic"):
         return "#22c55e";
-      case "Trung cấp":
+      case translate("homepage.LevelIntermediate"):
         return "#f59e0b";
-      case "Nâng cao":
+      case translate("homepage.LevelAdvanced"):
         return "#ef4444";
       default:
         return "#6b7280";
@@ -242,7 +242,7 @@ const CourseCard: React.FC<{
           {/* Skills */}
           <Box sx={{ mb: 3 }}>
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-              {course.skills.slice(0, 3).map((skill, i) => (
+              {course.skills.slice(0, 3).map((skill: string, i: number) => (
                 <Chip
                   key={i}
                   label={skill}
@@ -381,6 +381,7 @@ const CourseCard: React.FC<{
 };
 
 const CoursesSection: React.FC = () => {
+  const { translate } = useLocales();
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
@@ -430,7 +431,7 @@ const CoursesSection: React.FC = () => {
                 fontSize: { xs: "0.9rem", md: "1rem" },
               }}
             >
-              Khóa học STEM
+              {translate("homepage.STEMCourses")}
             </Typography>
             <Typography
               variant="h2"
@@ -484,7 +485,7 @@ const CoursesSection: React.FC = () => {
             gap: 3,
           }}
         >
-          {coursesData.map((course, index) => (
+          {getCourseData(translate).map((course, index) => (
             <CourseCard key={course.id} course={course} index={index} />
           ))}
         </Box>
@@ -513,7 +514,7 @@ const CoursesSection: React.FC = () => {
                 },
               }}
             >
-              Xem tất cả khóa học
+              {translate("homepage.ViewAllCourses")}
             </Button>
           </Box>
         </motion.div>

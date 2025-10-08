@@ -77,5 +77,15 @@
   "LetImagination": "Let your imagination flow!",
   "InteractiveShowcase": "Interactive Showcase",
   "InteractWith": "Interact with",
-  "Technology": "Technology"
+  "Technology": "Technology",
+  "JoinExperienceSTEM": "Join us to experience these amazing STEM technologies!",
+  "STEMCourses": "STEM Courses",
+  "ViewAllCourses": "View All Courses",
+  "MockCourse1Desc": "Learn robotics basics, from assembly to programming simple robot control",
+  "MockCourse2Desc": "Visual programming for kids, learn logical thinking through games and animation",
+  "MockCourse3Desc": "Explore the world of artificial intelligence through fun and understandable projects",
+  "MockCourse4Desc": "Teamwork on integrated STEM projects, from idea to product",
+  "LevelBasic": "Basic",
+  "LevelIntermediate": "Intermediate",
+  "LevelAdvanced": "Advanced"
 }

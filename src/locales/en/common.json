@@ -42,5 +42,6 @@
   "BackToLesson": "Back to lesson",
   "Back": "Back",
   "CannotReloadMap": "Cannot reload map. Please try again.",
-  "MapReloadedSuccessfully": "Map reloaded successfully!"
+  "MapReloadedSuccessfully": "Map reloaded successfully!",
+  "ComponentsBOM": "📦 Components List (BOM)"
 }

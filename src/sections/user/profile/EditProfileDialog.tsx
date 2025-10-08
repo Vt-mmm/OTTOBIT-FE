@@ -13,14 +13,12 @@ import {
   CircularProgress,
   Grid,
 } from "@mui/material";
-import {
-  Close as CloseIcon,
-  Edit as EditIcon,
-} from "@mui/icons-material";
+import { Close as CloseIcon, Edit as EditIcon } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import { useForm, Controller } from "react-hook-form";
 import { UpdateProfileForm } from "common/@types";
 import { useAppSelector } from "store/config";
+import { useLocales } from "hooks";
 import { alpha } from "@mui/material/styles";
 import { AvatarUploader } from "components/common/AvatarUploader";
 
@@ -41,6 +39,7 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
   onClose,
   onSave,
 }) => {
+  const { translate } = useLocales();
   const { userAuth } = useAppSelector((state) => state.auth);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -87,7 +86,7 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
 
   const handleAvatarChange = (avatarUrl: string | null) => {
     setUploadedAvatarUrl(avatarUrl);
-    setValue('avatarUrl', avatarUrl || '');
+    setValue("avatarUrl", avatarUrl || "");
   };
 
   return (
@@ -116,7 +115,7 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
         }}
       >
         <Typography variant="h6" sx={{ fontWeight: 700 }}>
-          Chỉnh sửa hồ sơ
+          {translate("profile.EditProfile")}
         </Typography>
         <IconButton onClick={handleClose} size="small" sx={{ color: "white" }}>
           <CloseIcon />
@@ -188,7 +187,8 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
               }}
             >
               <Typography variant="body2">
-                Bạn có thể thay đổi họ tên và ảnh đại diện. Số điện thoại chỉ có thể xem, không thể chỉnh sửa.
+                Bạn có thể thay đổi họ tên và ảnh đại diện. Số điện thoại chỉ có
+                thể xem, không thể chỉnh sửa.
               </Typography>
             </Alert>
           </motion.div>
@@ -222,7 +222,9 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
               },
             }}
           >
-            {isLoading ? "Đang lưu..." : "Lưu thay đổi"}
+            {isLoading
+              ? translate("profile.Saving")
+              : translate("profile.SaveChanges")}
           </Button>
         </DialogActions>
       </form>

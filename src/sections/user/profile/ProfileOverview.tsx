@@ -20,6 +20,7 @@ import {
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import { useAppSelector } from "store/config";
+import { useLocales } from "hooks";
 import { alpha } from "@mui/material/styles";
 import dayjs from "dayjs";
 
@@ -28,6 +29,7 @@ interface ProfileOverviewProps {
 }
 
 const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
+  const { translate } = useLocales();
   const { userAuth } = useAppSelector((state) => state.auth);
   const { profile } = useAppSelector((state) => state.account);
 
@@ -35,16 +37,19 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
   const displayData = {
     fullName: profile.data?.fullName || userAuth?.username || "Chưa có tên",
     email: profile.data?.email || userAuth?.email || "Chưa có email",
-    roles: (profile.data?.roles as string[] | undefined) || userAuth?.roles || [],
+    roles:
+      (profile.data?.roles as string[] | undefined) || userAuth?.roles || [],
     phoneNumber: profile.data?.phoneNumber || "",
     avatarUrl: profile.data?.avatarUrl || "",
     registrationDate: profile.data?.registrationDate || "",
     emailConfirmed: true,
   };
 
-  const formattedRegistrationDate = displayData.registrationDate && dayjs(displayData.registrationDate).isValid()
-    ? dayjs(displayData.registrationDate).format("DD/MM/YYYY")
-    : "Chưa cập nhật";
+  const formattedRegistrationDate =
+    displayData.registrationDate &&
+    dayjs(displayData.registrationDate).isValid()
+      ? dayjs(displayData.registrationDate).format("DD/MM/YYYY")
+      : "Chưa cập nhật";
 
   return (
     <motion.div
@@ -95,12 +100,13 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                 color: (t) => t.palette.primary.contrastText,
               }}
             >
-              {!displayData.avatarUrl && (displayData.fullName?.charAt(0)?.toUpperCase() || "U")}
+              {!displayData.avatarUrl &&
+                (displayData.fullName?.charAt(0)?.toUpperCase() || "U")}
             </Avatar>
 
             <Box sx={{ flexGrow: 1 }} />
 
-            <Tooltip title="Chỉnh sửa hồ sơ">
+            <Tooltip title={translate("profile.EditProfile")}>
               <IconButton
                 onClick={onEditProfile}
                 sx={{
@@ -287,8 +293,6 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                 </Box>
               </Box>
             </Grid>
-
-
           </Grid>
         </Box>
       </Box>
