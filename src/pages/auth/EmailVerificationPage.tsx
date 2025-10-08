@@ -16,9 +16,11 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import { axiosClient } from "axiosClient/axiosClient";
 import { PATH_AUTH, PATH_PUBLIC } from "routes/paths";
-// Logo placeholder sẽ thay thế sau
+import { LanguageSwitcher } from "components/common";
+import { useLocales } from "hooks";
 
 const EmailVerificationPage: React.FC = () => {
+  const { translate } = useLocales();
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -34,9 +36,7 @@ const EmailVerificationPage: React.FC = () => {
       const token = queryParams.get("token");
 
       if (!email || !token) {
-        setErrorMessage(
-          "Liên kết xác thực không hợp lệ. Thiếu thông tin cần thiết."
-        );
+        setErrorMessage(translate("auth.InvalidVerificationLink"));
         setIsLoading(false);
         return;
       }
@@ -67,16 +67,14 @@ const EmailVerificationPage: React.FC = () => {
         if (axiosError.response?.data?.message) {
           setErrorMessage(axiosError.response.data.message);
         } else {
-          setErrorMessage(
-            "Xác thực email thất bại. Liên kết có thể đã hết hạn hoặc không hợp lệ."
-          );
+          setErrorMessage(translate("auth.VerificationLinkExpired"));
         }
         setIsLoading(false);
       }
     };
 
     verifyEmail();
-  }, [location]);
+  }, [location, translate]);
 
   return (
     <Box
@@ -113,8 +111,20 @@ const EmailVerificationPage: React.FC = () => {
           }}
         >
           <ArrowBackIcon sx={{ mr: 1, fontSize: "0.9rem" }} />
-          Trở về trang chủ
+          {translate("auth.BackToHomepage2")}
         </Link>
+      </Box>
+
+      {/* Language Switcher - Top right */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: 30,
+          right: 30,
+          zIndex: 2,
+        }}
+      >
+        <LanguageSwitcher />
       </Box>
 
       <Paper
@@ -180,7 +190,7 @@ const EmailVerificationPage: React.FC = () => {
             >
               <CircularProgress size={50} />
               <Typography variant="body1" sx={{ mt: 2 }}>
-                Đang xác thực email của bạn...
+                {translate("auth.VerifyingEmail")}
               </Typography>
             </Box>
           ) : isSuccess ? (
@@ -209,11 +219,10 @@ const EmailVerificationPage: React.FC = () => {
                 />
               </Box>
               <Typography variant="h5" gutterBottom fontWeight={600}>
-                Email xác thực thành công!
+                {translate("auth.EmailVerificationSuccess")}
               </Typography>
               <Typography variant="body1" color="text.secondary" paragraph>
-                Cảm ơn bạn đã xác thực email. Tài khoản của bạn đã được kích
-                hoạt.
+                {translate("auth.EmailVerificationSuccessContent")}
               </Typography>
               <Button
                 variant="contained"
@@ -227,13 +236,15 @@ const EmailVerificationPage: React.FC = () => {
                   fontSize: "1rem",
                   fontWeight: 600,
                   textTransform: "none",
-                  background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+                  background:
+                    "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
                   "&:hover": {
-                    background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+                    background:
+                      "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
                   },
                 }}
               >
-                Đăng nhập ngay
+                {translate("auth.LoginNow")}
               </Button>
             </Box>
           ) : (
@@ -255,27 +266,21 @@ const EmailVerificationPage: React.FC = () => {
                 }}
               />
               <Typography variant="h5" gutterBottom fontWeight={600}>
-                Xác thực email thất bại
+                {translate("auth.EmailVerificationFailed")}
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
                 {errorMessage ||
-                  "Chúng tôi không thể xác thực địa chỉ email của bạn. Điều này có thể do liên kết đã hết hạn hoặc không hợp lệ."}
+                  translate("auth.EmailVerificationFailedContent")}
               </Typography>
 
               <Alert severity="info" sx={{ textAlign: "left", mb: 3 }}>
                 <Typography variant="body2" fontWeight={500} gutterBottom>
-                  Vui lòng thử các bước sau:
+                  {translate("auth.PleaseFollowSteps")}
                 </Typography>
                 <ul style={{ paddingLeft: "1.5rem", margin: "0.5rem 0" }}>
-                  <li>
-                    Kiểm tra xem bạn đang sử dụng liên kết xác nhận mới nhất
-                    được gửi đến email.
-                  </li>
-                  <li>
-                    Nhấp vào liên kết trực tiếp từ email thay vì sao chép và
-                    dán.
-                  </li>
-                  <li>Yêu cầu email xác nhận mới nếu vấn đề vẫn tiếp diễn.</li>
+                  <li>{translate("auth.VerificationStep1")}</li>
+                  <li>{translate("auth.VerificationStep2")}</li>
+                  <li>{translate("auth.VerificationStep3")}</li>
                 </ul>
               </Alert>
 
@@ -300,7 +305,7 @@ const EmailVerificationPage: React.FC = () => {
                   },
                 }}
               >
-                Trở về trang đăng nhập
+                {translate("auth.BackToLoginPage")}
               </Button>
 
               <Button
@@ -315,7 +320,7 @@ const EmailVerificationPage: React.FC = () => {
                   },
                 }}
               >
-                Trở về trang chủ
+                {translate("auth.BackToHomepage2")}
               </Button>
             </Box>
           )}

@@ -37,7 +37,8 @@
       "constants/*": ["constants/*"],
       "routes/*": ["routes/*"],
       "theme/*": ["theme/*"],
-      "axiosClient/*": ["axiosClient/*"]
+      "axiosClient/*": ["axiosClient/*"],
+      "locales/*": ["locales/*"]
     }
   },
   "include": ["src"],

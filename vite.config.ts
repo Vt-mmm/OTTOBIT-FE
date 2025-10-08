@@ -22,6 +22,7 @@ export default defineConfig({
       routes: path.resolve(__dirname, "./src/routes"),
       theme: path.resolve(__dirname, "./src/theme"),
       axiosClient: path.resolve(__dirname, "./src/axiosClient"),
+      locales: path.resolve(__dirname, "./src/locales"),
     },
   },
   server: {

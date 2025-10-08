@@ -22,15 +22,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { PATH_AUTH, PATH_USER } from "../../routes/paths";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
-
-// Schema validation
-const schema = yup.object().shape({
-  email: yup.string().email("Email không hợp lệ").required("Email là bắt buộc"),
-  password: yup
-    .string()
-    .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
-    .required("Mật khẩu là bắt buộc"),
-});
+import { useLocales } from "hooks";
 
 // Define login form interface
 interface LoginFormType {
@@ -39,6 +31,7 @@ interface LoginFormType {
 }
 
 const LoginForm: React.FC = () => {
+  const { translate } = useLocales();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isLoading, errorMessage, isAuthenticated, userAuth } = useAppSelector(
@@ -48,6 +41,18 @@ const LoginForm: React.FC = () => {
   const [localErrorMessage, setLocalErrorMessage] = useState<string | null>(
     null
   );
+
+  // Schema validation - inside component to use translate
+  const schema = yup.object().shape({
+    email: yup
+      .string()
+      .email(translate("auth.EmailInvalid"))
+      .required(translate("auth.EmailRequired")),
+    password: yup
+      .string()
+      .min(6, translate("auth.PasswordMinLength"))
+      .required(translate("auth.PasswordRequired")),
+  });
 
   // Log auth state whenever it changes
   useEffect(() => {
@@ -93,7 +98,7 @@ const LoginForm: React.FC = () => {
       } else if (error && typeof error === "object" && "message" in error) {
         setLocalErrorMessage(error.message as string);
       } else {
-        setLocalErrorMessage("Đăng nhập thất bại. Vui lòng thử lại.");
+        setLocalErrorMessage(translate("auth.LoginFailed"));
       }
     }
   };
@@ -101,7 +106,7 @@ const LoginForm: React.FC = () => {
   // Handle Google login
   const handleGoogleLogin = async (response: CredentialResponse) => {
     if (!response.credential) {
-      setLocalErrorMessage("Google authentication error. Please try again.");
+      setLocalErrorMessage(translate("auth.GoogleAuthError"));
       return;
     }
 
@@ -111,7 +116,7 @@ const LoginForm: React.FC = () => {
       ).unwrap();
 
       if (!user || !user.roles) {
-        throw new Error("Unable to determine access rights.");
+        throw new Error(translate("auth.UnableToDetermineRights"));
       }
 
       // Clear any error messages
@@ -129,7 +134,7 @@ const LoginForm: React.FC = () => {
     } catch (error: any) {
       // Error handling without console logging
       setLocalErrorMessage(
-        error?.message || "Google login failed. Please try again."
+        error?.message || translate("auth.GoogleLoginFailed")
       );
     }
   };
@@ -160,17 +165,17 @@ const LoginForm: React.FC = () => {
               fontSize: { xs: "28px", sm: "32px" },
             }}
           >
-            Login
+            {translate("auth.LoginTitle")}
           </Typography>
           <Typography
             variant="body2"
             sx={{
               color: "#6b7280",
               fontSize: { xs: "14px", sm: "16px" },
-              px: { xs: 1, sm: 0 }, // Add horizontal padding on mobile
+              px: { xs: 1, sm: 0 },
             }}
           >
-            Welcome back! Please login to your account
+            {translate("auth.LoginContent")}
           </Typography>
         </Box>
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -196,7 +201,7 @@ const LoginForm: React.FC = () => {
                         },
                       }}
                     >
-                      Gửi lại email xác nhận
+                      {translate("auth.ResendEmailConfirmation")}
                     </Button>
                   ) : null
                 }
@@ -215,7 +220,7 @@ const LoginForm: React.FC = () => {
                     type="email"
                     variant="outlined"
                     fullWidth
-                    placeholder="Email address"
+                    placeholder={translate("auth.EmailPlaceholder")}
                     size="medium"
                     error={!!errors.email}
                     helperText={errors.email?.message}
@@ -270,7 +275,7 @@ const LoginForm: React.FC = () => {
                     type={showPassword ? "text" : "password"}
                     variant="outlined"
                     fullWidth
-                    placeholder="Password"
+                    placeholder={translate("auth.PasswordPlaceholder")}
                     size="medium"
                     error={!!errors.password}
                     helperText={errors.password?.message}
@@ -344,7 +349,7 @@ const LoginForm: React.FC = () => {
                   },
                 }}
               >
-                Forgot password?
+                {translate("auth.ForgotPasswordButton")}
               </Link>
             </Box>
 
@@ -372,7 +377,7 @@ const LoginForm: React.FC = () => {
               {isLoading ? (
                 <CircularProgress size={20} color="inherit" />
               ) : (
-                "Login"
+                translate("auth.LoginButton")
               )}
             </Button>
 
@@ -381,7 +386,7 @@ const LoginForm: React.FC = () => {
                 variant="body2"
                 sx={{ color: "#6b7280", fontSize: "14px" }}
               >
-                Or Login with
+                {translate("auth.OrLoginWith")}
               </Typography>
             </Divider>
 
@@ -416,9 +421,7 @@ const LoginForm: React.FC = () => {
                 <GoogleLogin
                   onSuccess={handleGoogleLogin}
                   onError={() => {
-                    setLocalErrorMessage(
-                      "Google login failed. Please try again."
-                    );
+                    setLocalErrorMessage(translate("auth.GoogleLoginFailed"));
                   }}
                   theme="outline"
                   size="large"
@@ -431,7 +434,7 @@ const LoginForm: React.FC = () => {
 
             <Box sx={{ textAlign: "center", mt: 2 }}>
               <Typography sx={{ fontSize: "14px", color: "#6b7280" }}>
-                Don't have an account?{" "}
+                {translate("auth.DontHaveAccount")}{" "}
                 <Link
                   component={RouterLink}
                   to="/auth/register"
@@ -444,7 +447,7 @@ const LoginForm: React.FC = () => {
                     },
                   }}
                 >
-                  Signup
+                  {translate("auth.Signup")}
                 </Link>
               </Typography>
             </Box>

@@ -1,0 +1,14 @@
+{
+  "Dashboard": "Dashboard",
+  "Courses": "Courses",
+  "Lessons": "Lessons",
+  "Challenges": "Challenges",
+  "Studio": "Studio",
+  "Cart": "Cart",
+  "Orders": "Orders",
+  "UserManagement": "User Management",
+  "CourseManagement": "Course Management",
+  "NotFound": "Page Not Found",
+  "NotFoundDescription": "The page you are looking for does not exist.",
+  "GoToHomepage": "Go to Homepage"
+}

@@ -1,0 +1,8 @@
+{
+  "LoginSuccessfully": "Đăng nhập thành công.",
+  "ResetPasswordSuccessfully": "Đặt lại mật khẩu thành công.",
+  "UpdateAccountSuccessfully": "Cập nhật tài khoản thành công.",
+  "SentEmailConfirmationSuccessfully": "Đã gửi email xác nhận thành công.",
+  "ConfirmedOTPCodeSuccessfully": "Xác nhận mã OTP thành công.",
+  "Success": "Thao tác thành công."
+}

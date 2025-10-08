@@ -6,6 +6,7 @@ import { TextField, Button, Box, CircularProgress, Alert } from "@mui/material";
 import { motion } from "framer-motion";
 import { axiosClient } from "axiosClient/axiosClient";
 import { ROUTES_API_AUTH } from "constants/routesApiKeys";
+import { useLocales } from "hooks";
 
 // Define the component's prop types
 type ForgotPasswordFormProps = {
@@ -21,14 +22,15 @@ type FormValues = {
 const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
   onSuccessSubmit,
 }) => {
+  const { translate } = useLocales();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  // Form validation schema
+  // Form validation schema - inside component to use translate
   const validationSchema = Yup.object().shape({
     email: Yup.string()
-      .required("Email không được để trống")
-      .email("Email không hợp lệ"),
+      .required(translate("auth.EmailEmptyError"))
+      .email(translate("auth.EmailInvalid")),
   });
 
   const {
@@ -56,8 +58,8 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
           ? error.message
           : typeof error === "object" && error && "response" in error
           ? (error as { response?: { data?: { message?: string } } }).response
-              ?.data?.message || "Đã xảy ra lỗi. Vui lòng thử lại sau."
-          : "Đã xảy ra lỗi. Vui lòng thử lại sau."
+              ?.data?.message || translate("auth.ErrorOccurred")
+          : translate("auth.ErrorOccurred")
       );
     } finally {
       setIsSubmitting(false);
@@ -76,7 +78,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
         margin="normal"
         fullWidth
         id="email"
-        label="Email"
+        label={translate("auth.Email")}
         type="email"
         autoComplete="email"
         disabled={isSubmitting}
@@ -140,7 +142,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
           {isSubmitting ? (
             <CircularProgress size={24} color="inherit" />
           ) : (
-            "Đặt lại mật khẩu"
+            translate("auth.ResetPasswordButton")
           )}
         </Button>
       </motion.div>

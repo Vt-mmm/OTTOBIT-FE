@@ -3,15 +3,17 @@ import { Box, Button } from "@mui/material";
 import { Home } from "@mui/icons-material";
 import { Link as RouterLink } from "react-router-dom";
 import LoginForm from "sections/auth/LoginForm";
-
-// Logo và hình ảnh sẽ thay thế sau
+import { LanguageSwitcher } from "components/common";
+import { useLocales } from "hooks";
 
 const LoginPage: React.FC = () => {
+  const { translate } = useLocales();
+
   return (
     <Box
       sx={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)", // Đổi thành màu xanh nhạt giống illustration
+        background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -44,23 +46,30 @@ const LoginPage: React.FC = () => {
           },
         }}
       >
-        <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
-          Về trang chủ
-        </Box>
-        <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
-          Home
-        </Box>
+        {translate("auth.GoToHome")}
       </Button>
+
+      {/* Language Switcher - Top right */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: { xs: 16, md: 32 },
+          right: { xs: 16, md: 32 },
+          zIndex: 20,
+        }}
+      >
+        <LanguageSwitcher />
+      </Box>
 
       {/* Container trắng bọc toàn bộ - Improved responsive */}
       <Box
         sx={{
           background: "white",
           borderRadius: { xs: 0, sm: 2, md: 4 },
-          boxShadow: { 
-            xs: "none", 
-            sm: "0 10px 30px rgba(0, 0, 0, 0.08)", 
-            md: "0 20px 60px rgba(0, 0, 0, 0.1)" 
+          boxShadow: {
+            xs: "none",
+            sm: "0 10px 30px rgba(0, 0, 0, 0.08)",
+            md: "0 20px 60px rgba(0, 0, 0, 0.1)",
           },
           overflow: "hidden",
           width: "100%",

@@ -15,18 +15,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { axiosClient } from "axiosClient/axiosClient";
 import { ROUTES_API_AUTH } from "constants/routesApiKeys";
-
-// Schema validation
-const schema = yup.object().shape({
-  password: yup
-    .string()
-    .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
-    .required("Mật khẩu là bắt buộc"),
-  confirmPassword: yup
-    .string()
-    .oneOf([yup.ref("password")], "Mật khẩu không khớp")
-    .required("Xác nhận mật khẩu là bắt buộc"),
-});
+import { useLocales } from "hooks";
 
 // Define reset password form interface
 interface ResetPasswordFormType {
@@ -47,11 +36,24 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
   onSuccess,
   onError,
 }) => {
+  const { translate } = useLocales();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Schema validation - PHẢI đặt trong component để dùng translate
+  const schema = yup.object().shape({
+    password: yup
+      .string()
+      .min(6, translate("auth.PasswordMinLength"))
+      .required(translate("auth.PasswordRequired")),
+    confirmPassword: yup
+      .string()
+      .oneOf([yup.ref("password")], translate("auth.PasswordNotMatch"))
+      .required(translate("auth.ConfirmPasswordRequired")),
+  });
 
   const {
     control,
@@ -83,9 +85,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
       });
 
       setIsLoading(false);
-      // Use message from backend response or default message
-      const successMsg =
-        "Mật khẩu đã được đặt lại thành công. Bạn có thể đăng nhập bằng mật khẩu mới.";
+      const successMsg = translate("auth.ResetPasswordSuccess");
       setSuccessMessage(successMsg);
 
       if (onSuccess) {
@@ -106,7 +106,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
 
       const message =
         axiosError.response?.data?.message ||
-        "Đã xảy ra lỗi khi đặt lại mật khẩu. Vui lòng thử lại sau hoặc yêu cầu liên kết mới.";
+        translate("auth.ResetPasswordError");
 
       setErrorMessage(message);
 
@@ -138,9 +138,9 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Mật khẩu mới"
+                label={translate("auth.NewPassword")}
                 type={showPassword ? "text" : "password"}
-                placeholder="Nhập mật khẩu mới"
+                placeholder={translate("auth.NewPasswordPlaceholder")}
                 fullWidth
                 error={!!errors.password}
                 helperText={errors.password?.message}
@@ -173,9 +173,9 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Xác nhận mật khẩu"
+                label={translate("auth.ConfirmNewPassword")}
                 type={showConfirmPassword ? "text" : "password"}
-                placeholder="Xác nhận mật khẩu mới"
+                placeholder={translate("auth.ConfirmNewPasswordPlaceholder")}
                 fullWidth
                 error={!!errors.confirmPassword}
                 helperText={errors.confirmPassword?.message}
@@ -230,7 +230,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
           {isLoading ? (
             <CircularProgress size={24} color="inherit" />
           ) : (
-            "Đặt lại mật khẩu"
+            translate("auth.ResetPasswordButton")
           )}
         </Button>
       </Stack>
