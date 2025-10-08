@@ -6,7 +6,6 @@ import {
   CreateOrderFromCartRequest,
   GetOrdersRequest,
   OrderResult,
-  OrderSummaryResult,
 } from "common/@types/order";
 import { Paginate } from "common/@types";
 import { extractApiErrorMessage } from "utils/errorHandler";
@@ -46,7 +45,7 @@ export const getOrdersThunk = createAsyncThunk(
   async (params: GetOrdersRequest, { rejectWithValue }) => {
     try {
       const response = await axiosClient.get<
-        ApiResponse<Paginate<OrderSummaryResult>>
+        ApiResponse<Paginate<OrderResult>>
       >(ROUTES_API_ORDER.GET_ORDERS, { params });
       return response.data.data;
     } catch (error) {

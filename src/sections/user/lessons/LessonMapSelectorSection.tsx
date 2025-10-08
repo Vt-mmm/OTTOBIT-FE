@@ -162,6 +162,8 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
           challengesError={challengesError || null}
           onChallengeSelect={handleChallengeSelect}
           onRetry={handleRetry}
+          lessonId={lessonId}
+          courseId={courseId} // Pass courseId for proper note scoping
         />
       </div>
     </Box>

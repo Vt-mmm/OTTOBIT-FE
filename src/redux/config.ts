@@ -21,7 +21,9 @@ import certificateReducer from "./certificate/certificateSlice";
 import certificateTemplateReducer from "./certificateTemplate/certificateTemplateSlice";
 import cartReducer from "./cart/cartSlice";
 import orderReducer from "./order/orderSlice";
+import orderItemReducer from "./orderItem/orderItemSlice";
 import paymentReducer from "./payment/paymentSlice";
+import lessonNoteReducer from "./lessonNote/lessonNoteSlice";
 
 export const ottobit = configureStore({
   reducer: {
@@ -46,7 +48,9 @@ export const ottobit = configureStore({
     certificateTemplate: certificateTemplateReducer, // ⭐️ NEW: CertificateTemplate management
     cart: cartReducer, // ⭐️ NEW: Cart management
     order: orderReducer, // ⭐️ NEW: Order management
+    orderItem: orderItemReducer, // ⭐️ NEW: OrderItem management
     payment: paymentReducer, // ⭐️ NEW: Payment management
+    lessonNote: lessonNoteReducer, // ⭐️ NEW: LessonNote management
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

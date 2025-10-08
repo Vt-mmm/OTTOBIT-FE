@@ -2,7 +2,7 @@
 // Order Types - API Request/Response Types
 // ============================================================================
 
-import { PaymentMethod } from "./payment";
+import { PaymentMethod, PaymentStatus } from "./payment";
 
 // ============================================================================
 // Enums
@@ -15,6 +15,9 @@ export enum OrderStatus {
   Cancelled = 3,
 }
 
+// Re-export PaymentStatus for convenience
+export { PaymentStatus };
+
 // ============================================================================
 // API Response Types
 // ============================================================================
@@ -24,11 +27,13 @@ export enum OrderStatus {
  */
 export interface OrderResult {
   id: string;
+  orderCode?: string;
   userId: string;
   total: number;
   subtotal: number;
   discountAmount: number;
   status: OrderStatus;
+  paymentStatus: PaymentStatus;
   paymentMethod: PaymentMethod;
   itemsCount?: number;
   createdAt: string;
@@ -68,10 +73,12 @@ export interface PaymentTransactionSummary {
  */
 export interface OrderSummaryResult {
   id: string;
+  orderCode?: string;
   total: number;
   subtotal: number;
   discountAmount: number;
   status: OrderStatus;
+  paymentStatus: PaymentStatus;
   paymentMethod: PaymentMethod;
   itemsCount: number;
   createdAt: string;

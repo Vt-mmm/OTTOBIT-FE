@@ -37,7 +37,7 @@ export const getMyProfileThunk = createAsyncThunk<
 >("account/getMyProfile", async (_, thunkAPI) => {
   try {
     const response = await axiosClient.get<ApiResponse<UserProfileData>>(
-      ROUTES_API_ACCOUNT.PROFILE
+      ROUTES_API_ACCOUNT.GET_PROFILE
     );
 
     if (!response.data || !response.data.data) {
@@ -67,7 +67,7 @@ export const updateMyProfileThunk = createAsyncThunk<
   try {
     // Only send fields BE allows to update: fullName and avatarUrl
     const response = await axiosClient.put<ApiResponse<UserProfileData>>(
-      ROUTES_API_ACCOUNT.PROFILE,
+      ROUTES_API_ACCOUNT.UPDATE_PROFILE,
       {
         fullName: data.fullName,
         avatarUrl: data.avatarUrl,
@@ -75,7 +75,9 @@ export const updateMyProfileThunk = createAsyncThunk<
     );
 
     if (!response.data || !response.data.data) {
-      return thunkAPI.rejectWithValue("Không nhận được dữ liệu hồ sơ sau khi cập nhật");
+      return thunkAPI.rejectWithValue(
+        "Không nhận được dữ liệu hồ sơ sau khi cập nhật"
+      );
     }
 
     const message = response.data.message || "Cập nhật hồ sơ thành công!";
@@ -142,11 +144,13 @@ export const forgotPasswordThunk = createAsyncThunk<
     const response = await axiosClient.post<ApiResponse>(
       ROUTES_API_AUTH.FORGOT_PASSWORD,
       {
-        email: data.email
+        email: data.email,
       }
     );
 
-    const message = response.data.message || "Đã gửi hướng dẫn đặt lại mật khẩu đến email của bạn!";
+    const message =
+      response.data.message ||
+      "Đã gửi hướng dẫn đặt lại mật khẩu đến email của bạn!";
     thunkAPI.dispatch(setMessageSuccess(message));
     return response.data;
   } catch (error: any) {
@@ -166,11 +170,11 @@ export const resetPasswordThunk = createAsyncThunk<
   { rejectValue: string }
 >("account/resetPassword", async (params, thunkAPI) => {
   const data = params?.data;
-  
+
   if (!data) {
-    return thunkAPI.rejectWithValue('Dữ liệu không hợp lệ');
+    return thunkAPI.rejectWithValue("Dữ liệu không hợp lệ");
   }
-  
+
   try {
     const response = await axiosClient.post<ApiResponse>(
       ROUTES_API_AUTH.RESET_PASSWORD,
@@ -178,7 +182,7 @@ export const resetPasswordThunk = createAsyncThunk<
         email: data.email,
         resetToken: data.resetToken,
         newPassword: data.newPassword,
-        confirmNewPassword: data.confirmNewPassword
+        confirmNewPassword: data.confirmNewPassword,
       }
     );
 

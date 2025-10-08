@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { OrderResult, OrderSummaryResult } from "common/@types/order";
+import { OrderResult } from "common/@types/order";
 import { Paginate } from "common/@types";
 import {
   createOrderFromCartThunk,
@@ -11,7 +11,7 @@ import {
 interface OrderState {
   // Orders list (paginated)
   orders: {
-    data: Paginate<OrderSummaryResult> | null;
+    data: Paginate<OrderResult> | null;
     isLoading: boolean;
     error: string | null;
   };
@@ -115,7 +115,7 @@ const orderSlice = createSlice({
       })
       .addCase(
         getOrdersThunk.fulfilled,
-        (state, action: PayloadAction<Paginate<OrderSummaryResult>>) => {
+        (state, action: PayloadAction<Paginate<OrderResult>>) => {
           state.orders.isLoading = false;
           state.orders.data = action.payload;
         }
