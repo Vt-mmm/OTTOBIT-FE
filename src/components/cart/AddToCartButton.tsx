@@ -115,6 +115,13 @@ export default function AddToCartButton({
         errorMessage.includes("đã sở hữu")
       ) {
         showInfoToast(translate("cart.AlreadyOwnCourse"));
+      } else if (
+        errorMessage.includes("requires a compatible robot") ||
+        errorMessage.includes("activate a compatible robot")
+      ) {
+        showErrorToast(
+          "Khóa học này yêu cầu robot tương thích. Vui lòng kích hoạt robot trước khi mua khóa học!"
+        );
       } else {
         showErrorToast(errorMessage);
       }

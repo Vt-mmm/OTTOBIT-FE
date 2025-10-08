@@ -333,7 +333,7 @@ const Header: React.FC = () => {
           {/* Desktop Navigation */}
           <Stack
             direction="row"
-            spacing={{ md: 2, lg: 4 }}
+            spacing={2}
             sx={{
               flexGrow: 1,
               display: { xs: "none", md: "flex" },

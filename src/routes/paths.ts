@@ -85,4 +85,7 @@ export const PATH_ADMIN = {
     ROOTS_ADMIN_DASHBOARD,
     "/certificate-template-management"
   ),
+  orderManagement: path(ROOTS_ADMIN_DASHBOARD, "/order-management"),
+  orders: path(ROOTS_ADMIN_DASHBOARD, "/orders"),
+  orderDetail: path(ROOTS_ADMIN_DASHBOARD, "/orders/:id"),
 };

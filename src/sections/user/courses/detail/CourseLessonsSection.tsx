@@ -53,7 +53,7 @@ export default function CourseLessonsSection({
         overflow: "hidden",
       }}
     >
-      <Box sx={{ p: { xs: 2, sm: 2.5, md: { xs: 2, sm: 2.5, md: 3 } }, pb: 0 }}>
+      <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 }, pb: 0 }}>
         <Typography
           variant="h5"
           component="h2"

@@ -117,7 +117,7 @@ const ChallengesGrid: React.FC<ChallengesGridProps> = ({
     >
       <Grid
         container
-        spacing={{ xs: 2, sm: 2.5, md: 3 }}
+        spacing={2}
         alignItems="stretch"
         sx={{
           "& .MuiGrid-item": {

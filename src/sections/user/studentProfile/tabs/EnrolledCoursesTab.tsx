@@ -62,6 +62,7 @@ export default function EnrolledCoursesTab({
   loading: propLoading,
 }: EnrolledCoursesTabProps) {
   const navigate = useNavigate();
+  const { translate } = useLocales();
 
   const [tab, setTab] = useState<"IN_PROGRESS" | "COMPLETED">("IN_PROGRESS");
   const [enrollments, setEnrollments] = useState<EnrollmentItem[]>(
@@ -208,7 +209,7 @@ export default function EnrolledCoursesTab({
   }
 
   return (
-    <Stack spacing={{ xs: 2, sm: 2.5, md: 3 }}>
+    <Stack spacing={2}>
       <Box
         sx={{
           display: "flex",

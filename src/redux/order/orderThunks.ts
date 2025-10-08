@@ -5,7 +5,10 @@ import { ROUTES_API_ORDER } from "constants/routesApiKeys";
 import {
   CreateOrderFromCartRequest,
   GetOrdersRequest,
+  GetOrdersForAdminRequest,
+  UpdateOrderStatusRequest,
   OrderResult,
+  OrdersResponse,
 } from "common/@types/order";
 import { Paginate } from "common/@types";
 import { extractApiErrorMessage } from "utils/errorHandler";
@@ -90,6 +93,70 @@ export const cancelOrderThunk = createAsyncThunk(
       const message = extractApiErrorMessage(
         error as AxiosError,
         "Failed to cancel order"
+      );
+      return rejectWithValue(message);
+    }
+  }
+);
+
+// ============== ADMIN ENDPOINTS ==============
+
+// Get orders for admin with pagination
+export const getOrdersForAdminThunk = createAsyncThunk(
+  "order/getOrdersForAdmin",
+  async (params: GetOrdersForAdminRequest, { rejectWithValue }) => {
+    try {
+      const response = await axiosClient.get<ApiResponse<OrdersResponse>>(
+        ROUTES_API_ORDER.GET_ORDERS_ADMIN,
+        { params }
+      );
+      return response.data.data;
+    } catch (error) {
+      const message = extractApiErrorMessage(
+        error as AxiosError,
+        "Failed to fetch orders"
+      );
+      return rejectWithValue(message);
+    }
+  }
+);
+
+// Get order by ID for admin
+export const getOrderByIdForAdminThunk = createAsyncThunk(
+  "order/getOrderByIdForAdmin",
+  async (orderId: string, { rejectWithValue }) => {
+    try {
+      const response = await axiosClient.get<ApiResponse<OrderResult>>(
+        ROUTES_API_ORDER.GET_BY_ID_ADMIN(orderId)
+      );
+      return response.data.data;
+    } catch (error) {
+      const message = extractApiErrorMessage(
+        error as AxiosError,
+        "Failed to fetch order details"
+      );
+      return rejectWithValue(message);
+    }
+  }
+);
+
+// Update order status (admin only)
+export const updateOrderStatusThunk = createAsyncThunk(
+  "order/updateOrderStatus",
+  async (
+    { orderId, ...data }: UpdateOrderStatusRequest & { orderId: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await axiosClient.put<ApiResponse<OrderResult>>(
+        ROUTES_API_ORDER.UPDATE_STATUS(orderId),
+        data
+      );
+      return response.data.data;
+    } catch (error) {
+      const message = extractApiErrorMessage(
+        error as AxiosError,
+        "Failed to update order status"
       );
       return rejectWithValue(message);
     }

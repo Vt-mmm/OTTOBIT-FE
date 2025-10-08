@@ -16,9 +16,11 @@ import {
   SmartToy as RobotIcon,
 } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "store/config";
+import { getMyActivationCodesThunk } from "store/activationCode/activationCodeThunks";
 import { getRobotsThunk } from "store/robot/robotThunks";
 import ActivateRobotDialog from "components/robot/ActivateRobotDialog";
 import { useLocales } from "hooks";
+import { CodeStatus } from "common/@types/activationCode";
 
 interface MyRobotsTabProps {
   loading?: boolean;
@@ -29,28 +31,73 @@ export default function MyRobotsTab({
 }: MyRobotsTabProps) {
   const { translate } = useLocales();
   const dispatch = useAppDispatch();
+  const { myCodes } = useAppSelector((state) => state.activationCode);
   const { robots } = useAppSelector((state) => state.robot);
   const [activateDialogOpen, setActivateDialogOpen] = useState(false);
 
   useEffect(() => {
-    // TODO: Implement proper robot ownership checking
-    // For now, just fetch all robots for demo purposes
+    // Lấy danh sách activation codes đã sử dụng (status = Used)
+    dispatch(
+      getMyActivationCodesThunk({
+        status: CodeStatus.Used,
+        pageNumber: 1,
+        pageSize: 100,
+      })
+    );
+    // Lấy danh sách tất cả robots để có thông tin đầy đủ
     dispatch(getRobotsThunk({ pageNumber: 1, pageSize: 100 }));
   }, [dispatch]);
 
   const handleActivateSuccess = () => {
-    // TODO: Refresh robot list after activation
-    dispatch(getRobotsThunk({ pageNumber: 1, pageSize: 100 }));
+    // Refresh activation codes sau khi kích hoạt thành công
+    dispatch(
+      getMyActivationCodesThunk({
+        status: CodeStatus.Used,
+        pageNumber: 1,
+        pageSize: 100,
+      })
+    );
   };
 
-  // TODO: Replace with proper ownership logic
-  // Temporarily show all robots for demo
+  // Lấy danh sách robots đã kích hoạt từ activation codes
   const myRobots = useMemo(() => {
-    return robots.data?.items || [];
-  }, [robots.data]);
+    if (!myCodes.data?.items || !robots.data?.items) return [];
 
-  const isLoading = robots.isLoading || externalLoading;
-  const error = robots.error;
+    console.log("[MyRobotsTab] myCodes.data.items:", myCodes.data.items);
+    console.log("[MyRobotsTab] robots.data.items:", robots.data.items);
+
+    // Lọc ra các code đã sử dụng và có robotId
+    const activatedCodes = myCodes.data.items.filter(
+      (code) => code.status === CodeStatus.Used && code.robotId
+    );
+
+    // Lấy unique robotIds
+    const activatedRobotIds = new Set(
+      activatedCodes.map((code) => code.robotId)
+    );
+
+    // Tìm robot details từ robots list
+    const activatedRobots = robots.data.items.filter((robot) =>
+      activatedRobotIds.has(robot.id)
+    );
+
+    // Thêm thông tin activatedAt từ activation code
+    const robotsWithActivationDate = activatedRobots.map((robot) => {
+      const activationCode = activatedCodes.find(
+        (code) => code.robotId === robot.id
+      );
+      return {
+        ...robot,
+        activatedAt: activationCode?.usedAt,
+      };
+    });
+
+    console.log("[MyRobotsTab] myRobots:", robotsWithActivationDate);
+    return robotsWithActivationDate;
+  }, [myCodes.data, robots.data]);
+
+  const isLoading = myCodes.isLoading || robots.isLoading || externalLoading;
+  const error = myCodes.error || robots.error;
 
   if (isLoading && myRobots.length === 0) {
     return (

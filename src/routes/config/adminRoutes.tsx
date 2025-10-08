@@ -52,6 +52,10 @@ const CertificateManagementPage = lazy(
 const CertificateTemplateManagementPage = lazy(
   () => import("pages/admin/CertificateTemplateManagementPage")
 );
+const OrderManagementPage = lazy(
+  () => import("pages/admin/OrderManagementPage")
+);
+const OrderDetailPage = lazy(() => import("pages/admin/OrderDetailPage"));
 
 export const adminRoutes: Route[] = [
   {
@@ -142,6 +146,16 @@ export const adminRoutes: Route[] = [
   {
     path: PATH_ADMIN.certificateTemplateManagement,
     component: <CertificateTemplateManagementPage />,
+    index: false,
+  },
+  {
+    path: PATH_ADMIN.orders,
+    component: <OrderManagementPage />,
+    index: false,
+  },
+  {
+    path: PATH_ADMIN.orderDetail,
+    component: <OrderDetailPage />,
     index: false,
   },
   {

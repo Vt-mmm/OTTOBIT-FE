@@ -31,39 +31,47 @@ interface Product {
 
 export default function BestSellingProductSection() {
   const [activeCategory, setActiveCategory] = useState("Robots");
+  const [currentPage, setCurrentPage] = useState(0);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   const { robots } = useAppSelector((state) => state.robot);
   const { components } = useAppSelector((state) => state.component);
 
-  // Fetch data on component mount
+  const ITEMS_PER_PAGE = 4;
+
+  // Fetch data on component mount - get more items for pagination
   useEffect(() => {
-    // Fetch robots with limit for best selling
+    // Fetch robots with limit for best selling (fetch 12 items for 3 pages)
     dispatch(
       getRobotsThunk({
         pageNumber: 1,
-        pageSize: 4,
+        pageSize: 12,
         sortBy: 5, // CreatedAt enum value
         sortDirection: 2, // DESC enum value
       })
     );
-    // Fetch components with limit for best selling
+    // Fetch components with limit for best selling (fetch 12 items for 3 pages)
     dispatch(
       getComponentsThunk({
         page: 1,
-        size: 4,
+        size: 12,
         orderBy: "CreatedAt",
         orderDirection: "DESC",
       })
     );
   }, [dispatch]);
 
+  // Reset to first page when category changes
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [activeCategory]);
+
   // Convert API data to unified product format
   const convertToProducts = (): Product[] => {
     if (activeCategory === "Robots") {
       return (
-        robots.data?.items?.slice(0, 4).map((robot) => ({
+        robots.data?.items?.map((robot) => ({
           id: robot.id,
           name: robot.name,
           image: robot.imageUrl || "/asset/OttobitCar.png",
@@ -72,7 +80,7 @@ export default function BestSellingProductSection() {
       );
     } else {
       return (
-        components.data?.items?.slice(0, 4).map((component) => ({
+        components.data?.items?.map((component) => ({
           id: component.id,
           name: component.name,
           image: component.imageUrl || "/asset/Microbitv2-removebg-preview.png",
@@ -82,9 +90,28 @@ export default function BestSellingProductSection() {
     }
   };
 
-  const filteredProducts = convertToProducts();
+  const allProducts = convertToProducts();
+  const totalPages = Math.ceil(allProducts.length / ITEMS_PER_PAGE);
+
+  // Get products for current page
+  const startIndex = currentPage * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const filteredProducts = allProducts.slice(startIndex, endIndex);
+
   const isLoading = robots.isLoading || components.isLoading;
   const hasError = robots.error || components.error;
+
+  // Carousel navigation handlers
+  const handlePrevPage = () => {
+    setCurrentPage((prev) => (prev > 0 ? prev - 1 : totalPages - 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => (prev < totalPages - 1 ? prev + 1 : 0));
+  };
+
+  const canGoPrev = totalPages > 1;
+  const canGoNext = totalPages > 1;
 
   // Navigation handlers
   const handleViewAll = () => {
@@ -445,45 +472,73 @@ export default function BestSellingProductSection() {
         </Box>
 
         {/* Navigation Arrows */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 2,
-          }}
-        >
-          <IconButton
+        {totalPages > 1 && !isLoading && (
+          <Box
             sx={{
-              bgcolor: "white",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-              width: 52,
-              height: 52,
-              "&:hover": {
-                bgcolor: "#E8E3D5",
-                transform: "scale(1.1)",
-              },
-              transition: "all 0.3s ease",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 3,
             }}
           >
-            <ArrowBackIcon sx={{ color: "#7f8c8d" }} />
-          </IconButton>
+            <IconButton
+              onClick={handlePrevPage}
+              disabled={!canGoPrev}
+              sx={{
+                bgcolor: "white",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                width: 52,
+                height: 52,
+                "&:hover": {
+                  bgcolor: "#E8E3D5",
+                  transform: canGoPrev ? "scale(1.1)" : "none",
+                },
+                "&:disabled": {
+                  opacity: 0.3,
+                  cursor: "not-allowed",
+                },
+                transition: "all 0.3s ease",
+              }}
+            >
+              <ArrowBackIcon sx={{ color: "#7f8c8d" }} />
+            </IconButton>
 
-          <IconButton
-            sx={{
-              bgcolor: "white",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-              width: 52,
-              height: 52,
-              "&:hover": {
-                bgcolor: "#E8E3D5",
-                transform: "scale(1.1)",
-              },
-              transition: "all 0.3s ease",
-            }}
-          >
-            <ArrowForwardIcon sx={{ color: "#7f8c8d" }} />
-          </IconButton>
-        </Box>
+            {/* Page Indicator */}
+            <Typography
+              variant="body2"
+              sx={{
+                color: "#7f8c8d",
+                fontWeight: 600,
+                minWidth: 80,
+                textAlign: "center",
+              }}
+            >
+              {currentPage + 1} / {totalPages}
+            </Typography>
+
+            <IconButton
+              onClick={handleNextPage}
+              disabled={!canGoNext}
+              sx={{
+                bgcolor: "white",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                width: 52,
+                height: 52,
+                "&:hover": {
+                  bgcolor: "#E8E3D5",
+                  transform: canGoNext ? "scale(1.1)" : "none",
+                },
+                "&:disabled": {
+                  opacity: 0.3,
+                  cursor: "not-allowed",
+                },
+                transition: "all 0.3s ease",
+              }}
+            >
+              <ArrowForwardIcon sx={{ color: "#7f8c8d" }} />
+            </IconButton>
+          </Box>
+        )}
       </Container>
     </Box>
   );

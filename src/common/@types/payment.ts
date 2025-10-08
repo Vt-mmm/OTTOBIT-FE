@@ -19,23 +19,30 @@ export enum PaymentMethod {
   BankTransfer = 2,
 }
 
+export enum PaymentTransactionType {
+  Charge = 0,
+  Refund = 1,
+}
+
 // ============================================================================
 // API Response Types
 // ============================================================================
 
 /**
  * Payment transaction result from API
+ * Matches backend: Ottobit.Service.Models.Payment.PaymentTransactionResult
  */
 export interface PaymentTransactionResult {
   id: string;
   orderId: string;
+  type: PaymentTransactionType; // Backend uses 'Type' (PaymentTransactionType)
+  method: PaymentMethod;        // Backend uses 'Method' (PaymentMethod)
+  orderCode?: number;           // Backend: long? OrderCode
   amount: number;
   status: PaymentStatus;
-  method: PaymentMethod;
-  orderCode?: number;
-  paidAt?: string;
   errorCode?: string;
   errorMessage?: string;
+  paidAt?: string;              // Backend: DateTime? PaidAt
   createdAt: string;
   updatedAt: string;
   order?: OrderSummary;

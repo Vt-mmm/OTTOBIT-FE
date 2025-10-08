@@ -6,6 +6,9 @@ import {
   getOrdersThunk,
   getOrderByIdThunk,
   cancelOrderThunk,
+  getOrdersForAdminThunk,
+  getOrderByIdForAdminThunk,
+  updateOrderStatusThunk,
 } from "./orderThunks";
 
 interface OrderState {
@@ -27,12 +30,21 @@ interface OrderState {
     isLoading: boolean;
     error: string | null;
   };
+  // Admin orders list (separate from user orders)
+  adminOrders: {
+    data: Paginate<OrderResult> | null;
+    isLoading: boolean;
+    error: string | null;
+  };
   // Operations state
   operations: {
     isCreating: boolean;
     isCancelling: boolean;
+    isUpdatingStatus: boolean;
     createError: string | null;
     cancelError: string | null;
+    updateStatusError: string | null;
+    updateStatusSuccess: boolean;
   };
 }
 
@@ -52,11 +64,19 @@ const initialState: OrderState = {
     isLoading: false,
     error: null,
   },
+  adminOrders: {
+    data: null,
+    isLoading: false,
+    error: null,
+  },
   operations: {
     isCreating: false,
     isCancelling: false,
+    isUpdatingStatus: false,
     createError: null,
     cancelError: null,
+    updateStatusError: null,
+    updateStatusSuccess: false,
   },
 };
 
@@ -79,8 +99,14 @@ const orderSlice = createSlice({
       state.orders.error = null;
       state.currentOrder.error = null;
       state.lastCreatedOrder.error = null;
+      state.adminOrders.error = null;
       state.operations.createError = null;
       state.operations.cancelError = null;
+      state.operations.updateStatusError = null;
+    },
+    // Clear update status success flag
+    clearUpdateStatusSuccess: (state) => {
+      state.operations.updateStatusSuccess = false;
     },
   },
   extraReducers: (builder) => {
@@ -168,10 +194,82 @@ const orderSlice = createSlice({
         state.operations.isCancelling = false;
         state.operations.cancelError = action.payload as string;
       });
+
+    // ============== ADMIN THUNKS ==============
+
+    // Get orders for admin
+    builder
+      .addCase(getOrdersForAdminThunk.pending, (state) => {
+        state.adminOrders.isLoading = true;
+        state.adminOrders.error = null;
+      })
+      .addCase(
+        getOrdersForAdminThunk.fulfilled,
+        (state, action: PayloadAction<Paginate<OrderResult>>) => {
+          state.adminOrders.isLoading = false;
+          state.adminOrders.data = action.payload;
+        }
+      )
+      .addCase(getOrdersForAdminThunk.rejected, (state, action) => {
+        state.adminOrders.isLoading = false;
+        state.adminOrders.error = action.payload as string;
+      });
+
+    // Get order by ID for admin (reuse currentOrder state)
+    builder
+      .addCase(getOrderByIdForAdminThunk.pending, (state) => {
+        state.currentOrder.isLoading = true;
+        state.currentOrder.error = null;
+      })
+      .addCase(
+        getOrderByIdForAdminThunk.fulfilled,
+        (state, action: PayloadAction<OrderResult>) => {
+          state.currentOrder.isLoading = false;
+          state.currentOrder.data = action.payload;
+        }
+      )
+      .addCase(getOrderByIdForAdminThunk.rejected, (state, action) => {
+        state.currentOrder.isLoading = false;
+        state.currentOrder.error = action.payload as string;
+      });
+
+    // Update order status
+    builder
+      .addCase(updateOrderStatusThunk.pending, (state) => {
+        state.operations.isUpdatingStatus = true;
+        state.operations.updateStatusError = null;
+        state.operations.updateStatusSuccess = false;
+      })
+      .addCase(
+        updateOrderStatusThunk.fulfilled,
+        (state, action: PayloadAction<OrderResult>) => {
+          state.operations.isUpdatingStatus = false;
+          state.operations.updateStatusSuccess = true;
+          // Update in admin orders list
+          if (state.adminOrders.data) {
+            state.adminOrders.data.items = state.adminOrders.data.items.map(
+              (order) =>
+                order.id === action.payload.id ? action.payload : order
+            );
+          }
+          // Update current order if it's the same
+          if (state.currentOrder.data?.id === action.payload.id) {
+            state.currentOrder.data = action.payload;
+          }
+        }
+      )
+      .addCase(updateOrderStatusThunk.rejected, (state, action) => {
+        state.operations.isUpdatingStatus = false;
+        state.operations.updateStatusError = action.payload as string;
+      });
   },
 });
 
-export const { clearLastCreatedOrder, clearCurrentOrder, clearOrderErrors } =
-  orderSlice.actions;
+export const {
+  clearLastCreatedOrder,
+  clearCurrentOrder,
+  clearOrderErrors,
+  clearUpdateStatusSuccess,
+} = orderSlice.actions;
 
 export default orderSlice.reducer;
