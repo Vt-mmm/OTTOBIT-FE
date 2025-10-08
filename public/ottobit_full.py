@@ -507,24 +507,21 @@ class UARTComm:
                         pass
             sleep(20)
         return response
-
-r = Robot()
-uart_comm = UARTComm()
-display.scroll("READY")
-
+    
 def handle_wifi_connection(timeout_ms=3000):
-    display.show(Image.ARROW_E)
+    display.show(Image.ALL_CLOCKS, loop=True, wait=False)
     # Check AT
     resp, _ = uart_comm.send_line("AT")
     if not resp_has(resp, ("OK",)):
-        display.scroll("AT NG")
-        display.show(Image.NO)
+        display.scroll("WIFI FAIL")
+        display.show(Image.SAD)
         return False
     # Set station mode
     uart_comm.send_line("AT+CWMODE=1")
     # Already connected?
     resp, _ = uart_comm.send_line("AT+CWJAP?")
     if (WIFI_SSID in resp) and resp_has(resp, ("GOT IP", "OK")):
+        display.scroll("WIFI OK")
         display.show(Image.HAPPY)
         return True
     # Join AP (short wait)
@@ -542,6 +539,7 @@ def handle_wifi_connection(timeout_ms=3000):
         return False
 
 def send_actions_queue():
+    display.show(Image.ALL_CLOCKS, loop=True, wait=False)
     actions_json = ('"' + '","'.join(ACTION_QUEUE) + '"') if len(ACTION_QUEUE) > 0 else ''
     body = '{"id":"' + ACTIONS_ROOM_ID + '","actions":[' + actions_json + ']}'
     req = (
@@ -557,50 +555,55 @@ def send_actions_queue():
     resp, _ = uart_comm.send_line('AT+CIPSTART="TCP","{}",{}'.format(ACTIONS_API_HOST, ACTIONS_API_PORT))
     resp += uart_comm.read_for(3000)
     if not resp_has(resp, ("CONNECT", "OK")):
-        display.scroll("HTTP NG")
+        display.scroll("S FAIL")
         return False
     # Send request length
     resp, _ = uart_comm.send_line("AT+CIPSEND={}".format(len(req)))
     resp += uart_comm.read_for(1500)
     if not resp_has(resp, (">",)):
-        display.scroll("SEND NG")
+        display.scroll("S FAIL")
         uart_comm.send_line("AT+CIPCLOSE")
         return False
     # Send HTTP request
     uart_comm.write_raw(req)
-    http_resp = uart_comm.read_for(5000)
+    http_resp = uart_comm.read_for(3000)
     uart_comm.send_line("AT+CIPCLOSE")
     if resp_has(http_resp, ("HTTP/1.1",)):
-        display.scroll("QUEUE OK")
+        display.scroll("S OK")
         try:
             ACTION_QUEUE[:] = []
         except:
             pass
         return True
-    display.scroll("QUEUE NG")
+    display.scroll("S FAIL")
     return False
 
-def show_ready():
+r = Robot()
+uart_comm = UARTComm()
+isConnected = handle_wifi_connection(20000)
+if isConnected:
     display.scroll("READY")
+else:
+    display.scroll("NO WIFI")
 while True:
     if button_a.was_pressed():
-        run_route(r)
-        display.clear()
-        if (len(ACTION_QUEUE) > 0) and handle_wifi_connection(20000):
-            # Send actions queue after connecting WiFi
-            try:
-                send_actions_queue()
-            except:
-                pass
-        sleep(3000)
-        show_ready()
+        if isConnected:
+            run_route(r)
+            display.clear()
+            if len(ACTION_QUEUE) > 0:
+                try:
+                    send_actions_queue()
+                except:
+                    pass
+        else:
+            display.scroll("NO WIFI")
+        
     elif button_b.was_pressed():
-        send_actions_queue()
-        r.clear_all()
-        display.show(Image.SKULL)
-        display.clear()
-        sleep(3000)
-        show_ready()
-        sleep(500)
-        reset()
+        isConnected = handle_wifi_connection(20000)
+        if isConnected:
+            display.scroll("READY")
+        else:
+            display.scroll("NO WIFI")
     sleep(100)
+
+
