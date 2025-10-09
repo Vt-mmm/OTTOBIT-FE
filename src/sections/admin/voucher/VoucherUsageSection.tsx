@@ -16,7 +16,6 @@ import {
   TableRow,
   Paper,
   Chip,
-  Stack,
   Button,
   IconButton,
   Tooltip,
@@ -27,7 +26,7 @@ import {
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { VoucherUsage, VoucherUsageListParams } from "../../../types/voucher";
+import { VoucherUsage } from "../../../types/voucher";
 import { useNotification } from "../../../hooks/useNotification";
 import { axiosClient } from "../../../axiosClient";
 import { ROUTES_API_VOUCHER_USAGE } from "../../../constants/routesApiKeys";

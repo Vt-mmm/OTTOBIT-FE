@@ -9,7 +9,6 @@ import {
   Grid,
   Stack,
   Typography,
-  Divider,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { VoucherUsageDetail } from "../../../types/voucher";
