@@ -27,6 +27,11 @@ interface CartState {
     data: CartResult | null;
     isLoading: boolean;
     error: string | null;
+    appliedVoucher?: {
+      code: string;
+      name: string;
+      discountAmount: number;
+    } | null;
   };
   // Cart summary (lightweight)
   summary: {
@@ -72,6 +77,7 @@ const initialState: CartState = {
     data: null,
     isLoading: false,
     error: null,
+    appliedVoucher: null,
   },
   summary: {
     data: null,
@@ -115,6 +121,7 @@ const cartSlice = createSlice({
     clearCartData: (state) => {
       state.cart.data = null;
       state.cart.error = null;
+      state.cart.appliedVoucher = null;
     },
 
     // Clear cart summary
@@ -149,6 +156,32 @@ const cartSlice = createSlice({
       state.operations.updatePriceError = null;
       state.operations.discountError = null;
       state.operations.validationError = null;
+    },
+
+    applyVoucherLocally: (
+      state,
+      action: PayloadAction<{
+        code: string;
+        name: string;
+        discountAmount: number;
+      }>
+    ) => {
+      if (state.cart.data) {
+        const { discountAmount, code, name } = action.payload;
+        state.cart.data.discountAmount = discountAmount;
+        const subtotal = (state.cart.data as any).subtotal ?? 0;
+        (state.cart.data as any).total = Math.max(subtotal - discountAmount, 0);
+        state.cart.appliedVoucher = { code, name, discountAmount };
+      }
+    },
+
+    removeVoucherLocally: (state) => {
+      if (state.cart.data) {
+        state.cart.data.discountAmount = 0;
+        const subtotal = (state.cart.data as any).subtotal ?? 0;
+        (state.cart.data as any).total = subtotal;
+      }
+      state.cart.appliedVoucher = null;
     },
 
     // Update item exists cache
@@ -431,6 +464,8 @@ export const {
   clearItemExistsCache,
   clearOperationErrors,
   updateItemExistsCache,
+  applyVoucherLocally,
+  removeVoucherLocally,
 } = cartSlice.actions;
 
 export default cartSlice.reducer;

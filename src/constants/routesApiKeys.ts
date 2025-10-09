@@ -29,6 +29,7 @@ const ROOTS_ORDER = "/api/v1/orders";
 const ROOTS_ORDER_ITEM = "/api/v1/order-items";
 const ROOTS_PAYMENT_TRANSACTION = "/api/v1/payment-transactions";
 const ROOTS_PAYOS = "/api/v1/payos";
+const ROOTS_VOUCHER = "/api/v1/vouchers";
 
 export const ROUTES_API_AUTH = {
   // Authentication endpoints
@@ -345,4 +346,19 @@ export const ROUTES_API_PAYMENT = {
 export const ROUTES_API_PAYOS = {
   INITIATE: path(ROOTS_PAYOS, `/initiate`), // POST /api/v1/payos/initiate (User)
   WEBHOOK: path(ROOTS_PAYOS, `/webhook`), // POST /api/v1/payos/webhook (Public - for PayOS callbacks)
+};
+
+// Voucher endpoints
+export const ROUTES_API_VOUCHER = {
+  // Admin endpoints
+  GET_ALL: ROOTS_VOUCHER, // GET /api/v1/vouchers (Admin - with pagination, search, IncludeDeleted)
+  GET_BY_ID: (id: string) => path(ROOTS_VOUCHER, `/${id}`), // GET /api/v1/vouchers/{id} (Admin)
+  CREATE: ROOTS_VOUCHER, // POST /api/v1/vouchers (Admin)
+  UPDATE: (id: string) => path(ROOTS_VOUCHER, `/${id}`), // PUT /api/v1/vouchers/{id} (Admin)
+  DELETE: (id: string) => path(ROOTS_VOUCHER, `/${id}`), // DELETE /api/v1/vouchers/{id} (Admin)
+  RESTORE: (id: string) => path(ROOTS_VOUCHER, `/${id}/restore`), // POST /api/v1/vouchers/{id}/restore (Admin)
+
+  // User endpoints
+  VALIDATE: path(ROOTS_VOUCHER, `/validate`), // POST /api/v1/vouchers/validate (User)
+  APPLY: path(ROOTS_VOUCHER, `/apply`), // POST /api/v1/vouchers/apply (User)
 };

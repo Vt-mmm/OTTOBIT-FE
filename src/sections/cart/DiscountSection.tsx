@@ -11,7 +11,9 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useAppDispatch, useAppSelector } from "store/config";
-import { applyDiscountThunk, removeDiscountThunk } from "store/cart/cartThunks";
+import { axiosClient } from "../../axiosClient";
+import { ROUTES_API_CART } from "../../constants/routesApiKeys";
+import { getCartThunk } from "store/cart/cartThunks";
 import { useLocales } from "../../hooks";
 import { showSuccessToast, showErrorToast } from "utils/toast";
 
@@ -35,18 +37,17 @@ export default function DiscountSection() {
 
     try {
       setError(null);
-      // For now, convert discount code to amount (this should be handled by backend)
-      // TODO: Backend should validate discount code and return discount amount
-      const discountAmount = parseFloat(discountCode);
-
-      if (isNaN(discountAmount) || discountAmount < 0) {
-        setError(translate("cart.InvalidDiscountCode"));
-        return;
-      }
-
-      await dispatch(applyDiscountThunk({ discountAmount })).unwrap();
-      setDiscountCode("");
-      showSuccessToast(translate("cart.DiscountAppliedSuccess"));
+      const code = discountCode.trim().toUpperCase();
+      const response = await axiosClient.post(ROUTES_API_CART.APPLY_DISCOUNT, {
+        discountCode: code,
+      });
+      // eslint-disable-next-line no-console
+      console.log("🧾 /cart/discount response:", response.data);
+      // Refetch cart from server so totals persist to checkout
+      // We keep local UI code in input to show applied code
+      await dispatch(getCartThunk()).unwrap();
+      setDiscountCode(code);
+      showSuccessToast(`${translate("cart.DiscountAppliedSuccess")} - ${code}`);
     } catch (err: any) {
       const errorMessage =
         err?.response?.data?.message ||
@@ -61,7 +62,10 @@ export default function DiscountSection() {
   const handleRemoveDiscount = async () => {
     try {
       setError(null);
-      await dispatch(removeDiscountThunk()).unwrap();
+      await axiosClient.delete(ROUTES_API_CART.REMOVE_DISCOUNT);
+      // eslint-disable-next-line no-console
+      console.log("🗑️ Removed cart discount");
+      await dispatch(getCartThunk()).unwrap();
       showSuccessToast("Đã xóa mã giảm giá!");
     } catch (err: any) {
       const errorMessage =
