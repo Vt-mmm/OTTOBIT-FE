@@ -14,7 +14,6 @@ import { useAppDispatch, useAppSelector } from "store/config";
 import { axiosClient } from "../../axiosClient";
 import { ROUTES_API_CART } from "../../constants/routesApiKeys";
 import { getCartThunk } from "store/cart/cartThunks";
-import { useNotification } from "../../hooks/useNotification";
 import { useLocales } from "../../hooks";
 import { showSuccessToast, showErrorToast } from "utils/toast";
 
@@ -22,7 +21,6 @@ export default function DiscountSection() {
   const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const { cart, operations } = useAppSelector((state) => state.cart);
-  const { showNotification } = useNotification();
   const [discountCode, setDiscountCode] = useState("");
   const [error, setError] = useState<string | null>(null);
 

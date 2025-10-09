@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Box,
   Button,
@@ -55,9 +54,6 @@ export default function VoucherDetailsSection({
     }
     if (voucher.isExpired) {
       return <Chip label="Hết hạn" color="warning" />;
-    }
-    if (!voucher.isActive) {
-      return <Chip label="Không hoạt động" color="default" />;
     }
     if (voucher.isAvailable) {
       return <Chip label="Có sẵn" color="success" />;
