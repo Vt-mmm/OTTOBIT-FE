@@ -75,3 +75,44 @@ export interface VoucherListParams {
   PageNumber?: number;
   PageSize?: number;
 }
+
+export interface VoucherUsage {
+  id: string;
+  voucherId: string;
+  voucherCode: string;
+  voucherName: string;
+  userId: string;
+  userName: string;
+  orderId: string;
+  usedAt: string;
+  status: number;
+  createdAt: string;
+  updatedAt: string;
+  isDeleted: boolean;
+}
+
+export interface VoucherUsageListResponse {
+  message: string;
+  data: {
+    size: number;
+    page: number;
+    total: number;
+    totalPages: number;
+    items: VoucherUsage[];
+  };
+}
+
+export interface VoucherUsageListParams {
+  UsedAtFrom?: string;
+  UsedAtTo?: string;
+  IncludeDeleted?: boolean;
+  PageNumber?: number;
+  PageSize?: number;
+}
+
+export interface VoucherUsageDetail extends VoucherUsage {
+  // Additional detail fields if API returns more info
+  discountAmount?: number;
+  orderTotal?: number;
+  orderStatus?: string;
+}
