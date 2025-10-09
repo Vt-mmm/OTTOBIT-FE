@@ -90,4 +90,5 @@ export const PATH_ADMIN = {
   orderDetail: path(ROOTS_ADMIN_DASHBOARD, "/orders/:id"),
   submissions: path(ROOTS_ADMIN_DASHBOARD, "/submissions"),
   submissionDetail: path(ROOTS_ADMIN_DASHBOARD, "/submissions/:id"),
+  voucherManagement: path(ROOTS_ADMIN_DASHBOARD, "/voucher-management"),
 };

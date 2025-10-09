@@ -16,6 +16,7 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import AssignmentIcon from "@mui/icons-material/Assignment";
+import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import { PATH_ADMIN, PATH_USER } from "routes/paths";
 import CollectionsBookmarkIcon from "@mui/icons-material/CollectionsBookmark";
 
@@ -99,6 +100,11 @@ function useConfigSidebar() {
           title: "Quản lý Mẫu Chứng chỉ",
           path: PATH_ADMIN.certificateTemplateManagement,
           icon: <DescriptionIcon fontSize="small" />,
+        },
+        {
+          title: "Quản lý Voucher",
+          path: PATH_ADMIN.voucherManagement,
+          icon: <LocalOfferIcon fontSize="small" />,
         },
       ],
     },

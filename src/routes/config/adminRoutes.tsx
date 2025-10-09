@@ -62,6 +62,9 @@ const SubmissionManagementPage = lazy(
 const SubmissionDetailPage = lazy(
   () => import("pages/admin/SubmissionDetailPage")
 );
+const VoucherManagementPage = lazy(
+  () => import("pages/admin/VoucherManagementPage")
+);
 
 export const adminRoutes: Route[] = [
   {
@@ -172,6 +175,11 @@ export const adminRoutes: Route[] = [
   {
     path: PATH_ADMIN.submissionDetail,
     component: <SubmissionDetailPage />,
+    index: false,
+  },
+  {
+    path: PATH_ADMIN.voucherManagement,
+    component: <VoucherManagementPage />,
     index: false,
   },
   {
