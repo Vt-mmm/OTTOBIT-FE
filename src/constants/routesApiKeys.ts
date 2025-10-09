@@ -30,6 +30,7 @@ const ROOTS_ORDER_ITEM = "/api/v1/order-items";
 const ROOTS_PAYMENT_TRANSACTION = "/api/v1/payment-transactions";
 const ROOTS_PAYOS = "/api/v1/payos";
 const ROOTS_VOUCHER = "/api/v1/vouchers";
+const ROOTS_VOUCHER_USAGE = "/api/v1/voucher-usages";
 
 export const ROUTES_API_AUTH = {
   // Authentication endpoints
@@ -361,4 +362,11 @@ export const ROUTES_API_VOUCHER = {
   // User endpoints
   VALIDATE: path(ROOTS_VOUCHER, `/validate`), // POST /api/v1/vouchers/validate (User)
   APPLY: path(ROOTS_VOUCHER, `/apply`), // POST /api/v1/vouchers/apply (User)
+};
+
+// Voucher Usage endpoints
+export const ROUTES_API_VOUCHER_USAGE = {
+  // Admin endpoints
+  GET_ALL: ROOTS_VOUCHER_USAGE, // GET /api/v1/voucher-usages (Admin - with pagination, date filters, IncludeDeleted)
+  GET_BY_ID: (id: string) => path(ROOTS_VOUCHER_USAGE, `/${id}`), // GET /api/v1/voucher-usages/{id} (Admin)
 };
