@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import useLocales from "hooks/useLocales";
 import {
   Box,
   Card,
@@ -47,6 +48,7 @@ import { MAP_ASSETS } from "sections/admin/mapDesigner/mapAssets.config";
 export default function MapListSection() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { translate } = useLocales();
   const { maps, operations } = useAppSelector((state) => state.map);
   const { showNotification: showToast, NotificationComponent: Toast } =
     useNotification({
@@ -196,9 +198,6 @@ export default function MapListSection() {
     <Box sx={{ p: 3 }}>
       <Toast />
       {/* Header */}
-      <Typography variant="h4" sx={{ fontWeight: "bold", mb: 3 }}>
-        🗺️ Maps Management
-      </Typography>
 
       {/* Search and Filters */}
       <Card sx={{ mb: 3 }}>
@@ -213,7 +212,7 @@ export default function MapListSection() {
           >
             <TextField
               fullWidth
-              placeholder="Search maps by title or description..."
+              placeholder={translate("admin.map.searchPlaceholder")}
               value={searchTerm}
               onChange={handleSearchInput}
               onKeyDown={(e) => {
@@ -238,9 +237,9 @@ export default function MapListSection() {
               }}
             />
             <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>Sắp xếp</InputLabel>
+              <InputLabel>{translate("admin.map.sortBy")}</InputLabel>
               <Select
-                label="Sắp xếp"
+                label={translate("admin.map.sortBy")}
                 value={sortDirection}
                 onChange={(e: any) => {
                   const value = Number(e.target.value);
@@ -252,10 +251,10 @@ export default function MapListSection() {
                 }}
               >
                 <MenuItem value={SortDirection.Ascending}>
-                  Cũ nhất trước
+                  {translate("admin.map.oldestFirst")}
                 </MenuItem>
                 <MenuItem value={SortDirection.Descending}>
-                  Mới nhất trước
+                  {translate("admin.map.newestFirst")}
                 </MenuItem>
               </Select>
             </FormControl>
@@ -269,7 +268,7 @@ export default function MapListSection() {
                 minWidth: "auto",
               }}
             >
-              Create Map
+              {translate("admin.map.createMap")}
             </Button>
           </Box>
         </CardContent>
@@ -323,7 +322,7 @@ export default function MapListSection() {
                   {map.isDeleted && (
                     <Chip
                       size="small"
-                      label="Deleted"
+                      label={translate("admin.map.deleted")}
                       color="error"
                       variant="outlined"
                     />
@@ -342,16 +341,20 @@ export default function MapListSection() {
                     WebkitBoxOrient: "vertical",
                     wordBreak: "break-word",
                   }}
-                  title={map.description || "No description"}
+                  title={
+                    map.description || translate("admin.map.noDescription")
+                  }
                 >
-                  {map.description || "No description"}
+                  {map.description || translate("admin.map.noDescription")}
                 </Typography>
 
                 {/* Stats */}
                 <Box sx={{ display: "flex", gap: 1, mb: 2, flexWrap: "wrap" }}>
                   {map.challengesCount !== undefined && (
                     <Chip
-                      label={`${map.challengesCount} challenges`}
+                      label={translate("admin.map.challengesCount", {
+                        count: map.challengesCount,
+                      })}
                       size="small"
                       color="primary"
                       variant="outlined"
@@ -359,7 +362,9 @@ export default function MapListSection() {
                   )}
                   {map.coursesCount !== undefined && (
                     <Chip
-                      label={`${map.coursesCount} courses`}
+                      label={translate("admin.map.coursesCount", {
+                        count: map.coursesCount,
+                      })}
                       size="small"
                       color="secondary"
                       variant="outlined"
@@ -368,7 +373,8 @@ export default function MapListSection() {
                 </Box>
 
                 <Typography variant="caption" color="text.secondary">
-                  Created: {new Date(map.createdAt).toLocaleDateString()}
+                  {translate("admin.map.created")}:{" "}
+                  {new Date(map.createdAt).toLocaleDateString()}
                 </Typography>
               </CardContent>
 
@@ -387,14 +393,14 @@ export default function MapListSection() {
                 <IconButton
                   size="small"
                   onClick={() => handleViewMap(map)}
-                  title="View in Studio"
+                  title={translate("admin.map.viewInStudio")}
                 >
                   <ViewIcon />
                 </IconButton>
                 <IconButton
                   size="small"
                   onClick={() => handleEditMap(map)}
-                  title="Edit Map"
+                  title={translate("admin.map.editMap")}
                 >
                   <EditIcon />
                 </IconButton>
@@ -403,7 +409,7 @@ export default function MapListSection() {
                     size="small"
                     onClick={() => handleRestoreConfirm(map)}
                     color="success"
-                    title="Restore Map"
+                    title={translate("admin.map.restoreMap")}
                   >
                     <RestoreIcon />
                   </IconButton>
@@ -412,7 +418,7 @@ export default function MapListSection() {
                     size="small"
                     onClick={() => handleDeleteConfirm(map)}
                     color="error"
-                    title="Delete Map"
+                    title={translate("admin.map.deleteMap")}
                   >
                     <DeleteIcon />
                   </IconButton>
@@ -435,7 +441,7 @@ export default function MapListSection() {
         >
           <TextField
             select
-            label="Page Size"
+            label={translate("admin.map.pageSize")}
             value={pageSize}
             onChange={(e) => {
               setPageSize(Number(e.target.value));
@@ -466,19 +472,19 @@ export default function MapListSection() {
         <Box sx={{ textAlign: "center", py: 8 }}>
           <MapIcon sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
-            No Maps Found
+            {translate("admin.map.noMapsFound")}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
             {searchTerm
-              ? "Try adjusting your search criteria"
-              : "Create your first map to get started"}
+              ? translate("admin.map.tryAdjustingSearch")
+              : translate("admin.map.createFirstMap")}
           </Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleCreateMap}
           >
-            Create First Map
+            {translate("admin.map.createFirstMap")}
           </Button>
         </Box>
       )}
@@ -488,22 +494,29 @@ export default function MapListSection() {
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
       >
-        <DialogTitle>Delete Map</DialogTitle>
+        <DialogTitle>{translate("admin.map.deleteMap")}</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete the map "{mapToDelete?.title}"? This
-            action can be undone by restoring it later.
+            {translate("admin.map.confirmDeleteMessage", {
+              title: mapToDelete?.title,
+            })}
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setDeleteDialogOpen(false)}>
+            {translate("common.Cancel")}
+          </Button>
           <Button
             onClick={handleDeleteExecute}
             color="error"
             variant="contained"
             disabled={operations.isDeleting}
           >
-            {operations.isDeleting ? <CircularProgress size={20} /> : "Delete"}
+            {operations.isDeleting ? (
+              <CircularProgress size={20} />
+            ) : (
+              translate("common.Delete")
+            )}
           </Button>
         </DialogActions>
       </Dialog>
@@ -515,7 +528,7 @@ export default function MapListSection() {
         maxWidth="lg"
         fullWidth
       >
-        <DialogTitle>Map Preview</DialogTitle>
+        <DialogTitle>{translate("admin.map.mapPreview")}</DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
             <Grid item xs={12} md={5}>
@@ -534,7 +547,7 @@ export default function MapListSection() {
                 {viewMap?.isDeleted && (
                   <Chip
                     size="small"
-                    label="Deleted"
+                    label={translate("admin.map.deleted")}
                     color="error"
                     variant="outlined"
                     sx={{ ml: 1 }}
@@ -546,7 +559,7 @@ export default function MapListSection() {
                 color="text.secondary"
                 sx={{ whiteSpace: "pre-wrap" }}
               >
-                {viewMap?.description || "No description"}
+                {viewMap?.description || translate("admin.map.noDescription")}
               </Typography>
               <Box
                 sx={{
@@ -558,7 +571,7 @@ export default function MapListSection() {
                 }}
               >
                 <Typography variant="caption" color="text.secondary">
-                  Created
+                  {translate("admin.map.created")}
                 </Typography>
                 <Typography variant="caption">
                   {viewMap?.createdAt
@@ -566,7 +579,7 @@ export default function MapListSection() {
                     : "-"}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Updated
+                  {translate("admin.map.updated")}
                 </Typography>
                 <Typography variant="caption">
                   {viewMap?.updatedAt
@@ -576,7 +589,7 @@ export default function MapListSection() {
                 {typeof viewMap?.challengesCount === "number" && (
                   <>
                     <Typography variant="caption" color="text.secondary">
-                      Challenges
+                      {translate("admin.map.challenges")}
                     </Typography>
                     <Typography variant="caption">
                       {viewMap?.challengesCount}
@@ -586,7 +599,7 @@ export default function MapListSection() {
                 {typeof viewMap?.coursesCount === "number" && (
                   <>
                     <Typography variant="caption" color="text.secondary">
-                      Courses
+                      {translate("admin.map.courses")}
                     </Typography>
                     <Typography variant="caption">
                       {viewMap?.coursesCount}

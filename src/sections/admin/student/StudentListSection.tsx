@@ -37,11 +37,13 @@ import { StudentResult } from "common/@types/student";
 import dayjs from "dayjs";
 import StudentFormDialog from "./StudentFormDialog";
 import StudentDetailsDialog from "./StudentDetailsDialog";
+import useLocales from "hooks/useLocales";
 
 interface StudentListSectionProps {}
 
 export default function StudentListSection({}: StudentListSectionProps) {
   const dispatch = useAppDispatch();
+  const { translate } = useLocales();
   const { students, operations } = useAppSelector((state) => state.student);
 
   // Search & Filter states
@@ -151,7 +153,7 @@ export default function StudentListSection({}: StudentListSectionProps) {
           >
             <TextField
               fullWidth
-              placeholder="Tìm kiếm theo tên hoặc địa chỉ..."
+              placeholder={translate("admin.searchStudentPlaceholder")}
               value={searchTerm}
               onChange={handleSearchInput}
               onKeyDown={(e) => {
@@ -167,7 +169,7 @@ export default function StudentListSection({}: StudentListSectionProps) {
             />
             <TextField
               fullWidth
-              placeholder="Số điện thoại"
+              placeholder={translate("admin.phoneNumber")}
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               onKeyDown={(e) => {
@@ -176,7 +178,7 @@ export default function StudentListSection({}: StudentListSectionProps) {
             />
             <TextField
               fullWidth
-              placeholder="Tỉnh/Thành phố"
+              placeholder={translate("admin.stateProvince")}
               value={state}
               onChange={(e) => setState(e.target.value)}
               onKeyDown={(e) => {
@@ -185,7 +187,7 @@ export default function StudentListSection({}: StudentListSectionProps) {
             />
             <TextField
               fullWidth
-              placeholder="Quận/Huyện"
+              placeholder={translate("admin.cityDistrict")}
               value={city}
               onChange={(e) => setCity(e.target.value)}
               onKeyDown={(e) => {
@@ -209,7 +211,7 @@ export default function StudentListSection({}: StudentListSectionProps) {
                 width: { xs: "100%", sm: "auto" },
               }}
             >
-              Tìm kiếm
+              {translate("admin.search")}
             </Button>
           </Box>
         </CardContent>
@@ -228,14 +230,14 @@ export default function StudentListSection({}: StudentListSectionProps) {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Student</TableCell>
-                <TableCell>Phone</TableCell>
-                <TableCell>Location</TableCell>
-                <TableCell align="center">Age</TableCell>
-                <TableCell align="center">Enrollments</TableCell>
-                <TableCell align="center">Submissions</TableCell>
-                <TableCell>Joined</TableCell>
-                <TableCell align="right">Actions</TableCell>
+                <TableCell>{translate("admin.student")}</TableCell>
+                <TableCell>{translate("admin.phone")}</TableCell>
+                <TableCell>{translate("admin.location")}</TableCell>
+                <TableCell align="center">{translate("admin.age")}</TableCell>
+                <TableCell align="center">{translate("admin.enrollments")}</TableCell>
+                <TableCell align="center">{translate("admin.submissions")}</TableCell>
+                <TableCell>{translate("admin.joined")}</TableCell>
+                <TableCell align="right">{translate("admin.actions")}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -295,14 +297,14 @@ export default function StudentListSection({}: StudentListSectionProps) {
                   <TableCell align="right">
                     <IconButton
                       size="small"
-                      title="View Student"
+                      title={translate("admin.viewStudent")}
                       onClick={() => handleViewDetails(student)}
                     >
                       <ViewIcon />
                     </IconButton>
                     <IconButton
                       size="small"
-                      title="Edit Student"
+                      title={translate("admin.editStudent")}
                       onClick={() => handleEditStudent(student)}
                       color="secondary"
                     >
@@ -337,7 +339,7 @@ export default function StudentListSection({}: StudentListSectionProps) {
               gutterBottom
               sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
             >
-              No Students Found
+              {translate("admin.noStudentsFound")}
             </Typography>
             <Typography
               variant="body2"
@@ -345,8 +347,8 @@ export default function StudentListSection({}: StudentListSectionProps) {
               sx={{ mb: 3, fontSize: { xs: "0.875rem", sm: "1rem" } }}
             >
               {committedSearch
-                ? "Try adjusting your search criteria"
-                : "No students have joined yet"}
+                ? translate("admin.tryAdjustingSearch")
+                : translate("admin.noStudentsYet")}
             </Typography>
           </Box>
         )}
@@ -364,9 +366,9 @@ export default function StudentListSection({}: StudentListSectionProps) {
             }}
           >
             <FormControl size="small">
-              <InputLabel>Page Size</InputLabel>
+              <InputLabel>{translate("admin.pageSize")}</InputLabel>
               <Select
-                label="Page Size"
+                label={translate("admin.pageSize")}
                 value={pageSize}
                 onChange={(e) => {
                   setPageSize(Number(e.target.value));

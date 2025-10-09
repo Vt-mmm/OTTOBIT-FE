@@ -42,7 +42,6 @@ const LessonResourceEditPage = lazy(
 const LessonResourceDetailPage = lazy(
   () => import("pages/admin/LessonResourceDetailPage")
 );
-const AdminTestPage = lazy(() => import("pages/admin/AdminTestPage"));
 const ActivationCodeManagementPage = lazy(
   () => import("pages/admin/ActivationCodeManagementPage")
 );
@@ -180,11 +179,6 @@ export const adminRoutes: Route[] = [
   {
     path: PATH_ADMIN.voucherManagement,
     component: <VoucherManagementPage />,
-    index: false,
-  },
-  {
-    path: "/admin/test",
-    component: <AdminTestPage />,
     index: false,
   },
 ];

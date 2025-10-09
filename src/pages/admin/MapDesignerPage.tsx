@@ -16,6 +16,7 @@ import {
 import { axiosClient } from "axiosClient";
 import { useNotification } from "hooks/useNotification";
 import { extractApiErrorMessage } from "utils/errorHandler";
+import useLocales from "hooks/useLocales";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import AdminLayout from "layout/admin/AdminLayout";
@@ -32,6 +33,7 @@ import ThreeDRotationIcon from "@mui/icons-material/ThreeDRotation";
 import { MAP_ASSETS } from "sections/admin/mapDesigner/mapAssets.config";
 
 export default function MapDesignerPage() {
+  const { translate } = useLocales();
   const [selectedAsset, setSelectedAsset] = useState<string>("grass");
   const [viewMode, setViewMode] = useState<"orthogonal" | "isometric">(
     "isometric"
@@ -133,12 +135,12 @@ export default function MapDesignerPage() {
               setMapGrid(next);
             } catch (e) {
               console.error("[MapDesigner] Failed to parse mapJson:", e);
-              showToast("Failed to load map data.", "error");
+              showToast(translate("admin.mapLoadFailed"), "error");
             }
           }
         } catch (e) {
           console.error("[MapDesigner] Fetch map failed:", e);
-          showToast("Failed to fetch map.", "error");
+          showToast(translate("admin.mapFetchFailed"), "error");
         }
       })();
     }
@@ -231,10 +233,10 @@ export default function MapDesignerPage() {
     if (!titleValid || !descValid) {
       showToast(
         !titleValid && !descValid
-          ? "Please enter a valid Title (≥5 chars) and Description (≥10 chars)."
+          ? translate("admin.invalidTitleAndDescription")
           : !titleValid
-          ? "Please enter a valid Title (≥5 characters)."
-          : "Please enter a valid Description (≥10 characters).",
+          ? translate("admin.invalidTitle")
+          : translate("admin.invalidDescription"),
         "error"
       );
       return;
@@ -383,12 +385,12 @@ export default function MapDesignerPage() {
       };
       const res = await axiosClient.post("/api/v1/maps", payload);
       console.log("[MapDesigner] Map saved:", res.data);
-      showToast("Map saved successfully.", "success");
+      showToast(translate("admin.mapSavedSuccess"), "success");
     } catch (err: any) {
       console.error("[MapDesigner] Save map failed:", err);
       const errorMessage = extractApiErrorMessage(
         err,
-        "Failed to save map. Please try again."
+        translate("admin.mapSaveFailed")
       );
       showToast(errorMessage, "error");
     }
@@ -412,7 +414,7 @@ export default function MapDesignerPage() {
                 variant="h4"
                 sx={{ fontWeight: 600, color: "#1B5E20", mb: 1 }}
               >
-                Map Designer
+                {translate("admin.mapDesigner")}
               </Typography>
             </Box>
 
@@ -425,11 +427,11 @@ export default function MapDesignerPage() {
             >
               <ToggleButton value="orthogonal" aria-label="orthogonal view">
                 <ViewModuleIcon sx={{ mr: 1 }} />
-                2D View
+                {translate("admin.view2D")}
               </ToggleButton>
               <ToggleButton value="isometric" aria-label="isometric view">
                 <ThreeDRotationIcon sx={{ mr: 1 }} />
-                2.5D View
+                {translate("admin.view25D")}
               </ToggleButton>
             </ToggleButtonGroup>
           </Box>
@@ -512,21 +514,21 @@ export default function MapDesignerPage() {
                   color: THEME_COLORS.text.primary,
                 }}
               >
-                Map Information
+                {translate("admin.mapInformation")}
               </Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    label="Title"
-                    placeholder="Enter map title"
+                    label={translate("admin.title")}
+                    placeholder={translate("admin.enterMapTitle")}
                     size="small"
                     error={
                       mapTitle.trim().length > 0 && mapTitle.trim().length < 5
                     }
                     helperText={
                       mapTitle.trim().length > 0 && mapTitle.trim().length < 5
-                        ? "At least 5 characters"
+                        ? translate("admin.atLeast5Chars")
                         : ""
                     }
                     value={mapTitle}
@@ -536,8 +538,8 @@ export default function MapDesignerPage() {
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    label="Description"
-                    placeholder="Enter map description"
+                    label={translate("admin.description")}
+                    placeholder={translate("admin.enterMapDescription")}
                     size="small"
                     multiline
                     minRows={3}
@@ -549,7 +551,7 @@ export default function MapDesignerPage() {
                     helperText={
                       mapDescription.trim().length > 0 &&
                       mapDescription.trim().length < 10
-                        ? "At least 10 characters"
+                        ? translate("admin.atLeast10Chars")
                         : ""
                     }
                     value={mapDescription}
@@ -559,7 +561,7 @@ export default function MapDesignerPage() {
               </Grid>
               <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
                 <Button variant="contained" onClick={handleSaveMap}>
-                  Save Map
+                  {translate("admin.saveMap")}
                 </Button>
               </Box>
             </Paper>
@@ -571,10 +573,10 @@ export default function MapDesignerPage() {
         open={openUpdateConfirm}
         onClose={() => setOpenUpdateConfirm(false)}
       >
-        <DialogTitle>Confirm Update</DialogTitle>
-        <DialogContent>Are you sure you want to update this map?</DialogContent>
+        <DialogTitle>{translate("admin.confirmUpdate")}</DialogTitle>
+        <DialogContent>{translate("admin.confirmUpdateMap")}</DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenUpdateConfirm(false)}>Cancel</Button>
+          <Button onClick={() => setOpenUpdateConfirm(false)}>{translate("admin.cancel")}</Button>
           <Button
             variant="contained"
             onClick={async () => {
@@ -713,13 +715,13 @@ export default function MapDesignerPage() {
                   }),
                 };
                 await axiosClient.put(`/api/v1/maps/${editId}`, payload);
-                showToast("Map updated successfully.", "success");
+                showToast(translate("admin.mapUpdatedSuccess"), "success");
               } catch (e) {
-                showToast("Failed to update map.", "error");
+                showToast(translate("admin.mapUpdateFailed"), "error");
               }
             }}
           >
-            Update
+            {translate("admin.update")}
           </Button>
         </DialogActions>
       </Dialog>

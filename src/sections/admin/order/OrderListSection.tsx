@@ -41,8 +41,10 @@ import { clearUpdateStatusSuccess } from "store/order/orderSlice";
 import { OrderResult, OrderStatus } from "common/@types/order";
 import { useNavigate } from "react-router-dom";
 import { PATH_ADMIN } from "routes/paths";
+import { useLocales } from "hooks";
 
 export default function OrderListSection() {
+  const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { adminOrders, operations } = useAppSelector((state) => state.order);
@@ -161,17 +163,17 @@ export default function OrderListSection() {
   const getStatusLabel = (status: OrderStatus) => {
     switch (status) {
       case OrderStatus.Pending:
-        return "Pending";
+        return translate("admin.pending");
       case OrderStatus.Paid:
-        return "Paid";
+        return translate("admin.paid");
       case OrderStatus.Failed:
-        return "Failed";
+        return translate("admin.failed");
       case OrderStatus.Cancelled:
-        return "Cancelled";
+        return translate("admin.cancelled");
       case OrderStatus.Refunded:
-        return "Refunded";
+        return translate("admin.refunded");
       default:
-        return "Unknown";
+        return translate("admin.unknown");
     }
   };
 
@@ -204,7 +206,7 @@ export default function OrderListSection() {
           }}
         >
           <Typography variant="h4" fontWeight={600}>
-            Order Management
+            {translate("admin.orderManagement")}
           </Typography>
           <Button
             variant="outlined"
@@ -212,7 +214,7 @@ export default function OrderListSection() {
             onClick={fetchData}
             disabled={isLoading}
           >
-            Refresh
+            {translate("admin.refresh")}
           </Button>
         </Box>
 
@@ -232,7 +234,7 @@ export default function OrderListSection() {
         <Card sx={{ p: 2 }}>
           <Stack direction="row" spacing={2} alignItems="center">
             <TextField
-              label="Search (User email, Order ID)"
+              label={translate("admin.searchOrderPlaceholder")}
               variant="outlined"
               size="small"
               value={searchInput}
@@ -243,25 +245,25 @@ export default function OrderListSection() {
               sx={{ flexGrow: 1 }}
             />
             <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>Status</InputLabel>
+              <InputLabel>{translate("admin.status")}</InputLabel>
               <Select
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value as OrderStatus | "");
                   setPage(0);
                 }}
-                label="Status"
+                label={translate("admin.status")}
               >
-                <MenuItem value="">All</MenuItem>
-                <MenuItem value={OrderStatus.Pending}>Pending</MenuItem>
-                <MenuItem value={OrderStatus.Paid}>Paid</MenuItem>
-                <MenuItem value={OrderStatus.Failed}>Failed</MenuItem>
-                <MenuItem value={OrderStatus.Cancelled}>Cancelled</MenuItem>
-                <MenuItem value={OrderStatus.Refunded}>Refunded</MenuItem>
+                <MenuItem value="">{translate("admin.all")}</MenuItem>
+                <MenuItem value={OrderStatus.Pending}>{translate("admin.pending")}</MenuItem>
+                <MenuItem value={OrderStatus.Paid}>{translate("admin.paid")}</MenuItem>
+                <MenuItem value={OrderStatus.Failed}>{translate("admin.failed")}</MenuItem>
+                <MenuItem value={OrderStatus.Cancelled}>{translate("admin.cancelled")}</MenuItem>
+                <MenuItem value={OrderStatus.Refunded}>{translate("admin.refunded")}</MenuItem>
               </Select>
             </FormControl>
             <Button variant="contained" onClick={handleSearch}>
-              Search
+              {translate("admin.search")}
             </Button>
           </Stack>
         </Card>
@@ -272,14 +274,14 @@ export default function OrderListSection() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Order ID</TableCell>
-                  <TableCell>User</TableCell>
-                  <TableCell align="right">Subtotal</TableCell>
-                  <TableCell align="right">Discount</TableCell>
-                  <TableCell align="right">Total</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Created At</TableCell>
-                  <TableCell align="center">Actions</TableCell>
+                  <TableCell>{translate("admin.orderID")}</TableCell>
+                  <TableCell>{translate("admin.user")}</TableCell>
+                  <TableCell align="right">{translate("admin.subtotal")}</TableCell>
+                  <TableCell align="right">{translate("admin.discount")}</TableCell>
+                  <TableCell align="right">{translate("admin.total")}</TableCell>
+                  <TableCell>{translate("admin.status")}</TableCell>
+                  <TableCell>{translate("admin.createdAt")}</TableCell>
+                  <TableCell align="center">{translate("admin.actions")}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -293,7 +295,7 @@ export default function OrderListSection() {
                   <TableRow>
                     <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
                       <Typography variant="body2" color="text.secondary">
-                        No orders found
+                        {translate("admin.noOrdersFound")}
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -349,27 +351,27 @@ export default function OrderListSection() {
                           >
                             <MenuItem value={OrderStatus.Pending}>
                               <Chip
-                                label="Pending"
+                                label={translate("admin.pending")}
                                 size="small"
                                 color="warning"
                               />
                             </MenuItem>
                             <MenuItem value={OrderStatus.Paid}>
-                              <Chip label="Paid" size="small" color="success" />
+                              <Chip label={translate("admin.paid")} size="small" color="success" />
                             </MenuItem>
                             <MenuItem value={OrderStatus.Failed}>
-                              <Chip label="Failed" size="small" color="error" />
+                              <Chip label={translate("admin.failed")} size="small" color="error" />
                             </MenuItem>
                             <MenuItem value={OrderStatus.Cancelled}>
                               <Chip
-                                label="Cancelled"
+                                label={translate("admin.cancelled")}
                                 size="small"
                                 color="default"
                               />
                             </MenuItem>
                             <MenuItem value={OrderStatus.Refunded}>
                               <Chip
-                                label="Refunded"
+                                label={translate("admin.refunded")}
                                 size="small"
                                 color="info"
                               />
@@ -417,24 +419,20 @@ export default function OrderListSection() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Confirm Status Change</DialogTitle>
+        <DialogTitle>{translate("admin.confirmStatusChange")}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to change the order status from{" "}
-            <strong>
-              {confirmDialog.currentStatus !== null &&
-                getStatusLabel(confirmDialog.currentStatus)}
-            </strong>{" "}
-            to{" "}
-            <strong>
-              {confirmDialog.newStatus !== null &&
-                getStatusLabel(confirmDialog.newStatus)}
-            </strong>
-            ?
+            {translate("admin.confirmStatusChangeMessage", {
+              currentStatus: confirmDialog.currentStatus !== null
+                ? getStatusLabel(confirmDialog.currentStatus)
+                : "",
+              newStatus: confirmDialog.newStatus !== null
+                ? getStatusLabel(confirmDialog.newStatus)
+                : ""
+            })}
           </DialogContentText>
           <Alert severity="warning" sx={{ mt: 2 }}>
-            This action will update the order status and may trigger automated
-            processes (e.g., enrollment creation for Paid orders).
+            {translate("admin.statusChangeWarning")}
           </Alert>
         </DialogContent>
         <DialogActions>
@@ -442,7 +440,7 @@ export default function OrderListSection() {
             onClick={handleCancelStatusChange}
             disabled={operations.isUpdatingStatus}
           >
-            Cancel
+            {translate("admin.cancel")}
           </Button>
           <Button
             onClick={handleConfirmStatusChange}
@@ -451,7 +449,7 @@ export default function OrderListSection() {
             disabled={operations.isUpdatingStatus}
             autoFocus
           >
-            {operations.isUpdatingStatus ? "Updating..." : "Confirm"}
+            {operations.isUpdatingStatus ? translate("admin.updating") : translate("admin.confirm")}
           </Button>
         </DialogActions>
       </Dialog>

@@ -23,6 +23,7 @@ import {
 import { createPortal } from "react-dom";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useNotification } from "hooks/useNotification";
+import useLocales from "hooks/useLocales";
 import { useRef, useState, useEffect } from "react";
 import { MapCell } from "common/models";
 import { MAP_ASSETS } from "sections/admin/mapDesigner/mapAssets.config";
@@ -87,6 +88,7 @@ export default function WinConditionsSection({
   lessons = [],
   hasTriedSave = false,
 }: WinConditionsSectionProps) {
+  const { translate } = useLocales();
   const [openSolution] = useState(false);
 
   // Notify parent when Solution dialog open/close toggles (to stabilize isometric grid)
@@ -455,7 +457,7 @@ export default function WinConditionsSection({
           color: THEME_COLORS.text.primary,
         }}
       >
-        Challenge Information
+        {translate("admin.challengeInformation")}
       </Typography>
 
       {/* Map picker trigger moved to header in ChallengeDesignerPage */}
@@ -463,7 +465,7 @@ export default function WinConditionsSection({
       {/* Title Input */}
       <TextField
         fullWidth
-        label="Title"
+        label={translate("admin.title")}
         value={mapName}
         onChange={(e) => onMapNameChange(e.target.value)}
         size="small"
@@ -483,7 +485,7 @@ export default function WinConditionsSection({
       {/* Description Input */}
       <TextField
         fullWidth
-        label="Description"
+        label={translate("admin.description")}
         value={mapDescription}
         onChange={(e) => onMapDescriptionChange(e.target.value)}
         size="small"

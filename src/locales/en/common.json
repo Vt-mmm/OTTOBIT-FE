@@ -43,5 +43,15 @@
   "Back": "Back",
   "CannotReloadMap": "Cannot reload map. Please try again.",
   "MapReloadedSuccessfully": "Map reloaded successfully!",
-  "ComponentsBOM": "📦 Components List (BOM)"
+  "ComponentsBOM": "📦 Components List (BOM)",
+  "By": "By",
+  "All": "All",
+  "PageSize": "Page Size",
+  "cancel": "Cancel",
+  "create": "Create",
+  "update": "Update",
+  "close": "Close",
+  "processing": "Processing...",
+  "moreThan": "more than {{to}}",
+  "of": "of"
 }

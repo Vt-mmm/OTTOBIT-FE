@@ -14,6 +14,7 @@ import { useState } from "react";
 import { MapAsset } from "common/models";
 import { getAssetsByCategory } from "./mapAssets.config";
 import { THEME_COLORS } from "./theme.config";
+import useLocales from "hooks/useLocales";
 
 interface WorkspaceSectionLiteProps {
   selectedAsset: string;
@@ -24,6 +25,7 @@ export default function WorkspaceSectionLite({
   selectedAsset,
   onAssetSelect,
 }: WorkspaceSectionLiteProps) {
+  const { translate } = useLocales();
   const [tabValue, setTabValue] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -133,12 +135,12 @@ export default function WorkspaceSectionLite({
           alignItems: "center",
         }}
       >
-        Workspace
+        {translate("admin.workspace")}
       </Typography>
 
       <TextField
         fullWidth
-        placeholder="Search assets..."
+        placeholder={translate("admin.searchAssets")}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         size="small"
@@ -209,8 +211,8 @@ export default function WorkspaceSectionLite({
           },
         }}
       >
-        <Tab label="Terrain" />
-        <Tab label="Tools" />
+        <Tab label={translate("admin.terrain")} />
+        <Tab label={translate("admin.tools")} />
       </Tabs>
 
       <Box sx={{ flexGrow: 1, overflow: "visible", pr: 1 }}>
@@ -239,19 +241,19 @@ export default function WorkspaceSectionLite({
           variant="subtitle2"
           sx={{ mb: 1, color: THEME_COLORS.text.primary, fontWeight: 600 }}
         >
-          Guide
+          {translate("admin.guide")}
         </Typography>
         <Typography
           variant="caption"
           sx={{ display: "block", mb: 0.5, color: THEME_COLORS.text.secondary }}
         >
-          • Use Terrain to place tiles. Click to place, click-drag to paint
+          • {translate("admin.useTerrainToPlaceTiles")}
         </Typography>
         <Typography
           variant="caption"
           sx={{ display: "block", color: THEME_COLORS.text.secondary }}
         >
-          • Use Tools → Empty Cell to clear a cell
+          • {translate("admin.useToolsEmptyCell")}
         </Typography>
       </Box>
     </Paper>

@@ -38,6 +38,7 @@ import {
 } from "../../../redux/lesson/lessonSlice";
 import { getCoursesForAdmin } from "../../../redux/course/courseSlice";
 import { LessonResult } from "../../../common/@types/lesson";
+import useLocales from "hooks/useLocales";
 
 interface Props {
   onCreateNew: (courseId: string) => void;
@@ -51,6 +52,7 @@ export default function LessonListSection({
   onViewDetails,
 }: Props) {
   const dispatch = useAppDispatch();
+  const { translate } = useLocales();
   const { data, isLoading, error } = useAppSelector((s) => s.lesson.lessons);
   const { data: coursesData } = useAppSelector((s) => s.course.adminCourses);
 
@@ -212,13 +214,13 @@ export default function LessonListSection({
               }}
             />
             <FormControl size="small" sx={{ minWidth: 200 }}>
-              <InputLabel>Khóa học</InputLabel>
+              <InputLabel>{translate("admin.course")}</InputLabel>
               <Select
                 value={courseId}
-                label="Khóa học"
+                label={translate("admin.course")}
                 onChange={(e) => setCourseId(e.target.value)}
               >
-                <MenuItem value="">Tất cả khóa học</MenuItem>
+                <MenuItem value="">{translate("admin.allCourses")}</MenuItem>
                 {courses.map((course) => (
                   <MenuItem key={course.id} value={course.id}>
                     {course.title}
@@ -227,28 +229,28 @@ export default function LessonListSection({
               </Select>
             </FormControl>
             <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>Sort by</InputLabel>
+              <InputLabel>{translate("admin.sortBy")}</InputLabel>
               <Select
-                label="Sort by"
+                label={translate("admin.sortBy")}
                 value={sortBy}
                 onChange={(e) => setSortBy(Number(e.target.value))}
               >
-                <MenuItem value={0}>Title</MenuItem>
-                <MenuItem value={1}>Order</MenuItem>
-                <MenuItem value={2}>Duration</MenuItem>
-                <MenuItem value={3}>CreatedAt</MenuItem>
-                <MenuItem value={4}>UpdatedAt</MenuItem>
+                <MenuItem value={0}>{translate("admin.sortByTitle")}</MenuItem>
+                <MenuItem value={1}>{translate("admin.sortByOrder")}</MenuItem>
+                <MenuItem value={2}>{translate("admin.sortByDuration")}</MenuItem>
+                <MenuItem value={3}>{translate("admin.sortByCreatedAt")}</MenuItem>
+                <MenuItem value={4}>{translate("admin.sortByUpdatedAt")}</MenuItem>
               </Select>
             </FormControl>
             <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>Direction</InputLabel>
+              <InputLabel>{translate("admin.direction")}</InputLabel>
               <Select
-                label="Direction"
+                label={translate("admin.direction")}
                 value={sortDirection}
                 onChange={(e) => setSortDirection(Number(e.target.value))}
               >
-                <MenuItem value={0}>Asc</MenuItem>
-                <MenuItem value={1}>Desc</MenuItem>
+                <MenuItem value={0}>{translate("admin.asc")}</MenuItem>
+                <MenuItem value={1}>{translate("admin.desc")}</MenuItem>
               </Select>
             </FormControl>
             <Button
@@ -311,7 +313,7 @@ export default function LessonListSection({
                     {lesson.isDeleted && (
                       <Chip
                         size="small"
-                        label="Deleted"
+                        label={translate("admin.deleted")}
                         color="error"
                         variant="outlined"
                       />
@@ -346,7 +348,9 @@ export default function LessonListSection({
                       }}
                     >
                       <Chip
-                        label={`Bài ${lesson.order}`}
+                        label={translate("admin.lessonNumber", {
+                          number: lesson.order,
+                        })}
                         size="small"
                         color="primary"
                         variant="outlined"
@@ -366,7 +370,7 @@ export default function LessonListSection({
                         sx={{ fontSize: 16, color: "text.secondary" }}
                       />
                       <Typography variant="caption" color="text.secondary">
-                        {lesson.durationInMinutes} phút
+                        {lesson.durationInMinutes} {translate("admin.minutes")}
                       </Typography>
                     </Box>
                   </Box>

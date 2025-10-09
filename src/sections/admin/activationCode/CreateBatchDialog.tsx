@@ -15,6 +15,7 @@ import {
   Checkbox,
 } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "store/config";
+import { useLocales } from "hooks";
 import { getRobotsThunk } from "store/robot/robotThunks";
 import { createActivationCodeBatchThunk } from "store/activationCode/activationCodeThunks";
 import { clearSuccessFlags } from "store/activationCode/activationCodeSlice";
@@ -31,6 +32,7 @@ export default function CreateBatchDialog({
   onSuccess,
 }: CreateBatchDialogProps) {
   const dispatch = useAppDispatch();
+  const { translate } = useLocales();
 
   const { robots } = useAppSelector((state) => state.robot);
   const { operations } = useAppSelector((state) => state.activationCode);
@@ -92,7 +94,7 @@ export default function CreateBatchDialog({
 
   return (
     <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
-      <DialogTitle>Tạo Batch Mã Kích Hoạt</DialogTitle>
+      <DialogTitle>{translate("admin.createBatchTitle")}</DialogTitle>
       <DialogContent>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, pt: 1 }}>
           {operations.createError && (
@@ -113,10 +115,10 @@ export default function CreateBatchDialog({
                 value={selectedRobot}
                 onChange={(_, newValue) => setSelectedRobot(newValue)}
                 renderInput={(params) => (
-                  <TextField
+                <TextField
                     {...params}
-                    label="Chọn Robot *"
-                    placeholder="Tìm kiếm robot..."
+                    label={translate("admin.selectRobotRequired")}
+                    placeholder={translate("admin.searchRobot")}
                   />
                 )}
                 renderOption={(props, option) => {
@@ -128,7 +130,7 @@ export default function CreateBatchDialog({
                         <Typography variant="caption" color="text.secondary">
                           {option.model} - {option.brand}
                           {option.price != null && (
-                            <> | Giá: {option.price.toLocaleString()}đ</>
+                            <> | {translate("common.Price")}: {option.price.toLocaleString()}đ</>
                           )}
                         </Typography>
                       </Box>
@@ -138,15 +140,15 @@ export default function CreateBatchDialog({
               />
 
               <TextField
-                label="Batch ID *"
+                label={`${translate("admin.batchId")} *`}
                 value={batchId}
                 onChange={(e) => setBatchId(e.target.value)}
-                placeholder="Ví dụ: PROMO2024, EVENT-JAN, ROBOT-BATCH-001"
-                helperText="ID nhóm để quản lý và phân biệt các batch mã"
+                placeholder={translate("admin.batchIdPlaceholder")}
+                helperText={translate("admin.batchIdHelper")}
               />
 
               <TextField
-                label="Số lượng mã *"
+                label={translate("admin.quantityRequired")}
                 type="number"
                 value={quantity || ""}
                 onChange={(e) => {
@@ -167,7 +169,7 @@ export default function CreateBatchDialog({
                   }
                 }}
                 inputProps={{ min: 1, max: 10000, step: 1 }}
-                helperText="Số lượng mã kích hoạt cần tạo (tối đa 10,000)"
+                helperText={translate("admin.quantityHelper")}
               />
 
               <FormControlLabel
@@ -177,19 +179,19 @@ export default function CreateBatchDialog({
                     onChange={(e) => setHasExpiry(e.target.checked)}
                   />
                 }
-                label="Có ngày hết hạn"
+                label={translate("admin.hasExpiry")}
               />
 
               {hasExpiry && (
                 <TextField
-                  label="Ngày hết hạn"
+                  label={translate("admin.expiresAt")}
                   type="date"
                   value={expiryDate}
                   onChange={(e) => setExpiryDate(e.target.value)}
                   InputLabelProps={{
                     shrink: true,
                   }}
-                  helperText="Mã sẽ không thể sử dụng sau ngày này"
+                  helperText={translate("admin.expiryDateHelper")}
                   inputProps={{
                     min: new Date().toISOString().split("T")[0],
                   }}
@@ -198,20 +200,20 @@ export default function CreateBatchDialog({
 
               {selectedRobot && batchId && (
                 <Alert severity="info">
-                  <Typography variant="body2">
-                    Bạn sẽ tạo <strong>{quantity} mã</strong> cho robot{" "}
-                    <strong>{selectedRobot.name}</strong> với Batch ID{" "}
-                    <strong>{batchId}</strong>
-                    {hasExpiry && expiryDate && (
-                      <>
-                        {" "}
-                        và hạn sử dụng đến{" "}
-                        <strong>
-                          {new Date(expiryDate).toLocaleDateString("vi-VN")}
-                        </strong>
-                      </>
-                    )}
-                  </Typography>
+                  <Typography
+                    variant="body2"
+                    dangerouslySetInnerHTML={{
+                      __html: translate("admin.createBatchInfo", {
+                        quantity: quantity.toString(),
+                        robotName: selectedRobot.name,
+                        batchId: batchId,
+                      }) + (hasExpiry && expiryDate
+                        ? translate("admin.createBatchInfoWithExpiry", {
+                            expiryDate: new Date(expiryDate).toLocaleDateString("vi-VN"),
+                          })
+                        : ""),
+                    }}
+                  />
                 </Alert>
               )}
             </>
@@ -220,7 +222,7 @@ export default function CreateBatchDialog({
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={handleCancel} disabled={isLoading}>
-          Hủy
+          {translate("admin.cancel")}
         </Button>
         <Button
           onClick={handleSubmit}
@@ -230,7 +232,7 @@ export default function CreateBatchDialog({
           }
           startIcon={operations.isCreating && <CircularProgress size={16} />}
         >
-          Tạo {quantity} Mã
+          {translate("admin.createQuantityCodes", { quantity: quantity.toString() })}
         </Button>
       </DialogActions>
     </Dialog>

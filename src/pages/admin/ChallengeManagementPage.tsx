@@ -2,9 +2,12 @@ import AdminLayout from "layout/admin/AdminLayout";
 import { Container, Box, Typography } from "@mui/material";
 import ChallengeListSection from "sections/admin/challenge/ChallengeListSection";
 import { useNavigate } from "react-router-dom";
+import { useLocales } from "hooks";
 
 export default function ChallengeManagementPage() {
   const navigate = useNavigate();
+  const { translate } = useLocales();
+
   return (
     <AdminLayout>
       <Container
@@ -22,7 +25,7 @@ export default function ChallengeManagementPage() {
               fontSize: { xs: "1.5rem", sm: "2.125rem" },
             }}
           >
-            Quản lý Thử thách
+            {translate("admin.challengeManagementTitle")}
           </Typography>
           <Typography
             variant="body1"
@@ -31,7 +34,7 @@ export default function ChallengeManagementPage() {
               fontSize: { xs: "0.875rem", sm: "1rem" },
             }}
           >
-            Danh sách tất cả thử thách trong hệ thống
+            {translate("admin.challengeManagementSubtitle")}
           </Typography>
         </Box>
         <ChallengeListSection

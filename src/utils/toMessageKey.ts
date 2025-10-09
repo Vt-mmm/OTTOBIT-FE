@@ -17,5 +17,6 @@ const messageMap: Record<string, string> = {
  * @param serverMessage - Thông điệp thành công từ server
  * @returns i18n key tương ứng
  */
-export const toMessageKey = (serverMessage: string): string =>
-  messageMap[serverMessage] ?? "message.Success";
+export function toMessageKey(serverMessage: string): string {
+  return messageMap[serverMessage] ?? "message.Success";
+}

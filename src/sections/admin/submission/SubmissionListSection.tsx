@@ -32,10 +32,12 @@ import { getSubmissionsForAdminThunk } from "store/submission/submissionThunks";
 import { SubmissionResult } from "common/@types/submission";
 import { useNavigate } from "react-router-dom";
 import { PATH_ADMIN } from "routes/paths";
+import useLocales from "hooks/useLocales";
 
 export default function SubmissionListSection() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { translate } = useLocales();
   const { adminSubmissions } = useAppSelector((state) => state.submission);
 
   // Pagination & Filter states
@@ -101,14 +103,14 @@ export default function SubmissionListSection() {
           alignItems="center"
           justifyContent="space-between"
         >
-          <Typography variant="h4">Quản lý Bài nộp</Typography>
+          <Typography variant="h4">{translate("admin.submissionManagement")}</Typography>
           <Button
             variant="outlined"
             startIcon={<RefreshIcon />}
             onClick={fetchData}
             disabled={isLoading}
           >
-            Làm mới
+            {translate("admin.refresh")}
           </Button>
         </Stack>
 
@@ -118,7 +120,7 @@ export default function SubmissionListSection() {
             <Stack direction="row" spacing={2}>
               <TextField
                 fullWidth
-                label="Tìm kiếm (Sinh viên, Challenge)"
+                label={translate("admin.searchSubmissionPlaceholder")}
                 variant="outlined"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
@@ -129,23 +131,23 @@ export default function SubmissionListSection() {
                 onClick={handleSearch}
                 sx={{ minWidth: 120 }}
               >
-                Tìm kiếm
+                {translate("admin.search")}
               </Button>
             </Stack>
 
             <Stack direction="row" spacing={2}>
               <FormControl sx={{ minWidth: 150 }}>
-                <InputLabel>Sao từ</InputLabel>
+                <InputLabel>{translate("admin.starFrom")}</InputLabel>
                 <Select
                   value={starFrom}
-                  label="Sao từ"
+                  label={translate("admin.starFrom")}
                   onChange={(e) =>
                     setStarFrom(
                       e.target.value === "" ? "" : Number(e.target.value)
                     )
                   }
                 >
-                  <MenuItem value="">Tất cả</MenuItem>
+                  <MenuItem value="">{translate("admin.all")}</MenuItem>
                   <MenuItem value={0}>0 ⭐</MenuItem>
                   <MenuItem value={1}>1 ⭐</MenuItem>
                   <MenuItem value={2}>2 ⭐</MenuItem>
@@ -156,17 +158,17 @@ export default function SubmissionListSection() {
               </FormControl>
 
               <FormControl sx={{ minWidth: 150 }}>
-                <InputLabel>Sao đến</InputLabel>
+                <InputLabel>{translate("admin.starTo")}</InputLabel>
                 <Select
                   value={starTo}
-                  label="Sao đến"
+                  label={translate("admin.starTo")}
                   onChange={(e) =>
                     setStarTo(
                       e.target.value === "" ? "" : Number(e.target.value)
                     )
                   }
                 >
-                  <MenuItem value="">Tất cả</MenuItem>
+                  <MenuItem value="">{translate("admin.all")}</MenuItem>
                   <MenuItem value={0}>0 ⭐</MenuItem>
                   <MenuItem value={1}>1 ⭐</MenuItem>
                   <MenuItem value={2}>2 ⭐</MenuItem>
@@ -192,13 +194,13 @@ export default function SubmissionListSection() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>STT</TableCell>
-                  <TableCell>Sinh viên</TableCell>
+                  <TableCell>{translate("admin.no")}</TableCell>
+                  <TableCell>{translate("admin.student")}</TableCell>
                   <TableCell>Challenge</TableCell>
                   <TableCell>Lesson</TableCell>
-                  <TableCell>Đánh giá</TableCell>
-                  <TableCell>Ngày nộp</TableCell>
-                  <TableCell align="center">Hành động</TableCell>
+                  <TableCell>{translate("admin.rating")}</TableCell>
+                  <TableCell>{translate("admin.submittedDate")}</TableCell>
+                  <TableCell align="center">{translate("admin.actions")}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -207,7 +209,7 @@ export default function SubmissionListSection() {
                     <TableCell colSpan={7} align="center" sx={{ py: 10 }}>
                       <CircularProgress />
                       <Typography variant="body2" sx={{ mt: 2 }}>
-                        Đang tải dữ liệu...
+                        {translate("admin.loading")}
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -215,7 +217,7 @@ export default function SubmissionListSection() {
                   <TableRow>
                     <TableCell colSpan={7} align="center" sx={{ py: 10 }}>
                       <Typography variant="body2" color="text.secondary">
-                        Không có bài nộp nào
+                        {translate("admin.noSubmissions")}
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -297,9 +299,9 @@ export default function SubmissionListSection() {
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             rowsPerPageOptions={[5, 10, 25, 50]}
-            labelRowsPerPage="Số hàng mỗi trang:"
+            labelRowsPerPage={translate("admin.rowsPerPage")}
             labelDisplayedRows={({ from, to, count }) =>
-              `${from}-${to} trên tổng ${count}`
+              translate("admin.displayedRows", { from, to, count })
             }
           />
         </Card>

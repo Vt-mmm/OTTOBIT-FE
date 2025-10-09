@@ -32,13 +32,14 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import SearchIcon from "@mui/icons-material/Search";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PersonIcon from "@mui/icons-material/Person";
-import { useAppDispatch, useAppSelector } from "../../../redux/config";
+import { useAppDispatch, useAppSelector } from "store/config";
 import {
   getCoursesForAdmin,
   deleteCourse,
   restoreCourse,
-} from "../../../redux/course/courseSlice";
-import { CourseResult } from "../../../common/@types/course";
+} from "store/course/courseSlice";
+import { CourseResult } from "common/@types/course";
+import { useLocales } from "hooks";
 
 interface Props {
   onCreateNew: () => void;
@@ -51,6 +52,7 @@ export default function CourseListSection({
   onEditCourse,
   onViewDetails,
 }: Props) {
+  const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const { data, isLoading, error } = useAppSelector(
     (s) => s.course.adminCourses
@@ -140,14 +142,16 @@ export default function CourseListSection({
       await dispatch(deleteCourse(confirmDelete.id)).unwrap();
       setSnackbar({
         open: true,
-        message: "Xóa khóa học thành công",
+        message: translate("admin.courseDeleted"),
         severity: "success",
       });
       refreshList();
     } catch (e: any) {
       setSnackbar({
         open: true,
-        message: e?.message || "Không thể xóa khóa học",
+        message:
+          e?.message ||
+          translate("admin.cannotDelete", { item: translate("admin.course") }),
         severity: "error",
       });
     } finally {
@@ -161,14 +165,16 @@ export default function CourseListSection({
       await dispatch(restoreCourse(confirmRestore.id)).unwrap();
       setSnackbar({
         open: true,
-        message: "Khôi phục khóa học thành công",
+        message: translate("admin.courseRestored"),
         severity: "success",
       });
       refreshList();
     } catch (e: any) {
       setSnackbar({
         open: true,
-        message: e?.message || "Không thể khôi phục khóa học",
+        message:
+          e?.message ||
+          translate("admin.cannotRestore", { item: translate("admin.course") }),
         severity: "error",
       });
     } finally {
@@ -191,7 +197,7 @@ export default function CourseListSection({
           >
             <TextField
               fullWidth
-              placeholder="Tìm kiếm khóa học theo tên hoặc mô tả..."
+              placeholder={translate("admin.searchCoursePlaceholder")}
               value={searchTerm}
               onChange={handleSearch}
               onKeyDown={(e) => {
@@ -216,20 +222,20 @@ export default function CourseListSection({
               }}
             />
             <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>Sắp xếp</InputLabel>
+              <InputLabel>{translate("admin.sortBy")}</InputLabel>
               <Select
-                label="Sắp xếp"
+                label={translate("admin.sortBy")}
                 value={sortDirection}
                 onChange={(e) => setSortDirection(Number(e.target.value))}
               >
-                <MenuItem value={0}>Cũ nhất trước</MenuItem>
-                <MenuItem value={1}>Mới nhất trước</MenuItem>
+                <MenuItem value={0}>{translate("admin.oldestFirst")}</MenuItem>
+                <MenuItem value={1}>{translate("admin.newestFirst")}</MenuItem>
               </Select>
             </FormControl>
 
             <MuiTextField
               size="small"
-              label="Min price"
+              label={translate("admin.minPrice")}
               type="number"
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
@@ -238,7 +244,7 @@ export default function CourseListSection({
             />
             <MuiTextField
               size="small"
-              label="Max price"
+              label={translate("admin.maxPrice")}
               type="number"
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
@@ -247,15 +253,15 @@ export default function CourseListSection({
             />
 
             <FormControl size="small" sx={{ minWidth: 140 }}>
-              <InputLabel>Type</InputLabel>
+              <InputLabel>{translate("admin.courseType")}</InputLabel>
               <Select
-                label="Type"
+                label={translate("admin.courseType")}
                 value={type}
                 onChange={(e) => setType(e.target.value as any)}
               >
-                <MenuItem value="">Tất cả</MenuItem>
-                <MenuItem value={1}>Miễn phí</MenuItem>
-                <MenuItem value={2}>Trả phí</MenuItem>
+                <MenuItem value="">{translate("common.All")}</MenuItem>
+                <MenuItem value={1}>{translate("courses.Free")}</MenuItem>
+                <MenuItem value={2}>{translate("courses.Paid")}</MenuItem>
               </Select>
             </FormControl>
             <Button
@@ -268,7 +274,7 @@ export default function CourseListSection({
                 minWidth: "auto",
               }}
             >
-              Tạo khóa học
+              {translate("admin.createCourse")}
             </Button>
           </Box>
         </CardContent>
@@ -281,7 +287,7 @@ export default function CourseListSection({
       ) : error ? (
         <Alert severity="error">{error}</Alert>
       ) : items.length === 0 ? (
-        <Alert severity="info">Chưa có khóa học nào</Alert>
+        <Alert severity="info">{translate("admin.noData")}</Alert>
       ) : (
         <Grid container spacing={2}>
           {items.map((course) => (
@@ -322,7 +328,7 @@ export default function CourseListSection({
                     {course.isDeleted && (
                       <Chip
                         size="small"
-                        label="Deleted"
+                        label={translate("admin.deleted")}
                         color="error"
                         variant="outlined"
                       />
@@ -340,9 +346,9 @@ export default function CourseListSection({
                       WebkitBoxOrient: "vertical",
                       wordBreak: "break-word",
                     }}
-                    title={course.description || "No description"}
+                    title={course.description || translate("common.NoData")}
                   >
-                    {course.description || "No description"}
+                    {course.description || translate("common.NoData")}
                   </Typography>
 
                   {/* Price and Type */}
@@ -366,8 +372,8 @@ export default function CourseListSection({
                         size="small"
                         label={
                           ((course as any)?.type ?? 1) === 2
-                            ? "Trả phí"
-                            : "Miễn phí"
+                            ? translate("courses.Paid")
+                            : translate("courses.Free")
                         }
                         color={
                           ((course as any)?.type ?? 1) === 2
@@ -394,7 +400,7 @@ export default function CourseListSection({
                         sx={{ fontSize: 16, color: "text.secondary" }}
                       />
                       <Typography variant="caption" color="text.secondary">
-                        Tạo:{" "}
+                        {translate("admin.createdAt")}:{" "}
                         {new Date(course.createdAt).toLocaleDateString(
                           "vi-VN",
                           {
@@ -421,7 +427,7 @@ export default function CourseListSection({
                           sx={{ fontSize: 16, color: "text.secondary" }}
                         />
                         <Typography variant="caption" color="text.secondary">
-                          Bởi: {course.createdByName}
+                          {translate("common.By")}: {course.createdByName}
                         </Typography>
                       </Box>
                     )}
@@ -443,7 +449,7 @@ export default function CourseListSection({
                   <IconButton
                     size="small"
                     onClick={() => onViewDetails(course)}
-                    title="Xem chi tiết"
+                    title={translate("admin.view")}
                   >
                     <VisibilityIcon />
                   </IconButton>
@@ -451,7 +457,7 @@ export default function CourseListSection({
                     <IconButton
                       size="small"
                       onClick={() => onEditCourse(course)}
-                      title="Chỉnh sửa"
+                      title={translate("admin.edit")}
                     >
                       <EditIcon />
                     </IconButton>
@@ -461,7 +467,7 @@ export default function CourseListSection({
                       size="small"
                       onClick={() => setConfirmRestore(course)}
                       color="success"
-                      title="Khôi phục"
+                      title={translate("admin.restore")}
                     >
                       <RestoreIcon />
                     </IconButton>
@@ -470,7 +476,7 @@ export default function CourseListSection({
                       size="small"
                       onClick={() => setConfirmDelete(course)}
                       color="error"
-                      title="Xóa"
+                      title={translate("admin.delete")}
                     >
                       <DeleteIcon />
                     </IconButton>
@@ -492,9 +498,9 @@ export default function CourseListSection({
         }}
       >
         <FormControl size="small">
-          <InputLabel>Page size</InputLabel>
+          <InputLabel>{translate("common.PageSize")}</InputLabel>
           <Select
-            label="Page size"
+            label={translate("common.PageSize")}
             value={pageSize}
             onChange={(e) => setPageSize(Number(e.target.value))}
             sx={{ minWidth: 120 }}
@@ -516,27 +522,35 @@ export default function CourseListSection({
       </Box>
 
       <Dialog open={!!confirmDelete} onClose={() => setConfirmDelete(null)}>
-        <DialogTitle>Xác nhận xóa</DialogTitle>
+        <DialogTitle>{translate("admin.confirmDeleteTitle")}</DialogTitle>
         <DialogContent>
-          Bạn có chắc muốn xóa khóa học "{confirmDelete?.title}"?
+          {translate("admin.confirmDeleteMessage", {
+            item: `"${confirmDelete?.title}"`,
+          })}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmDelete(null)}>Hủy</Button>
+          <Button onClick={() => setConfirmDelete(null)}>
+            {translate("admin.cancel")}
+          </Button>
           <Button color="error" onClick={handleDelete}>
-            Xóa
+            {translate("admin.delete")}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={!!confirmRestore} onClose={() => setConfirmRestore(null)}>
-        <DialogTitle>Xác nhận khôi phục</DialogTitle>
+        <DialogTitle>{translate("admin.confirmRestoreTitle")}</DialogTitle>
         <DialogContent>
-          Bạn có chắc muốn khôi phục khóa học "{confirmRestore?.title}"?
+          {translate("admin.confirmRestoreMessage", {
+            item: `"${confirmRestore?.title}"`,
+          })}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmRestore(null)}>Hủy</Button>
+          <Button onClick={() => setConfirmRestore(null)}>
+            {translate("admin.cancel")}
+          </Button>
           <Button color="success" onClick={handleRestore}>
-            Khôi phục
+            {translate("admin.restore")}
           </Button>
         </DialogActions>
       </Dialog>

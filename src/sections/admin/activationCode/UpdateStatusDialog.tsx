@@ -16,6 +16,7 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { CodeStatus } from "common/@types/activationCode";
+import { useLocales } from "hooks";
 
 interface UpdateStatusDialogProps {
   open: boolean;
@@ -36,6 +37,7 @@ export default function UpdateStatusDialog({
   isLoading = false,
   error = null,
 }: UpdateStatusDialogProps) {
+  const { translate } = useLocales();
   const [selectedStatus, setSelectedStatus] = useState<CodeStatus>(currentStatus);
 
   useEffect(() => {
@@ -60,22 +62,39 @@ export default function UpdateStatusDialog({
   // Disable Used status - không cho admin thay đổi thành Used
   const isUsed = currentStatus === CodeStatus.Used;
 
+  const getStatusText = (status: CodeStatus): string => {
+    switch (status) {
+      case CodeStatus.Active:
+        return translate("admin.codeStatusUnused");
+      case CodeStatus.Used:
+        return translate("admin.codeStatusUsed");
+      case CodeStatus.Expired:
+        return translate("admin.codeStatusExpired");
+      case CodeStatus.Revoked:
+        return translate("admin.codeStatusRevoked");
+      case CodeStatus.Suspended:
+        return translate("admin.codeStatusSuspended");
+      default:
+        return translate("admin.codeStatusUnknown");
+    }
+  };
+
   return (
     <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
-      <DialogTitle>Cập nhật Trạng thái Mã</DialogTitle>
+      <DialogTitle>{translate("admin.updateStatusTitle")}</DialogTitle>
       <DialogContent>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, pt: 1 }}>
           {error && <Alert severity="error">{error}</Alert>}
 
           {isUsed && (
             <Alert severity="warning">
-              Mã đã được sử dụng. Không thể thay đổi trạng thái.
+              {translate("admin.codeUsedCannotChange")}
             </Alert>
           )}
 
           <Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Mã kích hoạt:
+              {translate("admin.activationCodeColumn")}:
             </Typography>
             <Typography
               variant="body1"
@@ -92,10 +111,10 @@ export default function UpdateStatusDialog({
           </Box>
 
           <FormControl fullWidth disabled={isUsed || isLoading}>
-            <InputLabel>Trạng thái mới</InputLabel>
+            <InputLabel>{translate("admin.newStatus")}</InputLabel>
             <Select
               value={selectedStatus}
-              label="Trạng thái mới"
+              label={translate("admin.newStatus")}
               onChange={handleStatusChange}
             >
               <MenuItem value={CodeStatus.Active}>
@@ -108,7 +127,7 @@ export default function UpdateStatusDialog({
                       bgcolor: "success.main",
                     }}
                   />
-                  Chưa dùng (Active)
+                  {translate("admin.codeStatusActive")}
                 </Box>
               </MenuItem>
               <MenuItem value={CodeStatus.Used} disabled>
@@ -121,7 +140,7 @@ export default function UpdateStatusDialog({
                       bgcolor: "action.disabled",
                     }}
                   />
-                  Đã dùng (Used) - Không thể chọn
+                  {translate("admin.codeStatusUsedDisabled")}
                 </Box>
               </MenuItem>
               <MenuItem value={CodeStatus.Expired}>
@@ -134,7 +153,7 @@ export default function UpdateStatusDialog({
                       bgcolor: "error.main",
                     }}
                   />
-                  Hết hạn (Expired)
+                  {translate("admin.codeStatusExpiredLabel")}
                 </Box>
               </MenuItem>
               <MenuItem value={CodeStatus.Revoked}>
@@ -147,7 +166,7 @@ export default function UpdateStatusDialog({
                       bgcolor: "error.main",
                     }}
                   />
-                  Thu hồi (Revoked)
+                  {translate("admin.codeStatusRevokedLabel")}
                 </Box>
               </MenuItem>
               <MenuItem value={CodeStatus.Suspended}>
@@ -160,7 +179,7 @@ export default function UpdateStatusDialog({
                       bgcolor: "warning.main",
                     }}
                   />
-                  Tạm ngưng (Suspended)
+                  {translate("admin.codeStatusSuspendedLabel")}
                 </Box>
               </MenuItem>
             </Select>
@@ -168,18 +187,22 @@ export default function UpdateStatusDialog({
 
           {selectedStatus !== currentStatus && !isUsed && (
             <Alert severity="info">
-              <Typography variant="body2">
-                Bạn đang thay đổi trạng thái từ{" "}
-                <strong>{getStatusText(currentStatus)}</strong> sang{" "}
-                <strong>{getStatusText(selectedStatus)}</strong>
-              </Typography>
+              <Typography
+                variant="body2"
+                dangerouslySetInnerHTML={{
+                  __html: translate("admin.statusChangeInfo", {
+                    from: getStatusText(currentStatus),
+                    to: getStatusText(selectedStatus),
+                  }),
+                }}
+              />
             </Alert>
           )}
         </Box>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={handleCancel} disabled={isLoading}>
-          Hủy
+          {translate("admin.cancel")}
         </Button>
         <Button
           onClick={handleConfirm}
@@ -187,26 +210,9 @@ export default function UpdateStatusDialog({
           disabled={selectedStatus === currentStatus || isUsed || isLoading}
           startIcon={isLoading && <CircularProgress size={16} />}
         >
-          Cập nhật
+          {translate("admin.update")}
         </Button>
       </DialogActions>
     </Dialog>
   );
-}
-
-function getStatusText(status: CodeStatus): string {
-  switch (status) {
-    case CodeStatus.Active:
-      return "Chưa dùng";
-    case CodeStatus.Used:
-      return "Đã dùng";
-    case CodeStatus.Expired:
-      return "Hết hạn";
-    case CodeStatus.Revoked:
-      return "Thu hồi";
-    case CodeStatus.Suspended:
-      return "Tạm ngưng";
-    default:
-      return "Không xác định";
-  }
 }

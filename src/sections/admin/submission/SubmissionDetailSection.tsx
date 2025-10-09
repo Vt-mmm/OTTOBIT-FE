@@ -24,10 +24,12 @@ import { useAppDispatch, useAppSelector } from "store/config";
 import { getSubmissionByIdForAdminThunk } from "store/submission/submissionThunks";
 import { useNavigate, useParams } from "react-router-dom";
 import { PATH_ADMIN } from "routes/paths";
+import useLocales from "hooks/useLocales";
 
 export default function SubmissionDetailSection() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { translate } = useLocales();
   const { id } = useParams<{ id: string }>();
   const { adminSubmission } = useAppSelector((state) => state.submission);
 
@@ -70,7 +72,7 @@ export default function SubmissionDetailSection() {
       >
         <Stack alignItems="center" spacing={2}>
           <CircularProgress size={60} />
-          <Typography variant="body1">Đang tải dữ liệu bài nộp...</Typography>
+          <Typography variant="body1">{translate("admin.loadingSubmissionData")}</Typography>
         </Stack>
       </Box>
     );
@@ -87,7 +89,7 @@ export default function SubmissionDetailSection() {
           startIcon={<ArrowBackIcon />}
           onClick={handleBack}
         >
-          Quay lại
+          {translate("admin.back")}
         </Button>
       </Box>
     );
@@ -97,14 +99,14 @@ export default function SubmissionDetailSection() {
     return (
       <Box sx={{ p: 3 }}>
         <Alert severity="warning" sx={{ mb: 2 }}>
-          Không tìm thấy bài nộp
+          {translate("admin.submissionNotFound")}
         </Alert>
         <Button
           variant="outlined"
           startIcon={<ArrowBackIcon />}
           onClick={handleBack}
         >
-          Quay lại
+          {translate("admin.back")}
         </Button>
       </Box>
     );
@@ -120,9 +122,9 @@ export default function SubmissionDetailSection() {
             startIcon={<ArrowBackIcon />}
             onClick={handleBack}
           >
-            Quay lại
+            {translate("admin.back")}
           </Button>
-          <Typography variant="h4">Chi tiết Bài nộp</Typography>
+          <Typography variant="h4">{translate("admin.submissionDetails")}</Typography>
         </Stack>
 
         {/* Submission Info */}
@@ -141,7 +143,7 @@ export default function SubmissionDetailSection() {
                       mb={1}
                     >
                       <AssignmentIcon color="primary" />
-                      <Typography variant="h6">Thông tin Challenge</Typography>
+                      <Typography variant="h6">{translate("admin.challengeInfo")}</Typography>
                     </Stack>
                     <Divider sx={{ mb: 2 }} />
                     <Stack spacing={1.5}>
@@ -155,7 +157,7 @@ export default function SubmissionDetailSection() {
                       </Box>
                       <Box>
                         <Typography variant="caption" color="text.secondary">
-                          Bài học
+                          {translate("admin.lesson")}
                         </Typography>
                         <Typography variant="body1">
                           {submission.lessonTitle || "N/A"}
@@ -164,7 +166,7 @@ export default function SubmissionDetailSection() {
                       {submission.courseTitle && (
                         <Box>
                           <Typography variant="caption" color="text.secondary">
-                            Khóa học
+                            {translate("admin.course")}
                           </Typography>
                           <Typography variant="body1">
                             {submission.courseTitle}
@@ -183,12 +185,12 @@ export default function SubmissionDetailSection() {
                       mb={1}
                     >
                       <PersonIcon color="primary" />
-                      <Typography variant="h6">Thông tin Sinh viên</Typography>
+                      <Typography variant="h6">{translate("admin.studentInfo")}</Typography>
                     </Stack>
                     <Divider sx={{ mb: 2 }} />
                     <Box>
                       <Typography variant="caption" color="text.secondary">
-                        Sinh viên
+                        {translate("admin.student")}
                       </Typography>
                       <Typography variant="body1" fontWeight={500}>
                         {submission.studentName || "N/A"}
@@ -205,7 +207,7 @@ export default function SubmissionDetailSection() {
                       mb={1}
                     >
                       <CodeIcon color="primary" />
-                      <Typography variant="h6">Code JSON</Typography>
+                      <Typography variant="h6">{translate("admin.codeJson")}</Typography>
                     </Stack>
                     <Divider sx={{ mb: 2 }} />
                     <Paper
@@ -247,7 +249,7 @@ export default function SubmissionDetailSection() {
               <Card>
                 <CardContent>
                   <Stack spacing={2}>
-                    <Typography variant="h6">Đánh giá</Typography>
+                    <Typography variant="h6">{translate("admin.rating")}</Typography>
                     <Divider />
                     <Box textAlign="center">
                       <Rating
@@ -270,13 +272,13 @@ export default function SubmissionDetailSection() {
                   <Stack spacing={2}>
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <CalendarIcon color="primary" />
-                      <Typography variant="h6">Thời gian</Typography>
+                      <Typography variant="h6">{translate("admin.time")}</Typography>
                     </Stack>
                     <Divider />
                     <Stack spacing={1.5}>
                       <Box>
                         <Typography variant="caption" color="text.secondary">
-                          Ngày nộp
+                          {translate("admin.submittedDate")}
                         </Typography>
                         <Typography variant="body2">
                           {formatDate(submission.createdAt)}
@@ -284,7 +286,7 @@ export default function SubmissionDetailSection() {
                       </Box>
                       <Box>
                         <Typography variant="caption" color="text.secondary">
-                          Cập nhật lần cuối
+                          {translate("admin.updatedAt")}
                         </Typography>
                         <Typography variant="body2">
                           {formatDate(submission.updatedAt)}

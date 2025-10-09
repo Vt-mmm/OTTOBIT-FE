@@ -3,6 +3,7 @@ import { Box, Paper, Typography, IconButton, Chip } from "@mui/material";
 import { MapCell } from "common/models";
 import { MAP_ASSETS } from "./mapAssets.config";
 import { THEME_COLORS, GRID_CONFIG } from "./theme.config";
+import useLocales from "hooks/useLocales";
 import {
   gridToIsometric,
   getIsometricGridDimensions,
@@ -24,6 +25,7 @@ export default function SimpleIsometricMapGridLite({
   selectedAsset,
   onCellClick,
 }: SimpleIsometricMapGridLiteProps) {
+  const { translate } = useLocales();
   const ENABLE_PAN = true;
   const MAP_VIEWPORT_HEIGHT = 700;
   const LIFT_PER_DIAGONAL = 15.5;
@@ -134,7 +136,7 @@ export default function SimpleIsometricMapGridLite({
             variant="h6"
             sx={{ fontWeight: 600, color: THEME_COLORS.text.primary }}
           >
-            Isometric Map ({GRID_CONFIG.rows}x{GRID_CONFIG.cols})
+            {translate("admin.isometricMap")} ({GRID_CONFIG.rows}x{GRID_CONFIG.cols})
           </Typography>
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
             <IconButton

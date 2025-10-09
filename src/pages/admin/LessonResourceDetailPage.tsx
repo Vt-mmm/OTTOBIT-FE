@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { axiosClient } from "axiosClient";
 import { ROUTES_API_LESSON_RESOURCE as LR } from "constants/routesApiKeys";
+import useLocales from "hooks/useLocales";
 import {
   Box,
   Card,
@@ -26,6 +27,7 @@ import ExtensionIcon from "@mui/icons-material/Extension";
 import SlideshowIcon from "@mui/icons-material/Slideshow";
 
 export default function LessonResourceDetailPage() {
+  const { translate } = useLocales();
   const { id } = useParams();
   const navigate = useNavigate();
   const [data, setData] = useState<any | null>(null);
@@ -74,7 +76,7 @@ export default function LessonResourceDetailPage() {
   };
 
   const getTypeName = (type: any) => {
-    if (type === null || type === undefined) return "Chưa xác định";
+    if (type === null || type === undefined) return translate("admin.undefined");
 
     // Convert to string for comparison
     const typeStr = String(type).toLowerCase();
@@ -82,25 +84,25 @@ export default function LessonResourceDetailPage() {
     switch (typeStr) {
       case "video":
       case "1":
-        return "Video";
+        return translate("admin.typeVideo");
       case "document":
       case "pdf":
       case "2":
-        return "Tài liệu";
+        return translate("admin.typeDocument");
       case "image":
       case "3":
-        return "Hình ảnh";
+        return translate("admin.typeImage");
       case "audio":
       case "4":
-        return "Âm thanh";
+        return translate("admin.typeAudio");
       case "link":
       case "5":
-        return "Liên kết";
+        return translate("admin.typeLink");
       case "presentation":
       case "6":
-        return "Trình bày";
+        return translate("admin.typePresentation");
       default:
-        return "Chưa xác định";
+        return translate("admin.undefined");
     }
   };
 
@@ -114,10 +116,10 @@ export default function LessonResourceDetailPage() {
         </IconButton>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            Quản lý Tài nguyên Bài học
+            {translate("admin.lessonResourceManagement")}
           </Typography>
           <Typography variant="subtitle2" color="text.secondary">
-            Chi tiết tài nguyên #{id}
+            {translate("admin.resourceDetailTitle")} #{id}
           </Typography>
         </Box>
       </Box>
@@ -130,7 +132,7 @@ export default function LessonResourceDetailPage() {
         <Card sx={{ boxShadow: 2 }}>
           <CardContent sx={{ textAlign: "center", py: 4 }}>
             <Typography variant="h6" color="text.secondary">
-              Không tìm thấy tài nguyên
+              {translate("admin.resourceNotFound")}
             </Typography>
           </CardContent>
         </Card>
@@ -168,7 +170,7 @@ export default function LessonResourceDetailPage() {
                   {/* Thông tin chi tiết */}
                   <Box>
                     <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                      Thông tin chi tiết
+                      {translate("admin.detailInformation")}
                     </Typography>
                     <Stack spacing={2}>
                       <Box>
@@ -177,7 +179,7 @@ export default function LessonResourceDetailPage() {
                           color="text.secondary"
                           sx={{ mb: 0.5 }}
                         >
-                          Loại tài nguyên
+                          {translate("admin.resourceType")}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
                           {getTypeName(data.type)}
@@ -189,10 +191,10 @@ export default function LessonResourceDetailPage() {
                           color="text.secondary"
                           sx={{ mb: 0.5 }}
                         >
-                          Khóa học
+                          {translate("admin.course")}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {data.courseTitle || "Chưa xác định"}
+                          {data.courseTitle || translate("admin.undefined")}
                         </Typography>
                       </Box>
                       <Box>
@@ -201,10 +203,10 @@ export default function LessonResourceDetailPage() {
                           color="text.secondary"
                           sx={{ mb: 0.5 }}
                         >
-                          Bài học
+                          {translate("admin.lesson")}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {data.lessonTitle || data.lessonId || "Chưa xác định"}
+                          {data.lessonTitle || data.lessonId || translate("admin.undefined")}
                         </Typography>
                       </Box>
                       <Box>
@@ -213,7 +215,7 @@ export default function LessonResourceDetailPage() {
                           color="text.secondary"
                           sx={{ mb: 0.5 }}
                         >
-                          URL tài nguyên
+                          {translate("admin.resourceUrl")}
                         </Typography>
                         <Link
                           href={data.fileUrl}
@@ -242,7 +244,7 @@ export default function LessonResourceDetailPage() {
               <Card sx={{ boxShadow: 2 }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                    Thông tin hệ thống
+                    {translate("admin.systemInformation")}
                   </Typography>
                   <Stack spacing={2}>
                     <Box>
@@ -251,7 +253,7 @@ export default function LessonResourceDetailPage() {
                         color="text.secondary"
                         sx={{ mb: 0.5 }}
                       >
-                        Ngày tạo
+                        {translate("admin.createdDate")}
                       </Typography>
                       <Typography variant="body1" sx={{ fontWeight: 500 }}>
                         {new Date(data.createdAt).toLocaleString("vi-VN", {
@@ -270,7 +272,7 @@ export default function LessonResourceDetailPage() {
                           color="text.secondary"
                           sx={{ mb: 0.5 }}
                         >
-                          Ngày cập nhật
+                          {translate("admin.updatedDate")}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
                           {new Date(data.updatedAt).toLocaleString("vi-VN", {
@@ -291,7 +293,7 @@ export default function LessonResourceDetailPage() {
               <Card sx={{ boxShadow: 2 }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                    Hành động
+                    {translate("admin.actions")}
                   </Typography>
                   <Stack spacing={1}>
                     <Link
@@ -301,7 +303,7 @@ export default function LessonResourceDetailPage() {
                       sx={{ textDecoration: "none" }}
                     >
                       <Chip
-                        label="Mở tài nguyên"
+                        label={translate("admin.openResource")}
                         color="primary"
                         variant="outlined"
                         clickable

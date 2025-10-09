@@ -1,8 +1,10 @@
 import { Box, Container, Typography } from "@mui/material";
 import { useAppSelector } from "store/config";
 import AdminLayout from "layout/admin/AdminLayout";
+import useLocales from "hooks/useLocales";
 
 const OttobitDashboardPage = () => {
+  const { translate } = useLocales();
   const { userAuth } = useAppSelector((state) => state.auth);
 
   return (
@@ -18,13 +20,13 @@ const OttobitDashboardPage = () => {
               fontSize: { xs: "1.5rem", sm: "2.125rem" },
             }}
           >
-            Hello, {userAuth?.username || "Admin"}! 👋
+            {translate("admin.dashboardWelcome", { username: userAuth?.username || translate("admin.admin") })}
           </Typography>
           <Typography
             variant="body1"
             sx={{ color: "#64748b", fontSize: { xs: "0.875rem", sm: "1rem" } }}
           >
-            Welcome back to the Ottobit admin dashboard
+            {translate("admin.dashboardSubtitle")}
           </Typography>
         </Box>
 
@@ -34,7 +36,7 @@ const OttobitDashboardPage = () => {
             variant="h6"
             sx={{ color: "#64748b", fontSize: { xs: "1rem", sm: "1.25rem" } }}
           >
-            Dashboard content is being developed...
+            {translate("admin.dashboardContentDeveloping")}
           </Typography>
         </Box>
       </Container>

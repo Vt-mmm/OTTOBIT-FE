@@ -14,6 +14,7 @@ import {
 import { Close as CloseIcon } from "@mui/icons-material";
 import { useForm, Controller } from "react-hook-form";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import useLocales from "hooks/useLocales";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
@@ -51,6 +52,7 @@ export default function StudentFormDialog({
   mode,
   initialData,
 }: StudentFormDialogProps) {
+  const { translate } = useLocales();
   const {
     control,
     handleSubmit,
@@ -126,7 +128,7 @@ export default function StudentFormDialog({
         }}
       >
         <Typography variant="h6">
-          {mode === "create" ? "Create New Student" : "Edit Student"}
+          {mode === "create" ? translate("admin.createNewStudent") : translate("admin.editStudent")}
         </Typography>
         <IconButton onClick={onClose} disabled={isLoading}>
           <CloseIcon />
@@ -147,16 +149,16 @@ export default function StudentFormDialog({
               name="fullname"
               control={control}
               rules={{
-                required: "Full name is required",
+                required: translate("admin.fullNameRequired"),
                 minLength: {
                   value: 2,
-                  message: "Full name must be at least 2 characters",
+                  message: translate("admin.fullNameMin2Chars"),
                 },
               }}
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Full Name *"
+                  label={translate("admin.fullNameRequired")}
                   fullWidth
                   error={!!errors.fullname}
                   helperText={errors.fullname?.message}
@@ -172,13 +174,13 @@ export default function StudentFormDialog({
               rules={{
                 pattern: {
                   value: /^[0-9+\s()-]+$/,
-                  message: "Invalid phone number format",
+                  message: translate("admin.invalidPhoneFormat"),
                 },
               }}
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Phone Number"
+                  label={translate("admin.phoneNumber")}
                   fullWidth
                   error={!!errors.phoneNumber}
                   helperText={errors.phoneNumber?.message}
@@ -193,12 +195,12 @@ export default function StudentFormDialog({
                 name="dateOfBirth"
                 control={control}
                 rules={{
-                  required: "Date of birth is required",
+                  required: translate("admin.dateOfBirthRequired"),
                 }}
                 render={({ field }) => (
                   <DatePicker
                     {...field}
-                    label="Date of Birth *"
+                    label={translate("admin.dateOfBirthRequired")}
                     maxDate={dayjs()}
                     disabled={isLoading}
                     slotProps={{
@@ -220,7 +222,7 @@ export default function StudentFormDialog({
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Address"
+                  label={translate("admin.address")}
                   fullWidth
                   multiline
                   rows={2}
@@ -243,7 +245,7 @@ export default function StudentFormDialog({
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    label="City"
+                    label={translate("admin.city")}
                     fullWidth
                     disabled={isLoading}
                   />
@@ -256,7 +258,7 @@ export default function StudentFormDialog({
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    label="State/Province"
+                    label={translate("admin.stateProvince")}
                     fullWidth
                     disabled={isLoading}
                   />
@@ -268,7 +270,7 @@ export default function StudentFormDialog({
 
         <DialogActions sx={{ p: 3, pt: 2 }}>
           <Button onClick={onClose} disabled={isLoading} color="inherit">
-            Cancel
+            {translate("admin.cancel")}
           </Button>
           <Button
             type="submit"
@@ -277,10 +279,10 @@ export default function StudentFormDialog({
             sx={{ minWidth: 120 }}
           >
             {isLoading
-              ? "Saving..."
+              ? translate("admin.saving")
               : mode === "create"
-              ? "Create Student"
-              : "Update Student"}
+              ? translate("admin.createStudent")
+              : translate("admin.updateStudent")}
           </Button>
         </DialogActions>
       </form>

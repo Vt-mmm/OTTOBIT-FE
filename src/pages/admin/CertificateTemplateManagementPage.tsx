@@ -1,8 +1,11 @@
 import { Container, Typography, Stack } from "@mui/material";
 import AdminLayout from "layout/admin/AdminLayout";
 import CertificateTemplateListSection from "sections/admin/certificate-template/CertificateTemplateListSection";
+import { useLocales } from "hooks";
 
 export default function CertificateTemplateManagementPage() {
+  const { translate } = useLocales();
+
   return (
     <AdminLayout>
       <Container
@@ -17,14 +20,14 @@ export default function CertificateTemplateManagementPage() {
               fontSize: { xs: "1.5rem", sm: "2.125rem" },
             }}
           >
-            Quản lý mẫu chứng chỉ
+            {translate("admin.certificateTemplateManagementTitle")}
           </Typography>
           <Typography
             variant="body2"
             color="text.secondary"
             sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}
           >
-            Tạo và quản lý mẫu chứng chỉ cho các khóa học
+            {translate("admin.certificateTemplateManagementSubtitle")}
           </Typography>
         </Stack>
         <CertificateTemplateListSection />

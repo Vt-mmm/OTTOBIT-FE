@@ -43,9 +43,11 @@ import {
 import { toast } from "react-toastify";
 import CertificateDetailDialog from "sections/admin/certificate/CertificateDetailDialog";
 import RevokeCertificateDialog from "sections/admin/certificate/RevokeCertificateDialog";
+import { useLocales } from "hooks";
 
 export default function CertificateListSection() {
   const dispatch = useDispatch<AppDispatch>();
+  const { translate } = useLocales();
 
   // Redux state
   const { certificates } = useSelector((state: any) => state.certificate);
@@ -102,15 +104,19 @@ export default function CertificateListSection() {
   };
 
   const handleDelete = async (id: string, certificateNo: string) => {
-    if (!window.confirm(`Bạn có chắc muốn xóa chứng chỉ "${certificateNo}"?`))
+    if (
+      !window.confirm(
+        translate("admin.confirmDeleteCertificate", { certificateNo })
+      )
+    )
       return;
 
     try {
       await dispatch(deleteCertificateThunk(id)).unwrap();
-      toast.success("Đã xóa chứng chỉ thành công!");
+      toast.success(translate("admin.deleteCertificateSuccess"));
       loadCertificates();
     } catch (error: any) {
-      toast.error(error || "Có lỗi xảy ra khi xóa chứng chỉ!");
+      toast.error(error || translate("admin.deleteCertificateError"));
     }
   };
 
@@ -136,16 +142,7 @@ export default function CertificateListSection() {
         justifyContent="space-between"
         alignItems="center"
         sx={{ mb: 3 }}
-      >
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
-            🎓 Quản lý chứng chỉ (Certificates)
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Danh sách chứng chỉ đã cấp cho học viên
-          </Typography>
-        </Box>
-      </Stack>
+      ></Stack>
 
       {/* Filters */}
       <Card sx={{ mb: 3, p: 2 }}>
@@ -153,19 +150,19 @@ export default function CertificateListSection() {
           <FilterIcon color="action" />
           <TextField
             size="small"
-            placeholder="Tìm kiếm theo tên học viên, mã chứng chỉ..."
+            placeholder={translate("admin.searchCertificatePlaceholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             sx={{ flex: 1 }}
           />
           <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Trạng thái</InputLabel>
+            <InputLabel>{translate("admin.status")}</InputLabel>
             <Select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              label="Trạng thái"
+              label={translate("admin.status")}
             >
-              <MenuItem value="all">Tất cả</MenuItem>
+              <MenuItem value="all">{translate("common.All")}</MenuItem>
               <MenuItem value={CertificateStatus.DRAFT.toString()}>
                 {CERTIFICATE_STATUS_LABELS[CertificateStatus.DRAFT]}
               </MenuItem>
@@ -192,17 +189,23 @@ export default function CertificateListSection() {
         <Table>
           <TableHead>
             <TableRow sx={{ bgcolor: "grey.50" }}>
-              <TableCell sx={{ fontWeight: 600 }}>Mã chứng chỉ</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Học viên</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Khóa học</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>
+                {translate("admin.certificateNo")}
+              </TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>
+                {translate("admin.studentName")}
+              </TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>
+                {translate("admin.courseName")}
+              </TableCell>
               <TableCell align="center" sx={{ fontWeight: 600, width: 120 }}>
-                Trạng thái
+                {translate("admin.status")}
               </TableCell>
               <TableCell sx={{ fontWeight: 600, width: 150 }}>
-                Ngày cấp
+                {translate("admin.issuedAt")}
               </TableCell>
               <TableCell align="right" sx={{ fontWeight: 600, width: 160 }}>
-                Thao tác
+                {translate("admin.actions")}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -216,7 +219,7 @@ export default function CertificateListSection() {
                     color="text.secondary"
                     sx={{ mt: 2 }}
                   >
-                    Đang tải...
+                    {translate("common.Loading")}
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -224,7 +227,7 @@ export default function CertificateListSection() {
               <TableRow>
                 <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
                   <Typography variant="body2" color="text.secondary">
-                    Chưa có chứng chỉ nào được cấp.
+                    {translate("admin.noCertificates")}
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -271,7 +274,7 @@ export default function CertificateListSection() {
                       spacing={0.5}
                       justifyContent="flex-end"
                     >
-                      <Tooltip title="Xem chi tiết" arrow>
+                      <Tooltip title={translate("admin.viewDetail")} arrow>
                         <IconButton
                           size="small"
                           onClick={() => handleOpenDetail(cert)}
@@ -284,7 +287,7 @@ export default function CertificateListSection() {
                         </IconButton>
                       </Tooltip>
                       {cert.status === CertificateStatus.ISSUED && (
-                        <Tooltip title="Thu hồi" arrow>
+                        <Tooltip title={translate("admin.revoke")} arrow>
                           <IconButton
                             size="small"
                             onClick={() => handleOpenRevoke(cert)}
@@ -297,7 +300,7 @@ export default function CertificateListSection() {
                           </IconButton>
                         </Tooltip>
                       )}
-                      <Tooltip title="Xóa" arrow>
+                      <Tooltip title={translate("admin.delete")} arrow>
                         <IconButton
                           size="small"
                           onClick={() =>

@@ -1,8 +1,10 @@
 import AdminLayout from "layout/admin/AdminLayout";
 import { Container, Box, Typography } from "@mui/material";
 import MapListSection from "sections/admin/map/MapListSection";
+import useLocales from "hooks/useLocales";
 
 export default function MapManagementPage() {
+  const { translate } = useLocales();
   return (
     <AdminLayout>
       <Container
@@ -20,7 +22,7 @@ export default function MapManagementPage() {
               fontSize: { xs: "1.5rem", sm: "2.125rem" },
             }}
           >
-            Quản lý Bản đồ
+            {translate("admin.mapManagementTitle")}
           </Typography>
           <Typography
             variant="body1"
@@ -29,7 +31,7 @@ export default function MapManagementPage() {
               fontSize: { xs: "0.875rem", sm: "1rem" },
             }}
           >
-            Quản lý bản đồ và khu vực trong hệ thống
+            {translate("admin.mapManagementSubtitle")}
           </Typography>
         </Box>
         <MapListSection />

@@ -21,6 +21,7 @@ import LessonResourceFormSection from "sections/admin/lessonResource/LessonResou
 import { axiosClient } from "axiosClient";
 import { ROUTES_API_LESSON_RESOURCE as LR } from "constants/routesApiKeys";
 import AdminLayout from "layout/admin/AdminLayout";
+import useLocales from "hooks/useLocales";
 import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
 import DescriptionIcon from "@mui/icons-material/Description";
 import ImageIcon from "@mui/icons-material/Image";
@@ -31,13 +32,14 @@ import SlideshowIcon from "@mui/icons-material/Slideshow";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 export default function LessonResourceManagementPage() {
+  const { translate } = useLocales();
   const [ready, setReady] = useState(false);
   const [mode, setMode] = useState<"list" | "detail" | "create" | "edit">(
     "list"
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [headerSubtitle, setHeaderSubtitle] = useState(
-    "Danh sách tài nguyên theo bài học/khoá học"
+    translate("admin.resourceListSubtitle")
   );
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -49,11 +51,11 @@ export default function LessonResourceManagementPage() {
   // Update header subtitle based on mode
   useEffect(() => {
     if (selectedId) {
-      setHeaderSubtitle(`Chi tiết tài nguyên #${selectedId}`);
+      setHeaderSubtitle(`${translate("admin.resourceDetailTitle")} #${selectedId}`);
     } else {
-      setHeaderSubtitle("Danh sách tài nguyên theo bài học/khoá học");
+      setHeaderSubtitle(translate("admin.resourceListSubtitle"));
     }
-  }, [selectedId]);
+  }, [selectedId, translate]);
   return (
     <AdminLayout>
       <Container
@@ -80,7 +82,7 @@ export default function LessonResourceManagementPage() {
                   fontSize: { xs: "1.5rem", sm: "2.125rem" },
                 }}
               >
-                Quản lý Tài nguyên Học tập
+                {translate("admin.lessonResourceManagement")}
               </Typography>
               <Typography
                 variant="body1"
@@ -109,13 +111,13 @@ export default function LessonResourceManagementPage() {
               variant="text"
               color="inherit"
             >
-              Quay lại
+              {translate("admin.backButton")}
             </Button>
           )}
         </Box>
         <Card>
           <CardContent>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div>{translate("admin.loading")}</div>}>
               {ready && (
                 <>
                   {mode === "list" && (
@@ -123,13 +125,13 @@ export default function LessonResourceManagementPage() {
                       // @ts-ignore
                       onCreateNew={() => {
                         setMode("create");
-                        setHeaderSubtitle("Thêm tài nguyên");
+                        setHeaderSubtitle(translate("admin.addResource"));
                       }}
                       // @ts-ignore
                       onEditItem={(id: string) => {
                         setSelectedId(id);
                         setMode("edit");
-                        setHeaderSubtitle(`Chỉnh sửa tài nguyên #${id}`);
+                        setHeaderSubtitle(`${translate("admin.editResourceTitle")} #${id}`);
                       }}
                       // @ts-ignore
                       onViewDetail={(id: string) => {
@@ -154,17 +156,17 @@ export default function LessonResourceManagementPage() {
                       onCancel={() => {
                         setMode("list");
                         setHeaderSubtitle(
-                          "Danh sách tài nguyên theo bài học/khoá học"
+                          translate("admin.resourceListSubtitle")
                         );
                       }}
                       onSuccess={() => {
                         setMode("list");
                         setHeaderSubtitle(
-                          "Danh sách tài nguyên theo bài học/khoá học"
+                          translate("admin.resourceListSubtitle")
                         );
                         setSnackbar({
                           open: true,
-                          message: "Tạo tài nguyên thành công",
+                          message: translate("admin.resourceCreatedSuccess"),
                           severity: "success",
                         });
                       }}
@@ -176,17 +178,17 @@ export default function LessonResourceManagementPage() {
                       onCancel={() => {
                         setMode("list");
                         setHeaderSubtitle(
-                          "Danh sách tài nguyên theo bài học/khoá học"
+                          translate("admin.resourceListSubtitle")
                         );
                       }}
                       onSuccess={() => {
                         setMode("list");
                         setHeaderSubtitle(
-                          "Danh sách tài nguyên theo bài học/khoá học"
+                          translate("admin.resourceListSubtitle")
                         );
                         setSnackbar({
                           open: true,
-                          message: "Cập nhật tài nguyên thành công",
+                          message: translate("admin.resourceUpdatedSuccess"),
                           severity: "success",
                         });
                       }}
@@ -216,6 +218,7 @@ export default function LessonResourceManagementPage() {
 
 // Inline detail component fully removed
 function InlineLessonResourceDetailCard({ id }: { id: string }) {
+  const { translate } = useLocales();
   const [data, setData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -261,30 +264,30 @@ function InlineLessonResourceDetailCard({ id }: { id: string }) {
   };
 
   const getTypeName = (type: any) => {
-    if (type === null || type === undefined) return "Chưa xác định";
+    if (type === null || type === undefined) return translate("admin.undefined");
     const typeStr = String(type).toLowerCase();
     switch (typeStr) {
       case "video":
       case "1":
-        return "Video";
+        return translate("admin.typeVideo");
       case "document":
       case "pdf":
       case "2":
-        return "Tài liệu";
+        return translate("admin.typeDocument");
       case "image":
       case "3":
-        return "Hình ảnh";
+        return translate("admin.typeImage");
       case "audio":
       case "4":
-        return "Âm thanh";
+        return translate("admin.typeAudio");
       case "link":
       case "5":
-        return "Liên kết";
+        return translate("admin.typeLink");
       case "presentation":
       case "6":
-        return "Trình bày";
+        return translate("admin.typePresentation");
       default:
-        return "Chưa xác định";
+        return translate("admin.undefined");
     }
   };
 
@@ -301,7 +304,7 @@ function InlineLessonResourceDetailCard({ id }: { id: string }) {
       <Card sx={{ boxShadow: 2, mt: 2 }}>
         <CardContent sx={{ textAlign: "center", py: 4 }}>
           <Typography variant="h6" color="text.secondary">
-            Không tìm thấy tài nguyên
+            {translate("admin.resourceNotFound")}
           </Typography>
         </CardContent>
       </Card>
@@ -339,7 +342,7 @@ function InlineLessonResourceDetailCard({ id }: { id: string }) {
 
                   <Box>
                     <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                      Thông tin chi tiết
+                      {translate("admin.detailInformation")}
                     </Typography>
                     <Stack spacing={2}>
                       <Box>
@@ -348,7 +351,7 @@ function InlineLessonResourceDetailCard({ id }: { id: string }) {
                           color="text.secondary"
                           sx={{ mb: 0.5 }}
                         >
-                          Loại tài nguyên
+                          {translate("admin.resourceType")}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
                           {getTypeName(data.type)}
@@ -360,10 +363,10 @@ function InlineLessonResourceDetailCard({ id }: { id: string }) {
                           color="text.secondary"
                           sx={{ mb: 0.5 }}
                         >
-                          Khóa học
+                          {translate("admin.course")}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {data.courseTitle || "Chưa xác định"}
+                          {data.courseTitle || translate("admin.undefined")}
                         </Typography>
                       </Box>
                       <Box>
@@ -372,10 +375,10 @@ function InlineLessonResourceDetailCard({ id }: { id: string }) {
                           color="text.secondary"
                           sx={{ mb: 0.5 }}
                         >
-                          Bài học
+                          {translate("admin.lesson")}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {data.lessonTitle || data.lessonId || "Chưa xác định"}
+                          {data.lessonTitle || data.lessonId || translate("admin.undefined")}
                         </Typography>
                       </Box>
                       <Box>
@@ -384,7 +387,7 @@ function InlineLessonResourceDetailCard({ id }: { id: string }) {
                           color="text.secondary"
                           sx={{ mb: 0.5 }}
                         >
-                          URL tài nguyên
+                          {translate("admin.resourceUrl")}
                         </Typography>
                         <Link
                           href={data.fileUrl}
@@ -411,7 +414,7 @@ function InlineLessonResourceDetailCard({ id }: { id: string }) {
               <Card sx={{ boxShadow: 2 }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                    Thông tin hệ thống
+                    {translate("admin.systemInformation")}
                   </Typography>
                   <Stack spacing={2}>
                     <Box>
@@ -420,7 +423,7 @@ function InlineLessonResourceDetailCard({ id }: { id: string }) {
                         color="text.secondary"
                         sx={{ mb: 0.5 }}
                       >
-                        Ngày tạo
+                        {translate("admin.createdDate")}
                       </Typography>
                       <Typography variant="body1" sx={{ fontWeight: 500 }}>
                         {new Date(data.createdAt).toLocaleString("vi-VN", {
@@ -439,7 +442,7 @@ function InlineLessonResourceDetailCard({ id }: { id: string }) {
                           color="text.secondary"
                           sx={{ mb: 0.5 }}
                         >
-                          Ngày cập nhật
+                          {translate("admin.updatedDate")}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
                           {new Date(data.updatedAt).toLocaleString("vi-VN", {
@@ -459,7 +462,7 @@ function InlineLessonResourceDetailCard({ id }: { id: string }) {
               <Card sx={{ boxShadow: 2 }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                    Hành động
+                    {translate("admin.actions")}
                   </Typography>
                   <Stack spacing={1}>
                     <Link
@@ -469,7 +472,7 @@ function InlineLessonResourceDetailCard({ id }: { id: string }) {
                       sx={{ textDecoration: "none" }}
                     >
                       <Chip
-                        label="Mở tài nguyên"
+                        label={translate("admin.openResource")}
                         color="primary"
                         variant="outlined"
                         clickable
