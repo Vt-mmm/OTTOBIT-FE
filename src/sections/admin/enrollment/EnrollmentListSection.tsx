@@ -36,11 +36,13 @@ import { getEnrollments } from "store/enrollment/enrollmentSlice";
 import { EnrollmentResult } from "common/@types/enrollment";
 import dayjs from "dayjs";
 import EnrollmentDetailsDialog from "./EnrollmentDetailsDialog";
+import useLocales from "hooks/useLocales";
 
 interface EnrollmentListSectionProps {}
 
 export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
   const dispatch = useAppDispatch();
+  const { translate } = useLocales();
   const { enrollments } = useAppSelector((state) => state.enrollment);
 
   // Search & Filter states
@@ -117,23 +119,6 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 3,
-        }}
-      >
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-            📚 Enrollments Management
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            View and manage student course enrollments
-          </Typography>
-        </Box>
-      </Box>
 
       {/* Search and Filters */}
       <Card sx={{ mb: 3 }}>
@@ -141,7 +126,7 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
           <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
             <TextField
               fullWidth
-              placeholder="Search by student name, course title..."
+              placeholder={translate("admin.searchEnrollmentPlaceholder")}
               value={searchTerm}
               onChange={handleSearchInput}
               onKeyDown={(e) => {
@@ -168,15 +153,19 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
               }}
             />
             <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel>Status</InputLabel>
+              <InputLabel>{translate("admin.status")}</InputLabel>
               <Select
                 value={statusFilter}
-                label="Status"
+                label={translate("admin.status")}
                 onChange={handleStatusFilterChange}
               >
-                <MenuItem value="">All</MenuItem>
-                <MenuItem value="in_progress">In Progress</MenuItem>
-                <MenuItem value="completed">Completed</MenuItem>
+                <MenuItem value="">{translate("admin.all")}</MenuItem>
+                <MenuItem value="in_progress">
+                  {translate("admin.inProgress")}
+                </MenuItem>
+                <MenuItem value="completed">
+                  {translate("admin.completed")}
+                </MenuItem>
               </Select>
             </FormControl>
           </Box>
@@ -195,13 +184,15 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Student</TableCell>
-              <TableCell>Course</TableCell>
-              <TableCell align="center">Status</TableCell>
-              <TableCell align="center">Progress</TableCell>
-              <TableCell>Enrolled</TableCell>
-              <TableCell>Last Activity</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell>{translate("admin.student")}</TableCell>
+              <TableCell>{translate("admin.course")}</TableCell>
+              <TableCell align="center">{translate("admin.status")}</TableCell>
+              <TableCell align="center">
+                {translate("admin.progress")}
+              </TableCell>
+              <TableCell>{translate("admin.enrolled")}</TableCell>
+              <TableCell>{translate("admin.lastActivity")}</TableCell>
+              <TableCell align="right">{translate("admin.actions")}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -212,7 +203,8 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
                     <PersonIcon color="primary" />
                     <Box>
                       <Typography variant="body2" sx={{ fontWeight: "medium" }}>
-                        {enrollment.studentName || "Unknown Student"}
+                        {enrollment.studentName ||
+                          translate("admin.unknownStudent")}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         ID: {enrollment.studentId.slice(-8)}
@@ -225,17 +217,23 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
                     <CourseIcon sx={{ mr: 1, color: "secondary.main" }} />
                     <Box>
                       <Typography variant="body2" sx={{ fontWeight: "medium" }}>
-                        {enrollment.courseTitle || "Unknown Course"}
+                        {enrollment.courseTitle ||
+                          translate("admin.unknownCourse")}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {enrollment.courseDescription || "No description"}
+                        {enrollment.courseDescription ||
+                          translate("admin.noDescription")}
                       </Typography>
                     </Box>
                   </Box>
                 </TableCell>
                 <TableCell align="center">
                   <Chip
-                    label={enrollment.isCompleted ? "COMPLETED" : "IN_PROGRESS"}
+                    label={
+                      enrollment.isCompleted
+                        ? translate("admin.completed").toUpperCase()
+                        : translate("admin.inProgress").toUpperCase()
+                    }
                     size="small"
                     color={getStatusColor(!!enrollment.isCompleted) as any}
                     variant="outlined"
@@ -256,7 +254,8 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
                       {enrollment.completedLessonsCount}/
-                      {enrollment.totalLessonsCount} lessons
+                      {enrollment.totalLessonsCount}{" "}
+                      {translate("admin.lessons")}
                     </Typography>
                   </Box>
                 </TableCell>
@@ -266,12 +265,12 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
                 <TableCell>
                   {enrollment.lastAccessedAt
                     ? dayjs(enrollment.lastAccessedAt).format("DD/MM/YYYY")
-                    : "Never"}
+                    : translate("admin.never")}
                 </TableCell>
                 <TableCell align="right">
                   <IconButton
                     size="small"
-                    title="View Details"
+                    title={translate("admin.viewDetail")}
                     onClick={() => handleViewDetails(enrollment)}
                     color="primary"
                   >
@@ -290,12 +289,12 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
               sx={{ fontSize: 64, color: "text.secondary", mb: 2 }}
             />
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              No Enrollments Found
+              {translate("admin.noEnrollmentsFound")}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               {committedSearch || statusFilter
-                ? "Try adjusting your search or filter criteria"
-                : "No student enrollments exist yet"}
+                ? translate("admin.tryAdjustingFilters")
+                : translate("admin.noEnrollmentsYet")}
             </Typography>
           </Box>
         )}
@@ -311,9 +310,9 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
             }}
           >
             <FormControl size="small">
-              <InputLabel>Page Size</InputLabel>
+              <InputLabel>{translate("admin.pageSize")}</InputLabel>
               <Select
-                label="Page Size"
+                label={translate("admin.pageSize")}
                 value={pageSize}
                 onChange={(e) => {
                   setPageSize(Number(e.target.value));

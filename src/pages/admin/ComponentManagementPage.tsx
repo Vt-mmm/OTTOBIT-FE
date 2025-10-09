@@ -5,10 +5,12 @@ import ComponentListSection from "sections/admin/component/ComponentListSection"
 import ComponentFormSection from "sections/admin/component/ComponentFormSection";
 import ComponentDetailsSection from "sections/admin/component/ComponentDetailsSection";
 import { ComponentResult } from "common/@types/component";
+import { useLocales } from "hooks";
 
 export type ComponentViewMode = "list" | "create" | "edit" | "details";
 
 export default function ComponentManagementPage() {
+  const { translate } = useLocales();
   const [viewMode, setViewMode] = useState<ComponentViewMode>("list");
   const [selectedComponent, setSelectedComponent] =
     useState<ComponentResult | null>(null);
@@ -69,26 +71,26 @@ export default function ComponentManagementPage() {
   const getPageTitle = () => {
     switch (viewMode) {
       case "create":
-        return "Create New Component";
+        return translate("admin.createNewComponent");
       case "edit":
-        return "Edit Component";
+        return translate("admin.editComponentTitle");
       case "details":
-        return "Component Details";
+        return translate("admin.componentDetailsTitle");
       default:
-        return "Component Management";
+        return translate("admin.componentManagementTitle");
     }
   };
 
   const getPageDescription = () => {
     switch (viewMode) {
       case "create":
-        return "Create a new component for the system";
+        return translate("admin.createNewComponentSubtitle");
       case "edit":
-        return "Update component information and specifications";
+        return translate("admin.editComponentSubtitle");
       case "details":
-        return "View detailed component information and manage settings";
+        return translate("admin.componentDetailsSubtitle");
       default:
-        return "Manage components, specifications, and configurations";
+        return translate("admin.componentManagementSubtitle");
     }
   };
 

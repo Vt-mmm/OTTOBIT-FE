@@ -3,8 +3,10 @@ import LessonResourceFormSection from "sections/admin/lessonResource/LessonResou
 import { Box, Typography, Button } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import useLocales from "hooks/useLocales";
 
 export default function LessonResourceEditPage() {
+  const { translate } = useLocales();
   const navigate = useNavigate();
   const { id } = useParams();
   return (
@@ -12,10 +14,10 @@ export default function LessonResourceEditPage() {
       <Box sx={{ mb: 2 }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            Quản lý Tài nguyên Học Tập
+            {translate("admin.lessonResourceManagement")}
           </Typography>
           <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 1 }}>
-            Chỉnh sửa tài nguyên {id ? `#${id}` : ""}
+            {translate("admin.editResourceTitle")} {id ? `#${id}` : ""}
           </Typography>
         </Box>
         <Button
@@ -25,7 +27,7 @@ export default function LessonResourceEditPage() {
           variant="text"
           color="inherit"
         >
-          Quay lại
+          {translate("admin.backButton")}
         </Button>
       </Box>
       <LessonResourceFormSection />

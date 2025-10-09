@@ -23,6 +23,7 @@ import {
 } from "@mui/icons-material";
 import { EnrollmentResult } from "common/@types/enrollment";
 import dayjs from "dayjs";
+import useLocales from "hooks/useLocales";
 
 interface EnrollmentDetailsDialogProps {
   open: boolean;
@@ -68,6 +69,7 @@ export default function EnrollmentDetailsDialog({
   enrollment,
   isLoading = false,
 }: EnrollmentDetailsDialogProps) {
+  const { translate } = useLocales();
   if (isLoading) {
     return (
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -89,7 +91,7 @@ export default function EnrollmentDetailsDialog({
     return (
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
         <DialogContent>
-          <Typography>No enrollment data available</Typography>
+          <Typography>{translate("admin.noEnrollmentData")}</Typography>
         </DialogContent>
       </Dialog>
     );
@@ -130,7 +132,7 @@ export default function EnrollmentDetailsDialog({
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <EnrollmentIcon color="primary" />
-          <Typography variant="h6">Enrollment Details</Typography>
+          <Typography variant="h6">{translate("admin.enrollmentDetails")}</Typography>
         </Box>
         <IconButton onClick={onClose}>
           <CloseIcon />
@@ -142,7 +144,7 @@ export default function EnrollmentDetailsDialog({
         <Box sx={{ mb: 3, display: "flex", justifyContent: "center" }}>
           <Chip
             icon={getStatusIcon()}
-            label={enrollment.isCompleted ? "Completed" : "In Progress"}
+            label={enrollment.isCompleted ? translate("admin.completed") : translate("admin.inProgress")}
             color={getStatusColor()}
             sx={{ px: 2, py: 2.5, fontSize: "0.9rem" }}
           />
@@ -151,7 +153,7 @@ export default function EnrollmentDetailsDialog({
         {/* Progress Section */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>
-            Progress Overview
+            {translate("admin.progressOverview")}
           </Typography>
           <Box
             sx={{
@@ -169,7 +171,7 @@ export default function EnrollmentDetailsDialog({
               }}
             >
               <Typography variant="body2" fontWeight="medium">
-                Overall Progress
+                {translate("admin.overallProgress")}
               </Typography>
               <Typography variant="h5" color="primary" fontWeight="bold">
                 {progressPercentage}%
@@ -193,7 +195,7 @@ export default function EnrollmentDetailsDialog({
             >
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Completed Lessons
+                  {translate("admin.completedLessons")}
                 </Typography>
                 <Typography variant="h6" color="success.main">
                   {enrollment.completedLessonsCount}
@@ -201,7 +203,7 @@ export default function EnrollmentDetailsDialog({
               </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Total Lessons
+                  {translate("admin.totalLessons")}
                 </Typography>
                 <Typography variant="h6">
                   {enrollment.totalLessonsCount}
@@ -209,7 +211,7 @@ export default function EnrollmentDetailsDialog({
               </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Remaining
+                  {translate("admin.remaining")}
                 </Typography>
                 <Typography variant="h6" color="warning.main">
                   {enrollment.totalLessonsCount -
@@ -225,16 +227,16 @@ export default function EnrollmentDetailsDialog({
         {/* Student Information */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>
-            Student Information
+            {translate("admin.studentInfo")}
           </Typography>
           <DetailRow
             icon={<PersonIcon fontSize="small" />}
-            label="Student Name"
+            label={translate("admin.studentName")}
             value={enrollment.studentName || "N/A"}
           />
           <DetailRow
             icon={<PersonIcon fontSize="small" />}
-            label="Student ID"
+            label={translate("admin.studentID")}
             value={
               <Typography variant="body2" fontFamily="monospace">
                 {enrollment.studentId}
@@ -248,23 +250,23 @@ export default function EnrollmentDetailsDialog({
         {/* Course Information */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>
-            Course Information
+            {translate("admin.courseInfo")}
           </Typography>
           <DetailRow
             icon={<CourseIcon fontSize="small" />}
-            label="Course Title"
+            label={translate("admin.courseTitle")}
             value={enrollment.courseTitle || "N/A"}
           />
           {enrollment.courseDescription && (
             <DetailRow
               icon={<CourseIcon fontSize="small" />}
-              label="Description"
+              label={translate("admin.description")}
               value={enrollment.courseDescription}
             />
           )}
           <DetailRow
             icon={<CourseIcon fontSize="small" />}
-            label="Course ID"
+            label={translate("admin.courseID")}
             value={
               <Typography variant="body2" fontFamily="monospace">
                 {enrollment.courseId}
@@ -278,12 +280,12 @@ export default function EnrollmentDetailsDialog({
         {/* Timeline Information */}
         <Box>
           <Typography variant="h6" sx={{ mb: 2 }}>
-            Timeline
+            {translate("admin.timeline")}
           </Typography>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             <DetailRow
               icon={<DateIcon fontSize="small" />}
-              label="Enrollment Date"
+              label={translate("admin.enrollmentDate")}
               value={dayjs(enrollment.enrollmentDate).format(
                 "MMM DD, YYYY HH:mm"
               )}
@@ -291,7 +293,7 @@ export default function EnrollmentDetailsDialog({
             {enrollment.lastAccessedAt && (
               <DetailRow
                 icon={<DateIcon fontSize="small" />}
-                label="Last Accessed"
+                label={translate("admin.lastAccessed")}
                 value={dayjs(enrollment.lastAccessedAt).format(
                   "MMM DD, YYYY HH:mm"
                 )}
@@ -299,12 +301,12 @@ export default function EnrollmentDetailsDialog({
             )}
             <DetailRow
               icon={<DateIcon fontSize="small" />}
-              label="Created At"
+              label={translate("admin.createdAt")}
               value={dayjs(enrollment.createdAt).format("MMM DD, YYYY HH:mm")}
             />
             <DetailRow
               icon={<DateIcon fontSize="small" />}
-              label="Updated At"
+              label={translate("admin.updatedAt")}
               value={dayjs(enrollment.updatedAt).format("MMM DD, YYYY HH:mm")}
             />
           </Box>
@@ -315,11 +317,11 @@ export default function EnrollmentDetailsDialog({
         {/* Metadata */}
         <Box>
           <Typography variant="h6" sx={{ mb: 2 }}>
-            Additional Information
+            {translate("admin.additionalInfo")}
           </Typography>
           <Box sx={{ display: "flex", justifyContent: "space-between", py: 1 }}>
             <Typography variant="body2" color="text.secondary">
-              Enrollment ID:
+              {translate("admin.enrollmentID")}:
             </Typography>
             <Typography variant="body2" fontFamily="monospace">
               {enrollment.id}
@@ -330,7 +332,7 @@ export default function EnrollmentDetailsDialog({
 
       <DialogActions sx={{ p: 3 }}>
         <Button onClick={onClose} color="inherit">
-          Close
+          {translate("admin.close")}
         </Button>
       </DialogActions>
     </Dialog>

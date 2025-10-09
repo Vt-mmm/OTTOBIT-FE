@@ -5,10 +5,12 @@ import LessonListSection from "../../sections/admin/lesson/LessonListSection";
 import LessonFormSection from "../../sections/admin/lesson/LessonFormSection";
 import LessonDetailsSection from "../../sections/admin/lesson/LessonDetailsSection";
 import { LessonResult } from "../../common/@types/lesson";
+import useLocales from "../../hooks/useLocales";
 
 type ViewMode = "list" | "create" | "edit" | "details";
 
 export default function LessonManagementPage() {
+  const { translate } = useLocales();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [selectedLesson, setSelectedLesson] = useState<LessonResult | null>(
     null
@@ -92,7 +94,7 @@ export default function LessonManagementPage() {
               fontSize: { xs: "1.5rem", sm: "2.125rem" },
             }}
           >
-            Quản lý Bài học
+            {translate("admin.lessonManagementTitle")}
           </Typography>
 
           <Typography
@@ -102,12 +104,12 @@ export default function LessonManagementPage() {
               fontSize: { xs: "0.875rem", sm: "1rem" },
             }}
           >
-            {viewMode === "list" && "Danh sách tất cả bài học trong hệ thống"}
-            {viewMode === "create" && "Tạo bài học mới"}
+            {viewMode === "list" && translate("admin.lessonManagementSubtitle")}
+            {viewMode === "create" && translate("admin.createNewLesson")}
             {viewMode === "edit" &&
-              `Chỉnh sửa bài học: ${selectedLesson?.title}`}
+              `${translate("admin.editLessonTitle")}: ${selectedLesson?.title}`}
             {viewMode === "details" &&
-              `Chi tiết bài học: ${selectedLesson?.title}`}
+              `${translate("admin.lessonDetailsTitle")}: ${selectedLesson?.title}`}
           </Typography>
         </Box>
 

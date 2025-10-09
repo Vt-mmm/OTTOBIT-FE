@@ -42,5 +42,15 @@
   "CannotReloadMap": "Không thể tải lại map. Vui lòng thử lại.",
   "MapReloadedSuccessfully": "Map đã được tải lại thành công!",
   "ComponentsBOM": "📦 Danh sách linh kiện (BOM)",
-  "Vietnamese": "Tiếng Việt"
+  "Vietnamese": "Tiếng Việt",
+  "By": "Bởi",
+  "All": "Tất cả",
+  "PageSize": "Kích thước trang",
+  "cancel": "Hủy",
+  "create": "Tạo mới",
+  "update": "Cập nhật",
+  "close": "Đóng",
+  "processing": "Đang xử lý...",
+  "moreThan": "nhiều hơn {{to}}",
+  "of": "của"
 }

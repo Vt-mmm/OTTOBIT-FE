@@ -37,5 +37,6 @@ const errorMap: Record<string, string> = {
  * @param serverMessage - Thông điệp lỗi từ server
  * @returns i18n key tương ứng
  */
-export const toErrorKey = (serverMessage: string): string =>
-  errorMap[serverMessage] ?? "error.Unknown";
+export function toErrorKey(serverMessage: string): string {
+  return errorMap[serverMessage] ?? "error.Unknown";
+}

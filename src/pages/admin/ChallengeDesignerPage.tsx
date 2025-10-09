@@ -30,6 +30,7 @@ import { ROUTES_API_CHALLENGE } from "constants/routesApiKeys";
 import { extractApiErrorMessage } from "utils/errorHandler";
 import { useNotification } from "../../hooks/useNotification";
 import { useAppDispatch, useAppSelector } from "../../redux/config";
+import { useLocales } from "hooks";
 import { getCoursesForAdmin } from "../../redux/course/courseSlice";
 import {
   getLessons,
@@ -41,6 +42,7 @@ import { BlocklyToPhaserConverter } from "../../features/phaser/services/blockly
 
 const MapDesignerPage = () => {
   const dispatch = useAppDispatch();
+  const { translate } = useLocales();
   const { data: coursesData } = useAppSelector((s) => s.course.adminCourses);
   const { data: lessonsData } = useAppSelector((s) => s.lesson.lessons);
 
@@ -905,7 +907,7 @@ const MapDesignerPage = () => {
                 variant="h4"
                 sx={{ fontWeight: 600, color: "#1B5E20", mb: 1 }}
               >
-                Challenge Designer
+                {translate("admin.challengeDesigner")}
               </Typography>
             </Box>
 
@@ -933,7 +935,7 @@ const MapDesignerPage = () => {
                 {selectedMapTitle}
               </Typography>
               <Button variant="outlined" onClick={() => setMapPickerOpen(true)}>
-                Select / Change Map
+                {translate("admin.selectChangeMap")}
               </Button>
               <Box sx={{ flexShrink: 0 }}>
                 <ToggleButtonGroup
@@ -946,11 +948,11 @@ const MapDesignerPage = () => {
                 >
                   <ToggleButton value="orthogonal" aria-label="orthogonal view">
                     <ViewModuleIcon sx={{ mr: 1 }} />
-                    2D View
+                    {translate("admin.viewMode2D")}
                   </ToggleButton>
                   <ToggleButton value="isometric" aria-label="isometric view">
                     <ThreeDRotationIcon sx={{ mr: 1 }} />
-                    2.5D View
+                    {translate("admin.viewMode25D")}
                   </ToggleButton>
                 </ToggleButtonGroup>
               </Box>
@@ -1049,8 +1051,8 @@ const MapDesignerPage = () => {
               challengeJson={challengeJson}
               onSaveMap={handleSaveMap}
               onOpenMapPicker={() => {
-                if (!courseId) {
-                  alert("Vui lòng chọn khóa học trước khi chọn map!");
+              if (!courseId) {
+                  alert(translate("admin.pleasSelectCourse"));
                   return;
                 }
                 setMapPickerOpen(true);
@@ -1073,7 +1075,7 @@ const MapDesignerPage = () => {
               }}
             >
               <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>
-                Solution
+                {translate("admin.solution")}
               </Typography>
               <Box sx={{ display: "flex", gap: 0 }}>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -1133,7 +1135,7 @@ const MapDesignerPage = () => {
                       variant="body2"
                       sx={{ color: "#999", textAlign: "center" }}
                     >
-                      No map selected
+                      {translate("admin.noMapSelected")}
                     </Typography>
                   )}
                 </Box>
@@ -1197,12 +1199,12 @@ const MapDesignerPage = () => {
                   }
                 >
                   {challengeJson
-                    ? "Challenge Configured"
-                    : "Configure Challenge"}
+                    ? translate("admin.challengeConfigured")
+                    : translate("admin.configureChallenge")}
                 </Button>
                 <Box sx={{ flexGrow: 1 }} />
                 <Button variant="contained" onClick={handleSaveMap}>
-                  Save Challenge
+                  {translate("admin.saveChallenge")}
                 </Button>
               </Box>
               {/* Auto-use buffered solution on Challenge Save; no separate Save Solution button */}
@@ -1282,12 +1284,12 @@ const MapDesignerPage = () => {
         open={openUpdateConfirm}
         onClose={() => setOpenUpdateConfirm(false)}
       >
-        <DialogTitle>Confirm Update</DialogTitle>
+        <DialogTitle>{translate("admin.confirmUpdate")}</DialogTitle>
         <DialogContent>
-          You are updating an existing map. Proceed?
+          {translate("admin.confirmUpdateMessage")}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenUpdateConfirm(false)}>Cancel</Button>
+          <Button onClick={() => setOpenUpdateConfirm(false)}>{translate("admin.cancel")}</Button>
           <Button
             variant="contained"
             onClick={async () => {

@@ -1,8 +1,11 @@
 import { Box, Container, Typography } from "@mui/material";
 import AdminLayout from "layout/admin/AdminLayout";
 import ActivationCodeListSection from "sections/admin/activationCode/ActivationCodeListSection";
+import { useLocales } from "hooks";
 
 export default function ActivationCodeManagementPage() {
+  const { translate } = useLocales();
+
   return (
     <AdminLayout>
       <Container
@@ -20,7 +23,7 @@ export default function ActivationCodeManagementPage() {
               fontSize: { xs: "1.5rem", sm: "2.125rem" },
             }}
           >
-            Quản lý Mã kích hoạt
+            {translate("admin.activationCodeManagementTitle")}
           </Typography>
           <Typography
             variant="body1"
@@ -29,7 +32,7 @@ export default function ActivationCodeManagementPage() {
               fontSize: { xs: "0.875rem", sm: "1rem" },
             }}
           >
-            Quản lý mã kích hoạt robot và hệ thống
+            {translate("admin.activationCodeManagementSubtitle")}
           </Typography>
         </Box>
         <ActivationCodeListSection />

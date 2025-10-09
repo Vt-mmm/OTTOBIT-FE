@@ -1,8 +1,11 @@
 import { Box, Container, Typography } from "@mui/material";
 import AdminLayout from "layout/admin/AdminLayout";
 import EnrollmentListSection from "sections/admin/enrollment/EnrollmentListSection";
+import { useLocales } from "hooks";
 
 export default function EnrollmentManagementPage() {
+  const { translate } = useLocales();
+
   return (
     <AdminLayout>
       <Container
@@ -20,7 +23,7 @@ export default function EnrollmentManagementPage() {
               fontSize: { xs: "1.5rem", sm: "2.125rem" },
             }}
           >
-            Quản lý Ghi danh
+            {translate("admin.enrollmentManagementTitle")}
           </Typography>
           <Typography
             variant="body1"
@@ -29,7 +32,7 @@ export default function EnrollmentManagementPage() {
               fontSize: { xs: "0.875rem", sm: "1rem" },
             }}
           >
-            Danh sách ghi danh khóa học của học sinh
+            {translate("admin.enrollmentManagementSubtitle")}
           </Typography>
         </Box>
         <EnrollmentListSection />

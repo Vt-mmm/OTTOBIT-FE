@@ -46,6 +46,7 @@ import { useNavigate } from "react-router-dom";
 import Pagination from "@mui/material/Pagination";
 import { axiosClient } from "axiosClient";
 import { extractApiErrorMessage } from "utils/errorHandler";
+import { useLocales } from "hooks";
 
 interface ChallengeListSectionProps {
   onCreateNew?: () => void;
@@ -57,6 +58,7 @@ export default function ChallengeListSection({
   onCreateNew,
   onEditChallenge,
 }: ChallengeListSectionProps) {
+  const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { challenges } = useAppSelector((state) => state.challenge);
@@ -206,9 +208,6 @@ export default function ChallengeListSection({
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
-      <Typography variant="h4" sx={{ fontWeight: "bold", mb: 3 }}>
-        🎯 Challenge Management
-      </Typography>
 
       {/* Search and Filters */}
       <Card sx={{ mb: 3 }}>
@@ -223,7 +222,7 @@ export default function ChallengeListSection({
           >
             <TextField
               fullWidth
-              placeholder="Search challenges by title or description..."
+              placeholder={translate("admin.searchChallengePlaceholder")}
               value={searchTerm}
               onChange={handleSearch}
               onKeyDown={(e) => {
@@ -248,16 +247,16 @@ export default function ChallengeListSection({
               }}
             />
             <FormControl size="small" sx={{ minWidth: 200 }}>
-              <InputLabel>Course</InputLabel>
+              <InputLabel>{translate("admin.course")}</InputLabel>
               <Select
-                label="Course"
+                label={translate("admin.course")}
                 value={courseId}
                 onChange={(e) => {
                   setCourseId(e.target.value as string);
                   setLessonId("");
                 }}
               >
-                <MenuItem value="">All courses</MenuItem>
+                <MenuItem value="">{translate("admin.allCourses")}</MenuItem>
                 {(adminCourses?.items || []).map((c: any) => (
                   <MenuItem key={c.id} value={c.id}>
                     {c.title}
@@ -270,13 +269,13 @@ export default function ChallengeListSection({
               sx={{ minWidth: 200 }}
               disabled={!courseId}
             >
-              <InputLabel>Lesson</InputLabel>
+              <InputLabel>{translate("admin.lesson")}</InputLabel>
               <Select
-                label="Lesson"
+                label={translate("admin.lesson")}
                 value={lessonId}
                 onChange={(e) => setLessonId(e.target.value as string)}
               >
-                <MenuItem value="">All lessons</MenuItem>
+                <MenuItem value="">{translate("admin.allLessons")}</MenuItem>
                 {((lessonsState?.items as any[]) || []).map((l: any) => (
                   <MenuItem key={l.id} value={l.id}>
                     {l.title}
@@ -298,7 +297,7 @@ export default function ChallengeListSection({
                 minWidth: "auto",
               }}
             >
-              Add Challenge
+              {translate("admin.addChallenge")}
             </Button>
           </Box>
         </CardContent>
@@ -316,14 +315,14 @@ export default function ChallengeListSection({
         <Table stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell>Challenge</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell align="center">Mode</TableCell>
-              <TableCell align="center">Difficulty</TableCell>
-              <TableCell align="center">Order</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Created</TableCell>
-              <TableCell align="center">Actions</TableCell>
+              <TableCell>{translate("admin.challenge")}</TableCell>
+              <TableCell>{translate("admin.description")}</TableCell>
+              <TableCell align="center">{translate("admin.mode")}</TableCell>
+              <TableCell align="center">{translate("admin.difficulty")}</TableCell>
+              <TableCell align="center">{translate("admin.order")}</TableCell>
+              <TableCell>{translate("admin.status")}</TableCell>
+              <TableCell>{translate("admin.created")}</TableCell>
+              <TableCell align="center">{translate("admin.actions")}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -410,14 +409,14 @@ export default function ChallengeListSection({
                   {challenge.isDeleted ? (
                     <Chip
                       size="small"
-                      label="Deleted"
+                      label={translate("admin.deleted")}
                       color="error"
                       variant="outlined"
                     />
                   ) : (
                     <Chip
                       size="small"
-                      label="Active"
+                      label={translate("admin.active")}
                       color="success"
                       variant="outlined"
                     />
@@ -429,7 +428,7 @@ export default function ChallengeListSection({
                 <TableCell align="center">
                   <IconButton
                     size="small"
-                    title="View Challenge"
+                    title={translate("admin.view")}
                     onClick={() => handleViewChallenge(challenge)}
                   >
                     <ViewIcon />
@@ -498,12 +497,12 @@ export default function ChallengeListSection({
 
       {/* Delete Confirm Dialog */}
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
-        <DialogTitle>Delete Challenge</DialogTitle>
+        <DialogTitle>{translate("admin.confirmDelete")}</DialogTitle>
         <DialogContent>
-          Are you sure you want to delete this challenge?
+          {translate("admin.confirmDeleteMessage", { name: "challenge" })}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
+          <Button onClick={() => setConfirmOpen(false)}>{translate("admin.cancel")}</Button>
           <Button
             color="error"
             variant="contained"
@@ -513,7 +512,7 @@ export default function ChallengeListSection({
               setPendingDeleteId(null);
             }}
           >
-            Delete
+            {translate("admin.delete")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -523,12 +522,12 @@ export default function ChallengeListSection({
         open={restoreConfirmOpen}
         onClose={() => setRestoreConfirmOpen(false)}
       >
-        <DialogTitle>Confirm Restore</DialogTitle>
+        <DialogTitle>{translate("admin.confirmRestore")}</DialogTitle>
         <DialogContent>
-          Are you sure you want to restore this challenge?
+          {translate("admin.confirmRestoreMessage", { name: "challenge" })}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setRestoreConfirmOpen(false)}>Cancel</Button>
+          <Button onClick={() => setRestoreConfirmOpen(false)}>{translate("admin.cancel")}</Button>
           <Button
             variant="contained"
             color="success"

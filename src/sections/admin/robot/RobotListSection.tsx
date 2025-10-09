@@ -35,6 +35,7 @@ import {
 import { clearSuccessFlags } from "../../../redux/robot/robotSlice";
 import { RobotResult } from "../../../common/@types/robot";
 import ConfirmDialog from "components/common/ConfirmDialog";
+import useLocales from "../../../hooks/useLocales";
 
 interface RobotListSectionProps {
   onViewModeChange: (
@@ -48,6 +49,7 @@ export default function RobotListSection({
 }: RobotListSectionProps) {
   const dispatch = useAppDispatch();
   const { robots, operations } = useAppSelector((state) => state.robot);
+  const { translate } = useLocales();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBrand, setFilterBrand] = useState<string>("all");
@@ -125,7 +127,7 @@ export default function RobotListSection({
       {/* Search and Filters */}
       <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
         <TextField
-          placeholder="Search robots..."
+          placeholder={translate("admin.searchRobotPlaceholder")}
           value={searchTerm}
           onChange={(e) => handleSearch(e.target.value)}
           InputProps={{
@@ -139,13 +141,13 @@ export default function RobotListSection({
         />
 
         <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>Brand</InputLabel>
+          <InputLabel>{translate("admin.brandFilter")}</InputLabel>
           <Select
             value={filterBrand}
-            label="Brand"
+            label={translate("admin.brandFilter")}
             onChange={(e) => handleBrandFilterChange(e.target.value)}
           >
-            <MenuItem value="all">All Brands</MenuItem>
+            <MenuItem value="all">{translate("admin.allBrands")}</MenuItem>
             {uniqueBrands.map((brand) => (
               <MenuItem key={brand} value={brand}>
                 {brand}
@@ -160,14 +162,14 @@ export default function RobotListSection({
           onClick={() => onViewModeChange("create")}
           sx={{ ml: "auto" }}
         >
-          Add Product
+          {translate("admin.addProduct")}
         </Button>
       </Box>
 
       {/* Success/Error Messages */}
       {operations.deleteSuccess && (
         <Alert severity="success" sx={{ mb: 2 }}>
-          Robot product deleted successfully!
+          {translate("admin.robotProductDeletedSuccess")}
         </Alert>
       )}
 
@@ -180,7 +182,10 @@ export default function RobotListSection({
       {/* Results Summary */}
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         {robots.data &&
-          `Showing ${robotList.length} of ${robots.data.total} robot products`}
+          translate("admin.showingRobotProducts", {
+            count: robotList.length,
+            total: robots.data.total,
+          })}
       </Typography>
 
       {/* Robots Grid */}
@@ -188,19 +193,19 @@ export default function RobotListSection({
         <Box textAlign="center" py={8}>
           <RobotIcon sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
           <Typography variant="h6" color="text.secondary" mb={2}>
-            No robot products found
+            {translate("admin.noRobotProductsFound")}
           </Typography>
           <Typography variant="body2" color="text.secondary" mb={3}>
             {searchTerm || filterBrand !== "all"
-              ? "Try adjusting your search or filters"
-              : "Add your first robot product to get started"}
+              ? translate("admin.tryAdjustingSearchOrFilters")
+              : translate("admin.addYourFirstRobot")}
           </Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => onViewModeChange("create")}
           >
-            Add First Product
+            {translate("admin.addFirstProduct")}
           </Button>
         </Box>
       ) : (
@@ -364,7 +369,7 @@ export default function RobotListSection({
                       minHeight: "2.5em",
                     }}
                   >
-                    {robot.description || "No description available"}
+                    {robot.description || translate("admin.noDescriptionAvailable")}
                   </Typography>
 
                   {/* Product Details */}
@@ -372,13 +377,13 @@ export default function RobotListSection({
                     sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}
                   >
                     <Typography variant="caption" color="text.secondary">
-                      <strong>Age:</strong> {robot.minAge}-{robot.maxAge} tuổi
+                      <strong>{translate("admin.age")}:</strong> {robot.minAge}-{robot.maxAge} tuổi
                     </Typography>
 
                     <Typography variant="caption" color="text.secondary">
-                      <strong>Status:</strong>
+                      <strong>{translate("admin.status")}:</strong>
                       <Chip
-                        label="Active"
+                        label={translate("admin.active")}
                         color="success"
                         size="small"
                         sx={{ ml: 0.5, height: 16, fontSize: "0.7rem" }}
@@ -386,7 +391,7 @@ export default function RobotListSection({
                     </Typography>
 
                     <Typography variant="caption" color="text.secondary">
-                      <strong>Added:</strong>{" "}
+                      <strong>{translate("admin.createdAt")}:</strong>{" "}
                       {new Date(robot.createdAt).toLocaleDateString()}
                     </Typography>
                   </Box>
@@ -409,9 +414,9 @@ export default function RobotListSection({
           }}
         >
           <FormControl size="small">
-            <InputLabel>Page Size</InputLabel>
+            <InputLabel>{translate("admin.pageSize")}</InputLabel>
             <Select
-              label="Page Size"
+              label={translate("admin.pageSize")}
               value={pageSize}
               onChange={(e) => {
                 setPageSize(Number(e.target.value));
@@ -439,10 +444,12 @@ export default function RobotListSection({
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         open={deleteDialog.open}
-        title="Delete Robot Product"
-        message={`Are you sure you want to delete "${deleteDialog.robotName}"? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={translate("admin.deleteRobotProduct")}
+        message={translate("admin.confirmDeleteRobotProduct", {
+          name: deleteDialog.robotName || "",
+        })}
+        confirmText={translate("admin.delete")}
+        cancelText={translate("admin.cancel")}
         confirmColor="error"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteDialog({ open: false })}

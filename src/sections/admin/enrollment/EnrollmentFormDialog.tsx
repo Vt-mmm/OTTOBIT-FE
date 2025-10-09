@@ -16,6 +16,7 @@ import {
 import { Close as CloseIcon } from "@mui/icons-material";
 import { useForm, Controller } from "react-hook-form";
 import { CreateEnrollmentRequest } from "common/@types/enrollment";
+import useLocales from "hooks/useLocales";
 
 // Import course and student types if needed for autocomplete
 interface Course {
@@ -61,6 +62,7 @@ export default function EnrollmentFormDialog({
   isLoadingCourses = false,
   preSelectedCourseId,
 }: EnrollmentFormDialogProps) {
+  const { translate } = useLocales();
   const {
     control,
     handleSubmit,
@@ -110,7 +112,7 @@ export default function EnrollmentFormDialog({
           pb: 2,
         }}
       >
-        <Typography variant="h6">Create New Enrollment</Typography>
+        <Typography variant="h6">{translate("admin.createNewEnrollment")}</Typography>
         <IconButton onClick={onClose} disabled={isLoading}>
           <CloseIcon />
         </IconButton>
@@ -126,7 +128,7 @@ export default function EnrollmentFormDialog({
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
             <Alert severity="info">
-              Create enrollment for a student to enroll them in a course.
+              {translate("admin.enrollmentInfoMessage")}
             </Alert>
 
             {/* Course Selection */}
@@ -134,7 +136,7 @@ export default function EnrollmentFormDialog({
               name="courseId"
               control={control}
               rules={{
-                required: "Please select a course",
+                required: translate("admin.pleaseSelectCourse"),
               }}
               render={({ field }) => (
                 <Autocomplete
@@ -155,7 +157,7 @@ export default function EnrollmentFormDialog({
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label="Select Course *"
+                      label={translate("admin.selectCourseRequired")}
                       error={!!errors.courseId}
                       helperText={errors.courseId?.message}
                       InputProps={{
@@ -213,7 +215,7 @@ export default function EnrollmentFormDialog({
 
         <DialogActions sx={{ p: 3, pt: 2 }}>
           <Button onClick={onClose} disabled={isLoading} color="inherit">
-            Cancel
+            {translate("admin.cancel")}
           </Button>
           <Button
             type="submit"
@@ -221,7 +223,7 @@ export default function EnrollmentFormDialog({
             disabled={isLoading || isLoadingCourses}
             sx={{ minWidth: 120 }}
           >
-            {isLoading ? "Creating..." : "Create Enrollment"}
+            {isLoading ? translate("admin.creating") : translate("admin.createEnrollment")}
           </Button>
         </DialogActions>
       </form>

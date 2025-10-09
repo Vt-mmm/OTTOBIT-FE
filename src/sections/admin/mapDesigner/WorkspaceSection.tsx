@@ -16,6 +16,7 @@ import { THEME_COLORS } from "./theme.config";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CropFreeIcon from "@mui/icons-material/CropFree";
 import SearchIcon from "@mui/icons-material/Search";
+import useLocales from "hooks/useLocales";
 
 interface WorkspaceSectionProps {
   selectedAsset: string;
@@ -58,6 +59,7 @@ export default function WorkspaceSection({
   selectedAsset,
   onAssetSelect,
 }: WorkspaceSectionProps) {
+  const { translate } = useLocales();
   const [tabValue, setTabValue] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -190,13 +192,13 @@ export default function WorkspaceSection({
           marginRight: "0px !important",
         }}
       >
-        Workspace
+        {translate("admin.workspace")}
       </Typography>
 
       {/* Search Field - Fixed height to prevent layout shift */}
       <TextField
         fullWidth
-        placeholder="Search assets..."
+        placeholder={translate("admin.searchAssets")}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         size="small"
@@ -280,9 +282,9 @@ export default function WorkspaceSection({
           // No scroll buttons needed with standard variant
         }}
       >
-        <Tab label="Robot" />
-        <Tab label="Items" />
-        <Tab label="Tools" />
+        <Tab label={translate("admin.robot")} />
+        <Tab label={translate("admin.items")} />
+        <Tab label={translate("admin.tools")} />
       </Tabs>
 
       {/* Content area - No scroll needed */}
@@ -362,32 +364,32 @@ export default function WorkspaceSection({
           variant="subtitle2"
           sx={{ mb: 1, color: THEME_COLORS.text.primary, fontWeight: 600 }}
         >
-          Guide
+          {translate("admin.guide")}
         </Typography>
 
         <Typography
           variant="caption"
           sx={{ display: "block", mb: 0.5, color: THEME_COLORS.text.secondary }}
         >
-          • Click to place robot or item; drag to paint items quickly
+          • {translate("admin.clickToPlaceRobots")}
         </Typography>
         <Typography
           variant="caption"
           sx={{ display: "block", mb: 0.5, color: THEME_COLORS.text.secondary }}
         >
-          • Click a placed item to delete, or use Tools → Delete Object
+          • {translate("admin.useToolsDelete")}
         </Typography>
         <Typography
           variant="caption"
           sx={{ display: "block", mb: 0.5, color: THEME_COLORS.text.secondary }}
         >
-          • Only 1 robot allowed per map
+          • {translate("admin.onlyOneRobotAllowed")}
         </Typography>
         <Typography
           variant="caption"
           sx={{ display: "block", color: THEME_COLORS.text.secondary }}
         >
-          • Terrain is fixed in Challenge Designer; tiles cannot be placed here
+          • {translate("admin.terrainIsFixed")}
         </Typography>
         <Typography
           variant="caption"

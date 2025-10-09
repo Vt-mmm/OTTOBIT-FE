@@ -21,6 +21,8 @@ import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import MenuIcon from "@mui/icons-material/Menu";
 import useResponsive from "hooks/useResponsive";
+import { LanguageSwitcher } from "components/common";
+import { useLocales } from "hooks";
 
 interface AdminHeaderProps {
   title?: string;
@@ -29,6 +31,7 @@ interface AdminHeaderProps {
 
 const AdminHeader: React.FC<AdminHeaderProps> = ({ title, onOpenNav }) => {
   const theme = useTheme();
+  const { translate } = useLocales();
   const isDesktop = useResponsive("up", "lg");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -113,14 +116,16 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ title, onOpenNav }) => {
         </Box>
 
         {/* User Profile Section */}
-        <Box sx={{ display: "flex", alignItems: "center", ml: "auto" }}>
+        <Box sx={{ display: "flex", alignItems: "center", ml: "auto", gap: 1 }}>
+          {/* Language Switcher */}
+          <LanguageSwitcher />
+
           {userAuth?.roles?.includes("Admin") && (
             <Chip
               icon={<AdminPanelSettingsIcon />}
               label="Admin"
               size="small"
               sx={{
-                mr: 2,
                 fontWeight: 500,
                 bgcolor: alpha("#70c8d2", 0.15),
                 color: "#4A7C82",
@@ -281,7 +286,7 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ title, onOpenNav }) => {
               <ListItemIcon>
                 <LogoutIcon fontSize="small" sx={{ color: "#e63946" }} />
               </ListItemIcon>
-              Đăng xuất
+              {translate("common.Logout")}
             </MenuItem>
           </Menu>
         </Box>

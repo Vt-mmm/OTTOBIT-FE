@@ -12,6 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Download as DownloadIcon } from "@mui/icons-material";
+import { useLocales } from "hooks";
 
 interface ExportCsvDialogProps {
   open: boolean;
@@ -28,6 +29,7 @@ export default function ExportCsvDialog({
   isLoading = false,
   error = null,
 }: ExportCsvDialogProps) {
+  const { translate } = useLocales();
   const [batchId, setBatchId] = useState("");
 
   useEffect(() => {
@@ -52,7 +54,7 @@ export default function ExportCsvDialog({
       <DialogTitle>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <DownloadIcon />
-          Export Activation Codes (CSV)
+          {translate("admin.exportCsvTitle")}
         </Box>
       </DialogTitle>
       <DialogContent>
@@ -60,25 +62,27 @@ export default function ExportCsvDialog({
           {error && <Alert severity="error">{error}</Alert>}
 
           <Alert severity="info">
-            <Typography variant="body2">
-              Nhập <strong>Batch ID</strong> để export tất cả mã kích hoạt trong
-              batch đó ra file CSV.
-            </Typography>
+            <Typography
+              variant="body2"
+              dangerouslySetInnerHTML={{
+                __html: translate("admin.exportCsvDescription"),
+              }}
+            />
           </Alert>
 
           <TextField
-            label="Batch ID *"
+            label={`${translate("admin.batchId")} *`}
             value={batchId}
             onChange={(e) => setBatchId(e.target.value)}
-            placeholder="Ví dụ: PROMO2024, EVENT-JAN"
-            helperText="Nhập chính xác Batch ID cần export"
+            placeholder={translate("admin.batchIdPlaceholder")}
+            helperText={translate("admin.batchIdRequired")}
             disabled={isLoading}
             autoFocus
           />
 
           <Alert severity="warning">
             <Typography variant="body2">
-              File CSV sẽ bao gồm các cột:
+              {translate("admin.csvColumns")}
             </Typography>
             <Typography
               variant="caption"
@@ -92,7 +96,7 @@ export default function ExportCsvDialog({
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={handleCancel} disabled={isLoading}>
-          Hủy
+          {translate("admin.cancel")}
         </Button>
         <Button
           onClick={handleExport}
@@ -102,7 +106,7 @@ export default function ExportCsvDialog({
             isLoading ? <CircularProgress size={16} /> : <DownloadIcon />
           }
         >
-          {isLoading ? "Đang export..." : "Export CSV"}
+          {isLoading ? translate("admin.exporting") : translate("admin.exportCSV")}
         </Button>
       </DialogActions>
     </Dialog>

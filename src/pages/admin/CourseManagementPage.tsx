@@ -5,10 +5,12 @@ import CourseListSection from "../../sections/admin/course/CourseListSection";
 import CourseFormSection from "../../sections/admin/course/CourseFormSection";
 import CourseDetailsSection from "../../sections/admin/course/CourseDetailsSection";
 import { CourseResult } from "../../common/@types/course";
+import { useLocales } from "hooks";
 
 type ViewMode = "list" | "create" | "edit" | "details";
 
 export default function CourseManagementPage() {
+  const { translate } = useLocales();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [selectedCourse, setSelectedCourse] = useState<CourseResult | null>(
     null
@@ -82,7 +84,7 @@ export default function CourseManagementPage() {
               fontSize: { xs: "1.5rem", sm: "2.125rem" },
             }}
           >
-            Quản lý Khóa học
+            {translate("admin.courseManagementTitle")}
           </Typography>
 
           <Typography
@@ -92,12 +94,12 @@ export default function CourseManagementPage() {
               fontSize: { xs: "0.875rem", sm: "1rem" },
             }}
           >
-            {viewMode === "list" && "Danh sách tất cả khóa học trong hệ thống"}
-            {viewMode === "create" && "Tạo khóa học mới"}
+            {viewMode === "list" && translate("admin.courseManagementSubtitle")}
+            {viewMode === "create" && translate("admin.createNewCourse")}
             {viewMode === "edit" &&
-              `Chỉnh sửa khóa học: ${selectedCourse?.title}`}
+              `${translate("admin.editCourseTitle")}: ${selectedCourse?.title}`}
             {viewMode === "details" &&
-              `Chi tiết khóa học: ${selectedCourse?.title}`}
+              `${translate("admin.courseDetailsTitle")}: ${selectedCourse?.title}`}
           </Typography>
         </Box>
 

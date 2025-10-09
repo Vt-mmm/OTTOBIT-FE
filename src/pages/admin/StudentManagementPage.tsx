@@ -1,8 +1,10 @@
 import { Box, Container, Typography } from "@mui/material";
 import AdminLayout from "layout/admin/AdminLayout";
 import StudentListSection from "sections/admin/student/StudentListSection";
+import useLocales from "hooks/useLocales";
 
 export default function StudentManagementPage() {
+  const { translate } = useLocales();
   return (
     <AdminLayout>
       <Container
@@ -20,7 +22,7 @@ export default function StudentManagementPage() {
               fontSize: { xs: "1.5rem", sm: "2.125rem" },
             }}
           >
-            Quản lý Học sinh
+            {translate("admin.studentManagementTitle")}
           </Typography>
           <Typography
             variant="body1"
@@ -29,7 +31,7 @@ export default function StudentManagementPage() {
               fontSize: { xs: "0.875rem", sm: "1rem" },
             }}
           >
-            Danh sách tất cả học sinh trong hệ thống
+            {translate("admin.studentManagementSubtitle")}
           </Typography>
         </Box>
         <StudentListSection />

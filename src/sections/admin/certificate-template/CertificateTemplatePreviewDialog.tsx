@@ -10,6 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 import type { CertificateTemplateResult } from "common/@types/certificateTemplate";
+import useLocales from "hooks/useLocales";
 
 interface CertificateTemplatePreviewDialogProps {
   open: boolean;
@@ -22,6 +23,8 @@ export default function CertificateTemplatePreviewDialog({
   onClose,
   template,
 }: CertificateTemplatePreviewDialogProps) {
+  const { translate } = useLocales();
+
   // Sample data for preview
   const sampleData = {
     studentName: "Nguyễn Văn A",
@@ -51,7 +54,9 @@ export default function CertificateTemplatePreviewDialog({
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle>
         <Stack direction="row" spacing={2} alignItems="center">
-          <Typography variant="h6">Xem trước mẫu chứng chỉ</Typography>
+          <Typography variant="h6">
+            {translate("admin.certificateTemplate.previewTitle")}
+          </Typography>
           <Typography
             variant="body2"
             color="text.secondary"
@@ -77,7 +82,7 @@ export default function CertificateTemplatePreviewDialog({
             <Stack spacing={1}>
               <Stack direction="row" spacing={1}>
                 <Typography variant="body2" fontWeight={600}>
-                  Khóa học:
+                  {translate("admin.certificateTemplate.course")}:
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {template.courseTitle}
@@ -86,7 +91,7 @@ export default function CertificateTemplatePreviewDialog({
               {template.issuerName && (
                 <Stack direction="row" spacing={1}>
                   <Typography variant="body2" fontWeight={600}>
-                    Người ký:
+                    {translate("admin.certificateTemplate.issuerName")}:
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     {template.issuerName}
@@ -95,7 +100,7 @@ export default function CertificateTemplatePreviewDialog({
                 </Stack>
               )}
               <Typography variant="caption" color="warning.main" sx={{ mt: 1 }}>
-                ⚠️ Đây là bản xem trước với dữ liệu mẫu
+                ⚠️ {translate("admin.certificateTemplate.previewWarning")}
               </Typography>
             </Stack>
           </Paper>
@@ -204,7 +209,7 @@ export default function CertificateTemplatePreviewDialog({
             sx={{ p: 2, bgcolor: "info.lighter", borderRadius: 2 }}
           >
             <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>
-              📌 Placeholders đã được thay thế:
+              📌 {translate("admin.certificateTemplate.placeholdersReplaced")}
             </Typography>
             <Stack spacing={0.5}>
               <Typography variant="body2" color="text.secondary">
@@ -226,7 +231,7 @@ export default function CertificateTemplatePreviewDialog({
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose} variant="contained">
-          Đóng
+          {translate("common.close")}
         </Button>
       </DialogActions>
     </Dialog>

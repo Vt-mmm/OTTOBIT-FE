@@ -31,6 +31,7 @@ import {
   FileDownload as FileDownloadIcon,
 } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "store/config";
+import { useLocales } from "hooks";
 import {
   getActivationCodesThunk,
   deleteActivationCodeThunk,
@@ -45,6 +46,7 @@ import ExportCsvDialog from "./ExportCsvDialog";
 
 export default function ActivationCodeListSection() {
   const dispatch = useAppDispatch();
+  const { translate } = useLocales();
   const { activationCodes, operations } = useAppSelector(
     (state) => state.activationCode
   );
@@ -217,17 +219,17 @@ export default function ActivationCodeListSection() {
   const getStatusLabel = (status: CodeStatus): string => {
     switch (status) {
       case CodeStatus.Active:
-        return "Chưa dùng";
+        return translate("admin.codeStatusUnused");
       case CodeStatus.Used:
-        return "Đã dùng";
+        return translate("admin.codeStatusUsed");
       case CodeStatus.Expired:
-        return "Hết hạn";
+        return translate("admin.codeStatusExpired");
       case CodeStatus.Revoked:
-        return "Thu hồi";
+        return translate("admin.codeStatusRevoked");
       case CodeStatus.Suspended:
-        return "Tạm ngưng";
+        return translate("admin.codeStatusSuspended");
       default:
-        return "Không xác định";
+        return translate("admin.codeStatusUnknown");
     }
   };
 
@@ -239,23 +241,20 @@ export default function ActivationCodeListSection() {
         alignItems="center"
         sx={{ mb: 3 }}
       >
-        <Typography variant="h4" sx={{ fontWeight: 700 }}>
-          Quản lý Mã Kích Hoạt
-        </Typography>
         <Box sx={{ display: "flex", gap: 1 }}>
           <Button
             variant="outlined"
             startIcon={<FileDownloadIcon />}
             onClick={() => setExportCsvDialogOpen(true)}
           >
-            Export CSV
+            {translate("admin.exportCSV")}
           </Button>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setCreateDialogOpen(true)}
           >
-            Tạo Batch Mã
+            {translate("admin.createBatchCode")}
           </Button>
         </Box>
       </Stack>
@@ -275,13 +274,13 @@ export default function ActivationCodeListSection() {
 
       {operations.createSuccess && (
         <Alert severity="success" sx={{ mb: 2 }}>
-          Tạo mã kích hoạt thành công!
+          {translate("admin.activationCodeCreatedSuccess")}
         </Alert>
       )}
 
       {operations.exportSuccess && (
         <Alert severity="success" sx={{ mb: 2 }}>
-          Export CSV thành công! File đang được tải xuống.
+          {translate("admin.exportCsvSuccess")}
         </Alert>
       )}
 
@@ -291,14 +290,18 @@ export default function ActivationCodeListSection() {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Mã Kích Hoạt</TableCell>
-                <TableCell>Batch ID</TableCell>
-                <TableCell>Robot</TableCell>
-                <TableCell align="center">Trạng thái</TableCell>
-                <TableCell>Ngày tạo</TableCell>
-                <TableCell>Ngày hết hạn</TableCell>
-                <TableCell>Người dùng</TableCell>
-                <TableCell align="right">Thao tác</TableCell>
+                <TableCell>{translate("admin.activationCodeColumn")}</TableCell>
+                <TableCell>{translate("admin.batchId")}</TableCell>
+                <TableCell>{translate("admin.robotName")}</TableCell>
+                <TableCell align="center">
+                  {translate("admin.status")}
+                </TableCell>
+                <TableCell>{translate("admin.createdAt")}</TableCell>
+                <TableCell>{translate("admin.expiresAt")}</TableCell>
+                <TableCell>{translate("admin.studentFullname")}</TableCell>
+                <TableCell align="right">
+                  {translate("admin.actions")}
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -312,7 +315,7 @@ export default function ActivationCodeListSection() {
                 <TableRow>
                   <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
                     <Typography variant="body2" color="text.secondary">
-                      Chưa có mã kích hoạt nào
+                      {translate("admin.noActivationCodes")}
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -333,7 +336,7 @@ export default function ActivationCodeListSection() {
                         <IconButton
                           size="small"
                           onClick={() => handleCopyCode(item.code)}
-                          title="Copy mã"
+                          title={translate("admin.copyCode")}
                         >
                           <CopyIcon fontSize="small" />
                         </IconButton>
@@ -379,7 +382,7 @@ export default function ActivationCodeListSection() {
                         </Typography>
                       ) : (
                         <Typography variant="body2" color="text.secondary">
-                          Không giới hạn
+                          {translate("admin.noLimit")}
                         </Typography>
                       )}
                     </TableCell>
@@ -405,7 +408,7 @@ export default function ActivationCodeListSection() {
                               item.status
                             )
                           }
-                          title="Cập nhật trạng thái"
+                          title={translate("admin.updateStatus")}
                         >
                           <EditIcon fontSize="small" />
                         </IconButton>
@@ -419,8 +422,8 @@ export default function ActivationCodeListSection() {
                           }
                           title={
                             item.status === CodeStatus.Used
-                              ? "Không thể xóa mã đã sử dụng"
-                              : "Xóa"
+                              ? translate("admin.cannotDeleteUsedCode")
+                              : translate("admin.delete")
                           }
                         >
                           <DeleteIcon fontSize="small" />
@@ -443,9 +446,13 @@ export default function ActivationCodeListSection() {
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
           rowsPerPageOptions={[5, 10, 25, 50, 100]}
-          labelRowsPerPage="Số dòng mỗi trang:"
+          labelRowsPerPage={translate("admin.rowsPerPage")}
           labelDisplayedRows={({ from, to, count }) =>
-            `${from}–${to} của ${count !== -1 ? count : `hơn ${to}`}`
+            translate("admin.displayedRows", {
+              from,
+              to,
+              count: count !== -1 ? count : to,
+            })
           }
         />
       </Card>
@@ -479,16 +486,19 @@ export default function ActivationCodeListSection() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialog.open} onClose={handleDeleteCancel}>
-        <DialogTitle>Xác nhận xóa</DialogTitle>
+        <DialogTitle>{translate("admin.confirmDeleteCode")}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Bạn có chắc chắn muốn xóa mã <strong>{deleteDialog.code}</strong>{" "}
-            không?
-          </DialogContentText>
+          <DialogContentText
+            dangerouslySetInnerHTML={{
+              __html: translate("admin.confirmDeleteCodeMessage", {
+                code: deleteDialog.code,
+              }),
+            }}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDeleteCancel} disabled={operations.isDeleting}>
-            Hủy
+            {translate("admin.cancel")}
           </Button>
           <Button
             onClick={handleDeleteConfirm}
@@ -497,7 +507,7 @@ export default function ActivationCodeListSection() {
             disabled={operations.isDeleting}
             startIcon={operations.isDeleting && <CircularProgress size={16} />}
           >
-            Xóa
+            {translate("admin.delete")}
           </Button>
         </DialogActions>
       </Dialog>

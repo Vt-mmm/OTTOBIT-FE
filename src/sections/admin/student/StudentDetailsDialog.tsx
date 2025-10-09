@@ -22,6 +22,7 @@ import {
 } from "@mui/icons-material";
 import { StudentResult } from "common/@types/student";
 import dayjs from "dayjs";
+import useLocales from "hooks/useLocales";
 
 interface StudentDetailsDialogProps {
   open: boolean;
@@ -69,6 +70,7 @@ export default function StudentDetailsDialog({
   isLoading = false,
   onEdit,
 }: StudentDetailsDialogProps) {
+  const { translate } = useLocales();
   if (isLoading) {
     return (
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -90,7 +92,7 @@ export default function StudentDetailsDialog({
     return (
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
         <DialogContent>
-          <Typography>No student data available</Typography>
+          <Typography>{translate("admin.noStudentData")}</Typography>
         </DialogContent>
       </Dialog>
     );
@@ -116,7 +118,7 @@ export default function StudentDetailsDialog({
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <PersonIcon color="primary" />
-          <Typography variant="h6">Student Details</Typography>
+          <Typography variant="h6">{translate("admin.studentDetails")}</Typography>
         </Box>
         <IconButton onClick={onClose}>
           <CloseIcon />
@@ -127,21 +129,21 @@ export default function StudentDetailsDialog({
         {/* Basic Information */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>
-            Basic Information
+            {translate("admin.basicInfo")}
           </Typography>
           <DetailRow
             icon={<PersonIcon fontSize="small" />}
-            label="Full Name"
+            label={translate("admin.fullName")}
             value={student.fullname}
           />
           <DetailRow
             icon={<PhoneIcon fontSize="small" />}
-            label="Phone Number"
+            label={translate("admin.phoneNumber")}
             value={student.phoneNumber}
           />
           <DetailRow
             icon={<BirthdayIcon fontSize="small" />}
-            label="Date of Birth"
+            label={translate("admin.dateOfBirth")}
             value={
               student.dateOfBirth
                 ? dayjs(student.dateOfBirth).format("MMM DD, YYYY")
@@ -155,11 +157,11 @@ export default function StudentDetailsDialog({
         {/* Address Information */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>
-            Address Information
+            {translate("admin.addressInfo")}
           </Typography>
           <DetailRow
             icon={<LocationIcon fontSize="small" />}
-            label="Address"
+            label={translate("admin.address")}
             value={student.address}
           />
           <Box
@@ -171,12 +173,12 @@ export default function StudentDetailsDialog({
           >
             <DetailRow
               icon={<LocationIcon fontSize="small" />}
-              label="City"
+              label={translate("admin.city")}
               value={student.city}
             />
             <DetailRow
               icon={<LocationIcon fontSize="small" />}
-              label="State/Province"
+              label={translate("admin.stateProvince")}
               value={student.state}
             />
           </Box>
@@ -187,7 +189,7 @@ export default function StudentDetailsDialog({
         {/* Statistics */}
         <Box>
           <Typography variant="h6" sx={{ mb: 2 }}>
-            Statistics
+            {translate("admin.statistics")}
           </Typography>
           <Box
             sx={{
@@ -212,7 +214,7 @@ export default function StudentDetailsDialog({
                   {student.enrollmentsCount || 0}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Enrollments
+                  {translate("admin.enrollments")}
                 </Typography>
               </Box>
             </Box>
@@ -233,7 +235,7 @@ export default function StudentDetailsDialog({
                   {student.submissionsCount || 0}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Submissions
+                  {translate("admin.submissions")}
                 </Typography>
               </Box>
             </Box>

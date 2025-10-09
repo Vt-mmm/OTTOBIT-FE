@@ -5,10 +5,12 @@ import RobotListSection from "../../sections/admin/robot/RobotListSection";
 import RobotFormSection from "../../sections/admin/robot/RobotFormSection";
 import RobotDetailsSection from "../../sections/admin/robot/RobotDetailsSection";
 import { RobotResult } from "../../common/@types/robot";
+import useLocales from "../../hooks/useLocales";
 
 type ViewMode = "list" | "create" | "edit" | "details";
 
 export default function RobotManagementPage() {
+  const { translate } = useLocales();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [selectedRobot, setSelectedRobot] = useState<RobotResult | null>(null);
 
@@ -58,26 +60,26 @@ export default function RobotManagementPage() {
   const getPageTitle = () => {
     switch (viewMode) {
       case "create":
-        return "Create New Robot";
+        return translate("admin.createNewRobot");
       case "edit":
-        return "Edit Robot";
+        return translate("admin.editRobotTitle");
       case "details":
-        return "Robot Details";
+        return translate("admin.robotDetailsTitle");
       default:
-        return "Robot Management";
+        return translate("admin.robotManagementTitle");
     }
   };
 
   const getPageDescription = () => {
     switch (viewMode) {
       case "create":
-        return "Create a new robot template for the system";
+        return translate("admin.createNewRobotSubtitle");
       case "edit":
-        return "Update robot information and specifications";
+        return translate("admin.editRobotSubtitle");
       case "details":
-        return "View detailed robot information and manage settings";
+        return translate("admin.robotDetailsSubtitle");
       default:
-        return "Manage robot templates, specifications, and configurations";
+        return translate("admin.robotManagementSubtitle");
     }
   };
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import useLocales from "hooks/useLocales";
 import {
   Box,
   Button,
@@ -53,6 +54,7 @@ export default function CertificateTemplateListSection({
   onViewModeChange: _onViewModeChange,
 }: CertificateTemplateListSectionProps) {
   const dispatch = useDispatch<AppDispatch>();
+  const { translate } = useLocales();
 
   // Redux state
   const { templates, operations } = useSelector(
@@ -127,14 +129,21 @@ export default function CertificateTemplateListSection({
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`Bạn có chắc muốn xóa template "${name}"?`)) return;
+    if (
+      !window.confirm(
+        translate("admin.certificateTemplate.confirmDelete", { name })
+      )
+    )
+      return;
 
     try {
       await dispatch(deleteCertificateTemplateThunk(id)).unwrap();
-      toast.success("Đã xóa template thành công!");
+      toast.success(translate("admin.certificateTemplate.deleteSuccess"));
       loadTemplates();
     } catch (error: any) {
-      toast.error(error || "Có lỗi xảy ra khi xóa template!");
+      toast.error(
+        error || translate("admin.certificateTemplate.deleteError")
+      );
     }
   };
 
@@ -161,22 +170,13 @@ export default function CertificateTemplateListSection({
         alignItems="center"
         sx={{ mb: 3 }}
       >
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
-            📜 Mẫu chứng chỉ (Certificate Templates)
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Quản lý mẫu chứng chỉ cho các khóa học
-          </Typography>
-        </Box>
-
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={handleOpenCreate}
           size="large"
         >
-          Tạo mẫu mới
+          {translate("admin.certificateTemplate.createNew")}
         </Button>
       </Stack>
 
@@ -186,21 +186,31 @@ export default function CertificateTemplateListSection({
           <FilterIcon color="action" />
           <TextField
             size="small"
-            placeholder="Tìm kiếm theo tên template..."
+            placeholder={translate(
+              "admin.certificateTemplate.searchPlaceholder"
+            )}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             sx={{ flex: 1 }}
           />
           <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Trạng thái</InputLabel>
+            <InputLabel>
+              {translate("admin.certificateTemplate.status")}
+            </InputLabel>
             <Select
               value={isActiveFilter}
               onChange={(e) => setIsActiveFilter(e.target.value)}
-              label="Trạng thái"
+              label={translate("admin.certificateTemplate.status")}
             >
-              <MenuItem value="all">Tất cả</MenuItem>
-              <MenuItem value="active">Đang hoạt động</MenuItem>
-              <MenuItem value="inactive">Không hoạt động</MenuItem>
+              <MenuItem value="all">
+                {translate("admin.certificateTemplate.statusAll")}
+              </MenuItem>
+              <MenuItem value="active">
+                {translate("admin.certificateTemplate.statusActive")}
+              </MenuItem>
+              <MenuItem value="inactive">
+                {translate("admin.certificateTemplate.statusInactive")}
+              </MenuItem>
             </Select>
           </FormControl>
         </Stack>
@@ -215,16 +225,20 @@ export default function CertificateTemplateListSection({
         <Table>
           <TableHead>
             <TableRow sx={{ bgcolor: "grey.50" }}>
-              <TableCell sx={{ fontWeight: 600 }}>Tên mẫu</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Khóa học</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>
+                {translate("admin.certificateTemplate.templateName")}
+              </TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>
+                {translate("admin.certificateTemplate.course")}
+              </TableCell>
               <TableCell align="center" sx={{ fontWeight: 600, width: 120 }}>
-                Trạng thái
+                {translate("admin.certificateTemplate.status")}
               </TableCell>
               <TableCell sx={{ fontWeight: 600, width: 180 }}>
-                Ngày tạo
+                {translate("admin.certificateTemplate.createdDate")}
               </TableCell>
               <TableCell align="right" sx={{ fontWeight: 600, width: 180 }}>
-                Thao tác
+                {translate("admin.certificateTemplate.actions")}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -238,7 +252,7 @@ export default function CertificateTemplateListSection({
                     color="text.secondary"
                     sx={{ mt: 2 }}
                   >
-                    Đang tải...
+                    {translate("admin.certificateTemplate.loading")}
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -246,7 +260,7 @@ export default function CertificateTemplateListSection({
               <TableRow>
                 <TableCell colSpan={5} align="center" sx={{ py: 8 }}>
                   <Typography variant="body2" color="text.secondary">
-                    Chưa có mẫu chứng chỉ nào. Nhấn "Tạo mẫu mới" để bắt đầu.
+                    {translate("admin.certificateTemplate.noTemplates")}
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -268,7 +282,15 @@ export default function CertificateTemplateListSection({
                   </TableCell>
                   <TableCell align="center">
                     <Chip
-                      label={template.isActive ? "Hoạt động" : "Tạm dừng"}
+                      label={
+                        template.isActive
+                          ? translate(
+                              "admin.certificateTemplate.statusActiveLabel"
+                            )
+                          : translate(
+                              "admin.certificateTemplate.statusInactiveLabel"
+                            )
+                      }
                       size="small"
                       color={template.isActive ? "success" : "default"}
                       sx={{ fontWeight: 500, minWidth: 90 }}
@@ -285,7 +307,10 @@ export default function CertificateTemplateListSection({
                       spacing={0.5}
                       justifyContent="flex-end"
                     >
-                      <Tooltip title="Xem trước" arrow>
+                      <Tooltip
+                        title={translate("admin.certificateTemplate.preview")}
+                        arrow
+                      >
                         <IconButton
                           size="small"
                           onClick={() => handleOpenPreview(template)}
@@ -297,7 +322,10 @@ export default function CertificateTemplateListSection({
                           <ViewIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Chỉnh sửa" arrow>
+                      <Tooltip
+                        title={translate("admin.certificateTemplate.edit")}
+                        arrow
+                      >
                         <IconButton
                           size="small"
                           onClick={() => handleOpenEdit(template)}
@@ -309,7 +337,10 @@ export default function CertificateTemplateListSection({
                           <EditIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Xóa" arrow>
+                      <Tooltip
+                        title={translate("admin.certificateTemplate.delete")}
+                        arrow
+                      >
                         <IconButton
                           size="small"
                           onClick={() =>
@@ -338,10 +369,19 @@ export default function CertificateTemplateListSection({
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage="Số hàng mỗi trang:"
-          labelDisplayedRows={({ from, to, count }) =>
-            `${from}–${to} của ${count !== -1 ? count : `nhiều hơn ${to}`}`
-          }
+          labelRowsPerPage={translate(
+            "admin.certificateTemplate.rowsPerPage"
+          )}
+          labelDisplayedRows={({ from, to, count }) => {
+            if (count !== -1) {
+              return translate("admin.certificateTemplate.displayedRows", {
+                from,
+                to,
+                count,
+              });
+            }
+            return `${from}–${to} ${translate("common.of")} ${translate("common.moreThan", { to })}`;
+          }}
         />
       </TableContainer>
 

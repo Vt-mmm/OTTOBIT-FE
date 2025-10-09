@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import useLocales from "hooks/useLocales";
 import {
   Box,
   Button,
@@ -50,6 +51,7 @@ export default function ComponentListSection({
   onViewModeChange,
 }: ComponentListSectionProps) {
   const dispatch = useAppDispatch();
+  const { translate } = useLocales();
   const { components, operations } = useAppSelector((state) => state.component);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -114,17 +116,17 @@ export default function ComponentListSection({
 
   const getComponentTypeLabel = (type: ComponentType) => {
     const typeLabels = {
-      [ComponentType.SENSOR]: "Sensor",
-      [ComponentType.ACTUATOR]: "Actuator",
-      [ComponentType.CONTROLLER]: "Controller",
-      [ComponentType.POWER_SUPPLY]: "Power Supply",
-      [ComponentType.CONNECTIVITY]: "Connectivity",
-      [ComponentType.MECHANICAL]: "Mechanical",
-      [ComponentType.DISPLAY]: "Display",
-      [ComponentType.AUDIO]: "Audio",
-      [ComponentType.OTHER]: "Other",
+      [ComponentType.SENSOR]: translate("admin.component.typeSensor"),
+      [ComponentType.ACTUATOR]: translate("admin.component.typeActuator"),
+      [ComponentType.CONTROLLER]: translate("admin.component.typeController"),
+      [ComponentType.POWER_SUPPLY]: translate("admin.component.typePowerSupply"),
+      [ComponentType.CONNECTIVITY]: translate("admin.component.typeConnectivity"),
+      [ComponentType.MECHANICAL]: translate("admin.component.typeMechanical"),
+      [ComponentType.DISPLAY]: translate("admin.component.typeDisplay"),
+      [ComponentType.AUDIO]: translate("admin.component.typeAudio"),
+      [ComponentType.OTHER]: translate("admin.component.typeOther"),
     };
-    return typeLabels[type] || "Unknown";
+    return typeLabels[type] || translate("admin.component.typeUnknown");
   };
 
   const getComponentTypeColor = (
@@ -173,7 +175,7 @@ export default function ComponentListSection({
       {/* Search and Filters */}
       <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
         <TextField
-          placeholder="Search components..."
+          placeholder={translate("admin.component.searchPlaceholder")}
           value={searchTerm}
           onChange={(e) => handleSearch(e.target.value)}
           InputProps={{
@@ -187,15 +189,15 @@ export default function ComponentListSection({
         />
 
         <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>Type</InputLabel>
+          <InputLabel>{translate("admin.component.type")}</InputLabel>
           <Select
             value={filterType}
-            label="Type"
+            label={translate("admin.component.type")}
             onChange={(e) =>
               handleTypeFilterChange(e.target.value as ComponentType | "all")
             }
           >
-            <MenuItem value="all">All Types</MenuItem>
+            <MenuItem value="all">{translate("admin.component.allTypes")}</MenuItem>
             {Object.values(ComponentType)
               .filter((v) => typeof v === "number")
               .map((type) => (
@@ -212,14 +214,14 @@ export default function ComponentListSection({
           onClick={() => onViewModeChange("create")}
           sx={{ ml: "auto" }}
         >
-          Add Component
+          {translate("admin.component.addComponent")}
         </Button>
       </Box>
 
       {/* Success/Error Messages */}
       {operations.deleteSuccess && (
         <Alert severity="success" sx={{ mb: 2 }}>
-          Component deleted successfully!
+          {translate("admin.component.deleteSuccess")}
         </Alert>
       )}
 
@@ -232,7 +234,10 @@ export default function ComponentListSection({
       {/* Results Summary */}
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         {components.data &&
-          `Showing ${componentList.length} of ${components.data.total} components`}
+          translate("admin.component.showingResults", {
+            count: componentList.length,
+            total: components.data.total,
+          })}
       </Typography>
 
       {/* Components Grid */}
@@ -242,19 +247,19 @@ export default function ComponentListSection({
             sx={{ fontSize: 64, color: "text.secondary", mb: 2 }}
           />
           <Typography variant="h6" color="text.secondary" mb={2}>
-            No components found
+            {translate("admin.component.noComponentsFound")}
           </Typography>
           <Typography variant="body2" color="text.secondary" mb={3}>
             {searchTerm || filterType !== "all"
-              ? "Try adjusting your search or filters"
-              : "Add your first component to get started"}
+              ? translate("admin.component.tryAdjustingFilters")
+              : translate("admin.component.addFirstComponent")}
           </Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => onViewModeChange("create")}
           >
-            Add First Component
+            {translate("admin.component.addFirstComponent")}
           </Button>
         </Box>
       ) : (
@@ -418,7 +423,8 @@ export default function ComponentListSection({
                       minHeight: "2.5em",
                     }}
                   >
-                    {component.description || "No description available"}
+                    {component.description ||
+                      translate("admin.component.noDescription")}
                   </Typography>
 
                   {/* Component Details */}
@@ -426,13 +432,14 @@ export default function ComponentListSection({
                     sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}
                   >
                     <Typography variant="caption" color="text.secondary">
-                      <strong>Added:</strong>{" "}
+                      <strong>{translate("admin.component.added")}:</strong>{" "}
                       {new Date(component.createdAt).toLocaleDateString()}
                     </Typography>
 
                     {component.imagesCount > 0 && (
                       <Typography variant="caption" color="primary.main">
-                        <strong>Images:</strong> {component.imagesCount}
+                        <strong>{translate("admin.component.images")}:</strong>{" "}
+                        {component.imagesCount}
                       </Typography>
                     )}
                   </Box>
@@ -460,10 +467,12 @@ export default function ComponentListSection({
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         open={deleteDialog.open}
-        title="Delete Component"
-        message={`Are you sure you want to delete "${deleteDialog.componentName}"? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={translate("admin.component.deleteComponent")}
+        message={translate("admin.component.confirmDeleteMessage", {
+          name: deleteDialog.componentName,
+        })}
+        confirmText={translate("common.Delete")}
+        cancelText={translate("common.Cancel")}
         confirmColor="error"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteDialog({ open: false })}

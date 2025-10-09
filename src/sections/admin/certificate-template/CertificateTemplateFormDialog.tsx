@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import useLocales from "hooks/useLocales";
 import {
   Box,
   Button,
@@ -46,6 +47,7 @@ export default function CertificateTemplateFormDialog({
   template,
 }: CertificateTemplateFormDialogProps) {
   const dispatch = useDispatch<AppDispatch>();
+  const { translate } = useLocales();
 
   // Redux state
   const { operations } = useSelector((state: any) => state.certificateTemplate);
@@ -111,15 +113,15 @@ export default function CertificateTemplateFormDialog({
   const handleSubmit = async () => {
     // Validation
     if (!formData.courseId) {
-      toast.error("Vui lòng chọn khóa học!");
+      toast.error(translate("admin.certificateTemplate.errorSelectCourse"));
       return;
     }
     if (!formData.name?.trim()) {
-      toast.error("Vui lòng nhập tên mẫu!");
+      toast.error(translate("admin.certificateTemplate.errorEnterName"));
       return;
     }
     if (!formData.bodyHtml?.trim()) {
-      toast.error("Vui lòng nhập nội dung chứng chỉ!");
+      toast.error(translate("admin.certificateTemplate.errorEnterContent"));
       return;
     }
 
@@ -132,7 +134,7 @@ export default function CertificateTemplateFormDialog({
             data: formData as UpdateCertificateTemplateRequest,
           })
         ).unwrap();
-        toast.success("Đã cập nhật mẫu chứng chỉ!");
+        toast.success(translate("admin.certificateTemplate.updateSuccess"));
       } else {
         // Create
         await dispatch(
@@ -140,11 +142,11 @@ export default function CertificateTemplateFormDialog({
             formData as CreateCertificateTemplateRequest
           )
         ).unwrap();
-        toast.success("Đã tạo mẫu chứng chỉ mới!");
+        toast.success(translate("admin.certificateTemplate.createSuccess"));
       }
       onClose();
     } catch (error: any) {
-      toast.error(error || "Có lỗi xảy ra!");
+      toast.error(error || translate("admin.certificateTemplate.error"));
     }
   };
 
@@ -153,19 +155,23 @@ export default function CertificateTemplateFormDialog({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
-        {template ? "Chỉnh sửa mẫu chứng chỉ" : "Tạo mẫu chứng chỉ mới"}
+        {template
+          ? translate("admin.certificateTemplate.editTitle")
+          : translate("admin.certificateTemplate.createTitle")}
       </DialogTitle>
       <DialogContent>
         <Stack spacing={3} sx={{ mt: 2 }}>
           {/* Course Selection */}
           <FormControl fullWidth required>
-            <InputLabel>Khóa học</InputLabel>
+            <InputLabel>
+              {translate("admin.certificateTemplate.course")}
+            </InputLabel>
             <Select
               value={formData.courseId}
               onChange={(e) =>
                 setFormData({ ...formData, courseId: e.target.value })
               }
-              label="Khóa học *"
+              label={`${translate("admin.certificateTemplate.course")} *`}
               disabled={operations.isCreating || operations.isUpdating}
             >
               {coursesData.map((course: any) => (
@@ -180,8 +186,10 @@ export default function CertificateTemplateFormDialog({
           <TextField
             fullWidth
             required
-            label="Tên mẫu"
-            placeholder="VD: Chứng chỉ hoàn thành khóa học cơ bản"
+            label={translate("admin.certificateTemplate.templateName")}
+            placeholder={translate(
+              "admin.certificateTemplate.templateNamePlaceholder"
+            )}
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             disabled={operations.isCreating || operations.isUpdating}
@@ -190,30 +198,38 @@ export default function CertificateTemplateFormDialog({
           {/* Background Image URL */}
           <TextField
             fullWidth
-            label="URL ảnh nền"
+            label={translate("admin.certificateTemplate.backgroundImageUrl")}
             placeholder="https://..."
             value={formData.backgroundImageUrl}
             onChange={(e) =>
               setFormData({ ...formData, backgroundImageUrl: e.target.value })
             }
             disabled={operations.isCreating || operations.isUpdating}
-            helperText="URL ảnh nền cho chứng chỉ (tùy chọn)"
+            helperText={translate(
+              "admin.certificateTemplate.backgroundImageHelp"
+            )}
           />
 
           {/* Body HTML */}
           <Box>
             <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-              Nội dung chứng chỉ *
+              {translate("admin.certificateTemplate.content")} *
             </Typography>
             <Alert severity="info" sx={{ mb: 2 }}>
               <Typography variant="body2" sx={{ mb: 1 }}>
-                <strong>Placeholders có thể dùng:</strong>
+                <strong>
+                  {translate("admin.certificateTemplate.placeholdersTitle")}
+                </strong>
               </Typography>
               <Typography variant="body2" component="div">
-                • <code>{"{{studentName}}"}</code> - Tên học viên
-                <br />• <code>{"{{courseName}}"}</code> - Tên khóa học
-                <br />• <code>{"{{issueDate}}"}</code> - Ngày cấp
-                <br />• <code>{"{{certificateNo}}"}</code> - Mã chứng chỉ
+                • <code>{"{{studentName}}"}</code> -{" "}
+                {translate("admin.certificateTemplate.studentNamePlaceholder")}
+                <br />• <code>{"{{courseName}}"}</code> -{" "}
+                {translate("admin.certificateTemplate.courseNamePlaceholder")}
+                <br />• <code>{"{{issueDate}}"}</code> -{" "}
+                {translate("admin.certificateTemplate.issueDatePlaceholder")}
+                <br />• <code>{"{{certificateNo}}"}</code> -{" "}
+                {translate("admin.certificateTemplate.certificateNoPlaceholder")}
               </Typography>
             </Alert>
             <TextField
@@ -225,7 +241,9 @@ export default function CertificateTemplateFormDialog({
                 setFormData({ ...formData, bodyHtml: e.target.value })
               }
               disabled={operations.isCreating || operations.isUpdating}
-              placeholder="Nhập HTML content..."
+              placeholder={translate(
+                "admin.certificateTemplate.contentPlaceholder"
+              )}
               sx={{
                 "& .MuiInputBase-input": {
                   fontFamily: "monospace",
@@ -234,7 +252,7 @@ export default function CertificateTemplateFormDialog({
               }}
             />
             <Typography variant="caption" color="text.secondary">
-              Hỗ trợ HTML. Team có thể tích hợp ReactQuill editor sau.
+              {translate("admin.certificateTemplate.htmlSupport")}
             </Typography>
           </Box>
 
@@ -242,8 +260,10 @@ export default function CertificateTemplateFormDialog({
           <Stack direction="row" spacing={2}>
             <TextField
               fullWidth
-              label="Tên người ký"
-              placeholder="VD: Nguyễn Văn A"
+              label={translate("admin.certificateTemplate.issuerName")}
+              placeholder={translate(
+                "admin.certificateTemplate.issuerNamePlaceholder"
+              )}
               value={formData.issuerName}
               onChange={(e) =>
                 setFormData({ ...formData, issuerName: e.target.value })
@@ -252,8 +272,10 @@ export default function CertificateTemplateFormDialog({
             />
             <TextField
               fullWidth
-              label="Chức danh"
-              placeholder="VD: Giám đốc đào tạo"
+              label={translate("admin.certificateTemplate.issuerTitle")}
+              placeholder={translate(
+                "admin.certificateTemplate.issuerTitlePlaceholder"
+              )}
               value={formData.issuerTitle}
               onChange={(e) =>
                 setFormData({ ...formData, issuerTitle: e.target.value })
@@ -265,14 +287,16 @@ export default function CertificateTemplateFormDialog({
           {/* Signature Image URL */}
           <TextField
             fullWidth
-            label="URL chữ ký"
+            label={translate("admin.certificateTemplate.signatureImageUrl")}
             placeholder="https://..."
             value={formData.signatureImageUrl}
             onChange={(e) =>
               setFormData({ ...formData, signatureImageUrl: e.target.value })
             }
             disabled={operations.isCreating || operations.isUpdating}
-            helperText="URL ảnh chữ ký (tùy chọn)"
+            helperText={translate(
+              "admin.certificateTemplate.signatureImageHelp"
+            )}
           />
 
           {/* Active Status */}
@@ -286,7 +310,7 @@ export default function CertificateTemplateFormDialog({
                 disabled={operations.isCreating || operations.isUpdating}
               />
             }
-            label="Kích hoạt mẫu này"
+            label={translate("admin.certificateTemplate.activateTemplate")}
           />
         </Stack>
       </DialogContent>
@@ -295,7 +319,7 @@ export default function CertificateTemplateFormDialog({
           onClick={onClose}
           disabled={operations.isCreating || operations.isUpdating}
         >
-          Hủy
+          {translate("common.cancel")}
         </Button>
         <Button
           variant="contained"
@@ -303,10 +327,10 @@ export default function CertificateTemplateFormDialog({
           disabled={operations.isCreating || operations.isUpdating}
         >
           {operations.isCreating || operations.isUpdating
-            ? "Đang xử lý..."
+            ? translate("common.processing")
             : template
-            ? "Cập nhật"
-            : "Tạo mới"}
+            ? translate("common.update")
+            : translate("common.create")}
         </Button>
       </DialogActions>
     </Dialog>
