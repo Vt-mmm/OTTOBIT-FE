@@ -176,5 +176,9 @@ export const adminRoutes: Route[] = [
     component: <SubmissionDetailPage />,
     index: false,
   },
-
+  {
+    path: PATH_ADMIN.voucherManagement,
+    component: <VoucherManagementPage />,
+    index: false,
+  },
 ];
