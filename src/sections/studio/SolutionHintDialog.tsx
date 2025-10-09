@@ -184,6 +184,7 @@ export default function SolutionHintDialog({
             <BlocksWorkspace
               key={`hint-${challengeId}-${program?.actions?.length || 0}`}
               initialProgramActionsJson={program}
+              readOnly={true}
             />
           </Box>
         )}
