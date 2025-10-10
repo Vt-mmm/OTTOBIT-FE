@@ -159,9 +159,20 @@ export const getCartSummaryThunk = createAsyncThunk<
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.get<ApiResponse<CartSummaryResult>>(
-        ROUTES_API_CART.GET_SUMMARY
+        ROUTES_API_CART.GET_SUMMARY,
+        {
+          // Prevent 404 from appearing in console
+          validateStatus: (status) => {
+            return (status >= 200 && status < 300) || status === 404;
+          },
+        }
       )
     );
+
+    // Handle 404 case silently - cart not found is expected for new users
+    if (response.status === 404) {
+      return rejectWithValue('CART_NOT_FOUND');
+    }
 
     if (response.data.errors || response.data.errorCode) {
       const errorMessage = extractApiErrorMessage(
@@ -177,6 +188,11 @@ export const getCartSummaryThunk = createAsyncThunk<
 
     return response.data.data;
   } catch (error: any) {
+    // Additional fallback for 404
+    if (error?.response?.status === 404) {
+      return rejectWithValue('CART_NOT_FOUND');
+    }
+    
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to fetch cart summary"

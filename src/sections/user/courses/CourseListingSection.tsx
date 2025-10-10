@@ -47,9 +47,8 @@ export default function CourseListingSection({
   } = useAppSelector((state) => state.course.courses);
   const { myEnrollments } = useAppSelector((state) => state.enrollment);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
-  const { studentData } = useAppSelector((state) => ({
-    studentData: state.student.currentStudent.data,
-  }));
+  // Fix: Don't create new object in selector - access property directly
+  const studentData = useAppSelector((state) => state.student.currentStudent.data);
 
   // State for UI
   const [sortBy, setSortBy] = useState<SortOption>("newest");
@@ -71,12 +70,17 @@ export default function CourseListingSection({
     dispatch(getCourses({ pageSize: 50 }));
   }, [dispatch]);
 
-  // Fetch enrollments ONLY if user is authenticated
+  // Fetch enrollments ONLY if user is authenticated and not already loaded/loading
   useEffect(() => {
-    if (isAuthenticated) {
-      dispatch(getMyEnrollments({ pageSize: 100 }));
+    if (!isAuthenticated) return;
+    
+    // Don't fetch if already loading or already have data or got error
+    if (myEnrollments.isLoading || myEnrollments.data || myEnrollments.error) {
+      return;
     }
-  }, [dispatch, isAuthenticated]);
+    
+    dispatch(getMyEnrollments({ pageSize: 100 }));
+  }, [dispatch, isAuthenticated, myEnrollments.isLoading, myEnrollments.data, myEnrollments.error]);
 
   // Filter and sort courses
   const filteredAndSortedCourses = useMemo(() => {

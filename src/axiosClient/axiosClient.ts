@@ -101,6 +101,26 @@ axiosClient.interceptors.response.use(
     return response;
   },
   function (error) {
+    // Suppress console errors for expected 404 responses
+    const expectedNotFoundEndpoints = [
+      '/cart/summary',
+      '/enrollments/my-enrollments'
+    ];
+    
+    const isExpected404 = 
+      error.response?.status === 404 && 
+      expectedNotFoundEndpoints.some(endpoint => 
+        error.config?.url?.includes(endpoint)
+      );
+    
+    // Don't log expected 404s to console
+    if (!isExpected404) {
+      // Only log unexpected errors
+      if (error.response?.status !== 404) {
+        // You can add custom error logging here if needed
+      }
+    }
+    
     return Promise.reject(error);
   }
 );
