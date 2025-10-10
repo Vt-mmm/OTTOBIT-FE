@@ -10,6 +10,7 @@ import {
   FeaturesSection,
   BannerSection,
 } from "sections/user/homepage";
+import { AIFloatingButton } from "components/ai";
 
 const HomePage: React.FC = () => {
   return (
@@ -63,6 +64,12 @@ const HomePage: React.FC = () => {
       </Box>
 
       <Footer />
+
+      {/* AI Assistant Floating Button */}
+      <AIFloatingButton
+        position={{ bottom: 24, right: 24 }}
+        tooltip="AI Trợ lý - Gợi ý khóa học"
+      />
     </Box>
   );
 };

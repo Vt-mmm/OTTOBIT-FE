@@ -1,4 +1,37 @@
 {
+  "sidebar": {
+    "overview": "Overview",
+    "tools": "Tools",
+    "contentManagement": "Content Management",
+    "userManagement": "User Management",
+    "salesManagement": "Sales Management",
+    "submissionManagement": "Submission Management",
+    "dashboard": "Dashboard",
+    "challengeDesigner": "Challenge Designer",
+    "mapDesigner": "Map Designer",
+    "courseManagement": "Course Management",
+    "lessonManagement": "Lesson Management",
+    "lessonResourceManagement": "Learning Resource Management",
+    "challengeManagement": "Challenge Management",
+    "mapManagement": "Map Management",
+    "robotManagement": "Robot Management",
+    "componentManagement": "Component Management",
+    "activationCodeManagement": "Activation Code Management",
+    "certificateManagement": "Certificate Management",
+    "certificateTemplateManagement": "Certificate Template Management",
+    "voucherManagement": "Voucher Management",
+    "studentManagement": "Student Management",
+    "enrollmentManagement": "Enrollment Management",
+    "orderManagement": "Order Management",
+    "account": "Account",
+    "profile": "Profile",
+    "myOrders": "My Orders",
+    "security": "Security"
+  },
+  "header": {
+    "adminDashboard": "Admin Dashboard",
+    "menuOpen": "Open menu"
+  },
   "title": "Admin Panel",
   "dashboard": "Dashboard",
   

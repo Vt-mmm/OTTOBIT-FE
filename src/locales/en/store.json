@@ -1,0 +1,22 @@
+{
+  "Category": "Category",
+  "SearchRobots": "Search robots",
+  "FilterBy": "Filter by :",
+  "Price": "Price",
+  "Brand": "Brand",
+  "AllBrands": "All Brands",
+  "StockStatus": "Stock Status",
+  "AllProducts": "All Products",
+  "InStock": "In Stock",
+  "OutOfStock": "Out of Stock",
+  "AgeRange": "Age Range",
+  "Years": "years old",
+  "Showing": "Showing",
+  "Of": "of",
+  "Robots": "robots",
+  "PerPage": "Per Page",
+  "Loading": "Loading...",
+  "NoRobotsFound": "No robots found",
+  "TryAdjustingFilters": "Try adjusting your search or filters",
+  "NoRobotsAvailable": "No robots available at the moment"
+}

@@ -59,44 +59,44 @@ const SecuritySettings: React.FC = () => {
   const changePasswordSchema = yup.object().shape({
     currentPassword: yup
       .string()
-      .required(translate("profile.CurrentPassword") + " là bắt buộc"),
+      .required(translate("profile.CurrentPasswordRequired")),
     newPassword: yup
       .string()
-      .min(6, translate("profile.NewPassword") + " phải có ít nhất 6 ký tự")
-      .required(translate("profile.NewPassword") + " là bắt buộc"),
+      .min(6, translate("profile.NewPasswordMinLength"))
+      .required(translate("profile.NewPasswordRequired")),
     confirmNewPassword: yup
       .string()
       .oneOf(
         [yup.ref("newPassword")],
-        translate("profile.ConfirmPassword") + " không khớp"
+        translate("profile.PasswordMismatch")
       )
-      .required(translate("profile.ConfirmPassword") + " là bắt buộc"),
+      .required(translate("profile.ConfirmPasswordRequired")),
   });
 
   const forgotPasswordSchema = yup.object().shape({
     email: yup
       .string()
-      .email("Email không hợp lệ")
-      .required("Email là bắt buộc"),
+      .email(translate("profile.InvalidEmail"))
+      .required(translate("profile.EmailRequired")),
   });
 
   const resetPasswordSchema = yup.object().shape({
     email: yup
       .string()
-      .email("Email không hợp lệ")
-      .required("Email là bắt buộc"),
-    resetToken: yup.string().required("Token là bắt buộc"),
+      .email(translate("profile.InvalidEmail"))
+      .required(translate("profile.EmailRequired")),
+    resetToken: yup.string().required(translate("profile.TokenRequired")),
     newPassword: yup
       .string()
-      .min(6, translate("profile.NewPassword") + " phải có ít nhất 6 ký tự")
-      .required(translate("profile.NewPassword") + " là bắt buộc"),
+      .min(6, translate("profile.NewPasswordMinLength"))
+      .required(translate("profile.NewPasswordRequired")),
     confirmNewPassword: yup
       .string()
       .oneOf(
         [yup.ref("newPassword")],
-        translate("profile.ConfirmPassword") + " không khớp"
+        translate("profile.PasswordMismatch")
       )
-      .required(translate("profile.ConfirmPassword") + " là bắt buộc"),
+      .required(translate("profile.ConfirmPasswordRequired")),
   });
 
   const [openChangePassword, setOpenChangePassword] = useState(false);
@@ -195,23 +195,23 @@ const SecuritySettings: React.FC = () => {
   const securityFeatures = [
     {
       icon: <LockIcon />,
-      title: "Đổi mật khẩu",
+      title: translate("profile.ChangePassword"),
       description: translate("profile.UpdatePasswordSecurity"),
-      action: "Đổi mật khẩu",
+      action: translate("profile.ChangePassword"),
       onClick: () => setOpenChangePassword(true),
     },
     {
       icon: <ShieldIcon />,
-      title: "Quên mật khẩu",
-      description: "Gửi email đặt lại mật khẩu",
-      action: "Gửi email",
+      title: translate("profile.ForgotPassword"),
+      description: translate("profile.ForgotPasswordDesc"),
+      action: translate("profile.SendEmail"),
       onClick: () => setOpenForgotPassword(true),
     },
     {
       icon: <HistoryIcon />,
-      title: "Đặt lại mật khẩu",
-      description: "Đặt lại mật khẩu với token",
-      action: "Đặt lại",
+      title: translate("profile.ResetPassword"),
+      description: translate("profile.ResetPasswordDesc"),
+      action: translate("profile.Reset"),
       onClick: () => setOpenResetPassword(true),
     },
   ];
@@ -253,7 +253,7 @@ const SecuritySettings: React.FC = () => {
                   variant="subtitle1"
                   sx={{ fontWeight: 600, color: "text.primary" }}
                 >
-                  Cài đặt bảo mật
+                  {translate("profile.SecuritySettingsTitle")}
                 </Typography>
               </Box>
             </Box>
@@ -345,7 +345,7 @@ const SecuritySettings: React.FC = () => {
           }}
         >
           <Typography variant="h6" sx={{ fontWeight: 700, color: "#22c55e" }}>
-            Đổi mật khẩu
+            {translate("profile.ChangePassword")}
           </Typography>
           <IconButton onClick={handleCloseDialog} size="small">
             <CloseIcon />
@@ -368,7 +368,7 @@ const SecuritySettings: React.FC = () => {
                   <TextField
                     {...field}
                     fullWidth
-                    label="Mật khẩu hiện tại"
+                    label={translate("profile.CurrentPassword")}
                     type={showCurrentPassword ? "text" : "password"}
                     error={!!errors.currentPassword}
                     helperText={errors.currentPassword?.message}
@@ -411,7 +411,7 @@ const SecuritySettings: React.FC = () => {
                   <TextField
                     {...field}
                     fullWidth
-                    label="Mật khẩu mới"
+                    label={translate("profile.NewPassword")}
                     type={showNewPassword ? "text" : "password"}
                     error={!!errors.newPassword}
                     helperText={errors.newPassword?.message}
@@ -452,7 +452,7 @@ const SecuritySettings: React.FC = () => {
                   <TextField
                     {...field}
                     fullWidth
-                    label="Xác nhận mật khẩu mới"
+                    label={translate("profile.ConfirmPassword")}
                     type={showConfirmPassword ? "text" : "password"}
                     error={!!errors.confirmNewPassword}
                     helperText={errors.confirmNewPassword?.message}
@@ -540,7 +540,7 @@ const SecuritySettings: React.FC = () => {
         <DialogTitle>
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Typography variant="h5" sx={{ fontWeight: 700, color: "#22c55e" }}>
-              Quên mật khẩu
+              {translate("profile.ForgotPassword")}
             </Typography>
             <Box sx={{ flexGrow: 1 }} />
             <IconButton onClick={handleCloseForgotDialog}>
@@ -558,7 +558,7 @@ const SecuritySettings: React.FC = () => {
             )}
 
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Nhập email của bạn để nhận hướng dẫn đặt lại mật khẩu
+              {translate("profile.EnterEmailResetInstruction")}
             </Typography>
 
             <Controller
@@ -589,7 +589,7 @@ const SecuritySettings: React.FC = () => {
 
           <DialogActions sx={{ p: 3, pt: 1 }}>
             <Button onClick={handleCloseForgotDialog} sx={{ color: "#666" }}>
-              Hủy
+              {translate("profile.Cancel")}
             </Button>
             <Button
               type="submit"
@@ -603,7 +603,7 @@ const SecuritySettings: React.FC = () => {
                 },
               }}
             >
-              {isLoading ? <CircularProgress size={20} /> : "Gửi email"}
+              {isLoading ? <CircularProgress size={20} /> : translate("profile.SendEmail")}
             </Button>
           </DialogActions>
         </form>
@@ -625,7 +625,7 @@ const SecuritySettings: React.FC = () => {
         <DialogTitle>
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Typography variant="h5" sx={{ fontWeight: 700, color: "#22c55e" }}>
-              Đặt lại mật khẩu
+              {translate("profile.ResetPassword")}
             </Typography>
             <Box sx={{ flexGrow: 1 }} />
             <IconButton onClick={handleCloseResetDialog}>
@@ -672,7 +672,7 @@ const SecuritySettings: React.FC = () => {
                   <TextField
                     {...field}
                     fullWidth
-                    label="Token đặt lại"
+                    label={translate("profile.ResetToken")}
                     error={!!resetErrors.resetToken}
                     helperText={resetErrors.resetToken?.message}
                     sx={{

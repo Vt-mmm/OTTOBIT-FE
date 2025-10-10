@@ -149,13 +149,13 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
                 <Controller
                   name="fullName"
                   control={control}
-                  rules={{ required: "Vui lòng nhập họ và tên" }}
+                  rules={{ required: translate("profile.FullNameRequired") }}
                   render={({ field }) => (
                     <TextField
                       {...field}
                       fullWidth
-                      label="Họ và tên"
-                      placeholder="Nhập họ và tên của bạn"
+                      label={translate("profile.FullName")}
+                      placeholder={translate("profile.EnterFullName")}
                       error={!!errors.fullName}
                       helperText={errors.fullName?.message}
                       sx={{
@@ -187,8 +187,7 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
               }}
             >
               <Typography variant="body2">
-                Bạn có thể thay đổi họ tên và ảnh đại diện. Số điện thoại chỉ có
-                thể xem, không thể chỉnh sửa.
+                {translate("profile.EditProfileNote")}
               </Typography>
             </Alert>
           </motion.div>
@@ -203,7 +202,7 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
               px: 3,
             }}
           >
-            Hủy
+            {translate("profile.Cancel")}
           </Button>
           <Button
             type="submit"
