@@ -15,6 +15,7 @@ import certificates from "./certificates.json";
 import student from "./student.json";
 import challenges from "./challenges.json";
 import admin from "./admin.json";
+import store from "./store.json";
 
 export default {
   error,
@@ -34,4 +35,5 @@ export default {
   student,
   challenges,
   admin,
+  store,
 };

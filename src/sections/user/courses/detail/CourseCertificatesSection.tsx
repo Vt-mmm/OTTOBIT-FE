@@ -14,6 +14,8 @@ import {
 import { axiosClient } from "axiosClient/axiosClient";
 import { ROUTES_API_ENROLLMENT } from "constants/routesApiKeys";
 import { useLocales } from "hooks";
+import { useAppDispatch, useAppSelector } from "store/config";
+import { getMyCertificatesThunk } from "store/certificate/certificateThunks";
 
 interface CourseCertificatesSectionProps {
   course: {
@@ -38,7 +40,8 @@ export default function CourseCertificatesSection({
   totalRatings,
 }: CourseCertificatesSectionProps) {
   const { translate } = useLocales();
-  // const [certificates, setCertificates] = useState<Certificate[]>([]); // TODO: Use when Certificate API is ready
+  const dispatch = useAppDispatch();
+  const { myCertificates } = useAppSelector((state) => state.certificate);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [courseCompleted, setCourseCompleted] = useState(false);
@@ -61,13 +64,18 @@ export default function CourseCertificatesSection({
         const isCompleted = enrollment?.isCompleted || false;
         setCourseCompleted(isCompleted);
 
-        // If completed, try to fetch certificate
+        // ✅ Fetch real certificates from API
         if (isCompleted) {
-          // TODO: Replace with actual certificate API when available
-          // const certRes = await axiosClient.get(ROUTES_API_CERTIFICATE.MY_CERTIFICATES, {
-          //   params: { courseId: course.id }
-          // });
-          // setCertificates(certRes.data?.data?.items || []);
+          const certificateResult = await dispatch(
+            getMyCertificatesThunk({
+              courseId: course.id,
+              page: 1,
+              size: 10,
+            })
+          ).unwrap();
+          
+          console.log('🎓 Certificate API Response:', certificateResult);
+          console.log('📋 Course completed but certificates:', certificateResult?.items?.length || 0);
         }
       } catch (err: any) {
         setError(err?.message || translate("courses.CannotLoadCertificate"));
@@ -77,9 +85,29 @@ export default function CourseCertificatesSection({
     };
 
     loadCertificates();
-  }, [isUserEnrolled, course.id]);
+  }, [isUserEnrolled, course.id, dispatch]);
 
-  if (loading) {
+  // Get certificate data from Redux
+  const certificates = myCertificates.data?.items || [];
+  const hasCertificate = certificates.length > 0;
+  const firstCertificate = certificates[0];
+
+  // Handle view certificate
+  const handleViewCertificate = () => {
+    if (!hasCertificate) {
+      setError("Chứng chỉ chưa được cấp. Vui lòng hoàn thành khóa học.");
+      return;
+    }
+    // TODO: Open certificate viewer dialog or navigate to certificate page
+    // For now, show certificate info
+    alert(
+      `Chứng chỉ: ${firstCertificate.certificateNo}\n` +
+        `Mã xác thực: ${firstCertificate.verificationCode}\n` +
+        `Ngày cấp: ${new Date(firstCertificate.issuedAt).toLocaleDateString("vi-VN")}`
+    );
+  };
+
+  if (loading || myCertificates.isLoading) {
     return (
       <Box
         sx={{
@@ -123,9 +151,9 @@ export default function CourseCertificatesSection({
         {translate("courses.CertificateReceived")}
       </Typography>
 
-      {error && (
+      {(error || myCertificates.error) && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
+          {error || myCertificates.error}
         </Alert>
       )}
 
@@ -228,18 +256,23 @@ export default function CourseCertificatesSection({
             <Button
               variant="text"
               size="small"
+              onClick={handleViewCertificate}
+              disabled={!hasCertificate}
               sx={{
-                color: "#1976d2",
+                color: hasCertificate ? "#1976d2" : "text.disabled",
                 textTransform: "none",
                 p: 0,
                 minWidth: "auto",
                 "&:hover": {
                   bgcolor: "transparent",
-                  textDecoration: "underline",
+                  textDecoration: hasCertificate ? "underline" : "none",
                 },
+                cursor: hasCertificate ? "pointer" : "not-allowed",
               }}
             >
-              {translate("courses.ViewCertificate")}
+              {hasCertificate
+                ? translate("courses.ViewCertificate")
+                : "Chưa có chứng chỉ"}
             </Button>
           </Box>
 
@@ -339,11 +372,22 @@ export default function CourseCertificatesSection({
           </Alert>
         )}
 
-        {/* Success message when completed */}
-        {courseCompleted && (
+        {/* Success message when completed and has certificate */}
+        {courseCompleted && hasCertificate && (
           <Alert severity="success" sx={{ mt: 2 }}>
             <Typography variant="body2">
-              {translate("courses.Congratulations")}
+              🎉 {translate("courses.Congratulations")} Bạn đã nhận được chứng
+              chỉ:
+              <strong> {firstCertificate?.certificateNo}</strong>
+            </Typography>
+          </Alert>
+        )}
+
+        {/* Warning when completed but no certificate yet */}
+        {courseCompleted && !hasCertificate && (
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            <Typography variant="body2">
+              Chứng chỉ đang được xử lý. Vui lòng quay lại sau ít phút.
             </Typography>
           </Alert>
         )}

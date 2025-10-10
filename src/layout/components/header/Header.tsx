@@ -39,6 +39,7 @@ import {
   PATH_ADMIN,
 } from "../../../routes/paths";
 import { alpha } from "@mui/material/styles";
+import { useLocales } from "hooks";
 
 // Component ẩn header khi scroll xuống
 function HideOnScroll(props: {
@@ -62,6 +63,7 @@ const Header: React.FC = () => {
   const [activeSection, setActiveSection] = useState("home");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const { translate } = useLocales();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -72,10 +74,10 @@ const Header: React.FC = () => {
     (state) => state.auth
   );
 
-  // Danh sách menu với icon và scroll target
+  // Dánh sách menu với icon và scroll target
   const [menuItems, setMenuItems] = useState([
     {
-      name: "Trang chủ",
+      name: translate("common.Home"),
       icon: <HomeIcon sx={{ mr: 1, fontSize: "1.1rem" }} />,
       href: PATH_PUBLIC.homepage,
       id: "home",
@@ -88,28 +90,28 @@ const Header: React.FC = () => {
     if (isAuthenticated) {
       setMenuItems([
         {
-          name: "Trang chủ",
+          name: translate("common.Home"),
           icon: <HomeIcon sx={{ mr: 1, fontSize: "1rem" }} />,
           href: PATH_USER.homepage,
           id: "home",
           isPage: true,
         },
         {
-          name: "Cửa hàng",
+          name: translate("common.Store"),
           icon: <StoreIcon sx={{ mr: 1, fontSize: "1rem" }} />,
           href: PATH_USER.store,
           id: "store",
           isPage: true,
         },
         {
-          name: "Khóa học",
+          name: translate("common.Courses"),
           icon: <SchoolIcon sx={{ mr: 1, fontSize: "1rem" }} />,
           href: PATH_USER.courses,
           id: "courses",
           isPage: true,
         },
         {
-          name: "Studio",
+          name: translate("common.Studio"),
           icon: <DashboardIcon sx={{ mr: 1, fontSize: "1rem" }} />,
           href: PATH_USER.studio,
           id: "studio",
@@ -119,14 +121,14 @@ const Header: React.FC = () => {
     } else {
       setMenuItems([
         {
-          name: "Trang chủ",
+          name: translate("common.Home"),
           icon: <HomeIcon sx={{ mr: 1, fontSize: "1rem" }} />,
           href: PATH_PUBLIC.homepage,
           id: "home",
           isPage: true,
         },
         {
-          name: "Cửa hàng",
+          name: translate("common.Store"),
           icon: <StoreIcon sx={{ mr: 1, fontSize: "1rem" }} />,
           href: PATH_PUBLIC.store,
           id: "store",
@@ -134,7 +136,7 @@ const Header: React.FC = () => {
         },
       ]);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, translate]);
 
   // Theo dõi URL và scroll để highlight menu item tương ứng với section hiện tại
   useEffect(() => {

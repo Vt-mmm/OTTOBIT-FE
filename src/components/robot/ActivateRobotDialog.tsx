@@ -23,12 +23,19 @@ interface ActivateRobotDialogProps {
   open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  // Optional: Validate robot belongs to specific course
+  courseId?: string;
+  requiredRobotIds?: string[]; // List of robot IDs required by the course
+  courseName?: string; // For better error messages
 }
 
 export default function ActivateRobotDialog({
   open,
   onClose,
   onSuccess,
+  courseId,
+  requiredRobotIds,
+  courseName,
 }: ActivateRobotDialogProps) {
   const dispatch = useAppDispatch();
   const { translate } = useLocales();
@@ -36,6 +43,7 @@ export default function ActivateRobotDialog({
 
   const [activationCode, setActivationCode] = useState("");
   const [codeError, setCodeError] = useState("");
+  const [validationWarning, setValidationWarning] = useState("");
 
   // Use refs to store latest callbacks to avoid infinite loop
   const onSuccessRef = useRef(onSuccess);
@@ -52,6 +60,7 @@ export default function ActivateRobotDialog({
       // Reset when dialog closes
       setActivationCode("");
       setCodeError("");
+      setValidationWarning("");
       dispatch(clearRedeemStatus());
     }
   }, [open, dispatch]);
@@ -82,14 +91,36 @@ export default function ActivateRobotDialog({
     return true;
   };
 
-  const handleActivate = () => {
+  const handleActivate = async () => {
     const trimmedCode = activationCode.trim().toUpperCase();
 
     if (!validateCode(trimmedCode)) {
       return;
     }
 
-    dispatch(redeemActivationCodeThunk({ code: trimmedCode }));
+    setValidationWarning("");
+
+    try {
+      const result = await dispatch(
+        redeemActivationCodeThunk({ code: trimmedCode })
+      ).unwrap();
+
+      // Validate robot if courseId and requiredRobotIds are provided
+      if (courseId && requiredRobotIds && requiredRobotIds.length > 0) {
+        const redeemedRobotId = result.robotId;
+        const redeemedRobotName = result.robot?.name || "Robot";
+
+        if (redeemedRobotId && !requiredRobotIds.includes(redeemedRobotId)) {
+          // Robot does NOT match course requirements
+          const courseDisplayName = courseName || translate("courses.ThisCourse");
+          setValidationWarning(
+            `Mã kích hoạt cho "${redeemedRobotName}" đã được kích hoạt thành công, nhưng khóa học "${courseDisplayName}" yêu cầu robot khác. Vui lòng kiểm tra lại yêu cầu robot của khóa học.`
+          );
+        }
+      }
+    } catch (error) {
+      // Error handling is done by Redux thunk
+    }
   };
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,6 +134,7 @@ export default function ActivateRobotDialog({
   const handleCancel = () => {
     setActivationCode("");
     setCodeError("");
+    setValidationWarning("");
     onClose();
   };
 
@@ -137,6 +169,13 @@ export default function ActivateRobotDialog({
           {/* Error State */}
           {operations.redeemError && (
             <Alert severity="error">{operations.redeemError}</Alert>
+          )}
+
+          {/* Validation Warning - Robot doesn't match course */}
+          {validationWarning && (
+            <Alert severity="warning" sx={{ mt: 1 }}>
+              <Typography variant="body2">{validationWarning}</Typography>
+            </Alert>
           )}
 
           {/* Input Form */}

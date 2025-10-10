@@ -1,4 +1,38 @@
 {
+  "sidebar": {
+    "overview": "Tổng quan",
+    "tools": "Công cụ",
+    "contentManagement": "Quản lý nội dung",
+    "userManagement": "Quản lý người dùng",
+    "salesManagement": "Quản lý bán hàng",
+    "submissionManagement": "Quản lý bài nộp",
+    "dashboard": "Bảng điều khiển",
+    "challengeDesigner": "Thiết kế Thử thách",
+    "mapDesigner": "Thiết kế Bản đồ",
+    "courseManagement": "Quản lý Khóa học",
+    "lessonManagement": "Quản lý Bài học",
+    "lessonResourceManagement": "Quản lý Tài nguyên Học Tập",
+    "challengeManagement": "Quản lý thử thách",
+    "mapManagement": "Quản lý Bản đồ",
+    "robotManagement": "Quản lý Robot",
+    "componentManagement": "Quản lý Linh kiện",
+    "activationCodeManagement": "Quản lý Mã kích hoạt",
+    "certificateManagement": "Quản lý Chứng chỉ",
+    "certificateTemplateManagement": "Quản lý Mẫu Chứng chỉ",
+    "voucherManagement": "Quản lý Voucher",
+    "studentManagement": "Quản lý Học viên",
+    "enrollmentManagement": "Quản lý Ghi danh",
+    "orderManagement": "Quản lý Đơn hàng",
+    "submissionManagement": "Quản lý Bài nộp",
+    "account": "Tài khoản",
+    "profile": "Hồ sơ",
+    "myOrders": "Đơn hàng của tôi",
+    "security": "Bảo mật"
+  },
+  "header": {
+    "adminDashboard": "Bảng điều khiển quản trị",
+    "menuOpen": "Mở menu"
+  },
   "title": "Bảng Quản Trị",
   "dashboard": "Trang Tổng Quan",
   

@@ -1,0 +1,22 @@
+{
+  "Category": "Danh mục",
+  "SearchRobots": "Tìm kiếm robot",
+  "FilterBy": "Lọc theo :",
+  "Price": "Giá",
+  "Brand": "Thương hiệu",
+  "AllBrands": "Tất cả thương hiệu",
+  "StockStatus": "Tình trạng kho",
+  "AllProducts": "Tất cả sản phẩm",
+  "InStock": "Còn hàng",
+  "OutOfStock": "Hết hàng",
+  "AgeRange": "Độ tuổi",
+  "Years": "tuổi",
+  "Showing": "Hiển thị",
+  "Of": "trong tổng số",
+  "Robots": "robot",
+  "PerPage": "Mỗi trang",
+  "Loading": "Đang tải...",
+  "NoRobotsFound": "Không tìm thấy robot",
+  "TryAdjustingFilters": "Thử điều chỉnh tìm kiếm hoặc bộ lọc",
+  "NoRobotsAvailable": "Hiện tại không có robot nào"
+}

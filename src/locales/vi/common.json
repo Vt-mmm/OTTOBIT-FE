@@ -52,5 +52,10 @@
   "close": "Đóng",
   "processing": "Đang xử lý...",
   "moreThan": "nhiều hơn {{to}}",
-  "of": "của"
+  "of": "của",
+  "Store": "Cửa hàng",
+  "Courses": "Khóa học",
+  "Studio": "Studio",
+  "User": "Người dùng",
+  "Student": "Học viên"
 }

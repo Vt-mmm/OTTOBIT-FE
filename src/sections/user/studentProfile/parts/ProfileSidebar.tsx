@@ -18,6 +18,7 @@ import { useEffect } from "react";
 import { StudentResult } from "common/@types/student";
 import { useAppSelector, useAppDispatch } from "store/config";
 import { getMyProfileThunk } from "store/account/accountThunks";
+import { useLocales } from "hooks";
 
 interface ProfileSidebarProps {
   student: StudentResult;
@@ -30,6 +31,7 @@ export default function ProfileSidebar({
 }: ProfileSidebarProps) {
   const dispatch = useAppDispatch();
   const { profile } = useAppSelector((state) => state.account);
+  const { translate } = useLocales();
   const avatarUrl = profile?.data?.avatarUrl;
 
   // Fetch account profile on mount if not already loaded
@@ -121,7 +123,7 @@ export default function ProfileSidebar({
           {/* Status */}
           <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
             <Chip
-              label="Đang hoạt động"
+              label={translate("profile.Active")}
               size="small"
               sx={{
                 bgcolor: "success.50",
@@ -146,7 +148,7 @@ export default function ProfileSidebar({
               letterSpacing: 0.5,
             }}
           >
-            Thông tin cá nhân
+            {translate("profile.PersonalInfo")}
           </Typography>
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -171,11 +173,11 @@ export default function ProfileSidebar({
                   color="text.secondary"
                   sx={{ display: "block" }}
                 >
-                  Ngày sinh
+                  {translate("profile.DateOfBirth")}
                 </Typography>
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
                   {formatDate(student.dateOfBirth)} (
-                  {getAge(student.dateOfBirth)} tuổi)
+                  {getAge(student.dateOfBirth)} {translate("profile.YearsOld")})
                 </Typography>
               </Box>
             </Box>
@@ -202,7 +204,7 @@ export default function ProfileSidebar({
                     color="text.secondary"
                     sx={{ display: "block" }}
                   >
-                    Số điện thoại
+                    {translate("profile.PhoneNumber")}
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     {student.phoneNumber}
@@ -233,7 +235,7 @@ export default function ProfileSidebar({
                     color="text.secondary"
                     sx={{ display: "block" }}
                   >
-                    Địa chỉ
+                    {translate("profile.Address")}
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     {[student.city, student.state].filter(Boolean).join(", ")}
@@ -272,7 +274,7 @@ export default function ProfileSidebar({
               transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
             }}
           >
-            Chỉnh sửa hồ sơ
+            {translate("profile.EditProfile")}
           </Button>
         </CardContent>
       </Card>

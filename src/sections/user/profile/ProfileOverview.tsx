@@ -35,8 +35,8 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
 
   // Ưu tiên dữ liệu từ account.profile (BE), fallback sang auth
   const displayData = {
-    fullName: profile.data?.fullName || userAuth?.username || "Chưa có tên",
-    email: profile.data?.email || userAuth?.email || "Chưa có email",
+    fullName: profile.data?.fullName || userAuth?.username || translate("profile.NotProvided"),
+    email: profile.data?.email || userAuth?.email || translate("profile.NotProvided"),
     roles:
       (profile.data?.roles as string[] | undefined) || userAuth?.roles || [],
     phoneNumber: profile.data?.phoneNumber || "",
@@ -49,7 +49,7 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
     displayData.registrationDate &&
     dayjs(displayData.registrationDate).isValid()
       ? dayjs(displayData.registrationDate).format("DD/MM/YYYY")
-      : "Chưa cập nhật";
+      : translate("profile.NotProvided");
 
   return (
     <motion.div
@@ -134,14 +134,14 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                 mb: 1,
               }}
             >
-              {displayData.fullName || "Người dùng"}
+              {displayData.fullName || translate("common.User")}
             </Typography>
 
             <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
               {(displayData.roles || []).map((role: string) => (
                 <Chip
                   key={role}
-                  label={role === "OTTOBIT_USER" ? "Học viên" : role}
+                  label={role === "OTTOBIT_USER" ? translate("common.Student") : role}
                   size="small"
                   sx={{
                     bgcolor: (t) => alpha(t.palette.primary.main, 0.12),
@@ -158,7 +158,7 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
               ))}
 
               <Chip
-                label="Email đã xác thực"
+                label={translate("profile.EmailVerified")}
                 size="small"
                 sx={{
                   bgcolor: (t) => alpha(t.palette.success.main, 0.12),
@@ -242,7 +242,7 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                     color="text.secondary"
                     sx={{ fontWeight: 500 }}
                   >
-                    Số điện thoại
+                    {translate("profile.PhoneNumber")}
                   </Typography>
                   <Typography
                     variant="body1"
@@ -251,7 +251,7 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                       color: (t) => t.palette.text.primary,
                     }}
                   >
-                    {displayData.phoneNumber || "Chưa cập nhật"}
+                    {displayData.phoneNumber || translate("profile.NotProvided")}
                   </Typography>
                 </Box>
               </Box>
@@ -279,7 +279,7 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                     color="text.secondary"
                     sx={{ fontWeight: 500 }}
                   >
-                    Ngày tham gia
+                    {translate("profile.JoinDate")}
                   </Typography>
                   <Typography
                     variant="body1"

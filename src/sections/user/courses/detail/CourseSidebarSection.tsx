@@ -88,6 +88,9 @@ export default function CourseSidebarSection({
   const missingRequiredRobots = requiredRobots.filter(
     (cr) => !isRobotOwned(cr.robotId)
   );
+
+  // Get all robot IDs for this course (both required and optional)
+  const allCourseRobotIds = courseRobotsList.map((cr) => cr.robotId);
   return (
     <Box sx={{ position: "sticky", top: 80 }}>
       {/* Course Info Card - Compact */}
@@ -266,6 +269,9 @@ export default function CourseSidebarSection({
         open={activateDialogOpen}
         onClose={() => setActivateDialogOpen(false)}
         onSuccess={handleActivateSuccess}
+        courseId={course.id}
+        requiredRobotIds={allCourseRobotIds}
+        courseName={course.title}
       />
     </Box>
   );

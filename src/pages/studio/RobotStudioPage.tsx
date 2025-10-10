@@ -334,6 +334,7 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
           <SimulatorStageSection workspace={workspace} />
         </Box>
       </Box>
+
     </Box>
   );
 };

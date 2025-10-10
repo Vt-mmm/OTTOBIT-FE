@@ -21,22 +21,20 @@ import { GetRobotsRequest } from "common/@types/robot";
 import { useNavigate } from "react-router-dom";
 import { PATH_PUBLIC, PATH_USER } from "routes/paths";
 import ProductCard from "components/store/ProductCard";
-import { formatVNDNumber } from "utils/utils";
+import useLocales from "hooks/useLocales";
 
 export default function RobotListingSection() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { robots } = useAppSelector((state) => state.robot);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { translate } = useLocales();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBrand, setFilterBrand] = useState("all");
   const [filterStock, setFilterStock] = useState("all");
-  // Price in VND - range from 0 to 50,000,000 VND (default max)
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000000]);
   // Age range from 1 to 99 years old
   const [ageRange, setAgeRange] = useState<[number, number]>([1, 99]);
-  const [applyPriceFilter, setApplyPriceFilter] = useState(false);
   const [applyAgeFilter, setApplyAgeFilter] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(12);
@@ -50,7 +48,6 @@ export default function RobotListingSection() {
       searchTerm: searchTerm.trim() || undefined,
       brand: filterBrand !== "all" ? filterBrand : undefined,
       // inStock filter removed - no stock data available
-      // Price filter removed - no pricing data in backend
       // Only apply age filter if user has interacted with it
       minAge: applyAgeFilter && ageRange[0] > 1 ? ageRange[0] : undefined,
       maxAge: applyAgeFilter && ageRange[1] < 99 ? ageRange[1] : undefined,
@@ -63,8 +60,8 @@ export default function RobotListingSection() {
       clearTimeout(debounceTimer.current);
     }
 
-    // Use debounce for price and age range changes (500ms delay)
-    if (applyPriceFilter || applyAgeFilter) {
+    // Use debounce for age range changes (500ms delay)
+    if (applyAgeFilter) {
       debounceTimer.current = setTimeout(() => {
         dispatch(getRobotsThunk(filters));
       }, 500);
@@ -84,9 +81,7 @@ export default function RobotListingSection() {
     searchTerm,
     filterBrand,
     filterStock,
-    priceRange,
     ageRange,
-    applyPriceFilter,
     applyAgeFilter,
     pageNumber,
     pageSize,
@@ -148,7 +143,7 @@ export default function RobotListingSection() {
             fontSize: { lg: "1.125rem", xl: "1.25rem" },
           }}
         >
-          Category
+          {translate('store.Category')}
         </Typography>
 
         {/* Search */}
@@ -156,7 +151,7 @@ export default function RobotListingSection() {
           <TextField
             fullWidth
             size="small"
-            placeholder="Search robots"
+            placeholder={translate('store.SearchRobots')}
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -179,53 +174,10 @@ export default function RobotListingSection() {
 
         <Divider sx={{ my: 2 }} />
 
-        {/* Filter by Price */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
-            Filter by :
-          </Typography>
-          <Typography variant="body2" sx={{ mb: 1.5, color: "text.secondary" }}>
-            Price
-          </Typography>
-          <Box sx={{ px: 1 }}>
-            <Slider
-              value={priceRange}
-              onChange={(_, newValue) => {
-                setPriceRange(newValue as [number, number]);
-                setApplyPriceFilter(true);
-                setPageNumber(1);
-              }}
-              valueLabelDisplay="auto"
-              valueLabelFormat={(value) => `${formatVNDNumber(value)} đ`}
-              min={0}
-              max={50000000}
-              step={500000}
-              sx={{
-                "& .MuiSlider-thumb": {
-                  width: 16,
-                  height: 16,
-                },
-              }}
-            />
-            <Box
-              sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}
-            >
-              <Typography variant="caption" color="text.secondary">
-                {formatVNDNumber(priceRange[0])} đ
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {formatVNDNumber(priceRange[1])} đ
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-
-        <Divider sx={{ my: 2 }} />
-
         {/* Brand Filter */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
-            Brand
+            {translate('store.Brand')}
           </Typography>
           <FormControl fullWidth size="small">
             <Select
@@ -236,7 +188,7 @@ export default function RobotListingSection() {
               }}
               sx={{ borderRadius: 1.5 }}
             >
-              <MenuItem value="all">All Brands</MenuItem>
+              <MenuItem value="all">{translate('store.AllBrands')}</MenuItem>
               {uniqueBrands.map((brand) => (
                 <MenuItem key={brand} value={brand}>
                   {brand}
@@ -251,7 +203,7 @@ export default function RobotListingSection() {
         {/* Stock Status */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
-            Stock Status
+            {translate('store.StockStatus')}
           </Typography>
           <FormControl fullWidth size="small">
             <Select
@@ -262,9 +214,9 @@ export default function RobotListingSection() {
               }}
               sx={{ borderRadius: 1.5 }}
             >
-              <MenuItem value="all">All Products</MenuItem>
-              <MenuItem value="inStock">In Stock</MenuItem>
-              <MenuItem value="outOfStock">Out of Stock</MenuItem>
+              <MenuItem value="all">{translate('store.AllProducts')}</MenuItem>
+              <MenuItem value="inStock">{translate('store.InStock')}</MenuItem>
+              <MenuItem value="outOfStock">{translate('store.OutOfStock')}</MenuItem>
             </Select>
           </FormControl>
         </Box>
@@ -274,7 +226,7 @@ export default function RobotListingSection() {
         {/* Age Range */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
-            Age Range
+            {translate('store.AgeRange')}
           </Typography>
           <Box sx={{ px: 1 }}>
             <Slider
@@ -312,10 +264,10 @@ export default function RobotListingSection() {
               sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}
             >
               <Typography variant="caption" color="text.secondary">
-                {ageRange[0]} tuổi
+                {ageRange[0]} {translate('store.Years')}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {ageRange[1]} tuổi
+                {ageRange[1]} {translate('store.Years')}
               </Typography>
             </Box>
           </Box>
@@ -350,23 +302,23 @@ export default function RobotListingSection() {
           <Box>
             {robots.data && (
               <Typography variant="body2" color="text.secondary">
-                Showing{" "}
+                {translate('store.Showing')}{" "}
                 <Typography component="span" fontWeight={600}>
                   {robotList.length}
                 </Typography>{" "}
-                of{" "}
+                {translate('store.Of')}{" "}
                 <Typography component="span" fontWeight={600}>
                   {robots.data.total}
                 </Typography>{" "}
-                robots
+                {translate('store.Robots')}
               </Typography>
             )}
           </Box>
           <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 120 } }}>
-            <InputLabel>Per Page</InputLabel>
+            <InputLabel>{translate('store.PerPage')}</InputLabel>
             <Select
               value={pageSize}
-              label="Per Page"
+              label={translate('store.PerPage')}
               onChange={(e) => {
                 setPageSize(Number(e.target.value));
                 setPageNumber(1);
@@ -414,7 +366,7 @@ export default function RobotListingSection() {
                   color="text.secondary"
                   sx={{ mt: 2 }}
                 >
-                  Loading...
+                  {translate('store.Loading')}
                 </Typography>
               </Box>
             </Box>
@@ -431,12 +383,12 @@ export default function RobotListingSection() {
               }}
             >
               <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
-                No robots found
+                {translate('store.NoRobotsFound')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 {searchTerm || filterBrand !== "all" || filterStock !== "all"
-                  ? "Try adjusting your search or filters"
-                  : "No robots available at the moment"}
+                  ? translate('store.TryAdjustingFilters')
+                  : translate('store.NoRobotsAvailable')}
               </Typography>
             </Box>
           ) : (

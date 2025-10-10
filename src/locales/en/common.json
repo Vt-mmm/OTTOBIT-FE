@@ -53,5 +53,10 @@
   "close": "Close",
   "processing": "Processing...",
   "moreThan": "more than {{to}}",
-  "of": "of"
+  "of": "of",
+  "Store": "Store",
+  "Courses": "Courses",
+  "Studio": "Studio",
+  "User": "User",
+  "Student": "Student"
 }
