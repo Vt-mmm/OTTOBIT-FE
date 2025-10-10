@@ -22,11 +22,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
+  Pagination,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
@@ -103,7 +99,13 @@ export default function CourseDetailsSection({
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [availableMaps, setAvailableMaps] = useState<any[]>([]);
   const [selectedMapId, setSelectedMapId] = useState<string>("");
-  const [mapOrder, setMapOrder] = useState<number>(0);
+  const [availableMapsPagination, setAvailableMapsPagination] = useState({
+    page: 1,
+    pageSize: 10,
+    total: 0,
+    totalPages: 1,
+  });
+  const [availableMapsLoading, setAvailableMapsLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
@@ -111,12 +113,6 @@ export default function CourseDetailsSection({
     mapTitle: string;
     isDeleted: boolean;
   }>({ open: false, id: null, mapTitle: "", isDeleted: false });
-  const [editDialog, setEditDialog] = useState<{
-    open: boolean;
-    id: string | null;
-    mapTitle: string;
-    currentOrder: number;
-  }>({ open: false, id: null, mapTitle: "", currentOrder: 0 });
 
   // Use common notification hook
   const { showNotification, NotificationComponent } = useNotification({
@@ -156,20 +152,36 @@ export default function CourseDetailsSection({
   }, [course?.id]);
 
   // Load available maps for add dialog
+  const fetchAvailableMaps = async (page = 1) => {
+    setAvailableMapsLoading(true);
+    try {
+      const res = await axiosClient.get(ROUTES_API_MAP.GET_ALL, {
+        params: {
+          PageNumber: page,
+          PageSize: availableMapsPagination.pageSize,
+          IncludeDeleted: false,
+        },
+      });
+      const data = (res as any)?.data?.data;
+      const items = Array.isArray(data?.items) ? data.items : [];
+      setAvailableMaps(items);
+      setAvailableMapsPagination((prev) => ({
+        ...prev,
+        page: page,
+        total: data?.total || 0,
+        totalPages: data?.totalPages || 1,
+      }));
+    } catch (_) {
+      setAvailableMaps([]);
+    } finally {
+      setAvailableMapsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchMaps = async () => {
-      try {
-        const res = await axiosClient.get(ROUTES_API_MAP.GET_ALL, {
-          params: { PageNumber: 1, PageSize: 100 },
-        });
-        const data = (res as any)?.data?.data;
-        const items = Array.isArray(data?.items) ? data.items : [];
-        setAvailableMaps(items);
-      } catch (_) {
-        setAvailableMaps([]);
-      }
-    };
-    if (addDialogOpen) fetchMaps();
+    if (addDialogOpen) {
+      fetchAvailableMaps(1);
+    }
   }, [addDialogOpen]);
 
   if (!course) {
@@ -478,24 +490,6 @@ export default function CourseDetailsSection({
                                 spacing={1}
                                 justifyContent="flex-end"
                               >
-                                {!m.isDeleted && (
-                                  <Button
-                                    size="small"
-                                    color="primary"
-                                    variant="outlined"
-                                    startIcon={<EditIcon />}
-                                    onClick={() =>
-                                      setEditDialog({
-                                        open: true,
-                                        id: m.id,
-                                        mapTitle: m.mapTitle || m.mapId,
-                                        currentOrder: m.order || 0,
-                                      })
-                                    }
-                                  >
-                                    Sửa
-                                  </Button>
-                                )}
                                 {m.isDeleted ? (
                                   <Button
                                     size="small"
@@ -582,36 +576,144 @@ export default function CourseDetailsSection({
           open={addDialogOpen}
           onClose={() => setAddDialogOpen(false)}
           fullWidth
-          maxWidth="sm"
+          maxWidth="md"
         >
-          <DialogTitle>Thêm course map</DialogTitle>
-          <DialogContent sx={{ pt: 2 }}>
-            <Stack spacing={2}>
-              <FormControl size="small" fullWidth>
-                <InputLabel>Chọn map</InputLabel>
-                <Select
-                  label="Chọn map"
-                  value={selectedMapId}
-                  onChange={(e) => setSelectedMapId(e.target.value as string)}
-                >
+          <DialogTitle>Chọn map để thêm vào khóa học</DialogTitle>
+          <DialogContent sx={{ pt: 2, pb: 2 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Chọn một map từ danh sách bên dưới để thêm vào khóa học
+            </Typography>
+
+            <Box
+              sx={{
+                maxHeight: 400,
+                overflowY: "auto",
+                border: "1px solid #e0e0e0",
+                borderRadius: 1,
+                p: 1,
+              }}
+            >
+              {availableMapsLoading ? (
+                <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                  <CircularProgress />
+                </Box>
+              ) : availableMaps.length === 0 ? (
+                <Box sx={{ textAlign: "center", py: 4 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Không có map nào khả dụng
+                  </Typography>
+                </Box>
+              ) : (
+                <Stack spacing={1}>
                   {availableMaps.map((m: any) => (
-                    <MenuItem key={m.id} value={m.id}>
-                      {m.title || m.id}
-                    </MenuItem>
+                    <Box
+                      key={m.id}
+                      onClick={() => setSelectedMapId(m.id)}
+                      sx={{
+                        p: 2,
+                        border:
+                          selectedMapId === m.id
+                            ? "2px solid #1976d2"
+                            : "2px solid transparent",
+                        borderRadius: 1,
+                        bgcolor: selectedMapId === m.id ? "#f3f8ff" : "white",
+                        cursor: "pointer",
+                        transition: "all 0.2s ease-in-out",
+                        "&:hover": {
+                          bgcolor:
+                            selectedMapId === m.id ? "#f3f8ff" : "#f5f5f5",
+                          borderColor:
+                            selectedMapId === m.id ? "#1976d2" : "#e0e0e0",
+                        },
+                      }}
+                    >
+                      <Stack direction="row" alignItems="center" spacing={2}>
+                        <Box
+                          sx={{
+                            width: 48,
+                            height: 48,
+                            borderRadius: 1,
+                            bgcolor: "#e3f2fd",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Typography variant="h6" color="primary.main">
+                            M
+                          </Typography>
+                        </Box>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography
+                            variant="subtitle1"
+                            fontWeight={600}
+                            noWrap
+                          >
+                            {m.title || m.name || "Untitled Map"}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            noWrap
+                          >
+                            {m.description || "Không có mô tả"}
+                          </Typography>
+                          <Typography variant="caption" color="text.disabled">
+                            ID: {m.id}
+                          </Typography>
+                        </Box>
+                        {selectedMapId === m.id && (
+                          <Box
+                            sx={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: "50%",
+                              bgcolor: "#1976d2",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <Typography
+                              variant="body2"
+                              color="white"
+                              sx={{ fontSize: "14px" }}
+                            >
+                              ✓
+                            </Typography>
+                          </Box>
+                        )}
+                      </Stack>
+                    </Box>
                   ))}
-                </Select>
-              </FormControl>
-              <TextField
-                size="small"
-                type="number"
-                label="Thứ tự (order)"
-                value={mapOrder}
-                onChange={(e) => setMapOrder(Number(e.target.value))}
-              />
-            </Stack>
+                </Stack>
+              )}
+            </Box>
+
+            {/* Pagination for available maps */}
+            {availableMapsPagination.totalPages > 1 && (
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                <Pagination
+                  count={availableMapsPagination.totalPages}
+                  page={availableMapsPagination.page}
+                  onChange={(_, page) => fetchAvailableMaps(page)}
+                  color="primary"
+                  size="small"
+                />
+              </Box>
+            )}
           </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setAddDialogOpen(false)}>Hủy</Button>
+          <DialogActions sx={{ p: 2, pt: 1 }}>
+            <Button
+              onClick={() => {
+                setAddDialogOpen(false);
+                setSelectedMapId("");
+              }}
+            >
+              Hủy
+            </Button>
             <Button
               variant="contained"
               disabled={!selectedMapId || submitting}
@@ -622,13 +724,12 @@ export default function CourseDetailsSection({
                   await axiosClient.post(ROUTES_API_COURSE_MAP.CREATE, {
                     courseId: course.id,
                     mapId: selectedMapId,
-                    order: Number(mapOrder) || 0,
                   });
                   setAddDialogOpen(false);
                   setSelectedMapId("");
-                  setMapOrder(0);
                   // refresh list
                   await fetchCourseMaps(courseMapsPagination.page);
+                  showNotification("Thêm course map thành công!", "success");
                 } catch (error) {
                   const errorMessage = extractApiErrorMessage(
                     error,
@@ -640,7 +741,7 @@ export default function CourseDetailsSection({
                 }
               }}
             >
-              Thêm
+              {submitting ? "Đang thêm..." : "Thêm"}
             </Button>
           </DialogActions>
         </Dialog>
@@ -717,91 +818,6 @@ export default function CourseDetailsSection({
               }}
             >
               {deleteDialog.isDeleted ? "Khôi phục" : "Xóa"}
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Edit Course Map Order Dialog */}
-        <Dialog
-          open={editDialog.open}
-          onClose={() =>
-            setEditDialog({
-              open: false,
-              id: null,
-              mapTitle: "",
-              currentOrder: 0,
-            })
-          }
-          fullWidth
-          maxWidth="sm"
-        >
-          <DialogTitle>Chỉnh sửa thứ tự course map</DialogTitle>
-          <DialogContent sx={{ pt: 2 }}>
-            <Stack spacing={2}>
-              <Typography variant="body2" color="text.secondary">
-                Map: <strong>{editDialog.mapTitle}</strong>
-              </Typography>
-              <TextField
-                size="small"
-                type="number"
-                label="Thứ tự (order)"
-                value={editDialog.currentOrder}
-                onChange={(e) =>
-                  setEditDialog((prev) => ({
-                    ...prev,
-                    currentOrder: Number(e.target.value),
-                  }))
-                }
-                inputProps={{ min: 0 }}
-              />
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() =>
-                setEditDialog({
-                  open: false,
-                  id: null,
-                  mapTitle: "",
-                  currentOrder: 0,
-                })
-              }
-            >
-              Hủy
-            </Button>
-            <Button
-              variant="contained"
-              disabled={submitting}
-              onClick={async () => {
-                if (!editDialog.id) return;
-                setSubmitting(true);
-                try {
-                  await axiosClient.put(
-                    ROUTES_API_COURSE_MAP.UPDATE(editDialog.id),
-                    {
-                      order: editDialog.currentOrder,
-                    }
-                  );
-                  setEditDialog({
-                    open: false,
-                    id: null,
-                    mapTitle: "",
-                    currentOrder: 0,
-                  });
-                  // Refresh list
-                  await fetchCourseMaps(courseMapsPagination.page);
-                } catch (error) {
-                  const errorMessage = extractApiErrorMessage(
-                    error,
-                    "Có lỗi xảy ra khi cập nhật course map"
-                  );
-                  showNotification(errorMessage, "error");
-                } finally {
-                  setSubmitting(false);
-                }
-              }}
-            >
-              Cập nhật
             </Button>
           </DialogActions>
         </Dialog>
