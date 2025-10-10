@@ -84,11 +84,13 @@ export default defineConfig({
     minify: "terser",
     terserOptions: {
       compress: {
-        // Conditional console removal - keep debug logs in production for now
-        drop_console: process.env.NODE_ENV === "production" ? false : false, // Keep console logs for debugging
+        // Remove ALL console statements in production
+        drop_console: true, // Remove all console.* calls
         drop_debugger: true, // Remove debugger statements
-        // Only remove console.log that don't have debug prefixes
-        pure_funcs: process.env.NODE_ENV === "production" ? [] : [],
+        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'],
+      },
+      format: {
+        comments: false, // Remove all comments
       },
     },
   },

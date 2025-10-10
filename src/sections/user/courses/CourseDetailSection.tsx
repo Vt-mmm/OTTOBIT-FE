@@ -72,9 +72,8 @@ export default function CourseDetailSection({
     (state) => state.enrollment
   );
   const { isAuthenticated } = useAppSelector((state) => state.auth);
-  const { studentData } = useAppSelector((state) => ({
-    studentData: state.student.currentStudent.data,
-  }));
+  // Fix: Don't create new object in selector - access property directly
+  const studentData = useAppSelector((state) => state.student.currentStudent.data);
   const { isEnrolling } = operations;
 
   // Check if user is enrolled in this course
@@ -88,12 +87,17 @@ export default function CourseDetailSection({
     dispatch(getCourseById(courseId));
   }, [dispatch, courseId]);
 
-  // Fetch user's enrollments ONLY if authenticated
+  // Fetch user's enrollments ONLY if authenticated and not already loaded/loading
   useEffect(() => {
-    if (isAuthenticated) {
-      dispatch(getMyEnrollments({ pageSize: 100 }));
+    if (!isAuthenticated) return;
+    
+    // Don't fetch if already loading or already have data or got error
+    if (myEnrollments.isLoading || myEnrollments.data || myEnrollments.error) {
+      return;
     }
-  }, [dispatch, courseId, isAuthenticated]);
+    
+    dispatch(getMyEnrollments({ pageSize: 100 }));
+  }, [dispatch, isAuthenticated, myEnrollments.isLoading, myEnrollments.data, myEnrollments.error]);
 
   // Always use preview for course detail page - individual lessons will be fetched when clicked
   useEffect(() => {

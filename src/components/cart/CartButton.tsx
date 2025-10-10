@@ -16,16 +16,24 @@ export default function CartButton() {
     // Only fetch cart if user is authenticated
     if (!isAuthenticated) return;
 
-    // Fetch cart summary on mount and periodically
+    // Check if we already tried and got CART_NOT_FOUND error
+    if (summary.error === 'CART_NOT_FOUND') {
+      // Don't keep polling if cart doesn't exist
+      return;
+    }
+
+    // Fetch cart summary on mount
     dispatch(getCartSummaryThunk());
 
-    // Refresh every 30 seconds
-    const interval = setInterval(() => {
-      dispatch(getCartSummaryThunk());
-    }, 30000);
+    // Only refresh periodically if cart exists (has data or is loading)
+    if (summary.data) {
+      const interval = setInterval(() => {
+        dispatch(getCartSummaryThunk());
+      }, 30000);
 
-    return () => clearInterval(interval);
-  }, [dispatch, isAuthenticated]);
+      return () => clearInterval(interval);
+    }
+  }, [dispatch, isAuthenticated, summary.data, summary.error]);
 
   const itemCount = summary.data?.itemsCount || 0;
 

@@ -174,11 +174,41 @@ export const getMyActivationCodesThunk = createAsyncThunk<
 >("activationCode/getMyCodes", async (params, { rejectWithValue }) => {
   try {
     const response = await callApiWithRetry(() =>
-      axiosClient.get(ROUTES_API_ACTIVATION_CODE.MY_CODES, { params })
+      axiosClient.get(ROUTES_API_ACTIVATION_CODE.MY_CODES, { 
+        params,
+        // Prevent 404 from appearing in console - expected for users without codes
+        validateStatus: (status) => {
+          return (status >= 200 && status < 300) || status === 404;
+        },
+      })
     );
+    
+    // Handle 404 silently - user has no activation codes
+    if (response.status === 404) {
+      return {
+        items: [],
+        page: 1,
+        size: params?.pageSize || 10,
+        total: 0,
+        totalPages: 0,
+      };
+    }
+    
     return response.data.data || response.data;
   } catch (error) {
     const err = error as AxiosError<ErrorResponse>;
+    
+    // Additional fallback for 404
+    if (err.response?.status === 404) {
+      return {
+        items: [],
+        page: 1,
+        size: params?.pageSize || 10,
+        total: 0,
+        totalPages: 0,
+      };
+    }
+    
     return rejectWithValue(
       err.response?.data?.message || "Failed to fetch my activation codes"
     );
