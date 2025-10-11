@@ -74,8 +74,6 @@ export default function CourseSidebarSection({
     (cr) => !isRobotOwned(cr.robotId)
   );
 
-  // Get all robot IDs for this course (both required and optional)
-  const allCourseRobotIds = courseRobotsList.map((cr) => cr.robotId);
   return (
     <Box sx={{ position: "sticky", top: 80 }}>
       {/* Course Info Card - Compact */}

@@ -64,7 +64,7 @@ export default function AddToCartButton({
 
   const handleAddToCart = async () => {
     try {
-      const result = await dispatch(
+      await dispatch(
         addCartItemThunk({
           courseId,
           unitPrice: coursePrice,

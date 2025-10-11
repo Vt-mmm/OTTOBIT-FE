@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
   Box,
   Button,
@@ -29,37 +29,11 @@ interface CertificateCardProps {
 
 export default function CertificateCard({ certificate }: CertificateCardProps) {
   const [openViewer, setOpenViewer] = useState(false);
-  const { template, isLoading: isTemplateLoading } = useCertificateTemplate(certificate.templateId);
+  const { template, isLoading: isTemplateLoading } = useCertificateTemplate(
+    certificate.templateId
+  );
 
   const isValid = certificate.status === CertificateStatus.ISSUED;
-
-  // Generate certificate preview HTML
-  const previewHTML = useMemo(() => {
-    if (!template?.bodyHtml) return "";
-
-    let html = template.bodyHtml;
-
-    // Replace placeholders with actual data
-    const replacements = {
-      StudentName: certificate.studentFullname,
-      CourseTitle: certificate.courseTitle,
-      IssueDate: new Date(certificate.issuedAt).toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      }),
-      CertificateId: certificate.certificateNo,
-      IssuerName: template.issuerName || "",
-      IssuerTitle: template.issuerTitle || "",
-    };
-
-    Object.entries(replacements).forEach(([key, value]) => {
-      const regex = new RegExp(`{{${key}}}`, "gi");
-      html = html.replace(regex, value);
-    });
-
-    return html;
-  }, [template, certificate]);
 
   return (
     <>
@@ -112,7 +86,13 @@ export default function CertificateCard({ certificate }: CertificateCardProps) {
           }}
         >
           {isTemplateLoading ? (
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <CircularProgress size={40} />
             </Box>
           ) : (
@@ -129,7 +109,9 @@ export default function CertificateCard({ certificate }: CertificateCardProps) {
                 variant="h6"
                 sx={{
                   fontWeight: 700,
-                  textShadow: template?.backgroundImageUrl ? "none" : "0 2px 4px rgba(0,0,0,0.2)",
+                  textShadow: template?.backgroundImageUrl
+                    ? "none"
+                    : "0 2px 4px rgba(0,0,0,0.2)",
                   mb: 1,
                   fontSize: "1.1rem",
                 }}
