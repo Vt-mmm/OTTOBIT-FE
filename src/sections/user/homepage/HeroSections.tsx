@@ -331,44 +331,7 @@ const HeroSection = () => {
                   direction={{ xs: "column", sm: "row" }}
                   spacing={2.5}
                   sx={{ mt: 4 }}
-                >
-                  <Button
-                    variant="contained"
-                    href="/auth/login"
-                    sx={{
-                      bgcolor: "#22c55e",
-                      color: "#fff",
-                      px: 4,
-                      py: 1.3,
-                      borderRadius: 2,
-                      fontWeight: 600,
-                      textTransform: "none",
-                      "&:hover": {
-                        bgcolor: "#16a34a",
-                      },
-                    }}
-                  >
-                    🛒 Get yours here!
-                  </Button>
-                  <Button
-                    variant="contained"
-                    href="#features"
-                    sx={{
-                      bgcolor: "#f59e0b",
-                      color: "#fff",
-                      px: 4,
-                      py: 1.3,
-                      borderRadius: 2,
-                      fontWeight: 600,
-                      textTransform: "none",
-                      "&:hover": {
-                        bgcolor: "#d97706",
-                      },
-                    }}
-                  >
-                    ⚙️ Specifications
-                  </Button>
-                </Stack>
+                ></Stack>
               </motion.div>
             )}
           </Box>{" "}
