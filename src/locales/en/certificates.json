@@ -18,5 +18,7 @@
   "AwardedBy": "Awarded by Ottobit Academy",
   "CopyVerificationCode": "Copy",
   "UseCodeToVerify": "Use this code to verify the certificate's validity",
-  "Downloading": "Downloading..."
+  "Downloading": "Downloading...",
+  "LoadingTemplate": "Loading certificate template...",
+  "TemplateLoadError": "Error loading certificate template"
 }

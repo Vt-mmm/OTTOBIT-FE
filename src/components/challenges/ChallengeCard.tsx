@@ -67,26 +67,20 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
           backgroundSize: "cover",
           backgroundPosition: "center",
           display: "flex",
+          flexDirection: "column",
           alignItems: "flex-start",
           justifyContent: "space-between",
           p: 1.5,
         }}
       >
-        {/* Status and Stars */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-          }}
-        >
-          {/* Progress Status */}
+        {/* Top Row: Status Chip */}
+        <Box>
           {progress.isCompleted ? (
             <Chip
-              label="✓ Hoàn thành"
+              label="Hoàn thành"
               size="small"
               sx={{
-                bgcolor: "rgba(255,255,255,0.9)",
+                bgcolor: "rgba(255,255,255,0.95)",
                 color: "#16a34a",
                 fontWeight: 600,
                 fontSize: "0.7rem",
@@ -94,10 +88,10 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
             />
           ) : !isAccessible ? (
             <Chip
-              label="🔒 Bị khóa"
+              label="Bị khóa"
               size="small"
               sx={{
-                bgcolor: "rgba(255,255,255,0.9)",
+                bgcolor: "rgba(255,255,255,0.95)",
                 color: "#6b7280",
                 fontWeight: 600,
                 fontSize: "0.7rem",
@@ -105,17 +99,27 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
             />
           ) : (
             <Chip
-              label="📖 Sẵn sàng"
+              label="Sẵn sàng"
               size="small"
               sx={{
-                bgcolor: "rgba(255,255,255,0.9)",
+                bgcolor: "rgba(255,255,255,0.95)",
                 color: "#667eea",
                 fontWeight: 600,
                 fontSize: "0.7rem",
               }}
             />
           )}
+        </Box>
 
+        {/* Bottom Row: Stars + Challenge Mode */}
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1,
+            alignItems: "center",
+            width: "100%",
+          }}
+        >
           {/* Star Rating */}
           {progress.stars > 0 && (
             <Box
@@ -129,16 +133,13 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
                 <Box
                   key={star}
                   sx={{
-                    width: 12,
-                    height: 12,
+                    width: 14,
+                    height: 14,
                     color:
                       star <= progress.stars
                         ? "#fbbf24"
                         : "rgba(255,255,255,0.4)",
-                    fontSize: "12px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
+                    fontSize: "14px",
                   }}
                 >
                   ⭐
@@ -146,6 +147,20 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
               ))}
             </Box>
           )}
+
+          {/* Challenge Mode Indicator */}
+          <Chip
+            label={challenge.challengeMode === 0 ? "Vật lý" : "Simulator"}
+            size="small"
+            variant="filled"
+            sx={{
+              bgcolor: challenge.challengeMode === 0 ? "#3b82f6" : "#8b5cf6",
+              color: "white",
+              fontSize: "0.7rem",
+              fontWeight: 600,
+              height: "20px",
+            }}
+          />
         </Box>
       </Box>
 
@@ -187,21 +202,8 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
           {challenge.description || "Hoàn thành thử thách để tiến bộ"}
         </Typography>
 
-        {/* Challenge Stats */}
-        <Box
-          sx={{
-            display: "flex",
-            gap: 0.5,
-            mt: 1,
-            flexWrap: "wrap",
-          }}
-        >
-          <Chip
-            label={`Thứ tự ${challenge.order}`}
-            size="small"
-            variant="outlined"
-            sx={{ fontSize: "0.75rem" }}
-          />
+        {/* Challenge Stats - Only Difficulty */}
+        <Box sx={{ mt: 1 }}>
           <Chip
             label={`Độ khó: ${challenge.difficulty}/5`}
             size="small"
@@ -209,19 +211,6 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
             color="primary"
             sx={{ fontSize: "0.75rem" }}
           />
-          {progress.isCompleted && (
-            <Chip
-              label={`${progress.stars}/3 ⭐`}
-              size="small"
-              variant="filled"
-              sx={{
-                bgcolor: "#fbbf24",
-                color: "white",
-                fontSize: "0.75rem",
-                fontWeight: 600,
-              }}
-            />
-          )}
         </Box>
 
         <Box sx={{ mt: "auto" }}>

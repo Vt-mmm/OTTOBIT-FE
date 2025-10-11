@@ -54,8 +54,6 @@ export default function AddToCartButton({
     const checkExists = async () => {
       try {
         await dispatch(checkItemExistsThunk(courseId));
-      } catch (error) {
-        console.error("Failed to check item existence:", error);
       } finally {
         setIsChecking(false);
       }
@@ -65,13 +63,6 @@ export default function AddToCartButton({
   }, [dispatch, courseId, hasCache]);
 
   const handleAddToCart = async () => {
-    console.log("[AddToCart] Starting add to cart for course:", courseId);
-    console.log("[AddToCart] Current isInCart:", isInCart);
-    console.log(
-      "[AddToCart] Current itemExistsCache:",
-      itemExistsCache[courseId]
-    );
-
     try {
       const result = await dispatch(
         addCartItemThunk({
@@ -79,8 +70,6 @@ export default function AddToCartButton({
           unitPrice: coursePrice,
         })
       ).unwrap();
-
-      console.log("[AddToCart] Successfully added item:", result);
 
       // Refresh full cart to get updated cart data
       await dispatch(getCartThunk());
@@ -94,15 +83,11 @@ export default function AddToCartButton({
       // Show success message
       showSuccessToast("Đã thêm khóa học vào giỏ hàng!");
     } catch (error: any) {
-      console.error("[AddToCart] Failed to add to cart:", error);
-
       // Error from unwrap() is already the string message from rejectWithValue
       const errorMessage =
         typeof error === "string"
           ? error
           : error?.message || translate("cart.CannotAddToCart");
-
-      console.log("[AddToCart] Error message:", errorMessage);
 
       // Show appropriate message based on error content
       if (
