@@ -82,48 +82,9 @@ axiosServiceAddress.interceptors.response.use(
   }
 );
 
-// Basic request/response logging - actual interceptors are applied in setupClientInterceptors.ts
-// NOTE: Authorization header is now handled in setupClientInterceptors.ts
-// This prevents conflicts with refresh token logic
-axiosClient.interceptors.request.use(
-  function (config) {
-    // Token management is now handled by setupClientInterceptors.ts
-    // to properly support refresh token flow
-    return config;
-  },
-  function (error) {
-    return Promise.reject(error);
-  }
-);
-
-axiosClient.interceptors.response.use(
-  function (response) {
-    return response;
-  },
-  function (error) {
-    // Suppress console errors for expected 404 responses
-    const expectedNotFoundEndpoints = [
-      '/cart/summary',
-      '/enrollments/my-enrollments'
-    ];
-    
-    const isExpected404 = 
-      error.response?.status === 404 && 
-      expectedNotFoundEndpoints.some(endpoint => 
-        error.config?.url?.includes(endpoint)
-      );
-    
-    // Don't log expected 404s to console
-    if (!isExpected404) {
-      // Only log unexpected errors
-      if (error.response?.status !== 404) {
-        // You can add custom error logging here if needed
-      }
-    }
-    
-    return Promise.reject(error);
-  }
-);
+// NOTE: All interceptors (request/response) are handled in setupClientInterceptors.ts
+// DO NOT add interceptors here to avoid conflicts with refresh token logic
+// The only exception is axiosServiceAddress which is a separate client for external services
 
 export {
   axiosClient,
