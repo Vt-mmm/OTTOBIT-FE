@@ -554,8 +554,8 @@ export default function EnrolledCoursesTab({
                           
                           // Backend returns numeric enum: 0=Locked, 1=Available, 2=InProgress, 3=Completed
                           const status = typeof lp.status === 'number' ? lp.status : parseInt(String(lp.status));
-                          const isCompleted = status === 3 || lp.status === LessonStatus.Completed || lp.status === "Completed";
-                          const isInProgress = status === 2 || lp.status === LessonStatus.InProgress || lp.status === "InProgress";
+                          const isCompleted = status === 3 || (lp.status as any) === "Completed";
+                          const isInProgress = status === 2 || (lp.status as any) === "InProgress";
                           
                           const statusColor = isCompleted
                             ? "success"
