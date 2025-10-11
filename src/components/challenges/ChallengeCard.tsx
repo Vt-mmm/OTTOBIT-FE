@@ -151,7 +151,7 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
           {/* Challenge Mode Indicator */}
           <Chip
             label={
-              (challenge.challengeMode as number) === ChallengeMode.Physical
+              (challenge.challengeMode as number) === ChallengeMode.PhysicalFirst
                 ? "Vật lý"
                 : "Simulator"
             }
@@ -159,7 +159,7 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
             variant="filled"
             sx={{
               bgcolor:
-                (challenge.challengeMode as number) === ChallengeMode.Physical
+                (challenge.challengeMode as number) === ChallengeMode.PhysicalFirst
                   ? "#3b82f6"
                   : "#8b5cf6",
               color: "white",
