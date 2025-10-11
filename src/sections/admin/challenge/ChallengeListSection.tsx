@@ -186,12 +186,12 @@ export default function ChallengeListSection({
 
   const getModeColor = (mode: ChallengeMode) => {
     switch (mode) {
+      case ChallengeMode.Physical:
+        return "success";  // Vật lý - green
       case ChallengeMode.Simulation:
-        return "primary";
-      case ChallengeMode.PhysicalFirst:
-        return "success";
-      case ChallengeMode.SimulationPhysical:
-        return "warning";
+        return "primary";  // Simulator - blue
+      case ChallengeMode.Both:
+        return "warning";  // Cả hai - orange
       default:
         return "default";
     }

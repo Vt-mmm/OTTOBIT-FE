@@ -401,15 +401,15 @@ export default function LessonDetailsSection({
                           <TableCell align="center">
                             <Chip
                               label={
-                                challenge.challengeMode === "Simulation"
-                                  ? "Practice"
-                                  : "Test"
+                                (challenge.challengeMode as number) === 1
+                                  ? "Simulator"
+                                  : "Vật lý"
                               }
                               size="small"
                               color={
-                                challenge.challengeMode === "Simulation"
+                                (challenge.challengeMode as number) === 1
                                   ? "primary"
-                                  : "secondary"
+                                  : "success"
                               }
                               variant="outlined"
                             />
