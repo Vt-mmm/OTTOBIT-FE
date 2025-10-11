@@ -204,7 +204,7 @@ const HeroSection = () => {
                   maxWidth: "500px",
                 }}
               >
-                {translate("homepage.UniqueSTEAM")}
+                {translate("homepage.UniqueSTEM")}
                 <br />
                 {translate("homepage.CompleteSolution")}
               </Typography>
