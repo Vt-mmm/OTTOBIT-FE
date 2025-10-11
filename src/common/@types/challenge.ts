@@ -1,11 +1,11 @@
 // Import Map type for relationship
 import { Map } from "./map";
 
-// Challenge Mode enum
+// Challenge Mode enum - matches backend integer values
 export enum ChallengeMode {
-  Simulation = "Simulation",
-  PhysicalFirst = "PhysicalFirst",
-  SimulationPhysical = "SimulationPhysical",
+  Physical = 0,        // Vật lý
+  Simulation = 1,      // Simulator
+  Both = 2,            // Cả hai (if needed in future)
 }
 
 // Challenge entity interfaces based on BE models

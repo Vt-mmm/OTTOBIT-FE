@@ -5,7 +5,7 @@
 
 import React from "react";
 import { Box, Typography, Button, Chip } from "@mui/material";
-import { ChallengeResult } from "../../common/@types/challenge";
+import { ChallengeResult, ChallengeMode } from "../../common/@types/challenge";
 
 interface ChallengeProgress {
   isCompleted: boolean;
@@ -150,11 +150,18 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
 
           {/* Challenge Mode Indicator */}
           <Chip
-            label={challenge.challengeMode === 0 ? "Vật lý" : "Simulator"}
+            label={
+              challenge.challengeMode === 0 || challenge.challengeMode === ChallengeMode.Physical
+                ? "Vật lý"
+                : "Simulator"
+            }
             size="small"
             variant="filled"
             sx={{
-              bgcolor: challenge.challengeMode === 0 ? "#3b82f6" : "#8b5cf6",
+              bgcolor:
+                challenge.challengeMode === 0 || challenge.challengeMode === ChallengeMode.Physical
+                  ? "#3b82f6"
+                  : "#8b5cf6",
               color: "white",
               fontSize: "0.7rem",
               fontWeight: 600,
