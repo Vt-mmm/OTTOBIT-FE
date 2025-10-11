@@ -2096,33 +2096,96 @@ BlocksWorkspaceProps) {
             }
           }
         } catch {}
+
+        // Helper function to create number or variable block based on count value
+        // Moved outside try block so it can be used by repeatRange logic too
+        const createCountBlock = (countValue: any) => {
+          // Case 1: Variable template string like "{{i}}" or "{{count}}"
+          if (typeof countValue === "string") {
+            const varMatch = countValue.match(/^\{\{\s*(\w+)\s*\}\}$/);
+            if (varMatch) {
+              const varName = varMatch[1];
+              console.log(
+                `      🔤 [BlocksWorkspace] Detected variable template: ${varName}`
+              );
+              const varBlock = blocklyWorkspace.newBlock("ottobit_variable");
+              varBlock.setShadow(false); // Mark as real block, not shadow
+              varBlock.initSvg();
+              varBlock.render();
+              try {
+                varBlock.setFieldValue(varName, "VAR");
+              } catch {}
+              return varBlock;
+            }
+            // Try to parse as number
+            const numVal = Number(countValue);
+            if (!isNaN(numVal)) {
+              const num = blocklyWorkspace.newBlock("ottobit_number");
+              num.setShadow(false); // Mark as real block, not shadow
+              num.initSvg();
+              num.render();
+              try {
+                num.setFieldValue(String(numVal), "NUM");
+              } catch {}
+              return num;
+            }
+          }
+          // Case 2: Number literal
+          else if (typeof countValue === "number") {
+            const num = blocklyWorkspace.newBlock("ottobit_number");
+            num.setShadow(false); // Mark as real block, not shadow
+            num.initSvg();
+            num.render();
+            try {
+              num.setFieldValue(String(countValue), "NUM");
+            } catch {}
+            return num;
+          }
+          // Case 3: Variable object {type: "variable", name: "i"}
+          else if (
+            typeof countValue === "object" &&
+            countValue?.type === "variable"
+          ) {
+            const varName = countValue.name || countValue.variableName;
+            console.log(
+              `      🔤 [BlocksWorkspace] Detected variable object: ${varName}`
+            );
+            const varBlock = blocklyWorkspace.newBlock("ottobit_variable");
+            varBlock.setShadow(false); // Mark as real block, not shadow
+            varBlock.initSvg();
+            varBlock.render();
+            try {
+              varBlock.setFieldValue(varName, "VAR");
+            } catch {}
+            return varBlock;
+          }
+          return null;
+        };
+
+        // Set counts by connecting number/variable inputs or setting fields depending on block type
         try {
-          // Set counts by connecting number inputs or setting fields depending on block type
-          if (typeof act.count === "number") {
+          if (act.count !== undefined && act.count !== null) {
             console.log(
               `    🔢 [BlocksWorkspace] Setting count for ${blockType}:`,
-              act.count
+              act.count,
+              typeof act.count
             );
-            // Repeat: TIMES is an input_value (not field), need to connect number block
+            // Repeat: TIMES is an input_value (not field), need to connect number/variable block
             if (blockType === "ottobit_repeat") {
               const input = block.getInput && block.getInput("TIMES");
               if (input?.connection) {
-                const num = blocklyWorkspace.newBlock("ottobit_number");
-                num.initSvg();
-                num.render();
-                try {
-                  num.setFieldValue(String(act.count), "NUM");
+                const countBlock = createCountBlock(act.count);
+                if (countBlock?.outputConnection) {
+                  input.connection.connect(countBlock.outputConnection);
                   console.log(
-                    `      ✅ [BlocksWorkspace] Connected number block with value:`,
+                    `      ✅ [BlocksWorkspace] Connected count block:`,
                     act.count
                   );
-                } catch (e) {
-                  console.error(
-                    `      ❌ [BlocksWorkspace] Error setting number value:`,
-                    e
+                } else {
+                  console.warn(
+                    `      ⚠️ [BlocksWorkspace] Failed to create count block`
                   );
                 }
-                input.connection.connect(num.outputConnection);
               } else {
                 console.warn(
                   `      ⚠️ [BlocksWorkspace] TIMES input not found on repeat block`
@@ -2133,13 +2196,10 @@ BlocksWorkspaceProps) {
             else if (blockType === "ottobit_move_forward") {
               const input = block.getInput && block.getInput("STEPS");
               if (input?.connection) {
-                const num = blocklyWorkspace.newBlock("ottobit_number");
-                num.initSvg();
-                num.render();
-                try {
-                  num.setFieldValue(String(act.count), "NUM");
-                } catch {}
-                input.connection.connect(num.outputConnection);
+                const countBlock = createCountBlock(act.count);
+                if (countBlock?.outputConnection) {
+                  input.connection.connect(countBlock.outputConnection);
+                }
               }
             }
             // Collect blocks: input_value COUNT
@@ -2148,293 +2208,367 @@ BlocksWorkspaceProps) {
               blockType === "ottobit_collect_red" ||
               blockType === "ottobit_collect_yellow"
             ) {
+              console.log(
+                `      📦 [BlocksWorkspace] Processing collect block with count:`,
+                act.count,
+                `(type: ${typeof act.count})`
+              );
               const input = block.getInput && block.getInput("COUNT");
               if (input?.connection) {
-                const num = blocklyWorkspace.newBlock("ottobit_number");
-                num.initSvg();
-                num.render();
-                try {
-                  num.setFieldValue(String(act.count), "NUM");
-                } catch {}
-                input.connection.connect(num.outputConnection);
+                console.log(
+                  `      🔌 [BlocksWorkspace] Found COUNT input, creating count block...`
+                );
+                const countBlock = createCountBlock(act.count);
+                if (countBlock) {
+                  console.log(
+                    `      🎯 [BlocksWorkspace] Count block created successfully:`,
+                    countBlock.type
+                  );
+                  if (countBlock.outputConnection) {
+                    input.connection.connect(countBlock.outputConnection);
+                    console.log(
+                      `      ✅ [BlocksWorkspace] Connected collect count block:`,
+                      act.count
+                    );
+                  } else {
+                    console.error(
+                      `      ❌ [BlocksWorkspace] Count block has no output connection!`
+                    );
+                  }
+                } else {
+                  console.error(
+                    `      ❌ [BlocksWorkspace] Failed to create count block for:`,
+                    act.count
+                  );
+                }
+              } else {
+                console.error(
+                  `      ❌ [BlocksWorkspace] COUNT input not found on collect block!`
+                );
               }
             }
           }
-          // Set rotate direction from either explicit property or action type
-          {
-            let dir: string | null = null;
-            if (typeof (act as any).direction === "string") {
-              dir = (act as any).direction;
-            } else if (blockType === "ottobit_rotate") {
-              const t = String(act?.type || "").toLowerCase();
-              if (t === "turnright") dir = "RIGHT";
-              else if (t === "turnleft") dir = "LEFT";
-              else if (t === "turnback") dir = "BACK";
+        } catch (err) {
+          console.error(`    ❌ [BlocksWorkspace] Error setting count:`, err);
+        }
+        // Handle repeatRange fields: variable, from, to, step
+        try {
+          if (blockType === "ottobit_repeat_range") {
+            console.log(
+              `    🔁 [BlocksWorkspace] Setting repeatRange fields:`,
+              {
+                variable: act.variable,
+                from: act.from,
+                to: act.to,
+                step: act.step,
+              }
+            );
+
+            // Set variable name - VAR is an input_value, not a field
+            if (act.variable !== undefined) {
+              try {
+                const varInput = block.getInput && block.getInput("VAR");
+                if (varInput?.connection) {
+                  // Create a variable block for the loop variable
+                  const varBlock =
+                    blocklyWorkspace.newBlock("ottobit_variable");
+                  varBlock.setShadow(false); // Mark as real block, not shadow
+                  varBlock.initSvg();
+                  varBlock.render();
+                  try {
+                    varBlock.setFieldValue(String(act.variable), "VAR");
+                  } catch {}
+                  varInput.connection.connect(varBlock.outputConnection);
+                  console.log(
+                    `      ✅ [BlocksWorkspace] Set variable: ${act.variable}`
+                  );
+                } else {
+                  console.warn(
+                    `      ⚠️ [BlocksWorkspace] VAR input not found on repeat_range block`
+                  );
+                }
+              } catch (err) {
+                console.error(
+                  `      ❌ [BlocksWorkspace] Error setting variable:`,
+                  err
+                );
+              }
             }
-            if (dir && block.setFieldValue) {
-              const dirField =
-                block.getField &&
-                (block.getField("DIRECTION")
-                  ? "DIRECTION"
-                  : block.getField("DIR")
-                  ? "DIR"
-                  : null);
-              if (dirField) block.setFieldValue(dir, dirField);
+
+            // Set FROM value
+            if (act.from !== undefined && act.from !== null) {
+              const fromInput = block.getInput && block.getInput("FROM");
+              if (fromInput?.connection) {
+                const fromBlock = createCountBlock(act.from);
+                if (fromBlock?.outputConnection) {
+                  fromInput.connection.connect(fromBlock.outputConnection);
+                  console.log(
+                    `      ✅ [BlocksWorkspace] Connected FROM block:`,
+                    act.from
+                  );
+                }
+              }
+            }
+
+            // Set TO value
+            if (act.to !== undefined && act.to !== null) {
+              console.log(
+                `      🔵 [BlocksWorkspace] Setting TO value:`,
+                act.to,
+                `(type: ${typeof act.to})`
+              );
+              const toInput = block.getInput && block.getInput("TO");
+              if (toInput?.connection) {
+                const toBlock = createCountBlock(act.to);
+                if (toBlock) {
+                  console.log(
+                    `      🔵 [BlocksWorkspace] TO block created:`,
+                    toBlock.type
+                  );
+                  // Check the actual value in the number block
+                  if (toBlock.type === "ottobit_number") {
+                    const numField =
+                      toBlock.getField && toBlock.getField("NUM");
+                    if (numField) {
+                      console.log(
+                        `      🔵 [BlocksWorkspace] TO number block value:`,
+                        numField.getValue()
+                      );
+                    }
+                  }
+                  if (toBlock.outputConnection) {
+                    toInput.connection.connect(toBlock.outputConnection);
+                    console.log(
+                      `      ✅ [BlocksWorkspace] Connected TO block:`,
+                      act.to
+                    );
+                  }
+                }
+              }
+            }
+
+            // Set BY (step) value
+            if (act.step !== undefined && act.step !== null) {
+              const byInput = block.getInput && block.getInput("BY");
+              if (byInput?.connection) {
+                const byBlock = createCountBlock(act.step);
+                if (byBlock?.outputConnection) {
+                  byInput.connection.connect(byBlock.outputConnection);
+                  console.log(
+                    `      ✅ [BlocksWorkspace] Connected BY (step) block:`,
+                    act.step
+                  );
+                }
+              }
             }
           }
-          // Attach condition for IF/WHILE from JSON program if provided
-          const attachCondition = (targetBlock: any, cond: any) => {
-            try {
-              if (!cond || !targetBlock) return;
+        } catch (err) {
+          console.error(
+            `    ❌ [BlocksWorkspace] Error setting repeatRange fields:`,
+            err
+          );
+        }
+        // Set rotate direction from either explicit property or action type
+        try {
+          let dir: string | null = null;
+          if (typeof (act as any).direction === "string") {
+            dir = (act as any).direction;
+          } else if (blockType === "ottobit_rotate") {
+            const t = String(act?.type || "").toLowerCase();
+            if (t === "turnright") dir = "RIGHT";
+            else if (t === "turnleft") dir = "LEFT";
+            else if (t === "turnback") dir = "BACK";
+          }
+          if (dir && block.setFieldValue) {
+            const dirField =
+              block.getField &&
+              (block.getField("DIRECTION")
+                ? "DIRECTION"
+                : block.getField("DIR")
+                ? "DIR"
+                : null);
+            if (dirField) block.setFieldValue(dir, dirField);
+          }
+        } catch {}
+        // Attach condition for IF/WHILE from JSON program if provided
+        const attachCondition = (targetBlock: any, cond: any) => {
+          try {
+            if (!cond || !targetBlock) return;
 
-              const makeNumber = (n: any) => {
-                const num = blocklyWorkspace.newBlock("ottobit_number");
-                num.initSvg();
-                num.render();
+            const makeNumber = (n: any) => {
+              const num = blocklyWorkspace.newBlock("ottobit_number");
+              num.initSvg();
+              num.render();
+              try {
+                num.setFieldValue(String(Number(n) || 0), "NUM");
+              } catch {}
+              return num;
+            };
+
+            // Helper: create variable or function block for comparison
+            const makeVariableOrFunction = (varObj: any) => {
+              if (varObj === null || varObj === undefined) return null;
+
+              // If it's a simple string, treat as variable name
+              if (typeof varObj === "string") {
+                const varBlock = blocklyWorkspace.newBlock("ottobit_variable");
+                varBlock.initSvg();
+                varBlock.render();
                 try {
-                  num.setFieldValue(String(Number(n) || 0), "NUM");
+                  varBlock.setFieldValue(varObj, "VAR");
                 } catch {}
-                return num;
-              };
+                return varBlock;
+              }
 
-              // Helper: create variable or function block for comparison
-              const makeVariableOrFunction = (varObj: any) => {
-                if (varObj === null || varObj === undefined) return null;
+              // If it's a number, create number block
+              if (typeof varObj === "number") {
+                return makeNumber(varObj);
+              }
 
-                // If it's a simple string, treat as variable name
-                if (typeof varObj === "string") {
+              // If it's an object with type
+              if (typeof varObj === "object" && varObj.type) {
+                const varType = String(varObj.type).toLowerCase();
+
+                // Handle function type: {type: "function", name: "warehouseCount"}
+                if (varType === "function") {
+                  const funcName = varObj.name || varObj.functionName;
+                  // Map function names to block types
+                  const funcMap: any = {
+                    warehousecount: "ottobit_bale_number",
+                    boxcount: "ottobit_bale_number",
+                    balenumber: "ottobit_bale_number",
+                    pinnumber: "ottobit_pin_number",
+                    isgreen: "ottobit_is_green",
+                    isred: "ottobit_is_red",
+                    isyellow: "ottobit_is_yellow",
+                  };
+                  const key = String(funcName || "").toLowerCase();
+                  const blockType = funcMap[key];
+
+                  if (blockType) {
+                    const funcBlock = blocklyWorkspace.newBlock(blockType);
+                    funcBlock.initSvg();
+                    funcBlock.render();
+                    return funcBlock;
+                  }
+                }
+
+                // Handle variable type: {type: "variable", name: "i"}
+                if (varType === "variable") {
+                  const varName = varObj.name || varObj.variableName;
                   const varBlock =
                     blocklyWorkspace.newBlock("ottobit_variable");
                   varBlock.initSvg();
                   varBlock.render();
                   try {
-                    varBlock.setFieldValue(varObj, "VAR");
+                    varBlock.setFieldValue(varName, "VAR");
                   } catch {}
                   return varBlock;
                 }
+              }
 
-                // If it's a number, create number block
-                if (typeof varObj === "number") {
-                  return makeNumber(varObj);
+              // Fallback: try to convert to number
+              return makeNumber(varObj);
+            };
+
+            const makeBoolean = (val: boolean) => {
+              const b = blocklyWorkspace.newBlock("logic_boolean");
+              b.initSvg();
+              b.render();
+              try {
+                b.setFieldValue(val ? "TRUE" : "FALSE", "BOOL");
+              } catch {}
+              return b;
+            };
+            const makeSensor = (fn: string) => {
+              const map: any = {
+                isgreen: "ottobit_is_green",
+                isred: "ottobit_is_red",
+                isyellow: "ottobit_is_yellow",
+              };
+              const key = String(fn || "").toLowerCase();
+              const t = map[key];
+              if (!t) return null;
+              const s = blocklyWorkspace.newBlock(t);
+              s.initSvg();
+              s.render();
+              return s;
+            };
+            const connectTo = (names: string[], out: any) => {
+              for (const nm of names) {
+                const input = targetBlock.getInput && targetBlock.getInput(nm);
+                if (input && input.connection && out && out.outputConnection) {
+                  input.connection.connect(out.outputConnection);
+                  return true;
                 }
-
-                // If it's an object with type
-                if (typeof varObj === "object" && varObj.type) {
-                  const varType = String(varObj.type).toLowerCase();
-
-                  // Handle function type: {type: "function", name: "warehouseCount"}
-                  if (varType === "function") {
-                    const funcName = varObj.name || varObj.functionName;
-                    // Map function names to block types
-                    const funcMap: any = {
-                      warehousecount: "ottobit_bale_number",
-                      boxcount: "ottobit_bale_number",
-                      balenumber: "ottobit_bale_number",
-                      pinnumber: "ottobit_pin_number",
-                      isgreen: "ottobit_is_green",
-                      isred: "ottobit_is_red",
-                      isyellow: "ottobit_is_yellow",
-                    };
-                    const key = String(funcName || "").toLowerCase();
-                    const blockType = funcMap[key];
-
-                    if (blockType) {
-                      const funcBlock = blocklyWorkspace.newBlock(blockType);
-                      funcBlock.initSvg();
-                      funcBlock.render();
-                      return funcBlock;
-                    }
-                  }
-
-                  // Handle variable type: {type: "variable", name: "i"}
-                  if (varType === "variable") {
-                    const varName = varObj.name || varObj.variableName;
-                    const varBlock =
-                      blocklyWorkspace.newBlock("ottobit_variable");
-                    varBlock.initSvg();
-                    varBlock.render();
-                    try {
-                      varBlock.setFieldValue(varName, "VAR");
-                    } catch {}
-                    return varBlock;
-                  }
-                }
-
-                // Fallback: try to convert to number
-                return makeNumber(varObj);
-              };
-
-              const makeBoolean = (val: boolean) => {
-                const b = blocklyWorkspace.newBlock("logic_boolean");
-                b.initSvg();
-                b.render();
-                try {
-                  b.setFieldValue(val ? "TRUE" : "FALSE", "BOOL");
-                } catch {}
-                return b;
-              };
-              const makeSensor = (fn: string) => {
-                const map: any = {
-                  isgreen: "ottobit_is_green",
-                  isred: "ottobit_is_red",
-                  isyellow: "ottobit_is_yellow",
-                };
-                const key = String(fn || "").toLowerCase();
-                const t = map[key];
-                if (!t) return null;
-                const s = blocklyWorkspace.newBlock(t);
-                s.initSvg();
-                s.render();
-                return s;
-              };
-              const connectTo = (names: string[], out: any) => {
-                for (const nm of names) {
-                  const input =
-                    targetBlock.getInput && targetBlock.getInput(nm);
-                  if (
-                    input &&
-                    input.connection &&
-                    out &&
-                    out.outputConnection
-                  ) {
-                    input.connection.connect(out.outputConnection);
-                    return true;
-                  }
-                }
-                return false;
-              };
-              const condType = String(
-                cond?.type || cond?.Type || ""
-              ).toLowerCase();
-              if (condType === "condition") {
-                const fn = cond.function || cond.functionName;
-                const sensor = makeSensor(fn);
-                if (sensor) {
-                  if (cond.check === false) {
-                    const eq = blocklyWorkspace.newBlock(
-                      "ottobit_boolean_equals"
+              }
+              return false;
+            };
+            const condType = String(
+              cond?.type || cond?.Type || ""
+            ).toLowerCase();
+            if (condType === "condition") {
+              const fn = cond.function || cond.functionName;
+              const sensor = makeSensor(fn);
+              if (sensor) {
+                if (cond.check === false) {
+                  const eq = blocklyWorkspace.newBlock(
+                    "ottobit_boolean_equals"
+                  );
+                  eq.initSvg();
+                  eq.render();
+                  const left = eq.getInput && eq.getInput("LEFT");
+                  const right = eq.getInput && eq.getInput("RIGHT");
+                  if (left?.connection)
+                    left.connection.connect(sensor.outputConnection);
+                  if (right?.connection)
+                    right.connection.connect(
+                      makeBoolean(false).outputConnection
                     );
-                    eq.initSvg();
-                    eq.render();
-                    const left = eq.getInput && eq.getInput("LEFT");
-                    const right = eq.getInput && eq.getInput("RIGHT");
-                    if (left?.connection)
-                      left.connection.connect(sensor.outputConnection);
-                    if (right?.connection)
-                      right.connection.connect(
-                        makeBoolean(false).outputConnection
-                      );
-                    connectTo(["CONDITION", "COND", "IF0"], eq);
-                  } else {
-                    connectTo(["CONDITION", "COND", "IF0"], sensor);
-                  }
+                  connectTo(["CONDITION", "COND", "IF0"], eq);
+                } else {
+                  connectTo(["CONDITION", "COND", "IF0"], sensor);
                 }
-              } else if (condType === "variablecomparison") {
-                const cmp = blocklyWorkspace.newBlock("ottobit_logic_compare");
-                cmp.initSvg();
-                cmp.render();
-                try {
-                  const opMap: any = {
-                    "==": "EQ",
-                    "!=": "NEQ",
-                    "<": "LT",
-                    "<=": "LTE",
-                    ">": "GT",
-                    ">=": "GTE",
-                  };
-                  const code = opMap[String(cond.operator) as string];
-                  if (code) cmp.setFieldValue(code, "OPERATOR");
-                } catch {}
-                const a = cmp.getInput && cmp.getInput("LEFT");
-                const b = cmp.getInput && cmp.getInput("RIGHT");
+              }
+            } else if (condType === "variablecomparison") {
+              const cmp = blocklyWorkspace.newBlock("ottobit_logic_compare");
+              cmp.initSvg();
+              cmp.render();
+              try {
+                const opMap: any = {
+                  "==": "EQ",
+                  "!=": "NEQ",
+                  "<": "LT",
+                  "<=": "LTE",
+                  ">": "GT",
+                  ">=": "GTE",
+                };
+                const code = opMap[String(cond.operator) as string];
+                if (code) cmp.setFieldValue(code, "OPERATOR");
+              } catch {}
+              const a = cmp.getInput && cmp.getInput("LEFT");
+              const b = cmp.getInput && cmp.getInput("RIGHT");
 
-                if (a?.connection) {
-                  const leftBlock = makeVariableOrFunction(cond.variable);
-                  if (leftBlock?.outputConnection) {
-                    a.connection.connect(leftBlock.outputConnection);
-                  }
+              if (a?.connection) {
+                const leftBlock = makeVariableOrFunction(cond.variable);
+                if (leftBlock?.outputConnection) {
+                  a.connection.connect(leftBlock.outputConnection);
                 }
-                if (b?.connection) {
-                  const rightBlock = makeVariableOrFunction(cond.value);
-                  if (rightBlock?.outputConnection) {
-                    b.connection.connect(rightBlock.outputConnection);
-                  }
-                }
-                connectTo(["CONDITION", "COND", "IF0"], cmp);
               }
-            } catch {}
-          };
-          if (blockType === "ottobit_if_expandable" && act?.cond)
-            attachCondition(block, act.cond);
-          if (blockType === "ottobit_while" && act?.cond)
-            attachCondition(block, act.cond);
-          if (typeof act.direction === "string" && block.setFieldValue) {
-            const dirFieldIds = [
-              "DIRECTION",
-              "DIR",
-              "ROTATE_DIRECTION",
-              "ROTATION",
-              "TURN",
-              "TURN_DIR",
-            ];
-            const dirValue = act.direction;
-            const dirUpper = dirValue.toUpperCase();
-            let set = false;
-            for (const fid of dirFieldIds) {
-              if (block.getField && block.getField(fid)) {
-                const field: any = block.getField(fid);
-                try {
-                  if (field && typeof field.getOptions === "function") {
-                    const options = field.getOptions();
-                    const findMatch = (needle: string) =>
-                      options.find((opt: any) =>
-                        String(opt?.[0] ?? opt?.text ?? "")
-                          .toLowerCase()
-                          .includes(needle)
-                      ) ||
-                      options.find((opt: any) =>
-                        String(opt?.[1] ?? opt?.value ?? "")
-                          .toLowerCase()
-                          .includes(needle)
-                      );
-                    const needle = dirValue.toLowerCase();
-                    const match = findMatch(needle);
-                    if (match) {
-                      const optionValue = match[1] ?? match.value;
-                      field.setValue(String(optionValue));
-                      set = true;
-                      break;
-                    }
-                  }
-                } catch {}
-                if (!set) {
-                  try {
-                    block.setFieldValue(dirValue, fid);
-                    set = true;
-                  } catch {}
-                  if (!set) {
-                    try {
-                      block.setFieldValue(dirUpper, fid);
-                      set = true;
-                    } catch {}
-                  }
+              if (b?.connection) {
+                const rightBlock = makeVariableOrFunction(cond.value);
+                if (rightBlock?.outputConnection) {
+                  b.connection.connect(rightBlock.outputConnection);
                 }
-                if (set) break;
               }
+              connectTo(["CONDITION", "COND", "IF0"], cmp);
             }
-            if (!set) {
-              const angleFieldIds = ["ANGLE", "DEG", "ROTATE"];
-              const angle =
-                dirValue === "right" ? 90 : dirValue === "left" ? -90 : 180;
-              for (const fid of angleFieldIds) {
-                if (block.getField && block.getField(fid)) {
-                  block.setFieldValue(String(angle), fid);
-                  break;
-                }
-              }
-            }
-          }
-        } catch {}
+          } catch {}
+        };
+        if (blockType === "ottobit_if_expandable" && act?.cond)
+          attachCondition(block, act.cond);
+        if (blockType === "ottobit_while" && act?.cond)
+          attachCondition(block, act.cond);
 
         try {
           const body = Array.isArray(act.body)
