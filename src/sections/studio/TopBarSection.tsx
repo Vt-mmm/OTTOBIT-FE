@@ -561,7 +561,7 @@ function TopBarContent({
       formData.append("file", file, file.name);
 
       // Make API call
-      const response = await fetch("/detect?min_thresh=0.5", {
+      const response = await fetch("https://otto-detect.felixtien.dev/detect?min_thresh=0.5", {
         method: "POST",
         headers: {
           accept: "application/json",
