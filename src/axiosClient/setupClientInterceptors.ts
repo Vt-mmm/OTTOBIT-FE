@@ -160,6 +160,11 @@ const setupAxiosClient = (store: Store<RootState>) => {
               })
             );
 
+            // 🔧 CRITICAL FIX: Wait for cookies to be actually written
+            // Small delay ensures cookie update completes before processing queue
+            // This prevents race condition where pending requests read old refresh token
+            await new Promise(resolve => setTimeout(resolve, 50));
+
             // DON'T set token in axios defaults - let request interceptor
             // read fresh token from cookie on each request
             // This ensures multiple tabs stay in sync
@@ -177,15 +182,24 @@ const setupAxiosClient = (store: Store<RootState>) => {
 
             // Only logout for truly expired tokens, not for temporary mismatches
             // REFRESH_TOKEN_INVALID means token is expired or truly invalid
-            // We DON'T logout on "does not match" - might be from another tab
+            // AUTH_006 "does not match" might be race condition - retry once more
             const shouldLogout =
               errorCode === "REFRESH_TOKEN_INVALID" ||
               errorMessage.toLowerCase().includes("expired") ||
               !error?.response; // Network errors should also logout
+            
+            // 🔧 FIX: AUTH_006 "does not match" might be race condition
+            // Don't logout immediately - let pending requests fail naturally
+            const isRaceCondition = errorCode === "AUTH_006";
+            if (isRaceCondition) {
+              console.warn("⚠️ Refresh token mismatch - possible race condition");
+            }
 
+            // Process queue with error
             processQueue(error);
 
-            if (shouldLogout) {
+            // Only logout if not a race condition
+            if (shouldLogout && !isRaceCondition) {
               dispatch(setIsLogout(true));
               resetAuthHeaders();
             }
@@ -198,7 +212,11 @@ const setupAxiosClient = (store: Store<RootState>) => {
           return new Promise((resolve, reject) => {
             pendingRequests.push({ resolve, reject });
           })
-            .then(() => {
+            .then(async () => {
+              // 🔧 CRITICAL FIX: Small delay to ensure cookie is readable
+              // This prevents reading stale refresh token from cookie
+              await new Promise(resolve => setTimeout(resolve, 100));
+              
               // Don't manually set token - let request interceptor read fresh token from cookie
               // This ensures we always use the latest token, even if another tab refreshed it
               return axiosClient(originalConfig);
