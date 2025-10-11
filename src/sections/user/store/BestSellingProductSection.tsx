@@ -19,8 +19,7 @@ import { useAppDispatch, useAppSelector } from "store/config";
 import { getRobotsThunk } from "store/robot/robotThunks";
 import { getComponentsThunk } from "store/component/componentThunks";
 import { PATH_PUBLIC, PATH_USER } from "routes/paths";
-
-const categories = ["Robots", "Components"];
+import useLocales from "hooks/useLocales";
 
 interface Product {
   id: string;
@@ -30,6 +29,7 @@ interface Product {
 }
 
 export default function BestSellingProductSection() {
+  const { translate } = useLocales();
   const [activeCategory, setActiveCategory] = useState("Robots");
   const [currentPage, setCurrentPage] = useState(0);
   const navigate = useNavigate();
@@ -37,6 +37,12 @@ export default function BestSellingProductSection() {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   const { robots } = useAppSelector((state) => state.robot);
   const { components } = useAppSelector((state) => state.component);
+
+  // Get categories with translation
+  const categories = [
+    { key: "Robots", label: translate("store.bestSelling.robots") },
+    { key: "Components", label: translate("store.bestSelling.components") },
+  ];
 
   const ITEMS_PER_PAGE = 4;
 
@@ -185,7 +191,7 @@ export default function BestSellingProductSection() {
                 color: "#2c3e50",
               }}
             >
-              Daily Deals
+              {translate("store.bestSelling.title")}
             </Typography>
           </motion.div>
 
@@ -208,7 +214,7 @@ export default function BestSellingProductSection() {
               },
             }}
           >
-            See All
+            {translate("store.bestSelling.seeAll")}
           </Button>
         </Box>
 
@@ -228,31 +234,31 @@ export default function BestSellingProductSection() {
         >
           {categories.map((category) => (
             <Button
-              key={category}
-              onClick={() => setActiveCategory(category)}
+              key={category.key}
+              onClick={() => setActiveCategory(category.key)}
               sx={{
-                bgcolor: activeCategory === category ? "white" : "transparent",
+                bgcolor: activeCategory === category.key ? "white" : "transparent",
                 color: "#2c3e50",
-                fontWeight: activeCategory === category ? 600 : 400,
+                fontWeight: activeCategory === category.key ? 600 : 400,
                 textTransform: "none",
                 borderRadius: "32px",
                 px: 3,
                 py: 1,
                 minWidth: "auto",
                 boxShadow:
-                  activeCategory === category
+                  activeCategory === category.key
                     ? "0 2px 8px rgba(0,0,0,0.1)"
                     : "none",
-                opacity: activeCategory === category ? 1 : 0.8,
+                opacity: activeCategory === category.key ? 1 : 0.8,
                 "&:hover": {
                   bgcolor:
-                    activeCategory === category
+                    activeCategory === category.key
                       ? "white"
                       : "rgba(255,255,255,0.5)",
                 },
               }}
             >
-              {category}
+              {category.label}
             </Button>
           ))}
         </Box>
@@ -392,9 +398,7 @@ export default function BestSellingProductSection() {
                         fontSize: "0.9rem",
                       }}
                     >
-                      {product.type === "robot"
-                        ? "Popular items"
-                        : "Popular items"}
+                      {translate("store.bestSelling.popularItems")}
                     </Typography>
 
                     {/* Action Buttons */}
@@ -421,7 +425,7 @@ export default function BestSellingProductSection() {
                           },
                         }}
                       >
-                        Add to Cart
+                        {translate("store.bestSelling.addToCart")}
                       </Button>
 
                       <IconButton
@@ -462,10 +466,12 @@ export default function BestSellingProductSection() {
               }}
             >
               <Typography variant="h6" sx={{ mb: 2 }}>
-                No {activeCategory.toLowerCase()} found
+                {translate("store.bestSelling.noProductsFound", {
+                  category: activeCategory.toLowerCase(),
+                })}
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                Please check back later for new products
+                {translate("store.bestSelling.checkBackLater")}
               </Typography>
             </Box>
           )}

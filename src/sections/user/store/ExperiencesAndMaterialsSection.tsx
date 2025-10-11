@@ -1,8 +1,10 @@
 import { Box, Container, Typography, Button } from "@mui/material";
 import { motion } from "framer-motion";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import useLocales from "hooks/useLocales";
 
 export default function ExperiencesAndMaterialsSection() {
+  const { translate } = useLocales();
   return (
     <Box
       sx={{
@@ -72,7 +74,7 @@ export default function ExperiencesAndMaterialsSection() {
                     mb: 2,
                   }}
                 >
-                  Learning Experience
+                  {translate("store.experiences.learningExperience")}
                 </Typography>
                 
                 <Typography
@@ -85,7 +87,7 @@ export default function ExperiencesAndMaterialsSection() {
                     mb: 3,
                   }}
                 >
-                  We provide the best educational experience
+                  {translate("store.experiences.bestExperience")}
                 </Typography>
                 
                 <Typography
@@ -98,9 +100,7 @@ export default function ExperiencesAndMaterialsSection() {
                     maxWidth: "400px",
                   }}
                 >
-                  Our educational robotics products are designed by STEM experts 
-                  and educators to ensure engaging, hands-on learning experiences 
-                  that develop critical thinking and problem-solving skills
+                  {translate("store.experiences.description")}
                 </Typography>
                 
                 <Button
@@ -124,7 +124,7 @@ export default function ExperiencesAndMaterialsSection() {
                     },
                   }}
                 >
-                  More Info
+                  {translate("store.experiences.moreInfo")}
                 </Button>
               </Box>
 
@@ -210,7 +210,7 @@ export default function ExperiencesAndMaterialsSection() {
                     mb: 2,
                   }}
                 >
-                  Technology
+                  {translate("store.materials.technology")}
                 </Typography>
                 
                 <Typography
@@ -223,7 +223,7 @@ export default function ExperiencesAndMaterialsSection() {
                     mb: 3,
                   }}
                 >
-                  Cutting-edge technology for modern education
+                  {translate("store.materials.cuttingEdge")}
                 </Typography>
                 
                 <Typography
@@ -236,9 +236,7 @@ export default function ExperiencesAndMaterialsSection() {
                     maxWidth: "400px",
                   }}
                 >
-                  OttoBit integrates the latest technology in robotics and programming 
-                  education, using industry-standard components and software to prepare 
-                  students for the future
+                  {translate("store.materials.description")}
                 </Typography>
                 
                 <Button
@@ -262,7 +260,7 @@ export default function ExperiencesAndMaterialsSection() {
                     },
                   }}
                 >
-                  More Info
+                  {translate("store.materials.moreInfo")}
                 </Button>
               </Box>
 

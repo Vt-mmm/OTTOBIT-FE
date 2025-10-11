@@ -18,5 +18,54 @@
   "Loading": "Loading...",
   "NoRobotsFound": "No robots found",
   "TryAdjustingFilters": "Try adjusting your search or filters",
-  "NoRobotsAvailable": "No robots available at the moment"
+  "NoRobotsAvailable": "No robots available at the moment",
+  "hero": {
+    "titlePart1": "Discover the future of",
+    "titlePart2": "STEM Education",
+    "learnMore": "Learn more",
+    "howItWorks": "How it works",
+    "trendingRobots": "Trending Robots",
+    "bestComponents": "Best Components",
+    "exploreCollection": "Explore our robot collection",
+    "educationalDesc": "Educational robots & kits, perfect for STEM learning."
+  },
+  "bestSelling": {
+    "title": "Daily Deals",
+    "seeAll": "See All",
+    "robots": "Robots",
+    "components": "Components",
+    "popularItems": "Popular items",
+    "addToCart": "Add to Cart",
+    "noProductsFound": "No {{category}} found",
+    "checkBackLater": "Please check back later for new products"
+  },
+  "experiences": {
+    "learningExperience": "Learning Experience",
+    "bestExperience": "We provide the best educational experience",
+    "description": "Our educational robotics products are designed by STEM experts and educators to ensure engaging, hands-on learning experiences that develop critical thinking and problem-solving skills",
+    "moreInfo": "More Info"
+  },
+  "materials": {
+    "technology": "Technology",
+    "cuttingEdge": "Cutting-edge technology for modern education",
+    "description": "OttoBit integrates the latest technology in robotics and programming education, using industry-standard components and software to prepare students for the future",
+    "moreInfo": "More Info"
+  },
+  "robotDetail": {
+    "home": "Home",
+    "robots": "Robots",
+    "main": "Main",
+    "bestSeller": "Best Seller",
+    "ageRange": "Age Range",
+    "years": "years old",
+    "quantity": "Quantity",
+    "productDescription": "Product Description",
+    "noDescription": "No description available",
+    "keyFeatures": "Key Features",
+    "addToCart": "Add to Cart",
+    "buyNow": "Buy Now",
+    "getPriceAlert": "Get Price Drop Alert",
+    "technicalSpecs": "Technical Specifications",
+    "robotNotFound": "Robot not found"
+  }
 }

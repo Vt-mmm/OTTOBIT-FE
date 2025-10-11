@@ -6,20 +6,29 @@ import {
 
 // Normalize status from BE (number enum) or FE (string enum) to a unified shape
 function isCompletedStatus(status: number | string | undefined): boolean {
+  if (status === undefined || status === null) return false;
+  
   if (typeof status === "number") {
     // BE enum: 3 is Completed
     return status === 3;
   }
-  // FE string enum
-  return status === (LessonStatus as any).Completed || status === "Completed";
+  
+  // String enum - check multiple possible values
+  const statusStr = String(status).toLowerCase();
+  return statusStr === "completed" || statusStr === "3";
 }
 
 function isInProgressStatus(status: number | string | undefined): boolean {
+  if (status === undefined || status === null) return false;
+  
   if (typeof status === "number") {
     // BE enum: 2 is InProgress
     return status === 2;
   }
-  return status === (LessonStatus as any).InProgress || status === "InProgress";
+  
+  // String enum - check multiple possible values
+  const statusStr = String(status).toLowerCase();
+  return statusStr === "inprogress" || statusStr === "2";
 }
 
 /**
@@ -95,13 +104,13 @@ export function getCourseProgress(
   const totalLessons = lessons.length;
   const completedLessons = lessonProgresses.filter(
     (progress) =>
-      progress.status === LessonStatus.Completed &&
+      isCompletedStatus(progress.status as any) &&
       lessons.some((l) => l.id === progress.lessonId)
   ).length;
 
   const inProgressLessons = lessonProgresses.filter(
     (progress) =>
-      progress.status === LessonStatus.InProgress &&
+      isInProgressStatus(progress.status as any) &&
       lessons.some((l) => l.id === progress.lessonId)
   ).length;
 

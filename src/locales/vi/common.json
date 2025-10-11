@@ -53,9 +53,30 @@
   "processing": "Đang xử lý...",
   "moreThan": "nhiều hơn {{to}}",
   "of": "của",
-  "Store": "Cửa hàng",
+  "Products": "Sản phẩm",
   "Courses": "Khóa học",
   "Studio": "Studio",
   "User": "Người dùng",
-  "Student": "Học viên"
+  "Student": "Học viên",
+  "footer": {
+    "companyName": "Ottobit Frontend",
+    "companyDescription": "Nền tảng ứng dụng hiện đại được xây dựng với React 18.3.1, TypeScript 5.4.x và Material UI v6.",
+    "email": "Email: contact@ottobit.com",
+    "links": "Liên kết",
+    "features": "Tính năng",
+    "connectWithUs": "Kết nối với chúng tôi",
+    "copyright": "© 2025 Ottobit Frontend. Tất cả quyền được bảo lưu.",
+    "homepage": "Trang chủ",
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "store": "Cửa hàng",
+    "robots": "Robot",
+    "components": "Linh kiện",
+    "courses": "Khóa học",
+    "lessons": "Bài học",
+    "studio": "Studio",
+    "challenges": "Thử thách",
+    "aboutUs": "Về chúng tôi",
+    "contactUs": "Liên hệ"
+  }
 }

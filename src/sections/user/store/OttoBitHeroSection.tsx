@@ -3,10 +3,12 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import { useNavigate } from "react-router-dom";
 import { PATH_PUBLIC, PATH_USER } from "routes/paths";
 import { useAppSelector } from "store/config";
+import useLocales from "hooks/useLocales";
 
 export default function OttoBitHeroSection() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { translate } = useLocales();
 
   const handleShopNow = () => {
     navigate(isAuthenticated ? PATH_USER.robots : PATH_PUBLIC.robots);
@@ -57,9 +59,9 @@ export default function OttoBitHeroSection() {
                 fontFamily: '"Playfair Display", serif',
               }}
             >
-              Discover the future of{" "}
+              {translate("store.hero.titlePart1")}{" "}
               <Box component="span" sx={{ display: "block", color: "#43A047" }}>
-                STEM Education
+                {translate("store.hero.titlePart2")}
               </Box>
             </Typography>
 
@@ -85,7 +87,7 @@ export default function OttoBitHeroSection() {
                     },
                   }}
                 >
-                  Learn more
+                  {translate("store.hero.learnMore")}
                 </Button>
 
                 <Button
@@ -116,7 +118,7 @@ export default function OttoBitHeroSection() {
                     },
                   }}
                 >
-                  How it works
+                  {translate("store.hero.howItWorks")}
                 </Button>
             </Stack>
 
@@ -145,7 +147,7 @@ export default function OttoBitHeroSection() {
                       sx={{ width: 60, height: 60, objectFit: "contain" }}
                     />
                     <Typography fontWeight={600} fontSize="0.95rem">
-                      Trending Robots
+                      {translate("store.hero.trendingRobots")}
                     </Typography>
                   </Stack>
                 </Card>
@@ -173,7 +175,7 @@ export default function OttoBitHeroSection() {
                       sx={{ width: 60, height: 60, objectFit: "contain" }}
                     />
                     <Typography fontWeight={600} fontSize="0.95rem">
-                      Best Components
+                      {translate("store.hero.bestComponents")}
                     </Typography>
                   </Stack>
                 </Card>
@@ -321,10 +323,7 @@ export default function OttoBitHeroSection() {
                   color="#1a1a1a"
                   mb={0.5}
                 >
-                  Explore our
-                </Typography>
-                <Typography fontWeight={700} fontSize="1.15rem" color="#43A047">
-                  robot collection
+                  {translate("store.hero.exploreCollection")}
                 </Typography>
               </Card>
             </Box>
@@ -367,9 +366,7 @@ export default function OttoBitHeroSection() {
                 lineHeight: 1.5,
               }}
             >
-              Educational robots & kits,
-              <br />
-              perfect for STEM learning.
+              {translate("store.hero.educationalDesc")}
             </Typography>
           </Box>
         </Box>
