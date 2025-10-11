@@ -97,7 +97,7 @@ const Header: React.FC = () => {
           isPage: true,
         },
         {
-          name: translate("common.Store"),
+          name: translate("common.Products"),
           icon: <StoreIcon sx={{ mr: 1, fontSize: "1rem" }} />,
           href: PATH_USER.store,
           id: "store",

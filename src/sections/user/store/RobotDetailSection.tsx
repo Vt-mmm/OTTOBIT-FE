@@ -25,6 +25,7 @@ import { getRobotByIdThunk } from "store/robot/robotThunks";
 import { getImagesThunk } from "store/image/imageThunks";
 import { PATH_PUBLIC, PATH_USER } from "routes/paths";
 import RobotBOMSection from "sections/user/robot/RobotBOMSection";
+import useLocales from "hooks/useLocales";
 
 interface RobotDetailSectionProps {
   robotId: string;
@@ -35,6 +36,7 @@ export default function RobotDetailSection({
 }: RobotDetailSectionProps) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { translate } = useLocales();
   const { currentRobot } = useAppSelector((state) => state.robot);
   const { data: robotData, isLoading, error } = currentRobot;
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -80,7 +82,7 @@ export default function RobotDetailSection({
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Alert severity="error" sx={{ mt: 4 }}>
-          {error || "Robot not found"}
+          {error || translate("store.robotDetail.robotNotFound")}
         </Alert>
       </Container>
     );
@@ -127,7 +129,7 @@ export default function RobotDetailSection({
             "&:hover": { textDecoration: "underline" },
           }}
         >
-          Home
+          {translate("store.robotDetail.home")}
         </Link>
         <Link
           color="inherit"
@@ -141,7 +143,7 @@ export default function RobotDetailSection({
             "&:hover": { textDecoration: "underline" },
           }}
         >
-          Robots
+          {translate("store.robotDetail.robots")}
         </Link>
         <Typography color="text.primary" fontSize="0.875rem">
           {robotData.name}
@@ -235,7 +237,7 @@ export default function RobotDetailSection({
                     {/* Main image badge */}
                     {image.isMain && (
                       <Chip
-                        label="Main"
+                        label={translate("store.robotDetail.main")}
                         size="small"
                         color="primary"
                         sx={{
@@ -269,7 +271,7 @@ export default function RobotDetailSection({
                 {robotData.brand} • {robotData.model}
               </Typography>
               <Chip
-                label="Best Seller"
+                label={translate("store.robotDetail.bestSeller")}
                 size="small"
                 sx={{
                   bgcolor: "success.light",
@@ -287,11 +289,11 @@ export default function RobotDetailSection({
           {/* Age Range */}
           <Box sx={{ mb: 3 }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2 }}>
-              Age Range
+              {translate("store.robotDetail.ageRange")}
             </Typography>
             <Box sx={{ display: "flex", gap: 1 }}>
               <Chip
-                label={`${robotData.minAge} - ${robotData.maxAge} tuổi`}
+                label={`${robotData.minAge} - ${robotData.maxAge} ${translate("store.robotDetail.years")}`}
                 variant="outlined"
                 sx={{
                   borderColor: "primary.main",
@@ -310,7 +312,7 @@ export default function RobotDetailSection({
           {/* Quantity */}
           <Box sx={{ mb: 3 }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2 }}>
-              Quantity
+              {translate("store.robotDetail.quantity")}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <Box
@@ -352,13 +354,13 @@ export default function RobotDetailSection({
           {/* Product Description */}
           <Box sx={{ mb: 4 }}>
             <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-              Product Description
+              {translate("store.robotDetail.productDescription")}
             </Typography>
             <Typography
               variant="body1"
               sx={{ lineHeight: 1.8, color: "text.secondary" }}
             >
-              {robotData.description || "No description available"}
+              {robotData.description || translate("store.robotDetail.noDescription")}
             </Typography>
           </Box>
 
@@ -366,7 +368,7 @@ export default function RobotDetailSection({
           {robotData.technicalSpecs && (
             <Box sx={{ mb: 4 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                Key Features
+                {translate("store.robotDetail.keyFeatures")}
               </Typography>
               <Box component="ul" sx={{ pl: 2, m: 0 }}>
                 {robotData.technicalSpecs
@@ -400,7 +402,7 @@ export default function RobotDetailSection({
                 textTransform: "none",
               }}
             >
-              Add to Cart
+              {translate("store.robotDetail.addToCart")}
             </Button>
             <Button
               variant="outlined"
@@ -413,7 +415,7 @@ export default function RobotDetailSection({
                 textTransform: "none",
               }}
             >
-              Buy Now
+              {translate("store.robotDetail.buyNow")}
             </Button>
           </Box>
 
@@ -424,7 +426,7 @@ export default function RobotDetailSection({
               startIcon={<NotificationsIcon />}
               sx={{ textTransform: "none", color: "text.secondary" }}
             >
-              Get Price Drop Alert
+              {translate("store.robotDetail.getPriceAlert")}
             </Button>
             <IconButton>
               <FavoriteIcon />
@@ -440,7 +442,7 @@ export default function RobotDetailSection({
       {robotData.technicalSpecs && (
         <Box sx={{ mt: 8 }}>
           <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
-            Technical Specifications
+            {translate("store.robotDetail.technicalSpecs")}
           </Typography>
           <Box
             sx={{

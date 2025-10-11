@@ -6,14 +6,17 @@ import {
   IconButton,
   Stack,
   Divider,
+  Link,
 } from "@mui/material";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import { useNavigate } from "react-router-dom";
-import { PATH_PUBLIC, PATH_AUTH } from "routes/paths";
+import { PATH_PUBLIC, PATH_AUTH, PATH_USER } from "routes/paths";
+import useLocales from "hooks/useLocales";
 
 const Footer: React.FC = () => {
   const navigate = useNavigate();
+  const { translate } = useLocales();
 
   const handleNavigation = (path: string, external = false) => {
     if (external) {
@@ -21,6 +24,17 @@ const Footer: React.FC = () => {
       return;
     }
     navigate(path);
+  };
+
+  // Link style for consistent hover effect
+  const linkStyle = {
+    color: "text.secondary",
+    textDecoration: "none",
+    cursor: "pointer",
+    "&:hover": {
+      color: "primary.main",
+      textDecoration: "underline",
+    },
   };
 
   return (
@@ -38,7 +52,8 @@ const Footer: React.FC = () => {
             display: "grid",
             gridTemplateColumns: {
               xs: "1fr",
-              md: "2fr 1fr 1fr",
+              sm: "1fr 1fr",
+              md: "2fr 1fr 1fr 1fr",
             },
             gap: 4,
           }}
@@ -46,84 +61,94 @@ const Footer: React.FC = () => {
           {/* Company Info */}
           <Box>
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-              Ottobit Frontend
+              {translate("common.footer.companyName")}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Platform ứng dụng hiện đại được xây dựng với React 18.3.1,
-              TypeScript 5.4.x và Material UI v6.
+              {translate("common.footer.companyDescription")}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Email: contact@ottobit.com
+              {translate("common.footer.email")}
             </Typography>
           </Box>
 
           {/* Navigation Links */}
           <Box>
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-              Liên kết
+              {translate("common.footer.links")}
             </Typography>
             <Stack spacing={1}>
-              <Typography
+              <Link
                 variant="body2"
-                component="button"
                 onClick={() => handleNavigation(PATH_PUBLIC.homepage)}
-                sx={{
-                  color: "text.secondary",
-                  textAlign: "left",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                  "&:hover": {
-                    color: "primary.main",
-                  },
-                }}
+                sx={linkStyle}
               >
-                Trang chủ
-              </Typography>
-              <Typography
+                {translate("common.footer.homepage")}
+              </Link>
+              <Link
                 variant="body2"
-                component="button"
                 onClick={() => handleNavigation(PATH_AUTH.login)}
-                sx={{
-                  color: "text.secondary",
-                  textAlign: "left",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                  "&:hover": {
-                    color: "primary.main",
-                  },
-                }}
+                sx={linkStyle}
               >
-                Đăng nhập
-              </Typography>
-              <Typography
+                {translate("common.footer.login")}
+              </Link>
+              <Link
                 variant="body2"
-                component="button"
                 onClick={() => handleNavigation(PATH_AUTH.register)}
-                sx={{
-                  color: "text.secondary",
-                  textAlign: "left",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                  "&:hover": {
-                    color: "primary.main",
-                  },
-                }}
+                sx={linkStyle}
               >
-                Đăng ký
-              </Typography>
+                {translate("common.footer.register")}
+              </Link>
+              <Link
+                variant="body2"
+                onClick={() => handleNavigation(PATH_PUBLIC.store)}
+                sx={linkStyle}
+              >
+                {translate("common.footer.store")}
+              </Link>
+            </Stack>
+          </Box>
+
+          {/* Features Links */}
+          <Box>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+              {translate("common.footer.features")}
+            </Typography>
+            <Stack spacing={1}>
+              <Link
+                variant="body2"
+                onClick={() => handleNavigation(PATH_USER.courses)}
+                sx={linkStyle}
+              >
+                {translate("common.footer.courses")}
+              </Link>
+              <Link
+                variant="body2"
+                onClick={() => handleNavigation(PATH_USER.lessons)}
+                sx={linkStyle}
+              >
+                {translate("common.footer.lessons")}
+              </Link>
+              <Link
+                variant="body2"
+                onClick={() => handleNavigation(PATH_USER.studio)}
+                sx={linkStyle}
+              >
+                {translate("common.footer.studio")}
+              </Link>
+              <Link
+                variant="body2"
+                onClick={() => handleNavigation(PATH_USER.challenges)}
+                sx={linkStyle}
+              >
+                {translate("common.footer.challenges")}
+              </Link>
             </Stack>
           </Box>
 
           {/* Social Media */}
           <Box>
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-              Kết nối với chúng tôi
+              {translate("common.footer.connectWithUs")}
             </Typography>
             <Stack direction="row" spacing={1}>
               <IconButton
@@ -167,7 +192,7 @@ const Footer: React.FC = () => {
 
         {/* Copyright */}
         <Typography variant="body2" color="text.secondary" align="center">
-          © 2025 Ottobit Frontend. Tất cả quyền được bảo lưu.
+          {translate("common.footer.copyright")}
         </Typography>
       </Container>
     </Box>

@@ -120,13 +120,24 @@ const setupAxiosClient = (store: Store<RootState>) => {
             const refreshToken = getRefreshToken();
 
             if (!refreshToken) {
+              console.error("❌ Missing refresh token");
               throw new Error("Missing refresh token");
             }
 
+            // ✅ CRITICAL FIX: Backend expects PascalCase (UserId, RefreshToken)
+            // NOT camelCase (userId, refreshToken)
             const data = {
-              userId,
-              refreshToken,
+              UserId: userId,
+              RefreshToken: refreshToken,
             };
+
+            // 🔍 DEBUG: Log refresh token request
+            console.group("🔄 Refreshing Token");
+            console.log("User ID:", userId);
+            console.log("Refresh Token (first 20 chars):", refreshToken.substring(0, 20) + "...");
+            console.log("Request URL:", ROUTES_API_AUTH.REFRESH_TOKEN);
+            console.log("Request Data (PascalCase):", { UserId: userId, RefreshToken: refreshToken.substring(0, 20) + "..." });
+            console.groupEnd();
 
             // ✅ Make token refresh request WITHOUT Authorization header
             // This is guaranteed by request interceptor above (line 55)
@@ -134,6 +145,11 @@ const setupAxiosClient = (store: Store<RootState>) => {
               ROUTES_API_AUTH.REFRESH_TOKEN,
               data
             );
+
+            console.log("✅ Refresh Token Response:", {
+              success: !!response.data,
+              hasTokens: !!response.data?.data?.tokens
+            });
 
             // Validate response
             if (
@@ -181,6 +197,17 @@ const setupAxiosClient = (store: Store<RootState>) => {
             // Check if this is a refresh token error from backend
             const errorCode = error?.response?.data?.errorCode;
             const errorMessage = error?.response?.data?.message || "";
+            const statusCode = error?.response?.status;
+
+            // 🔍 DEBUG: Log refresh token error
+            console.group("❌ Refresh Token Error");
+            console.error("Status Code:", statusCode);
+            console.error("Error Code:", errorCode);
+            console.error("Error Message:", errorMessage);
+            console.error("Full Error Response:", error?.response?.data);
+            console.error("Request URL:", error?.config?.url);
+            console.error("Request Headers:", error?.config?.headers);
+            console.groupEnd();
 
             // Only logout for truly expired tokens, not for temporary mismatches
             // REFRESH_TOKEN_INVALID means token is expired or truly invalid

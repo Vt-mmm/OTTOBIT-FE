@@ -18,5 +18,54 @@
   "Loading": "Đang tải...",
   "NoRobotsFound": "Không tìm thấy robot",
   "TryAdjustingFilters": "Thử điều chỉnh tìm kiếm hoặc bộ lọc",
-  "NoRobotsAvailable": "Hiện tại không có robot nào"
+  "NoRobotsAvailable": "Hiện tại không có robot nào",
+  "hero": {
+    "titlePart1": "Khám phá tương lai của",
+    "titlePart2": "Giáo dục STEM",
+    "learnMore": "Tìm hiểu thêm",
+    "howItWorks": "Cách hoạt động",
+    "trendingRobots": "Robot Xu hướng",
+    "bestComponents": "Linh kiện Tốt nhất",
+    "exploreCollection": "Khám phá bộ sưu tập robot của chúng tôi",
+    "educationalDesc": "Robot giáo dục & bộ học tập, hoàn hảo cho học STEM."
+  },
+  "bestSelling": {
+    "title": "Ưu Đãi Hàng Ngày",
+    "seeAll": "Xem tất cả",
+    "robots": "Robot",
+    "components": "Linh kiện",
+    "popularItems": "Sản phẩm phổ biến",
+    "addToCart": "Thêm vào giỏ",
+    "noProductsFound": "Không tìm thấy {{category}}",
+    "checkBackLater": "Vui lòng quay lại sau để xem sản phẩm mới"
+  },
+  "experiences": {
+    "learningExperience": "Trải Nghiệm Học Tập",
+    "bestExperience": "Chúng tôi cung cấp trải nghiệm giáo dục tốt nhất",
+    "description": "Sản phẩm robot giáo dục của chúng tôi được thiết kế bởi các chuyên gia STEM và giáo dục viên để đảm bảo trải nghiệm học tập thực hành hấp dẫn, phát triển tư duy phản biện và kỹ năng giải quyết vấn đề",
+    "moreInfo": "Thông tin thêm"
+  },
+  "materials": {
+    "technology": "Công Nghệ",
+    "cuttingEdge": "Công nghệ tiên tiến cho giáo dục hiện đại",
+    "description": "OttoBit tích hợp công nghệ mới nhất trong giáo dục robot và lập trình, sử dụng các linh kiện và phần mềm chuẩn ngành để chuẩn bị cho học sinh tương lai",
+    "moreInfo": "Thông tin thêm"
+  },
+  "robotDetail": {
+    "home": "Trang chủ",
+    "robots": "Robot",
+    "main": "Chính",
+    "bestSeller": "Bán chạy",
+    "ageRange": "Độ tuổi",
+    "years": "tuổi",
+    "quantity": "Số lượng",
+    "productDescription": "Mô tả sản phẩm",
+    "noDescription": "Không có mô tả",
+    "keyFeatures": "Tính năng nổi bật",
+    "addToCart": "Thêm vào giỏ",
+    "buyNow": "Mua ngay",
+    "getPriceAlert": "Nhận thông báo giảm giá",
+    "technicalSpecs": "Thông số kỹ thuật",
+    "robotNotFound": "Không tìm thấy robot"
+  }
 }

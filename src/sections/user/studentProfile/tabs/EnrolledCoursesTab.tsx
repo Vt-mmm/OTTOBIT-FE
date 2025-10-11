@@ -137,7 +137,7 @@ export default function EnrolledCoursesTab({
                     pageNumber: 1,
                     pageSize: 1,
                     courseId,
-                    status: LessonStatus.Completed,
+                    status: 3, // Backend expects numeric enum: 3 = Completed
                   },
                 }
               ),
@@ -551,18 +551,22 @@ export default function EnrolledCoursesTab({
                             ":id",
                             lp.lessonId
                           );
-                          const statusColor =
-                            lp.status === LessonStatus.Completed
-                              ? "success"
-                              : lp.status === LessonStatus.InProgress
-                              ? "warning"
-                              : "default";
-                          const statusText =
-                            lp.status === LessonStatus.Completed
-                              ? translate("student.Completed")
-                              : lp.status === LessonStatus.InProgress
-                              ? translate("student.Learning")
-                              : translate("student.NotStarted");
+                          
+                          // Backend returns numeric enum: 0=Locked, 1=Available, 2=InProgress, 3=Completed
+                          const status = typeof lp.status === 'number' ? lp.status : parseInt(String(lp.status));
+                          const isCompleted = status === 3 || lp.status === LessonStatus.Completed || lp.status === "Completed";
+                          const isInProgress = status === 2 || lp.status === LessonStatus.InProgress || lp.status === "InProgress";
+                          
+                          const statusColor = isCompleted
+                            ? "success"
+                            : isInProgress
+                            ? "warning"
+                            : "default";
+                          const statusText = isCompleted
+                            ? translate("student.Completed")
+                            : isInProgress
+                            ? translate("student.Learning")
+                            : translate("student.NotStarted");
                           return (
                             <Paper
                               key={lp.id}
