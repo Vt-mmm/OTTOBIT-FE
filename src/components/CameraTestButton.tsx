@@ -202,10 +202,16 @@ const CameraTestButton: React.FC = () => {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("/detect?min_thresh=0.5", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        "https://otto-detect.felixtien.dev/detect?min_thresh=0.5",
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+          },
+          body: formData,
+        }
+      );
 
       if (response.ok) {
         const result = await response.json();
