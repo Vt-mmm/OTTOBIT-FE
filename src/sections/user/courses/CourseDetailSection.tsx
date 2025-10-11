@@ -340,7 +340,11 @@ export default function CourseDetailSection({
 
             {/* Sidebar */}
             <Grid item xs={12} md={4}>
-              <CourseSidebarSection course={course} lessons={lessons} />
+              <CourseSidebarSection 
+                course={course} 
+                lessons={lessons} 
+                isEnrolled={isUserEnrolled}
+              />
             </Grid>
 
             {/* Course Content Sections */}

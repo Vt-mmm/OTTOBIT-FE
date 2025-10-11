@@ -41,6 +41,8 @@ interface EnrollmentItem {
   courseTitle?: string;
   courseDescription?: string;
   courseImageUrl?: string;
+  progress?: number; // Progress percentage from backend
+  isCompleted?: boolean; // Completion status from backend
 }
 
 // Lesson progress subset for rendering
@@ -169,17 +171,26 @@ export default function EnrolledCoursesTab({
 
   const items = enrollments;
 
-  const isComplete = (courseId: string) => {
-    const s = stats[courseId];
+  const isComplete = (enrollment: EnrollmentItem) => {
+    // Use backend isCompleted if available
+    if (enrollment.isCompleted !== undefined) {
+      return enrollment.isCompleted;
+    }
+    // Fallback to checking progress percentage
+    if (enrollment.progress !== undefined) {
+      return enrollment.progress >= 100;
+    }
+    // Final fallback to computed stats
+    const s = stats[enrollment.courseId];
     return s ? s.percent >= 100 && s.total > 0 : false;
   };
 
   const inProgress = useMemo(
-    () => items.filter((e) => !isComplete(e.courseId)),
+    () => items.filter((e) => !isComplete(e)),
     [items, stats]
   );
   const completed = useMemo(
-    () => items.filter((e) => isComplete(e.courseId)),
+    () => items.filter((e) => isComplete(e)),
     [items, stats]
   );
   const visible = tab === "IN_PROGRESS" ? inProgress : completed;
@@ -278,8 +289,8 @@ export default function EnrolledCoursesTab({
       {!loading &&
         !error &&
         visible.map((enrollment) => {
-          const s = stats[enrollment.courseId];
-          const progressPct = s ? s.percent : 0;
+          // Use progress from backend if available, fallback to computed stats
+          const progressPct = enrollment.progress ?? stats[enrollment.courseId]?.percent ?? 0;
           const detailPath = PATH_USER.courseDetail.replace(
             ":id",
             enrollment.courseId
@@ -482,11 +493,11 @@ export default function EnrolledCoursesTab({
                       variant="text"
                       onClick={() => navigate(detailPath)}
                       size="small"
-                      fullWidth={{ xs: true, md: false } as any}
                       sx={{
                         minHeight: { xs: 44, sm: 36 },
                         fontSize: { xs: "0.875rem", sm: "0.8125rem" },
                         flexShrink: 0,
+                        width: { xs: "100%", md: "auto" },
                       }}
                     >
                       Xem chi tiết
@@ -497,12 +508,12 @@ export default function EnrolledCoursesTab({
                       variant="contained"
                       onClick={() => navigate(detailPath)}
                       size="small"
-                      fullWidth={{ xs: true, md: false } as any}
                       sx={{
                         minHeight: { xs: 44, sm: 36 },
                         fontSize: { xs: "0.875rem", sm: "0.8125rem" },
                         flexShrink: 0,
                         whiteSpace: "nowrap",
+                        width: { xs: "100%", md: "auto" },
                       }}
                     >
                       {translate("courses.ContinueLearning")}

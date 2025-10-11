@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useEffect, useMemo } from "react";
 import { Box, Typography, Chip, Alert } from "@mui/material";
 import {
   School as SchoolIcon,
@@ -10,7 +10,6 @@ import { useAppDispatch, useAppSelector } from "store/config";
 import { getCourseRobotsThunk } from "store/courseRobot/courseRobotThunks";
 import { getMyActivationCodesThunk } from "store/activationCode/activationCodeThunks";
 import RobotRequirementCard from "components/robot/RobotRequirementCard";
-import ActivateRobotDialog from "components/robot/ActivateRobotDialog";
 import { AddToCartButton } from "components/cart";
 import { CourseType } from "common/@types/course";
 import { CodeStatus } from "common/@types/activationCode";
@@ -31,12 +30,12 @@ interface CourseSidebarSectionProps {
 export default function CourseSidebarSection({
   course,
   lessons,
+  isEnrolled,
 }: CourseSidebarSectionProps) {
   const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const { courseRobots } = useAppSelector((state) => state.courseRobot);
   const { myCodes } = useAppSelector((state) => state.activationCode);
-  const [activateDialogOpen, setActivateDialogOpen] = useState(false);
 
   // Use courseRobots.data from GET_ALL endpoint
   const courseRobotsList = courseRobots.data?.items || [];
@@ -52,20 +51,6 @@ export default function CourseSidebarSection({
         pageSize: 100,
       })
     );
-  }, [dispatch, course.id]);
-
-  const handleActivateSuccess = useCallback(async () => {
-    // Refresh both course robots and activation codes
-    await Promise.all([
-      dispatch(getCourseRobotsThunk({ courseId: course.id, pageSize: 100 })),
-      dispatch(
-        getMyActivationCodesThunk({
-          status: CodeStatus.Used,
-          pageNumber: 1,
-          pageSize: 100,
-        })
-      ),
-    ]);
   }, [dispatch, course.id]);
 
   // Get list of activated robot IDs from activation codes
@@ -160,8 +145,8 @@ export default function CourseSidebarSection({
             </Box>
           </Box>
 
-          {/* Add to Cart Button - Only for Premium Courses */}
-          {course.type !== CourseType.Free && (course.price ?? 0) > 0 && (
+          {/* Add to Cart Button - Only for Premium Courses and Not Enrolled */}
+          {!isEnrolled && course.type !== CourseType.Free && (course.price ?? 0) > 0 && (
             <Box sx={{ mt: 2 }}>
               <AddToCartButton
                 courseId={course.id}
@@ -216,7 +201,6 @@ export default function CourseSidebarSection({
                   robotImageUrl={undefined}
                   isRequired={courseRobot.isRequired}
                   isOwned={isRobotOwned(courseRobot.robotId)}
-                  onActivate={() => setActivateDialogOpen(true)}
                 />
               ))}
             </Box>
@@ -263,16 +247,6 @@ export default function CourseSidebarSection({
           </Box>
         </Box>
       </Box>
-
-      {/* Activate Robot Dialog */}
-      <ActivateRobotDialog
-        open={activateDialogOpen}
-        onClose={() => setActivateDialogOpen(false)}
-        onSuccess={handleActivateSuccess}
-        courseId={course.id}
-        requiredRobotIds={allCourseRobotIds}
-        courseName={course.title}
-      />
     </Box>
   );
 }

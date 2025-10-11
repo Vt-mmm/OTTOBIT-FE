@@ -5,3 +5,4 @@ export * from "./useNavigate";
 export * from "./usePopover";
 export * from "./useResponsive";
 export { default as useLocales } from "./useLocales";
+export * from "./useCertificateTemplate";

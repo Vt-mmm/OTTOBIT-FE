@@ -18,5 +18,7 @@
   "AwardedBy": "Được cấp bởi Ottobit Academy",
   "CopyVerificationCode": "Sao chép",
   "UseCodeToVerify": "Sử dụng mã này để xác minh tính hợp lệ của chứng chỉ",
-  "Downloading": "Đang tải..."
+  "Downloading": "Đang tải...",
+  "LoadingTemplate": "Đang tải mẫu chứng chỉ...",
+  "TemplateLoadError": "Lỗi tải mẫu chứng chỉ"
 }

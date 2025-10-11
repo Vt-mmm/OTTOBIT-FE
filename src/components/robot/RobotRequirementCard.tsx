@@ -5,7 +5,6 @@ import {
   Typography,
   Box,
   Chip,
-  Button,
 } from "@mui/material";
 import { CheckCircle as CheckCircleIcon } from "@mui/icons-material";
 import { useLocales } from "hooks";
@@ -17,7 +16,6 @@ interface RobotRequirementCardProps {
   robotImageUrl?: string;
   isRequired: boolean;
   isOwned: boolean;
-  onActivate?: () => void;
 }
 
 export default function RobotRequirementCard({
@@ -27,7 +25,6 @@ export default function RobotRequirementCard({
   robotImageUrl,
   isRequired,
   isOwned,
-  onActivate,
 }: RobotRequirementCardProps) {
   const { translate } = useLocales();
 
@@ -72,23 +69,6 @@ export default function RobotRequirementCard({
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               {robotModel} - {robotBrand}
             </Typography>
-
-            {/* Action buttons for not owned robots */}
-            {!isOwned && (
-              <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
-                <Button variant="contained" size="small" onClick={onActivate}>
-                  {translate("common.ActivateRobot")}
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  href="#"
-                  target="_blank"
-                >
-                  {translate("common.BuyRobot")}
-                </Button>
-              </Box>
-            )}
           </Box>
 
           {/* Status chips - simplified */}

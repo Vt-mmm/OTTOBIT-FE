@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Box,
   Button,
@@ -8,6 +8,7 @@ import {
   Chip,
   Stack,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 import {
   Visibility as ViewIcon,
@@ -19,6 +20,7 @@ import {
   CERTIFICATE_STATUS_LABELS,
   CERTIFICATE_STATUS_COLORS,
 } from "common/enums/certificate.enum";
+import { useCertificateTemplate } from "hooks/useCertificateTemplate";
 import CertificateViewerDialog from "./CertificateViewerDialog";
 
 interface CertificateCardProps {
@@ -27,8 +29,37 @@ interface CertificateCardProps {
 
 export default function CertificateCard({ certificate }: CertificateCardProps) {
   const [openViewer, setOpenViewer] = useState(false);
+  const { template, isLoading: isTemplateLoading } = useCertificateTemplate(certificate.templateId);
 
   const isValid = certificate.status === CertificateStatus.ISSUED;
+
+  // Generate certificate preview HTML
+  const previewHTML = useMemo(() => {
+    if (!template?.bodyHtml) return "";
+
+    let html = template.bodyHtml;
+
+    // Replace placeholders with actual data
+    const replacements = {
+      StudentName: certificate.studentFullname,
+      CourseTitle: certificate.courseTitle,
+      IssueDate: new Date(certificate.issuedAt).toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }),
+      CertificateId: certificate.certificateNo,
+      IssuerName: template.issuerName || "",
+      IssuerTitle: template.issuerTitle || "",
+    };
+
+    Object.entries(replacements).forEach(([key, value]) => {
+      const regex = new RegExp(`{{${key}}}`, "gi");
+      html = html.replace(regex, value);
+    });
+
+    return html;
+  }, [template, certificate]);
 
   return (
     <>
@@ -63,74 +94,101 @@ export default function CertificateCard({ certificate }: CertificateCardProps) {
           />
         </Box>
 
-        {/* Thumbnail */}
+        {/* Certificate Preview Thumbnail */}
         <Box
           sx={{
             height: 200,
-            bgcolor: "primary.lighter",
-            backgroundImage:
-              "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            position: "relative",
+            overflow: "hidden",
+            bgcolor: template?.backgroundImageUrl ? "white" : "#5B6FBE",
+            backgroundImage: template?.backgroundImageUrl
+              ? `url(${template.backgroundImageUrl})`
+              : "none",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            position: "relative",
-            overflow: "hidden",
           }}
         >
-          <Box
-            sx={{
-              textAlign: "center",
-              color: "white",
-              zIndex: 1,
-              px: 2,
-            }}
-          >
-            <Typography
-              variant="h6"
+          {isTemplateLoading ? (
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <CircularProgress size={40} />
+            </Box>
+          ) : (
+            <Box
               sx={{
-                fontWeight: 700,
-                textShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                mb: 1,
+                textAlign: "center",
+                color: template?.backgroundImageUrl ? "inherit" : "white",
+                zIndex: 1,
+                px: 2,
+                width: "100%",
               }}
             >
-              CHỨNG CHỈ
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                fontFamily: "monospace",
-                fontSize: "1.1rem",
-                letterSpacing: 1,
-                opacity: 0.9,
-              }}
-            >
-              {certificate.certificateNo}
-            </Typography>
-          </Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  textShadow: template?.backgroundImageUrl ? "none" : "0 2px 4px rgba(0,0,0,0.2)",
+                  mb: 1,
+                  fontSize: "1.1rem",
+                }}
+              >
+                CHỨNG CHỈ
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontFamily: "monospace",
+                  fontSize: "0.95rem",
+                  letterSpacing: 1,
+                  opacity: 0.9,
+                  mb: 1,
+                }}
+              >
+                {certificate.certificateNo}
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontSize: "0.75rem",
+                  opacity: 0.8,
+                  display: "block",
+                  mt: 0.5,
+                }}
+              >
+                {certificate.courseTitle}
+              </Typography>
+            </Box>
+          )}
 
-          {/* Decorative Pattern */}
-          <Box
-            sx={{
-              position: "absolute",
-              top: -50,
-              right: -50,
-              width: 150,
-              height: 150,
-              borderRadius: "50%",
-              bgcolor: "rgba(255,255,255,0.1)",
-            }}
-          />
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: -30,
-              left: -30,
-              width: 100,
-              height: 100,
-              borderRadius: "50%",
-              bgcolor: "rgba(255,255,255,0.1)",
-            }}
-          />
+          {/* Decorative corners - only show when no background image */}
+          {!template?.backgroundImageUrl && (
+            <>
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 12,
+                  left: 12,
+                  width: 40,
+                  height: 40,
+                  border: "3px solid rgba(255,255,255,0.3)",
+                  borderRadius: 1,
+                }}
+              />
+              <Box
+                sx={{
+                  position: "absolute",
+                  bottom: 12,
+                  right: 12,
+                  width: 40,
+                  height: 40,
+                  border: "3px solid rgba(255,255,255,0.3)",
+                  borderRadius: 1,
+                }}
+              />
+            </>
+          )}
         </Box>
 
         {/* Content */}
