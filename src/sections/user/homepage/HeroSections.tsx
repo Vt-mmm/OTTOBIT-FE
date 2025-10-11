@@ -1,4 +1,4 @@
-import { Box, Container, Typography, Button, Stack } from "@mui/material";
+import { Box, Container, Typography, Stack } from "@mui/material";
 import { motion } from "framer-motion";
 import { DroneModel3D } from "components/3d";
 import { useAppSelector } from "store/config";
