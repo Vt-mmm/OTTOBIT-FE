@@ -50,10 +50,10 @@ const setupAxiosClient = (store: Store<RootState>) => {
   // Intercept requests to add the authorization header
   axiosClient.interceptors.request.use(
     async (config) => {
-      // Skip adding Authorization header for refresh token endpoint
-      // to avoid sending expired token that will be rejected by JWT middleware
+      // ✅ CRITICAL: Skip adding Authorization header for refresh token endpoint
+      // Backend has [AllowAnonymous] attribute - sending expired token will cause 401
       if (config.url === ROUTES_API_AUTH.REFRESH_TOKEN) {
-        // Explicitly remove Authorization header if it exists
+        // Explicitly remove Authorization header to avoid JWT middleware validation
         delete config.headers.Authorization;
         return config;
       }
@@ -116,6 +116,7 @@ const setupAxiosClient = (store: Store<RootState>) => {
           originalConfig._retry = true;
 
           try {
+            // ✅ FIX: Get refresh token RIGHT BEFORE sending to avoid stale data
             const refreshToken = getRefreshToken();
 
             if (!refreshToken) {
@@ -127,7 +128,8 @@ const setupAxiosClient = (store: Store<RootState>) => {
               refreshToken,
             };
 
-            // Make token refresh request
+            // ✅ Make token refresh request WITHOUT Authorization header
+            // This is guaranteed by request interceptor above (line 55)
             const response = await axiosClient.post(
               ROUTES_API_AUTH.REFRESH_TOKEN,
               data
@@ -151,7 +153,7 @@ const setupAxiosClient = (store: Store<RootState>) => {
               refreshToken: response.data.data.tokens.refreshToken,
             };
 
-            // Update with new tokens directly (don't remove first to avoid Redux state reset)
+            // ✅ Update with new tokens directly (don't remove first to avoid Redux state reset)
             // This prevents router from detecting auth loss and redirecting
             await dispatch(
               updateLocalAccessToken({
@@ -160,10 +162,10 @@ const setupAxiosClient = (store: Store<RootState>) => {
               })
             );
 
-            // 🔧 CRITICAL FIX: Wait for cookies to be actually written
-            // Small delay ensures cookie update completes before processing queue
+            // ✅ CRITICAL FIX: Wait for storage write to complete
+            // Increased delay to 150ms to ensure cookie/localStorage update completes
             // This prevents race condition where pending requests read old refresh token
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise(resolve => setTimeout(resolve, 150));
 
             // DON'T set token in axios defaults - let request interceptor
             // read fresh token from cookie on each request
@@ -213,11 +215,11 @@ const setupAxiosClient = (store: Store<RootState>) => {
             pendingRequests.push({ resolve, reject });
           })
             .then(async () => {
-              // 🔧 CRITICAL FIX: Small delay to ensure cookie is readable
-              // This prevents reading stale refresh token from cookie
-              await new Promise(resolve => setTimeout(resolve, 100));
+              // ✅ CRITICAL FIX: Wait for storage to be readable
+              // This prevents reading stale refresh token from storage
+              await new Promise(resolve => setTimeout(resolve, 200));
               
-              // Don't manually set token - let request interceptor read fresh token from cookie
+              // Don't manually set token - let request interceptor read fresh token from storage
               // This ensures we always use the latest token, even if another tab refreshed it
               return axiosClient(originalConfig);
             })
