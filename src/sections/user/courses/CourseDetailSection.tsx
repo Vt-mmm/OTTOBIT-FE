@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import {
   Box,
   Container,
-  Grid,
   CircularProgress,
   Alert,
   Snackbar,
@@ -15,7 +14,6 @@ import {
   getLessonsPreview,
   getLessonProgress,
 } from "../../../redux/lesson/lessonSlice";
-import { isLessonAccessible } from "../../../utils/lessonUtils";
 import {
   createEnrollment,
   getMyEnrollments,
@@ -24,12 +22,15 @@ import { getStudentByUserThunk } from "../../../redux/student/studentThunks";
 import { PATH_USER } from "../../../routes/paths";
 import StudentProfileRequiredDialog from "./StudentProfileRequiredDialog";
 import { useLocales } from "../../../hooks";
+import { CourseType, CourseRobotInfo } from "common/@types/course";
+import { axiosClient } from "../../../axiosClient/axiosClient";
+import { ROUTES_API_COURSE_ROBOT } from "../../../constants/routesApiKeys";
 
-// Import the new sections
+// Import detail sections
 import CourseHeroSection from "./detail/CourseHeroSection";
 import CourseSidebarSection from "./detail/CourseSidebarSection";
-import CourseLessonsSection from "./detail/CourseLessonsSection";
-import CourseCertificatesSection from "./detail/CourseCertificatesSection";
+import CourseTabsSection from "./detail/CourseTabsSection";
+import CourseBenefitsSection from "./detail/CourseBenefitsSection";
 
 interface CourseDetailSectionProps {
   courseId: string;
@@ -51,6 +52,7 @@ export default function CourseDetailSection({
     courseName: "",
     courseId: "",
   });
+  const [courseRobots, setCourseRobots] = useState<CourseRobotInfo[]>([]);
 
   const {
     data: course,
@@ -86,6 +88,40 @@ export default function CourseDetailSection({
   useEffect(() => {
     dispatch(getCourseById(courseId));
   }, [dispatch, courseId]);
+
+  // Fetch course robots (required robots for this course)
+  useEffect(() => {
+    const fetchCourseRobots = async () => {
+      try {
+        // Use correct endpoint: GET /course-robots?courseId={courseId}
+        const response = await axiosClient.get(ROUTES_API_COURSE_ROBOT.GET_ALL, {
+          params: {
+            courseId: courseId,
+            pageSize: 100, // Get all robots for this course
+          },
+        });
+        
+        // Transform CourseRobot response to CourseRobotInfo format
+        const items = response.data.data?.items || response.data.data || [];
+        const robots: CourseRobotInfo[] = items.map((item: any) => ({
+          robotId: item.robotId,
+          robotName: item.robot?.name || item.robotName || "Unknown Robot",
+          robotModel: item.robot?.model || item.robotModel || "N/A",
+          robotBrand: item.robot?.brand || item.robotBrand || "N/A",
+          robotImageUrl: item.robot?.imageUrl,
+          isRequired: item.isRequired,
+        }));
+        
+        setCourseRobots(robots);
+      } catch (error) {
+        // Failed to fetch course robots - silently continue without robots
+        // This is not critical, course can work without robot requirements display
+        setCourseRobots([]);
+      }
+    };
+
+    fetchCourseRobots();
+  }, [courseId]);
 
   // Fetch user's enrollments ONLY if authenticated and not already loaded/loading
   useEffect(() => {
@@ -197,49 +233,9 @@ export default function CourseDetailSection({
     }
   };
 
-  const handleLessonClick = (lessonId: string) => {
-    // Check if user is enrolled before allowing lesson access
-    if (!isUserEnrolled) {
-      setSnackbar({
-        open: true,
-        message: translate("courses.LoginToAccess"),
-        severity: "warning",
-      });
-      return;
-    }
-
-    // For enrolled users, check lesson accessibility based on lesson progress
-    const lessonProgresses = lessonProgressData?.items || [];
-    const currentLesson = lessons.find((l) => l.id === lessonId);
-
-    if (!currentLesson) {
-      setSnackbar({
-        open: true,
-        message: translate("courses.LessonNotFound"),
-        severity: "error",
-      });
-      return;
-    }
-
-    // Import lesson utils to check accessibility - we'll add this after checking if the lesson is accessible
-    // Kiểm tra khả năng truy cập lesson dựa trên lessonProgress
-    const accessible = isLessonAccessible(
-      currentLesson as any,
-      lessonProgresses as any
-    );
-    if (!accessible) {
-      setSnackbar({
-        open: true,
-        message: `${translate("courses.CompleteToUnlock")} "${
-          currentLesson.title
-        }".`,
-        severity: "warning",
-      });
-      return;
-    }
-
-    // If accessible, navigate to lesson detail
-    navigate(PATH_USER.lessonDetail.replace(":id", lessonId));
+  // Navigate to course learning page for enrolled users
+  const handleGoToCourse = () => {
+    navigate(PATH_USER.courseLearn.replace(":courseId", courseId));
   };
 
   const handleCloseSnackbar = () => {
@@ -257,6 +253,14 @@ export default function CourseDetailSection({
 
   const isLoading = courseLoading || lessonsPreviewLoading;
   const error = courseError || lessonsPreviewError;
+
+  // Always use preview data for course detail page
+  const lessons = lessonsPreviewData?.items || [];
+  // Cast to correct LessonProgressResult type from lessonProgress.ts
+  const lessonProgresses = (lessonProgressData?.items || []) as any;
+  
+  // Enrich course with robots data
+  const enrichedCourse = course ? { ...course, courseRobots } : null;
 
   if (isLoading) {
     return (
@@ -285,28 +289,20 @@ export default function CourseDetailSection({
     );
   }
 
-  if (!course) {
+  if (!course || !enrichedCourse) {
     return (
       <Container>
         <Box sx={{ textAlign: "center", py: 8 }}>
           <Typography variant="h5" color="text.secondary" gutterBottom>
-            Không tìm thấy khóa học
+            {translate("courses.CourseNotFound")}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Khóa học không tồn tại hoặc đã bị xóa.
+            {translate("courses.CourseNotExist")}
           </Typography>
         </Box>
       </Container>
     );
   }
-
-  // Always use preview data for course detail page
-  const lessons = lessonsPreviewData?.items || [];
-  const lessonProgresses = lessonProgressData?.items || [];
-
-  // Mock ratings for now - in real app, get from API
-  const courseRating = 4.2;
-  const totalRatings = 1165;
 
   return (
     <>
@@ -314,64 +310,66 @@ export default function CourseDetailSection({
         sx={{
           bgcolor: "#ffffff",
           minHeight: "100vh",
-          maxWidth: "100vw",
-          overflow: "hidden",
         }}
       >
-        <Container
-          maxWidth="lg"
-          sx={{ pt: { xs: 10, md: 12 }, px: { xs: 2, sm: 3 } }}
-        >
-          <Grid container spacing={3}>
-            {/* Main Content */}
-            <Grid item xs={12} md={8}>
-              {/* Course Hero Section */}
-              <CourseHeroSection
-                course={course}
-                lessons={lessons}
-                isUserEnrolled={isUserEnrolled}
-                isEnrolling={isEnrolling}
-                onEnrollCourse={handleEnrollCourse}
-                onLessonClick={handleLessonClick}
-                courseRating={courseRating}
-                totalRatings={totalRatings}
-              />
-            </Grid>
+        {/* Hero Section - Full Width với Enroll Button */}
+        <Box sx={{ bgcolor: "white", borderBottom: "1px solid #e0e0e0" }}>
+          <CourseHeroSection
+            course={enrichedCourse!}
+            lessons={lessons}
+            isUserEnrolled={isUserEnrolled}
+            isEnrolling={isEnrolling}
+            onEnrollCourse={handleEnrollCourse}
+            onGoToCourse={isUserEnrolled ? handleGoToCourse : undefined}
+          />
+        </Box>
 
-            {/* Sidebar */}
-            <Grid item xs={12} md={4}>
-              <CourseSidebarSection 
-                course={course} 
-                lessons={lessons} 
-                isEnrolled={isUserEnrolled}
-              />
-            </Grid>
+        {/* Main Content Area - Single Column Layout */}
+        <Container maxWidth="lg" sx={{ px: { xs: 3, md: 6 }, py: 6 }}>
+          {/* Course Content */}
+          <Box sx={{ mb: 8 }}>
+            <CourseTabsSection
+              course={enrichedCourse!}
+              lessons={lessons}
+              lessonProgresses={lessonProgresses}
+              isUserEnrolled={isUserEnrolled}
+            />
+          </Box>
 
-            {/* Course Content Sections */}
-            <Grid item xs={12}>
-              <Box sx={{ mt: 6 }}>
-                {/* Lessons List */}
-                <CourseLessonsSection
-                  lessons={lessons}
-                  lessonProgresses={lessonProgresses}
-                  isUserEnrolled={isUserEnrolled}
-                  onLessonClick={handleLessonClick}
-                />
-
-                {/* Certificate Series Section */}
-                <CourseCertificatesSection
-                  course={course}
-                  lessons={lessons}
-                  isUserEnrolled={isUserEnrolled}
-                  isEnrolling={isEnrolling}
-                  onEnrollCourse={handleEnrollCourse}
-                  courseRating={courseRating}
-                  totalRatings={totalRatings}
-                />
-              </Box>
-            </Grid>
-          </Grid>
+          {/* Benefits Section */}
+          <Box sx={{ mb: 8 }}>
+            <CourseBenefitsSection isPremium={enrichedCourse!.type === CourseType.Premium} />
+          </Box>
         </Container>
+
+        {/* Sticky Bottom Enroll Bar - Show only if not enrolled */}
+        {!isUserEnrolled && (
+          <Box
+            sx={{
+              position: "sticky",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              bgcolor: "white",
+              borderTop: "1px solid #e0e0e0",
+              boxShadow: "0 -2px 10px rgba(0,0,0,0.1)",
+              py: 2,
+              px: 3,
+              zIndex: 1000,
+              display: { xs: "block", md: "none" },
+            }}
+          >
+            <CourseSidebarSection
+              course={enrichedCourse!}
+              lessons={lessons}
+              isUserEnrolled={isUserEnrolled}
+              isEnrolling={isEnrolling}
+              onEnrollCourse={handleEnrollCourse}
+              onGoToCourse={isUserEnrolled ? handleGoToCourse : undefined}
+              compact
+            />
+          </Box>
+        )}
       </Box>
 
       {/* Snackbar for notifications */}

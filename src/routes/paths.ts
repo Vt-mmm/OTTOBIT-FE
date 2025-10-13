@@ -42,6 +42,8 @@ export const PATH_USER = {
   // Public listing pages
   courses: path(ROOTS_USER, "/courses"),
   courseDetail: path(ROOTS_USER, "/courses/:id"),
+  // Course learning page (only for enrolled students)
+  courseLearn: path(ROOTS_USER, "/learn/:courseId"),
   lessons: path(ROOTS_USER, "/lessons"),
   lessonDetail: path(ROOTS_USER, "/lessons/:id"),
   // Shopping cart
