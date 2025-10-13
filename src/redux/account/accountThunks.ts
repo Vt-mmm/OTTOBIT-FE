@@ -65,12 +65,12 @@ export const updateMyProfileThunk = createAsyncThunk<
   }
 
   try {
-    // Only send fields BE allows to update: fullName and avatarUrl
+    // Only send fields BE allows to update: avatarUrl and phoneNumber
     const response = await axiosClient.put<ApiResponse<UserProfileData>>(
       ROUTES_API_ACCOUNT.UPDATE_PROFILE,
       {
-        fullName: data.fullName,
         avatarUrl: data.avatarUrl,
+        phoneNumber: data.phoneNumber,
       }
     );
 

@@ -33,11 +33,10 @@ export interface ResetPasswordResponse {
 }
 
 // User profile interfaces for account management
-// Matched with BE UserProfileResult model
+// Matched with BE UserProfileResult model (fullName removed in latest BE)
 export interface UserProfileData {
   id: string;
   email: string;
-  fullName: string;
   phoneNumber?: string; // Read-only from BE
   avatarUrl?: string;
   registrationDate: string;
@@ -45,10 +44,10 @@ export interface UserProfileData {
 }
 
 // Update profile form - Only fields BE allows to update
-// Matched with BE UpdateUserProfileCommand
+// Matched with BE UpdateUserProfileCommand (fullName removed in latest BE)
 export interface UpdateProfileForm {
-  fullName?: string;
   avatarUrl?: string;
+  phoneNumber?: string; // If BE supports phone update
 }
 
 export interface AccountSecuritySettings {

@@ -46,6 +46,7 @@ import { createSubmissionThunk } from "../../redux/submission/submissionThunks";
 import { BlocklyToPhaserConverter } from "../../features/phaser/services/blocklyToPhaserConverter";
 import MicrobitDialog from "../../components/MicrobitDialog";
 import { PATH_USER } from "../../routes/paths";
+import { ChallengeMode } from "../../common/@types/challenge";
 import {
   generateStudioUrl,
   getStoredNavigationData,
@@ -136,11 +137,15 @@ function TopBarContent({
     restartScene,
     gameState,
     currentChallengeId,
+    currentChallenge,
     onMessage,
     offMessage,
     fetchChallengesByLesson,
     lessonChallenges,
   } = usePhaserContext();
+
+  // Detect if current challenge is physical mode
+  const isPhysicalMap = currentChallenge?.challengeMode === ChallengeMode.PhysicalFirst;
 
   // Derive lessonId from query params or stored navigation data
   useEffect(() => {
@@ -294,6 +299,15 @@ function TopBarContent({
   }, [onMessage, offMessage, handleVictory]); // Minimal dependencies
 
   const handleRun = async () => {
+    // Prevent execution for physical maps
+    if (isPhysicalMap) {
+      showNotification(
+        "Map vật lý không hỗ trợ chạy trên simulator. Vui lòng sử dụng nút 'Send to micro:bit' để nạp code lên thiết bị.",
+        "warning"
+      );
+      return;
+    }
+
     // CRITICAL: Emergency cleanup before execute to prevent field editor leaks
     forceCleanupBeforeExecute();
 
@@ -710,43 +724,29 @@ function TopBarContent({
           />
         </Box>
 
-        {/* Project Title - Responsive with Navigation */}
+        {/* Project Title - Responsive without Navigation */}
         <Typography
           variant="h5"
-          onClick={() => navigate("/")}
           sx={{
             fontWeight: 700,
             color: "#ffffff",
             fontSize: { xs: "18px", sm: "20px", md: "24px" },
             letterSpacing: "0.5px",
             display: { xs: "none", sm: "block" }, // Hide on very small screens
-            cursor: "pointer",
-            transition: "all 0.2s ease-in-out",
-            "&:hover": {
-              color: "#d1fae5",
-              textShadow: "0 2px 4px rgba(0,0,0,0.2)",
-            },
           }}
         >
           Ottobit Studio
         </Typography>
 
-        {/* Short title for mobile with Navigation */}
+        {/* Short title for mobile without Navigation */}
         <Typography
           variant="h6"
-          onClick={() => navigate("/")}
           sx={{
             fontWeight: 700,
             color: "#ffffff",
             fontSize: "16px",
             letterSpacing: "0.5px",
             display: { xs: "block", sm: "none" }, // Only show on very small screens
-            cursor: "pointer",
-            transition: "all 0.2s ease-in-out",
-            "&:hover": {
-              color: "#d1fae5",
-              textShadow: "0 2px 4px rgba(0,0,0,0.2)",
-            },
           }}
         >
           Ottobit
@@ -1032,39 +1032,51 @@ function TopBarContent({
           {/* Divider */}
           <Box sx={{ width: 1, height: 32, bgcolor: "#e2e8f0", mx: 0.8 }} />
 
-          <IconButton
-            id="tour-btn-run"
-            aria-label={isRunning ? "Stop Program" : "Run Program"}
-            onClick={isRunning ? handleStop : handleRun}
-            disabled={!workspace}
-            sx={{
-              bgcolor: isRunning ? "#ef4444" : "#10b981",
-              color: "white",
-              width: { xs: 36, sm: 42, md: 48 },
-              height: { xs: 36, sm: 42, md: 48 },
-              "&:hover": {
-                bgcolor: isRunning ? "#dc2626" : "#059669",
-                transform: "translateY(-1px)",
-                boxShadow: isRunning
-                  ? "0 4px 12px rgba(239, 68, 68, 0.4)"
-                  : "0 4px 12px rgba(16, 185, 129, 0.4)",
-              },
-              "&:disabled": {
-                bgcolor: "#9ca3af",
-                color: "#6b7280",
-                "&:hover": {
-                  transform: "none",
-                  boxShadow: "none",
-                },
-              },
-            }}
+          <Tooltip
+            title={
+              isPhysicalMap
+                ? "Map vật lý không hỗ trợ simulator. Sử dụng 'Send to micro:bit' để nạp code."
+                : isRunning
+                ? "Stop Program"
+                : "Run Program"
+            }
           >
-            {isRunning ? (
-              <StopIcon sx={{ fontSize: 24 }} />
-            ) : (
-              <RunIcon sx={{ fontSize: 24 }} />
-            )}
-          </IconButton>
+            <span>
+              <IconButton
+                id="tour-btn-run"
+                aria-label={isRunning ? "Stop Program" : "Run Program"}
+                onClick={isRunning ? handleStop : handleRun}
+                disabled={!workspace || isPhysicalMap}
+                sx={{
+                  bgcolor: isRunning ? "#ef4444" : "#10b981",
+                  color: "white",
+                  width: { xs: 36, sm: 42, md: 48 },
+                  height: { xs: 36, sm: 42, md: 48 },
+                  "&:hover": {
+                    bgcolor: isRunning ? "#dc2626" : "#059669",
+                    transform: "translateY(-1px)",
+                    boxShadow: isRunning
+                      ? "0 4px 12px rgba(239, 68, 68, 0.4)"
+                      : "0 4px 12px rgba(16, 185, 129, 0.4)",
+                  },
+                  "&:disabled": {
+                    bgcolor: "#9ca3af",
+                    color: "#6b7280",
+                    "&:hover": {
+                      transform: "none",
+                      boxShadow: "none",
+                    },
+                  },
+                }}
+              >
+                {isRunning ? (
+                  <StopIcon sx={{ fontSize: 24 }} />
+                ) : (
+                  <RunIcon sx={{ fontSize: 24 }} />
+                )}
+              </IconButton>
+            </span>
+          </Tooltip>
 
           <Tooltip title="Restart Map">
             <span id="tour-btn-restart-wrap">

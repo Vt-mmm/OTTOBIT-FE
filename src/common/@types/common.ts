@@ -67,7 +67,6 @@ export interface LoginResponse {
   userId: string;
   username?: string;
   email: string;
-  fullName: string;
   roles: string[]; // Array để phản ánh nhiều vai trò
   tokens: {
     accessToken: string;

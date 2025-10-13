@@ -4,3 +4,4 @@ export { ImageUploader } from "./ImageUploader";
 export { default as ImageCropDialog } from "./ImageCropDialog";
 export { default as ConfirmDialog } from "./ConfirmDialog";
 export { default as LanguageSwitcher } from "./LanguageSwitcher";
+export { default as AnimatedBlob } from "./AnimatedBlob";

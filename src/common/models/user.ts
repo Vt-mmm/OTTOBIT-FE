@@ -12,7 +12,6 @@ export interface UserInfo {
   roleName: string;
   status: string;
   emailConfirmed: boolean;
-  fullName: string;
   roles: string;
 }
 
@@ -27,7 +26,6 @@ export interface UserToUpdate {
 export interface User {
   id: string;
   email: string;
-  fullName: string;
   phoneNumber: string | null;
   avatar: string;
   address: string;

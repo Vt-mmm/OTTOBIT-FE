@@ -4,10 +4,11 @@
  */
 
 import React, { useState } from "react";
-import { Box, Typography, Container, Tabs, Tab } from "@mui/material";
+import { Box, Typography, Container, Tabs, Tab, Button } from "@mui/material";
 import {
   Assignment as ChallengeIcon,
   NoteAlt as NoteIcon,
+  ArrowBack as ArrowBackIcon,
 } from "@mui/icons-material";
 import { ChallengeResult } from "../../../common/@types/challenge";
 import { SubmissionResult } from "../../../common/@types/submission";
@@ -25,6 +26,7 @@ interface LessonTabletSectionProps {
   onRetry: () => void;
   lessonId?: string;
   courseId?: string; // Add courseId for proper note scoping
+  onBackToCourse?: () => void; // Add back handler
 }
 
 const LessonTabletSection: React.FC<LessonTabletSectionProps> = ({
@@ -36,6 +38,7 @@ const LessonTabletSection: React.FC<LessonTabletSectionProps> = ({
   onRetry,
   lessonId,
   courseId, // Destructure courseId
+  onBackToCourse, // Destructure back handler
 }) => {
   const { translate } = useLocales();
   const [activeTab, setActiveTab] = useState(0);
@@ -45,8 +48,34 @@ const LessonTabletSection: React.FC<LessonTabletSectionProps> = ({
   };
 
   return (
-    <Box sx={{ background: "#f8f9fa", py: 6 }}>
+    <Box sx={{ background: "#f8f9fa", pt: 12, pb: 6 }}>
       <Container maxWidth="xl">
+        {/* Back Button */}
+        {onBackToCourse && (
+          <Box sx={{ mb: 3 }}>
+            <Button
+              startIcon={<ArrowBackIcon />}
+              onClick={onBackToCourse}
+              variant="text"
+              size="small"
+              sx={{
+                color: "#6b7280",
+                fontSize: "0.875rem",
+                py: 1,
+                px: 1.5,
+                textTransform: "none",
+                borderRadius: "8px",
+                "&:hover": {
+                  color: "#22c55e",
+                  backgroundColor: "rgba(34, 197, 94, 0.05)",
+                },
+              }}
+            >
+              {translate("lessons.BackToCourse")}
+            </Button>
+          </Box>
+        )}
+
         {/* Section Title */}
         <Box sx={{ mb: 4, textAlign: "center" }}>
           <Typography

@@ -199,5 +199,16 @@
   "StartLearningLabel": "START LEARNING",
   "ContinueLearningLabel": "CONTINUE LEARNING",
   "AboutCourse": "About This Course",
-  "CourseContent": "Course Content"
+  "CourseContent": "Course Content",
+  "ExploreAllCourses": "Explore All Courses",
+  "features": {
+    "robot": "Learn with Robots",
+    "robotDesc": "Learn programming with real robots, visual and fun",
+    "interactive": "Interactive Lessons",
+    "interactiveDesc": "Easy Blockly interface, practice immediately",
+    "certificate": "Completion Certificate",
+    "certificateDesc": "Receive certificate after completing the course",
+    "community": "Supportive Community",
+    "communityDesc": "Join our community of students and instructors"
+  }
 }

@@ -16,7 +16,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "store/config";
-import { login, setIsLogout, googleLoginThunk } from "store/auth/authSlice";
+import { login, setIsLogout, googleLoginThunk, clearAuthErrors } from "store/auth/authSlice";
 import { useForm, FormProvider, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -53,6 +53,19 @@ const LoginForm: React.FC = () => {
       .min(6, translate("auth.PasswordMinLength"))
       .required(translate("auth.PasswordRequired")),
   });
+
+  // Clear auth errors on mount and unmount
+  useEffect(() => {
+    // Clear errors when component mounts
+    dispatch(clearAuthErrors());
+    setLocalErrorMessage(null);
+
+    // Clean up when component unmounts
+    return () => {
+      dispatch(clearAuthErrors());
+      setLocalErrorMessage(null);
+    };
+  }, [dispatch]);
 
   // Log auth state whenever it changes
   useEffect(() => {
@@ -149,6 +162,7 @@ const LoginForm: React.FC = () => {
         sx={{
           width: "100%",
           maxWidth: { xs: "100%", sm: 400, md: 420 },
+          mx: "auto",
           p: 0,
         }}
       >

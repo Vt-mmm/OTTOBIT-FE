@@ -20,6 +20,10 @@ export interface Course {
   enrollmentsCount?: number;
   createdByName?: string;
 
+  // Enrollment status (from BE when user is authenticated)
+  isEnrolled?: boolean | null;
+  enrollmentDate?: string | null;
+
   // Robot requirements (populated by BE if requested)
   courseRobots?: CourseRobotInfo[];
 }

@@ -198,5 +198,16 @@
   "StartLearningLabel": "BẮT ĐẦU HỌC",
   "ContinueLearningLabel": "TIẾP TỤC HỌC",
   "AboutCourse": "Về Khóa Học Này",
-  "CourseContent": "Nội Dung Khóa Học"
+  "CourseContent": "Nội Dung Khóa Học",
+  "ExploreAllCourses": "Khám phá tất cả khóa học",
+  "features": {
+    "robot": "Học với Robot",
+    "robotDesc": "Học lập trình qua robot thật, trực quan và thú vị",
+    "interactive": "Bài Học Tương Tác",
+    "interactiveDesc": "Giao diện Blockly dễ dàng, thực hành ngay lập tức",
+    "certificate": "Chứng Chỉ Hoàn Thành",
+    "certificateDesc": "Nhận chứng chỉ sau khi hoàn thành khóa học",
+    "community": "Cộng Đồng Hỗ Trợ",
+    "communityDesc": "Tham gia cộng đồng học viên và giảng viên"
+  }
 }

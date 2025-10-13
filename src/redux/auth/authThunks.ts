@@ -59,9 +59,8 @@ interface LoginApiResponse {
   timestamp: string;
 }
 
-// Define RegisterForm interface
+// Define RegisterForm interface - BE only requires email, password, confirmPassword
 interface RegisterForm {
-  fullName: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -190,7 +189,6 @@ export const registerThunk = createAsyncThunk<
         email: registerData.email,
         password: registerData.password,
         confirmPassword: registerData.confirmPassword,
-        fullName: registerData.fullName,
       });
 
       const message = handleResponseMessage(
