@@ -1,250 +1,322 @@
-import { useEffect, useMemo } from "react";
-import { Box, Typography, Chip, Alert } from "@mui/material";
+import { Box, Typography, Button, Paper, Divider, Chip, CircularProgress } from "@mui/material";
 import {
   School as SchoolIcon,
   AccessTime as AccessTimeIcon,
   WorkspacePremium as CertificateIcon,
-  SmartToy as RobotIcon,
+  Language as LanguageIcon,
+  CheckCircle as CheckCircleIcon,
+  Share as ShareIcon,
 } from "@mui/icons-material";
-import { useAppDispatch, useAppSelector } from "store/config";
-import { getCourseRobotsThunk } from "store/courseRobot/courseRobotThunks";
-import { getMyActivationCodesThunk } from "store/activationCode/activationCodeThunks";
-import RobotRequirementCard from "components/robot/RobotRequirementCard";
-import { AddToCartButton } from "components/cart";
 import { CourseType } from "common/@types/course";
-import { CodeStatus } from "common/@types/activationCode";
 import { useLocales } from "../../../../hooks";
 
 interface CourseSidebarSectionProps {
   course: {
     id: string;
     title: string;
-    imageUrl?: string;
     price?: number;
     type?: CourseType;
+    imageUrl?: string;
   };
   lessons: any[];
-  isEnrolled?: boolean;
+  isUserEnrolled: boolean;
+  isEnrolling: boolean;
+  onEnrollCourse: () => void;
+  onGoToCourse?: () => void;
+  compact?: boolean;
 }
 
 export default function CourseSidebarSection({
   course,
   lessons,
-  isEnrolled,
+  isUserEnrolled,
+  isEnrolling,
+  onEnrollCourse,
+  onGoToCourse,
+  compact = false,
 }: CourseSidebarSectionProps) {
   const { translate } = useLocales();
-  const dispatch = useAppDispatch();
-  const { courseRobots } = useAppSelector((state) => state.courseRobot);
-  const { myCodes } = useAppSelector((state) => state.activationCode);
 
-  // Use courseRobots.data from GET_ALL endpoint
-  const courseRobotsList = courseRobots.data?.items || [];
+  const sidebarItems = [
+    {
+      icon: <SchoolIcon fontSize="small" />,
+      label: translate("courses.Lessons"),
+      value: `${lessons.length} ${translate("courses.LessonsText")}`,
+    },
+    {
+      icon: <AccessTimeIcon fontSize="small" />,
+      label: translate("courses.Duration"),
+      value: `${lessons.length * 2} ${translate("courses.Hours")}`,
+    },
+    {
+      icon: <LanguageIcon fontSize="small" />,
+      label: translate("courses.Language"),
+      value: translate("courses.Vietnamese"),
+    },
+    {
+      icon: <CertificateIcon fontSize="small" />,
+      label: translate("courses.Certificate"),
+      value: translate("courses.ShareableCertificate"),
+    },
+  ];
 
-  useEffect(() => {
-    // Fetch robots required for this course
-    dispatch(getCourseRobotsThunk({ courseId: course.id, pageSize: 100 }));
-    // Fetch user's activated robots
-    dispatch(
-      getMyActivationCodesThunk({
-        status: CodeStatus.Used,
-        pageNumber: 1,
-        pageSize: 100,
-      })
-    );
-  }, [dispatch, course.id]);
-
-  // Get list of activated robot IDs from activation codes
-  const activatedRobotIds = useMemo(() => {
-    if (!myCodes.data?.items) return new Set<string>();
-
-    return new Set(
-      myCodes.data.items
-        .filter((code) => code.status === CodeStatus.Used && code.robotId)
-        .map((code) => code.robotId!)
-    );
-  }, [myCodes.data]);
-
-  // Check if user owns a specific robot
-  const isRobotOwned = (robotId: string): boolean => {
-    return activatedRobotIds.has(robotId);
-  };
-
-  const requiredRobots = courseRobotsList.filter((cr) => cr.isRequired);
-  const missingRequiredRobots = requiredRobots.filter(
-    (cr) => !isRobotOwned(cr.robotId)
-  );
-
-  return (
-    <Box sx={{ position: "sticky", top: 80 }}>
-      {/* Course Info Card - Compact */}
-      <Box
-        sx={{
-          bgcolor: "white",
-          border: "1px solid #e0e0e0",
-          borderRadius: 2,
-          overflow: "hidden",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-          mb: 2,
-        }}
-      >
-        {/* Remove image preview, just show info */}
-        <Box sx={{ p: 2 }}>
-          <Box
+  // Compact mode: only show button, no paper wrapper
+  if (compact) {
+    return (
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        {!isUserEnrolled ? (
+          <Button
+            variant="contained"
+            size="large"
+            fullWidth
+            onClick={onEnrollCourse}
+            disabled={isEnrolling}
             sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              mb: 1.5,
+              bgcolor: "#2e7d32",
+              color: "white",
+              fontWeight: 600,
+              py: 1.5,
+              fontSize: "0.9375rem",
+              textTransform: "none",
+              borderRadius: 1,
+              "&:hover": {
+                bgcolor: "#1b5e20",
+              },
             }}
           >
-            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-              {translate("courses.CourseContent")}
-            </Typography>
-            <Chip
-              label={
-                course.type === CourseType.Free || (course.price ?? 0) === 0
-                  ? translate("courses.Free")
-                  : `${(course.price ?? 0).toLocaleString()} VND`
-              }
-              size="small"
-              sx={{
-                bgcolor:
-                  course.type === CourseType.Free || (course.price ?? 0) === 0
-                    ? "#4caf50"
-                    : "#ff9800",
-                color: "white",
-                fontWeight: 600,
-                fontSize: "0.7rem",
-                height: 24,
-              }}
-            />
-          </Box>
-
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <SchoolIcon fontSize="small" sx={{ color: "#1976d2" }} />
-              <Typography variant="body2">
-                {lessons.length} {translate("courses.LessonsText")}
-              </Typography>
-            </Box>
-
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <AccessTimeIcon fontSize="small" sx={{ color: "#1976d2" }} />
-              <Typography variant="body2">
-                {translate("courses.AboutHours", { hours: "4-6" })}
-              </Typography>
-            </Box>
-
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <CertificateIcon fontSize="small" sx={{ color: "#1976d2" }} />
-              <Typography variant="body2">
-                {translate("courses.Certificate")}
-              </Typography>
-            </Box>
-          </Box>
-
-          {/* Add to Cart Button - Only for Premium Courses and Not Enrolled */}
-          {!isEnrolled && course.type !== CourseType.Free && (course.price ?? 0) > 0 && (
-            <Box sx={{ mt: 2 }}>
-              <AddToCartButton
-                courseId={course.id}
-                coursePrice={course.price ?? 0}
-                fullWidth
-              />
-            </Box>
-          )}
-        </Box>
-      </Box>
-
-      {/* Robot Requirements Section */}
-      {courseRobotsList.length > 0 && (
-        <Box
-          sx={{
-            bgcolor: "white",
-            border: "1px solid #e0e0e0",
-            borderRadius: 2,
-            mb: 2,
-            overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-          }}
-        >
-          <Box sx={{ p: 2 }}>
-            <Box
-              sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}
-            >
-              <RobotIcon sx={{ color: "#1976d2", fontSize: 20 }} />
-              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                {translate("courses.RobotsRequired")}
-              </Typography>
-            </Box>
-
-            {/* Warning if missing required robots */}
-            {missingRequiredRobots.length > 0 && (
-              <Alert severity="warning" sx={{ mb: 1.5, py: 0.5 }}>
-                <Typography variant="caption">
-                  {translate("courses.NeedRobots", {
-                    count: missingRequiredRobots.length,
-                  })}
-                </Typography>
-              </Alert>
+            {isEnrolling ? (
+              <>
+                <CircularProgress size={18} sx={{ mr: 1, color: "white" }} />
+                {translate("courses.Processing")}
+              </>
+            ) : (
+              translate("courses.JoinFree")
             )}
+          </Button>
+        ) : onGoToCourse ? (
+          <Button
+            variant="contained"
+            size="large"
+            fullWidth
+            onClick={onGoToCourse}
+            sx={{
+              bgcolor: "#000000",
+              color: "white",
+              fontWeight: 600,
+              py: 1.5,
+              fontSize: "0.9375rem",
+              textTransform: "none",
+              borderRadius: 1,
+              "&:hover": {
+                bgcolor: "#212121",
+              },
+            }}
+          >
+            {translate("courses.GoToCourse")}
+          </Button>
+        ) : null}
+      </Box>
+    );
+  }
 
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-              {courseRobotsList.map((courseRobot) => (
-                <RobotRequirementCard
-                  key={courseRobot.id}
-                  robotName={courseRobot.robotName || "Robot"}
-                  robotModel={courseRobot.robotModel || ""}
-                  robotBrand={courseRobot.robotBrand || ""}
-                  robotImageUrl={undefined}
-                  isRequired={courseRobot.isRequired}
-                  isOwned={isRobotOwned(courseRobot.robotId)}
-                />
-              ))}
-            </Box>
-          </Box>
-        </Box>
-      )}
-
-      {/* Skills Section */}
-      <Box
+  return (
+    <Box sx={{ position: "sticky", top: 100 }}>
+      <Paper
+        elevation={0}
         sx={{
-          bgcolor: "white",
-          border: "1px solid #e0e0e0",
-          borderRadius: 2,
-          mt: 2,
+          borderRadius: 3,
           overflow: "hidden",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          border: "1px solid #e0e0e0",
+          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
         }}
       >
-        <Box sx={{ p: 2.5 }}>
-          <Typography variant="subtitle1" sx={{ mb: 1.5, fontWeight: 600 }}>
-            {translate("courses.SkillsYouWillLearn")}
-          </Typography>
+        {/* Course Image */}
+        {course.imageUrl && (
+          <Box
+            component="img"
+            src={course.imageUrl}
+            alt={course.title}
+            sx={{
+              width: "100%",
+              height: 200,
+              objectFit: "cover",
+            }}
+          />
+        )}
 
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
-            {[
-              translate("courses.SkillBlockly"),
-              translate("courses.SkillRobotControl"),
-              translate("courses.SkillLogicalThinking"),
-              translate("courses.SkillProblemSolving"),
-              translate("courses.SkillSTEM"),
-            ].map((skill) => (
+        <Box sx={{ p: 4 }}>
+          {/* Price / Free Badge */}
+          <Box sx={{ mb: 4 }}>
+            {course.type === CourseType.Free || (course.price ?? 0) === 0 ? (
               <Chip
-                key={skill}
-                label={skill}
-                variant="outlined"
-                size="small"
+                label={translate("courses.Free")}
                 sx={{
-                  borderColor: "#1976d2",
-                  color: "#1976d2",
-                  fontSize: "0.75rem",
+                  bgcolor: "#4caf50",
+                  color: "white",
+                  fontWeight: 700,
+                  fontSize: "1.1rem",
+                  height: 36,
+                  px: 2,
                 }}
               />
+            ) : (
+              <Typography variant="h4" sx={{ fontWeight: 700, color: "#1976d2" }}>
+                {(course.price ?? 0).toLocaleString()} VND
+              </Typography>
+            )}
+          </Box>
+
+          {/* CTA Button */}
+          {!isUserEnrolled ? (
+            <Button
+              variant="contained"
+              size="large"
+              fullWidth
+              onClick={onEnrollCourse}
+              disabled={isEnrolling}
+              sx={{
+                bgcolor: "#212121",
+                color: "white",
+                fontWeight: 600,
+                py: 2,
+                fontSize: "1rem",
+                textTransform: "none",
+                mb: 3,
+                borderRadius: 2,
+                boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+                "&:hover": {
+                  bgcolor: "#424242",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                },
+              }}
+            >
+              {isEnrolling ? (
+                <>
+                  <CircularProgress size={20} sx={{ mr: 1, color: "white" }} />
+                  {translate("courses.Processing")}
+                </>
+              ) : (
+                translate("courses.EnrollNow")
+              )}
+            </Button>
+          ) : (
+            <>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  mb: 2,
+                  p: 2,
+                  bgcolor: "#e8f5e9",
+                  borderRadius: 1,
+                }}
+              >
+                <CheckCircleIcon sx={{ color: "#4caf50" }} />
+                <Typography variant="body2" sx={{ color: "#2e7d32", fontWeight: 600 }}>
+                  {translate("courses.YouAreEnrolled")}
+                </Typography>
+              </Box>
+              {onGoToCourse && (
+                <Button
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  onClick={onGoToCourse}
+                  sx={{
+                    bgcolor: "#212121",
+                    color: "white",
+                    fontWeight: 600,
+                    py: 2,
+                    fontSize: "1rem",
+                    textTransform: "none",
+                    mb: 3,
+                    borderRadius: 2,
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+                    "&:hover": {
+                      bgcolor: "#424242",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                    },
+                  }}
+                >
+                  {translate("courses.GoToCourse")}
+                </Button>
+              )}
+            </>
+          )}
+
+          <Divider sx={{ my: 3 }} />
+
+          {/* Course Info List */}
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {sidebarItems.map((item, index) => (
+              <Box key={index} sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Box sx={{ color: "#616161" }}>{item.icon}</Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    {item.label}
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {item.value}
+                  </Typography>
+                </Box>
+              </Box>
             ))}
           </Box>
+
+          <Divider sx={{ my: 3 }} />
+
+          {/* Share Button */}
+          <Button
+            variant="outlined"
+            fullWidth
+            startIcon={<ShareIcon />}
+            sx={{
+              textTransform: "none",
+              borderColor: "#e0e0e0",
+              color: "#424242",
+              borderRadius: 2,
+              py: 1.5,
+              "&:hover": {
+                borderColor: "#bdbdbd",
+                bgcolor: "#fafafa",
+              },
+            }}
+          >
+            {translate("courses.ShareCourse")}
+          </Button>
         </Box>
-      </Box>
+      </Paper>
+
+      {/* Additional Info Card */}
+      <Paper
+        elevation={1}
+        sx={{
+          mt: 2,
+          p: 2,
+          borderRadius: 2,
+          bgcolor: "#f8f9fa",
+          border: "1px solid #e0e0e0",
+        }}
+      >
+        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+          {translate("courses.WhatYouGet")}
+        </Typography>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <CheckCircleIcon sx={{ fontSize: 18, color: "#4caf50" }} />
+            <Typography variant="body2">{translate("courses.LifetimeAccess")}</Typography>
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <CheckCircleIcon sx={{ fontSize: 18, color: "#4caf50" }} />
+            <Typography variant="body2">{translate("courses.ShareableCertificate")}</Typography>
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <CheckCircleIcon sx={{ fontSize: 18, color: "#4caf50" }} />
+            <Typography variant="body2">{translate("courses.PracticeProjects")}</Typography>
+          </Box>
+        </Box>
+      </Paper>
     </Box>
   );
 }

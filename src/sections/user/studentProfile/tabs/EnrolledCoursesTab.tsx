@@ -291,8 +291,9 @@ export default function EnrolledCoursesTab({
         visible.map((enrollment) => {
           // Use progress from backend if available, fallback to computed stats
           const progressPct = enrollment.progress ?? stats[enrollment.courseId]?.percent ?? 0;
-          const detailPath = PATH_USER.courseDetail.replace(
-            ":id",
+          // Navigate to learning page for enrolled courses
+          const learningPath = PATH_USER.courseLearn.replace(
+            ":courseId",
             enrollment.courseId
           );
           const isOpen = !!expanded[enrollment.courseId];
@@ -491,7 +492,7 @@ export default function EnrolledCoursesTab({
                     <Button
                       startIcon={<CheckCircleOutlineIcon />}
                       variant="text"
-                      onClick={() => navigate(detailPath)}
+                      onClick={() => navigate(learningPath)}
                       size="small"
                       sx={{
                         minHeight: { xs: 44, sm: 36 },
@@ -500,13 +501,13 @@ export default function EnrolledCoursesTab({
                         width: { xs: "100%", md: "auto" },
                       }}
                     >
-                      Xem chi tiết
+                      Xem lại
                     </Button>
                   ) : (
                     <Button
                       startIcon={<PlayArrowIcon />}
                       variant="contained"
-                      onClick={() => navigate(detailPath)}
+                      onClick={() => navigate(learningPath)}
                       size="small"
                       sx={{
                         minHeight: { xs: 44, sm: 36 },

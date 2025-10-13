@@ -170,40 +170,48 @@ export function isCourseCompleted(
 }
 
 /**
- * Get lesson status display text
+ * Get lesson status translation key
  * @param lesson - The lesson
  * @param lessonProgresses - Array of lesson progress
- * @returns display text for lesson status
+ * @returns translation key for lesson status
  */
+export function getLessonStatusKey(
+  lesson: LessonResult,
+  lessonProgresses: LessonProgressResult[] = []
+): string {
+  const progress = getLessonProgress(lesson.id, lessonProgresses);
+  const isAccessible = isLessonAccessible(lesson, lessonProgresses);
+
+  if (!isAccessible) {
+    return "courses.Locked";
+  }
+
+  switch (progress.status) {
+    case LessonStatus.Completed:
+      return "courses.Completed";
+    case LessonStatus.InProgress:
+      return "courses.InProgress";
+    case LessonStatus.NotStarted:
+    default:
+      return "courses.Ready";
+  }
+}
+
+// Deprecated: Use getLessonStatusKey with translate function instead
 export function getLessonStatusText(
   lesson: LessonResult,
   lessonProgresses: LessonProgressResult[] = []
 ): string {
-  const progress = getLessonProgress(lesson.id, lessonProgresses);
-  const isAccessible = isLessonAccessible(lesson, lessonProgresses);
-
-  if (!isAccessible) {
-    return " Bị khóa";
-  }
-
-  switch (progress.status) {
-    case LessonStatus.Completed:
-      return " Hoàn thành";
-    case LessonStatus.InProgress:
-      return " Đang học";
-    case LessonStatus.NotStarted:
-    default:
-      return " Sẵn sàng";
-  }
+  return getLessonStatusKey(lesson, lessonProgresses);
 }
 
 /**
- * Get lesson button text based on status
+ * Get lesson button translation key based on status
  * @param lesson - The lesson
  * @param lessonProgresses - Array of lesson progress
- * @returns button text
+ * @returns translation key for button text
  */
-export function getLessonButtonText(
+export function getLessonButtonKey(
   lesson: LessonResult,
   lessonProgresses: LessonProgressResult[] = []
 ): string {
@@ -211,16 +219,24 @@ export function getLessonButtonText(
   const isAccessible = isLessonAccessible(lesson, lessonProgresses);
 
   if (!isAccessible) {
-    return " Chưa mở khóa";
+    return "courses.NotUnlocked";
   }
 
   switch (progress.status) {
     case LessonStatus.Completed:
-      return " Xem lại";
+      return "courses.Review";
     case LessonStatus.InProgress:
-      return " Tiếp tục";
+      return "courses.Continue";
     case LessonStatus.NotStarted:
     default:
-      return " Bắt đầu";
+      return "courses.Start";
   }
+}
+
+// Deprecated: Use getLessonButtonKey with translate function instead
+export function getLessonButtonText(
+  lesson: LessonResult,
+  lessonProgresses: LessonProgressResult[] = []
+): string {
+  return getLessonButtonKey(lesson, lessonProgresses);
 }
