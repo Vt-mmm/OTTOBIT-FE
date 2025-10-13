@@ -9,6 +9,7 @@ import {
 } from "@mui/icons-material";
 import { CourseType } from "common/@types/course";
 import { useLocales } from "../../../../hooks";
+import AddToCartButton from "../../../../components/cart/AddToCartButton";
 
 interface CourseSidebarSectionProps {
   course: {
@@ -36,6 +37,9 @@ export default function CourseSidebarSection({
   compact = false,
 }: CourseSidebarSectionProps) {
   const { translate } = useLocales();
+  
+  const isFree = course.type === CourseType.Free || (course.price ?? 0) === 0;
+  const isPremium = !isFree;
 
   const sidebarItems = [
     {
@@ -65,34 +69,42 @@ export default function CourseSidebarSection({
     return (
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
         {!isUserEnrolled ? (
-          <Button
-            variant="contained"
-            size="large"
-            fullWidth
-            onClick={onEnrollCourse}
-            disabled={isEnrolling}
-            sx={{
-              bgcolor: "#2e7d32",
-              color: "white",
-              fontWeight: 600,
-              py: 1.5,
-              fontSize: "0.9375rem",
-              textTransform: "none",
-              borderRadius: 1,
-              "&:hover": {
-                bgcolor: "#1b5e20",
-              },
-            }}
-          >
-            {isEnrolling ? (
-              <>
-                <CircularProgress size={18} sx={{ mr: 1, color: "white" }} />
-                {translate("courses.Processing")}
-              </>
-            ) : (
-              translate("courses.JoinFree")
-            )}
-          </Button>
+          isPremium ? (
+            <AddToCartButton
+              courseId={course.id}
+              coursePrice={course.price ?? 0}
+              fullWidth
+            />
+          ) : (
+            <Button
+              variant="contained"
+              size="large"
+              fullWidth
+              onClick={onEnrollCourse}
+              disabled={isEnrolling}
+              sx={{
+                bgcolor: "#2e7d32",
+                color: "white",
+                fontWeight: 600,
+                py: 1.5,
+                fontSize: "0.9375rem",
+                textTransform: "none",
+                borderRadius: 1,
+                "&:hover": {
+                  bgcolor: "#1b5e20",
+                },
+              }}
+            >
+              {isEnrolling ? (
+                <>
+                  <CircularProgress size={18} sx={{ mr: 1, color: "white" }} />
+                  {translate("courses.Processing")}
+                </>
+              ) : (
+                translate("courses.JoinFree")
+              )}
+            </Button>
+          )
         ) : onGoToCourse ? (
           <Button
             variant="contained"
@@ -168,37 +180,47 @@ export default function CourseSidebarSection({
 
           {/* CTA Button */}
           {!isUserEnrolled ? (
-            <Button
-              variant="contained"
-              size="large"
-              fullWidth
-              onClick={onEnrollCourse}
-              disabled={isEnrolling}
-              sx={{
-                bgcolor: "#212121",
-                color: "white",
-                fontWeight: 600,
-                py: 2,
-                fontSize: "1rem",
-                textTransform: "none",
-                mb: 3,
-                borderRadius: 2,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
-                "&:hover": {
-                  bgcolor: "#424242",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                },
-              }}
-            >
-              {isEnrolling ? (
-                <>
-                  <CircularProgress size={20} sx={{ mr: 1, color: "white" }} />
-                  {translate("courses.Processing")}
-                </>
-              ) : (
-                translate("courses.EnrollNow")
-              )}
-            </Button>
+            isPremium ? (
+              <Box sx={{ mb: 3 }}>
+                <AddToCartButton
+                  courseId={course.id}
+                  coursePrice={course.price ?? 0}
+                  fullWidth
+                />
+              </Box>
+            ) : (
+              <Button
+                variant="contained"
+                size="large"
+                fullWidth
+                onClick={onEnrollCourse}
+                disabled={isEnrolling}
+                sx={{
+                  bgcolor: "#2e7d32",
+                  color: "white",
+                  fontWeight: 600,
+                  py: 2,
+                  fontSize: "1rem",
+                  textTransform: "none",
+                  mb: 3,
+                  borderRadius: 2,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+                  "&:hover": {
+                    bgcolor: "#1b5e20",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                  },
+                }}
+              >
+                {isEnrolling ? (
+                  <>
+                    <CircularProgress size={20} sx={{ mr: 1, color: "white" }} />
+                    {translate("courses.Processing")}
+                  </>
+                ) : (
+                  translate("courses.JoinFree")
+                )}
+              </Button>
+            )
           ) : (
             <>
               <Box

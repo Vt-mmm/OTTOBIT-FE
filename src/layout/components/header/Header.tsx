@@ -71,6 +71,10 @@ const Header: React.FC = () => {
 
   // Lấy thông tin người dùng từ redux store
   const { isAuthenticated, userAuth } = useAppSelector((state) => state.auth);
+  const { currentStudent } = useAppSelector((state) => state.student);
+  
+  // Get display name: prioritize student fullname, fallback to username or email
+  const displayName = currentStudent.data?.fullname || userAuth?.username || userAuth?.email || "Người dùng";
 
   // Dánh sách menu với icon và scroll target
   const [menuItems, setMenuItems] = useState([
@@ -126,7 +130,7 @@ const Header: React.FC = () => {
           isPage: true,
         },
         {
-          name: translate("common.Store"),
+          name: translate("common.Products"),
           icon: <StoreIcon sx={{ mr: 1, fontSize: "1rem" }} />,
           href: PATH_PUBLIC.store,
           id: "store",
@@ -437,7 +441,7 @@ const Header: React.FC = () => {
                   }}
                 >
                   <Avatar
-                    alt={userAuth?.username || userAuth?.email || ""}
+                    alt={displayName}
                     sx={{
                       width: { xs: 36, sm: 40, md: 44 },
                       height: { xs: 36, sm: 40, md: 44 },
@@ -445,9 +449,7 @@ const Header: React.FC = () => {
                       fontWeight: 600,
                     }}
                   >
-                    {(userAuth?.username || userAuth?.email)
-                      ?.charAt(0)
-                      ?.toUpperCase() || "U"}
+                    {displayName?.charAt(0)?.toUpperCase() || "U"}
                   </Avatar>
                 </IconButton>
               </motion.div>
@@ -488,7 +490,7 @@ const Header: React.FC = () => {
                     fontWeight={600}
                     sx={{ color: "#2E7D32" }}
                   >
-                    {userAuth?.username || "Người dùng"}
+                    {displayName}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     {userAuth?.email || ""}
