@@ -20,6 +20,7 @@ import { Link } from "react-router-dom";
 import { CourseType } from "common/@types/course";
 import { useLocales } from "../../../../hooks";
 import { PATH_USER } from "../../../../routes/paths";
+import AddToCartButton from "../../../../components/cart/AddToCartButton";
 
 interface CourseHeroSectionProps {
   course: {
@@ -48,6 +49,9 @@ export default function CourseHeroSection({
   onGoToCourse,
 }: CourseHeroSectionProps) {
   const { translate } = useLocales();
+  
+  const isFree = course.type === CourseType.Free || (course.price ?? 0) === 0;
+  const isPremium = !isFree;
 
   return (
     <Box>
@@ -225,6 +229,13 @@ export default function CourseHeroSection({
               >
                 {translate("courses.ContinueLearning")}
               </Button>
+            ) : isPremium ? (
+              <Box>
+                <AddToCartButton
+                  courseId={course.id}
+                  coursePrice={course.price ?? 0}
+                />
+              </Box>
             ) : (
               <Button
                 variant="contained"
@@ -252,8 +263,6 @@ export default function CourseHeroSection({
               >
                 {isEnrolling
                   ? translate("courses.Processing")
-                  : course.type === CourseType.Premium && course.price
-                  ? `${translate("courses.JoinCourse")} - ${course.price.toLocaleString()} VND`
                   : translate("courses.JoinFreeCourse")}
               </Button>
             )}
