@@ -12,14 +12,10 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Stack,
 } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getCourses } from "../../../redux/course/courseSlice";
-import {
-  createEnrollment,
-  getMyEnrollments,
-} from "../../../redux/enrollment/enrollmentSlice";
+import { createEnrollment } from "../../../redux/enrollment/enrollmentSlice";
 import { getStudentByUserThunk } from "../../../redux/student/studentThunks";
 import { PATH_USER } from "../../../routes/paths";
 import StudentProfileRequiredDialog from "./StudentProfileRequiredDialog";
@@ -45,8 +41,6 @@ export default function CourseListingSection({
     isLoading,
     error,
   } = useAppSelector((state) => state.course.courses);
-  const { myEnrollments } = useAppSelector((state) => state.enrollment);
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
   // Fix: Don't create new object in selector - access property directly
   const studentData = useAppSelector((state) => state.student.currentStudent.data);
 
@@ -63,24 +57,17 @@ export default function CourseListingSection({
     courseName: "",
     courseId: "",
   });
-  const itemsPerPage = 12;
+  const itemsPerPage = 9; // 3x3 grid per page
 
-  // Fetch courses (public data)
+  // Fetch courses with enrollment status
+  // BE will return isEnrolled & enrollmentDate if user is authenticated
   useEffect(() => {
-    dispatch(getCourses({ pageSize: 50 }));
+    dispatch(getCourses({ pageSize: 100 })); // Increased for client-side pagination
   }, [dispatch]);
 
-  // Fetch enrollments ONLY if user is authenticated and not already loaded/loading
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    
-    // Don't fetch if already loading or already have data or got error
-    if (myEnrollments.isLoading || myEnrollments.data || myEnrollments.error) {
-      return;
-    }
-    
-    dispatch(getMyEnrollments({ pageSize: 100 }));
-  }, [dispatch, isAuthenticated, myEnrollments.isLoading, myEnrollments.data, myEnrollments.error]);
+  // Note: We no longer need to fetch enrollments separately
+  // BE now includes isEnrolled & enrollmentDate directly in course data
+  // This useEffect can be removed or kept for backwards compatibility
 
   // Filter and sort courses
   const filteredAndSortedCourses = useMemo(() => {
@@ -187,8 +174,8 @@ export default function CourseListingSection({
         severity: "success",
       });
 
-      // Refresh enrollments to update UI immediately
-      dispatch(getMyEnrollments({ pageSize: 100 }));
+      // Refresh courses to get updated isEnrolled status from BE
+      dispatch(getCourses({ pageSize: 100 }));
     } catch (error: any) {
       // Check if error indicates missing student profile
       const requiresProfile =
@@ -221,16 +208,11 @@ export default function CourseListingSection({
   };
 
   // Helper function to check if user is enrolled in a course
-  const isUserEnrolledInCourse = (courseId: string): boolean => {
-    if (!myEnrollments.data?.items) {
-      return false;
-    }
-
-    const isEnrolled = myEnrollments.data.items.some((enrollment) => {
-      return enrollment.courseId === courseId;
-    });
-
-    return isEnrolled;
+  // Now uses isEnrolled field directly from BE course data
+  const isUserEnrolledInCourse = (course: any): boolean => {
+    // BE returns isEnrolled when user is authenticated
+    // null/undefined means not authenticated or not enrolled
+    return course.isEnrolled === true;
   };
 
   const handleCloseSnackbar = () => {
@@ -285,7 +267,7 @@ export default function CourseListingSection({
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container id="courses-list" maxWidth="lg" sx={{ pt: 2, pb: 4 }}>
       {/* Header with search result count and sort */}
       <Box
         sx={{
@@ -361,8 +343,19 @@ export default function CourseListingSection({
         </Box>
       ) : (
         <>
-          {/* Course Stack Layout - Coursera style */}
-          <Stack spacing={3} sx={{ mb: 4 }}>
+          {/* Course Grid Layout - 2-3 columns */}
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+                lg: "repeat(3, 1fr)",
+              },
+              gap: 3,
+              mb: 4,
+            }}
+          >
             {paginatedCourses.map((course) => (
               <CourseCard
                 key={course.id}
@@ -376,13 +369,13 @@ export default function CourseListingSection({
                 createdAt={course.createdAt}
                 updatedAt={course.updatedAt}
                 onClick={handleCourseClick}
-                isEnrolled={isUserEnrolledInCourse(course.id)}
+                isEnrolled={isUserEnrolledInCourse(course)}
                 onEnroll={handleEnrollCourse}
                 price={(course as any).price}
                 type={(course as any).type}
               />
             ))}
-          </Stack>
+          </Box>
 
           {/* Pagination */}
           {totalPages > 1 && (

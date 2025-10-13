@@ -591,10 +591,21 @@ export class BlocklyToPhaserConverter {
     // Main IF condition và statement - sử dụng IF0 và DO0
     const mainConditionInput = block.getInputTargetBlock("IF0");
     const mainDoBlock = block.getInputTargetBlock("DO0");
+    
+    console.log("[Converter] IF block - mainConditionInput:", mainConditionInput ? mainConditionInput.type : "NULL");
+    console.log("[Converter] IF block - mainDoBlock:", mainDoBlock ? "EXISTS" : "NULL");
 
-    const mainCondition = mainConditionInput
+    let mainCondition = mainConditionInput
       ? this.parseCondition(mainConditionInput)
       : null;
+    
+    // If no condition provided, warn user
+    if (!mainCondition) {
+      console.warn("[Converter] ⚠️ IF block has no condition attached!");
+      console.warn("[Converter] 💡 Hint: Drag a condition block (AND/OR/comparison) into the IF block's condition slot");
+      console.warn("[Converter] Example: (getPinNumber() == 2) AND (isGreen() === true)");
+    }
+    
     const mainThenActions = mainDoBlock
       ? this.parseBlocksToActionsFromBlock(mainDoBlock)
       : [];
@@ -670,9 +681,13 @@ export class BlocklyToPhaserConverter {
    * Parse condition from condition blocks
    */
   private static parseCondition(conditionBlock: any): any {
-    if (!conditionBlock) return null;
+    if (!conditionBlock) {
+      console.warn("[Converter] parseCondition: conditionBlock is null/undefined");
+      return null;
+    }
 
     const blockType = conditionBlock.type;
+    console.log("[Converter] Parsing condition block type:", blockType);
 
     switch (blockType) {
       case "ottobit_boolean":
@@ -814,6 +829,40 @@ export class BlocklyToPhaserConverter {
           functionName: "warehouseCount",
           check: true,
         };
+
+      // Logical operations: AND, OR
+      case "logic_operation":
+      case "ottobit_logic_operation": {
+        const operator = conditionBlock.getFieldValue("OP");
+        // ottobit_logic_operation uses LEFT/RIGHT, logic_operation uses A/B
+        const leftBlock = conditionBlock.getInputTargetBlock("LEFT") || conditionBlock.getInputTargetBlock("A");
+        const rightBlock = conditionBlock.getInputTargetBlock("RIGHT") || conditionBlock.getInputTargetBlock("B");
+        
+        console.log("[Converter] AND/OR operator:", operator);
+        console.log("[Converter] AND/OR leftBlock:", leftBlock ? leftBlock.type : "NULL");
+        console.log("[Converter] AND/OR rightBlock:", rightBlock ? rightBlock.type : "NULL");
+
+        const leftCondition = leftBlock ? this.parseCondition(leftBlock) : null;
+        const rightCondition = rightBlock ? this.parseCondition(rightBlock) : null;
+
+        if (!leftCondition || !rightCondition) {
+          return null;
+        }
+
+        // Return AND/OR structure
+        if (operator === "AND") {
+          return {
+            type: "and",
+            conditions: [leftCondition, rightCondition],
+          };
+        } else if (operator === "OR") {
+          return {
+            type: "or",
+            conditions: [leftCondition, rightCondition],
+          };
+        }
+        return null;
+      }
 
       default:
         return null;

@@ -35,7 +35,7 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
 
   // Ưu tiên dữ liệu từ account.profile (BE), fallback sang auth
   const displayData = {
-    fullName: profile.data?.fullName || userAuth?.username || translate("profile.NotProvided"),
+    username: userAuth?.username || translate("profile.NotProvided"),
     email: profile.data?.email || userAuth?.email || translate("profile.NotProvided"),
     roles:
       (profile.data?.roles as string[] | undefined) || userAuth?.roles || [],
@@ -101,7 +101,7 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
               }}
             >
               {!displayData.avatarUrl &&
-                (displayData.fullName?.charAt(0)?.toUpperCase() || "U")}
+                (displayData.username?.charAt(0)?.toUpperCase() || "U")}
             </Avatar>
 
             <Box sx={{ flexGrow: 1 }} />
@@ -134,7 +134,7 @@ const ProfileOverview: React.FC<ProfileOverviewProps> = ({ onEditProfile }) => {
                 mb: 1,
               }}
             >
-              {displayData.fullName || translate("common.User")}
+              {displayData.username || translate("common.User")}
             </Typography>
 
             <Stack direction="row" spacing={1} sx={{ mb: 2 }}>

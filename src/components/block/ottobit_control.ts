@@ -75,7 +75,8 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     movable: true,
     editable: true,
     style: "ottobit_control",
-    tooltip: "Lặp với biến từ giá trị đầu đến giá trị cuối. Có thể kéo thả biến và số vào các ô VAR, FROM, TO, BY",
+    tooltip:
+      "Lặp với biến từ giá trị đầu đến giá trị cuối. Có thể kéo thả biến và số vào các ô VAR, FROM, TO, BY",
     helpUrl: "",
   },
   {
@@ -127,9 +128,10 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     movable: true,
     editable: true,
     style: "ottobit_control_blue",
-    tooltip: "Khối IF có thể mở rộng. Click vào biểu tượng bánh răng để thêm else if hoặc else",
+    tooltip:
+      "Khối IF có thể mở rộng. Click vào biểu tượng bánh răng để thêm else if hoặc else",
     helpUrl: "",
-    mutator: "ottobit_if_mutator"
+    mutator: "ottobit_if_mutator",
   },
   // Boolean value block with dropdown
   {
@@ -267,24 +269,7 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     customContextMenu: false,
   },
   // Simple condition block - chỉ để chứa giá trị Boolean
-  {
-    type: "ottobit_condition",
-    message0: "%1",
-    args0: [
-      {
-        type: "input_value",
-        name: "CONDITION",
-        check: "Boolean",
-      },
-    ],
-    output: "Boolean",
-    deletable: true,
-    movable: true,
-    editable: true,
-    style: "ottobit_logic",
-    tooltip: "Block điều kiện đơn giản để chứa giá trị true/false hoặc kết quả kiểm tra",
-    helpUrl: "",
-  },
+
   // Boolean equals block - so sánh 2 giá trị Boolean
   {
     type: "ottobit_boolean_equals",
@@ -306,8 +291,9 @@ export const controlBlocks = createBlockDefinitionsFromJsonArray([
     deletable: true,
     movable: true,
     editable: true,
-    style: "ottobit_control",
-    tooltip: "So sánh hai giá trị Boolean (true/false) - tương tự block = nhưng chỉ cho Boolean",
+    style: "ottobit_logic",
+    tooltip:
+      "So sánh hai giá trị Boolean (true/false) - màu tím để phân biệt với logic compare màu vàng",
     helpUrl: "",
   },
 ]);

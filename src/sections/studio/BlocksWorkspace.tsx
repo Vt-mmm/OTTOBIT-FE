@@ -100,7 +100,6 @@ BlocksWorkspaceProps) {
       { kind: "block", type: "ottobit_boolean" },
       { kind: "block", type: "ottobit_logic_operation" },
       { kind: "block", type: "ottobit_logic_compare" },
-      { kind: "block", type: "ottobit_condition" },
       { kind: "block", type: "ottobit_boolean_equals" },
       { kind: "block", type: "ottobit_is_green" },
       { kind: "block", type: "ottobit_is_red" },
@@ -2411,6 +2410,15 @@ BlocksWorkspaceProps) {
 
               // If it's a simple string, treat as variable name
               if (typeof varObj === "string") {
+                // Special case: "batteryCount" should use ottobit_pin_number sensor
+                if (varObj.toLowerCase() === "batterycount") {
+                  const pinBlock =
+                    blocklyWorkspace.newBlock("ottobit_pin_number");
+                  pinBlock.initSvg();
+                  pinBlock.render();
+                  return pinBlock;
+                }
+
                 const varBlock = blocklyWorkspace.newBlock("ottobit_variable");
                 varBlock.initSvg();
                 varBlock.render();
@@ -2472,7 +2480,13 @@ BlocksWorkspaceProps) {
             };
 
             const makeBoolean = (val: boolean) => {
-              const b = blocklyWorkspace.newBlock("logic_boolean");
+              // Try ottobit_boolean first, fallback to logic_boolean
+              let b: any = null;
+              try {
+                b = blocklyWorkspace.newBlock("ottobit_boolean");
+              } catch {
+                b = blocklyWorkspace.newBlock("logic_boolean");
+              }
               b.initSvg();
               b.render();
               try {
@@ -2504,14 +2518,61 @@ BlocksWorkspaceProps) {
               }
               return false;
             };
-            const condType = String(
-              cond?.type || cond?.Type || ""
-            ).toLowerCase();
-            if (condType === "condition") {
-              const fn = cond.function || cond.functionName;
-              const sensor = makeSensor(fn);
-              if (sensor) {
-                if (cond.check === false) {
+
+            // Recursive helper to create condition blocks
+            const createConditionBlock = (condObj: any): any => {
+              if (!condObj) return null;
+
+              const type = String(condObj?.type || "").toLowerCase();
+              console.log("🔧 [createConditionBlock] Creating condition:", {
+                type,
+                condObj: JSON.stringify(condObj, null, 2),
+              });
+
+              // Handle AND/OR recursively
+              if (type === "and" || type === "or") {
+                const logicOp = blocklyWorkspace.newBlock(
+                  "ottobit_logic_operation"
+                );
+                logicOp.initSvg();
+                logicOp.render();
+                try {
+                  logicOp.setFieldValue(type.toUpperCase(), "OP");
+                } catch {}
+
+                const conditions = condObj.conditions || [];
+                if (conditions.length >= 2) {
+                  const leftInput =
+                    logicOp.getInput && logicOp.getInput("LEFT");
+                  const rightInput =
+                    logicOp.getInput && logicOp.getInput("RIGHT");
+
+                  if (leftInput?.connection) {
+                    const leftBlock = createConditionBlock(conditions[0]);
+                    if (leftBlock?.outputConnection) {
+                      leftInput.connection.connect(leftBlock.outputConnection);
+                    }
+                  }
+
+                  if (rightInput?.connection) {
+                    const rightBlock = createConditionBlock(conditions[1]);
+                    if (rightBlock?.outputConnection) {
+                      rightInput.connection.connect(
+                        rightBlock.outputConnection
+                      );
+                    }
+                  }
+                }
+
+                return logicOp;
+              }
+
+              // Handle sensor conditions (isGreen, isRed, etc.)
+              if (type === "condition") {
+                const fn = condObj.function || condObj.functionName;
+                const sensor = makeSensor(fn);
+                if (sensor) {
+                  // Always wrap in boolean equals to show the comparison explicitly
                   const eq = blocklyWorkspace.newBlock(
                     "ottobit_boolean_equals"
                   );
@@ -2519,49 +2580,70 @@ BlocksWorkspaceProps) {
                   eq.render();
                   const left = eq.getInput && eq.getInput("LEFT");
                   const right = eq.getInput && eq.getInput("RIGHT");
-                  if (left?.connection)
-                    left.connection.connect(sensor.outputConnection);
-                  if (right?.connection)
-                    right.connection.connect(
-                      makeBoolean(false).outputConnection
-                    );
-                  connectTo(["CONDITION", "COND", "IF0"], eq);
-                } else {
-                  connectTo(["CONDITION", "COND", "IF0"], sensor);
-                }
-              }
-            } else if (condType === "variablecomparison") {
-              const cmp = blocklyWorkspace.newBlock("ottobit_logic_compare");
-              cmp.initSvg();
-              cmp.render();
-              try {
-                const opMap: any = {
-                  "==": "EQ",
-                  "!=": "NEQ",
-                  "<": "LT",
-                  "<=": "LTE",
-                  ">": "GT",
-                  ">=": "GTE",
-                };
-                const code = opMap[String(cond.operator) as string];
-                if (code) cmp.setFieldValue(code, "OPERATOR");
-              } catch {}
-              const a = cmp.getInput && cmp.getInput("LEFT");
-              const b = cmp.getInput && cmp.getInput("RIGHT");
 
-              if (a?.connection) {
-                const leftBlock = makeVariableOrFunction(cond.variable);
-                if (leftBlock?.outputConnection) {
-                  a.connection.connect(leftBlock.outputConnection);
+                  if (left?.connection) {
+                    left.connection.connect(sensor.outputConnection);
+                  }
+                  if (right?.connection) {
+                    const boolValue = condObj.check !== false; // true by default
+                    right.connection.connect(
+                      makeBoolean(boolValue).outputConnection
+                    );
+                  }
+
+                  return eq;
                 }
               }
-              if (b?.connection) {
-                const rightBlock = makeVariableOrFunction(cond.value);
-                if (rightBlock?.outputConnection) {
-                  b.connection.connect(rightBlock.outputConnection);
+
+              // Handle variable comparison (number == 2, i < 5, etc.)
+              if (type === "variablecomparison") {
+                const cmp = blocklyWorkspace.newBlock("ottobit_logic_compare");
+                cmp.initSvg();
+                cmp.render();
+                try {
+                  const opMap: any = {
+                    "==": "EQ",
+                    "!=": "NEQ",
+                    "<": "LT",
+                    "<=": "LTE",
+                    ">": "GT",
+                    ">=": "GTE",
+                  };
+                  const code = opMap[String(condObj.operator)];
+                  if (code) cmp.setFieldValue(code, "OPERATOR");
+                } catch {}
+
+                const leftInput = cmp.getInput && cmp.getInput("LEFT");
+                const rightInput = cmp.getInput && cmp.getInput("RIGHT");
+
+                if (leftInput?.connection) {
+                  const leftBlock = makeVariableOrFunction(condObj.variable);
+                  if (leftBlock?.outputConnection) {
+                    leftInput.connection.connect(leftBlock.outputConnection);
+                  }
                 }
+
+                if (rightInput?.connection) {
+                  const rightBlock = makeVariableOrFunction(condObj.value);
+                  if (rightBlock?.outputConnection) {
+                    rightInput.connection.connect(rightBlock.outputConnection);
+                  }
+                }
+
+                return cmp;
               }
-              connectTo(["CONDITION", "COND", "IF0"], cmp);
+
+              // Handle boolean values
+              if (type === "boolean") {
+                return makeBoolean(condObj.value === true);
+              }
+
+              return null;
+            };
+            // Use the recursive helper to create the full condition tree
+            const conditionBlock = createConditionBlock(cond);
+            if (conditionBlock) {
+              connectTo(["CONDITION", "COND", "IF0"], conditionBlock);
             }
           } catch {}
         };

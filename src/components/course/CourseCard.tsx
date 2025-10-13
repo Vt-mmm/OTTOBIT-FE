@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { Card, Typography, Box, Button, Chip, Rating } from "@mui/material";
+import { motion } from "framer-motion";
 import PeopleIcon from "@mui/icons-material/People";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { CourseType } from "common/@types/course";
 import { useLocales } from "hooks";
 
@@ -97,37 +99,60 @@ export default function CourseCard({
 
   return (
     <Card
+      component={motion.div}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.3 }}
       sx={{
         display: "flex",
-        flexDirection: { xs: "column", sm: "row" }, // Horizontal on larger screens
+        flexDirection: "column",
         cursor: "pointer",
-        transition: "all 0.2s ease-in-out",
         position: "relative",
-        borderRadius: 2,
-        border: "1px solid #e0e0e0",
+        borderRadius: 3,
+        border: "2px solid transparent",
         backgroundColor: "white",
-        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+        overflow: "hidden",
+        transition: "all 0.3s ease",
+        height: "100%",
         "&:hover": {
-          transform: "translateY(-2px)",
-          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
-          borderColor: "#4caf50",
+          boxShadow: "0 8px 30px rgba(76, 175, 80, 0.2)",
+          borderColor: "rgba(76, 175, 80, 0.3)",
+          "& .course-arrow": {
+            transform: "translateX(4px)",
+          },
+          "& .course-image": {
+            transform: "scale(1.05)",
+          },
         },
         width: "100%",
-        overflow: "hidden",
       }}
       onClick={() => onClick(id)}
     >
       {/* Image Section */}
       <Box
         sx={{
-          width: { xs: "100%", sm: "240px" },
-          height: { xs: "180px", sm: "160px" },
+          width: "100%",
+          height: 220,
           flexShrink: 0,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#f8f9fa",
+          background: "linear-gradient(135deg, #f5f5f5 0%, #fafafa 100%)",
           position: "relative",
+          overflow: "hidden",
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background:
+              "url('data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234caf50' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')",
+            opacity: 0.4,
+          },
         }}
       >
         {/* Pricing Badge */}
@@ -136,31 +161,35 @@ export default function CourseCard({
           size="small"
           sx={{
             position: "absolute",
-            top: 8,
-            right: 8,
-            backgroundColor: isFree ? "#4caf50" : "#ff9800",
+            top: 12,
+            left: 12,
+            backgroundColor: isFree ? "#4caf50" : "#2196f3",
             color: "white",
-            fontSize: "0.7rem",
-            fontWeight: 600,
+            fontSize: "0.75rem",
+            fontWeight: 700,
+            height: 28,
             zIndex: 2,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
           }}
         />
 
         {/* Enrolled Badge */}
         {isEnrolled && (
           <Chip
-            icon={<CheckCircleIcon sx={{ fontSize: "0.8rem !important" }} />}
-            label="Đã tham gia"
+            icon={<CheckCircleIcon sx={{ fontSize: "0.9rem !important" }} />}
+            label="ĐÃ THAM GIA"
             size="small"
             sx={{
               position: "absolute",
-              bottom: 8,
-              right: 8,
+              top: 12,
+              right: 12,
               backgroundColor: "#4caf50",
               color: "white",
-              fontSize: "0.65rem",
-              fontWeight: 600,
+              fontSize: "0.7rem",
+              fontWeight: 700,
+              height: 28,
               zIndex: 2,
+              boxShadow: "0 2px 8px rgba(76, 175, 80, 0.3)",
               "& .MuiChip-icon": {
                 color: "white",
               },
@@ -172,11 +201,13 @@ export default function CourseCard({
           src={imgSrc}
           alt={title}
           onError={handleImageError}
+          className="course-image"
           style={{
             width: "100%",
             height: "100%",
             objectFit: "contain",
             padding: "16px",
+            transition: "transform 0.3s ease",
           }}
         />
       </Box>
@@ -187,7 +218,7 @@ export default function CourseCard({
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          p: { xs: 2, sm: 2.5 },
+          p: 2.5,
           justifyContent: "space-between",
         }}
       >
@@ -197,18 +228,20 @@ export default function CourseCard({
             variant="h6"
             component="h2"
             sx={{
-              fontWeight: 600,
-              fontSize: { xs: "1rem", sm: "1.1rem" },
+              fontWeight: 700,
+              fontSize: "1.1rem",
               lineHeight: 1.3,
-              mb: 0.5,
-              color: "#1976d2",
+              mb: 0.75,
+              color: "#1a1a1a",
               display: "-webkit-box",
               WebkitLineClamp: 2,
               WebkitBoxOrient: "vertical",
               overflow: "hidden",
               textOverflow: "ellipsis",
+              minHeight: 56,
+              transition: "color 0.2s",
               "&:hover": {
-                color: "#1565c0",
+                color: "#4caf50",
               },
             }}
           >
@@ -221,8 +254,8 @@ export default function CourseCard({
               variant="body2"
               sx={{
                 color: "#666",
-                fontSize: "0.8rem",
-                mb: 1,
+                fontSize: "0.85rem",
+                mb: 1.5,
                 fontWeight: 500,
               }}
             >
@@ -254,11 +287,12 @@ export default function CourseCard({
               variant="body2"
               sx={{
                 color: "#666",
-                fontSize: "0.75rem",
+                fontSize: "0.8rem",
                 ml: 0.5,
+                fontWeight: 500,
               }}
             >
-              {rating} ({reviewCount.toLocaleString()} đánh giá)
+              {rating} <Box component="span" sx={{ color: "#999" }}>({reviewCount.toLocaleString()})</Box>
             </Typography>
           </Box>
         </Box>
@@ -322,22 +356,35 @@ export default function CourseCard({
           </Box>
 
           {/* Action Button */}
-          <Box sx={{ display: "flex", gap: 1 }}>
+          <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", mt: 1 }}>
             {!isEnrolled ? (
               <Button
+                component={motion.button}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 variant="contained"
-                size="small"
+                size="medium"
                 onClick={handleEnrollClick}
+                endIcon={<ArrowForwardIcon className="course-arrow" />}
                 sx={{
                   textTransform: "none",
-                  fontSize: "0.8rem",
+                  fontSize: "0.9rem",
                   fontWeight: 600,
-                  px: 2,
-                  py: 0.8,
-                  borderRadius: 1,
-                  backgroundColor: isFree ? "#4caf50" : "#1976d2",
+                  px: 3,
+                  py: 1,
+                  borderRadius: 2,
+                  backgroundColor: isFree ? "#4caf50" : "#2196f3",
+                  boxShadow: isFree
+                    ? "0 4px 14px rgba(76, 175, 80, 0.3)"
+                    : "0 4px 14px rgba(33, 150, 243, 0.3)",
                   "&:hover": {
-                    backgroundColor: isFree ? "#43a047" : "#1565c0",
+                    backgroundColor: isFree ? "#45a049" : "#1976d2",
+                    boxShadow: isFree
+                      ? "0 6px 20px rgba(76, 175, 80, 0.4)"
+                      : "0 6px 20px rgba(33, 150, 243, 0.4)",
+                  },
+                  "& .course-arrow": {
+                    transition: "transform 0.2s",
                   },
                 }}
               >
@@ -347,19 +394,28 @@ export default function CourseCard({
               </Button>
             ) : (
               <Button
+                component={motion.button}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 variant="contained"
-                size="small"
+                size="medium"
                 onClick={() => onClick(id)}
+                endIcon={<ArrowForwardIcon className="course-arrow" />}
                 sx={{
                   textTransform: "none",
-                  fontSize: "0.8rem",
+                  fontSize: "0.9rem",
                   fontWeight: 600,
-                  px: 2,
-                  py: 0.8,
-                  borderRadius: 1,
+                  px: 3,
+                  py: 1,
+                  borderRadius: 2,
                   backgroundColor: "#4caf50",
+                  boxShadow: "0 4px 14px rgba(76, 175, 80, 0.3)",
                   "&:hover": {
-                    backgroundColor: "#43a047",
+                    backgroundColor: "#45a049",
+                    boxShadow: "0 6px 20px rgba(76, 175, 80, 0.4)",
+                  },
+                  "& .course-arrow": {
+                    transition: "transform 0.2s",
                   },
                 }}
               >
