@@ -332,7 +332,7 @@ export const googleLoginThunk = createAsyncThunk<
     const user: UserAuth = {
       userId: response.data.user.userId,
       email: response.data.user.email,
-      username: response.data.user.fullName || response.data.user.email,
+      username: response.data.user.email, // Use email as username (fullName removed from backend)
       roles: response.data.user.roles || ["OttoBitUser"],
       authProvider: "google",
     };

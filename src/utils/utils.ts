@@ -85,9 +85,12 @@ export const getUserInfo = (): UserInfo | undefined => {
 // Token Management with Cookies
 export const setAccessToken = (accessToken: string) => {
   try {
+    // ✅ FIX AUTH_006: Changed "strict" → "lax" to fix production cookie issues
     Cookies.set(StorageKeys.ACCESS_TOKEN, accessToken, {
       secure: window.location.protocol === "https:",
-      sameSite: "strict",
+      sameSite: "lax",
+      path: "/",
+      expires: 1,
     });
   } catch (error) {
     console.warn("Cookie error:", error);
@@ -113,9 +116,12 @@ export const removeAccessToken = () => {
 
 export const setRefreshToken = (refreshToken: string) => {
   try {
+    // ✅ FIX AUTH_006: Changed "strict" → "lax" to fix production cookie issues  
     Cookies.set(StorageKeys.REFRESH_TOKEN, refreshToken, {
       secure: window.location.protocol === "https:",
-      sameSite: "strict",
+      sameSite: "lax",
+      path: "/",
+      expires: 30,
     });
   } catch (error) {
     console.warn("Cookie error:", error);

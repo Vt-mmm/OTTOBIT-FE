@@ -45,7 +45,7 @@ interface LoginApiResponse {
     user: {
       userId: string;
       email: string;
-      fullName: string;
+      // fullName removed - backend no longer returns this field
       roles: string[];
     };
     tokens: {
@@ -125,7 +125,7 @@ export const loginThunk = createAsyncThunk<
     // Tạo userStorage với structure mới
     const userStorage: UserAuth = {
       userId: response.data.user.userId,
-      username: response.data.user.fullName || response.data.user.email,
+      username: response.data.user.email, // Use email as username (fullName removed from backend)
       email: response.data.user.email,
       roles: userRoles,
       authProvider: "password",
@@ -366,7 +366,7 @@ export const googleLoginThunk = async (
     const user: UserAuth = {
       userId: response.data.user.userId,
       email: response.data.user.email,
-      username: response.data.user.fullName || response.data.user.email,
+      username: response.data.user.email, // Use email as username (fullName removed from backend)
       roles: userRoles,
       authProvider: "google",
     };
