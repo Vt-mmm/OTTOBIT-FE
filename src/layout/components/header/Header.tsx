@@ -26,6 +26,7 @@ import {
   School as SchoolIcon,
   AdminPanelSettings as AdminIcon,
   Store as StoreIcon,
+  Article as ArticleIcon,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -111,6 +112,13 @@ const Header: React.FC = () => {
           isPage: true,
         },
         {
+          name: "Blog",
+          icon: <ArticleIcon sx={{ mr: 1, fontSize: "1rem" }} />,
+          href: PATH_USER.blogs,
+          id: "blogs",
+          isPage: true,
+        },
+        {
           name: translate("common.Studio"),
           icon: <DashboardIcon sx={{ mr: 1, fontSize: "1rem" }} />,
           href: PATH_USER.studio,
@@ -132,6 +140,13 @@ const Header: React.FC = () => {
           icon: <StoreIcon sx={{ mr: 1, fontSize: "1rem" }} />,
           href: PATH_PUBLIC.store,
           id: "store",
+          isPage: true,
+        },
+        {
+          name: "Blog",
+          icon: <ArticleIcon sx={{ mr: 1, fontSize: "1rem" }} />,
+          href: PATH_USER.blogs,
+          id: "blogs",
           isPage: true,
         },
       ]);

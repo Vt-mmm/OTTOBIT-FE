@@ -31,6 +31,9 @@ const ROOTS_PAYMENT_TRANSACTION = "/api/v1/payment-transactions";
 const ROOTS_PAYOS = "/api/v1/payos";
 const ROOTS_VOUCHER = "/api/v1/vouchers";
 const ROOTS_VOUCHER_USAGE = "/api/v1/voucher-usages";
+const ROOTS_BLOG = "/api/v1/Blog";
+const ROOTS_TAG = "/api/v1/Tag";
+const ROOTS_BLOG_COMMENT = "/api/v1/blog-comments";
 
 export const ROUTES_API_AUTH = {
   // Authentication endpoints
@@ -369,4 +372,34 @@ export const ROUTES_API_VOUCHER_USAGE = {
   // Admin endpoints
   GET_ALL: ROOTS_VOUCHER_USAGE, // GET /api/v1/voucher-usages (Admin - with pagination, date filters, IncludeDeleted)
   GET_BY_ID: (id: string) => path(ROOTS_VOUCHER_USAGE, `/${id}`), // GET /api/v1/voucher-usages/{id} (Admin)
+};
+
+// Blog endpoints (Admin)
+export const ROUTES_API_BLOG = {
+  ADMIN_GET_ALL: path(ROOTS_BLOG, `/admin`), // GET /api/v1/Blog/admin
+  ADMIN_GET_BY_ID: (id: string) => path(ROOTS_BLOG, `/admin/${id}`), // GET /api/v1/Blog/admin/{id}
+  CREATE: ROOTS_BLOG, // POST /api/v1/Blog
+  UPDATE: (id: string) => path(ROOTS_BLOG, `/${id}`), // PUT /api/v1/Blog/{id}
+  DELETE: (id: string) => path(ROOTS_BLOG, `/${id}`), // DELETE /api/v1/Blog/{id}
+  RESTORE: (id: string) => path(ROOTS_BLOG, `/${id}/restore`), // POST /api/v1/Blog/{id}/restore
+  // Public endpoints
+  GET_ALL: ROOTS_BLOG, // GET /api/v1/Blog?SearchTerm=&PageNumber=&PageSize=
+  GET_BY_ID: (id: string) => path(ROOTS_BLOG, `/${id}`), // GET /api/v1/Blog/{id}
+  GET_BY_SLUG: (slug: string) => path(ROOTS_BLOG, `/slug/${slug}`), // GET /api/v1/Blog/slug/{slug}
+};
+
+// Tag endpoints
+export const ROUTES_API_TAG = {
+  GET_ALL: ROOTS_TAG, // GET /api/v1/Tag
+  CREATE: ROOTS_TAG, // POST /api/v1/Tag
+  DELETE: (id: string) => path(ROOTS_TAG, `/${id}`), // DELETE /api/v1/Tag/{id}
+};
+
+// Blog Comment endpoints
+export const ROUTES_API_BLOG_COMMENT = {
+  GET_BY_BLOG: (blogId: string, page: number, size: number) =>
+    `${ROOTS_BLOG_COMMENT}/by-blog/${blogId}?page=${page}&size=${size}`,
+  CREATE: ROOTS_BLOG_COMMENT, // POST /api/v1/blog-comments
+  UPDATE: (commentId: string) => path(ROOTS_BLOG_COMMENT, `/${commentId}`), // PUT /api/v1/blog-comments/{id}
+  DELETE: (commentId: string) => path(ROOTS_BLOG_COMMENT, `/${commentId}`), // DELETE /api/v1/blog-comments/{id}
 };

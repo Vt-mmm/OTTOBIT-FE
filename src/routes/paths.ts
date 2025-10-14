@@ -57,6 +57,9 @@ export const PATH_USER = {
   profile: path(ROOTS_USER, "/profile"),
   studentProfile: path(ROOTS_USER, "/student-profile"),
   security: path(ROOTS_USER, "/security"),
+  // Blogs
+  blogs: path(ROOTS_USER, "/blogs"),
+  blogDetail: path(ROOTS_USER, "/blogs/:slug"),
 };
 
 export const PATH_ADMIN = {
@@ -91,4 +94,5 @@ export const PATH_ADMIN = {
   submissions: path(ROOTS_ADMIN_DASHBOARD, "/submissions"),
   submissionDetail: path(ROOTS_ADMIN_DASHBOARD, "/submissions/:id"),
   voucherManagement: path(ROOTS_ADMIN_DASHBOARD, "/voucher-management"),
+  blogManagement: path(ROOTS_ADMIN_DASHBOARD, "/blog-management"),
 };
