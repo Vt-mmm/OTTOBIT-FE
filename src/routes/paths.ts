@@ -17,7 +17,7 @@ export const PATH_AUTH = {
   forgotPassword: path(ROOTS_AUTH, "/forgot-password"),
   resetPassword: path(ROOTS_AUTH, "/reset-password"),
   verifyEmail: path(ROOTS_AUTH, "/verify-email"),
-  confirmEmail: path(ROOTS_AUTH, "/confirm-email"),
+  confirmEmail: path(ROOTS_AUTH, "/confirm"), // Changed to /confirm to match Backend email URL
   resendEmailConfirmation: path(ROOTS_AUTH, "/resend-email-confirmation"),
   returnUrl: path(ROOTS_AUTH, "/return-url"),
   cancelUrl: path(ROOTS_AUTH, "/cancel-url"),
@@ -42,6 +42,8 @@ export const PATH_USER = {
   // Public listing pages
   courses: path(ROOTS_USER, "/courses"),
   courseDetail: path(ROOTS_USER, "/courses/:id"),
+  // Course learning page (only for enrolled students)
+  courseLearn: path(ROOTS_USER, "/learn/:courseId"),
   lessons: path(ROOTS_USER, "/lessons"),
   lessonDetail: path(ROOTS_USER, "/lessons/:id"),
   // Shopping cart

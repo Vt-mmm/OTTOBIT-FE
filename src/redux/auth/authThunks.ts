@@ -45,7 +45,7 @@ interface LoginApiResponse {
     user: {
       userId: string;
       email: string;
-      fullName: string;
+      // fullName removed - backend no longer returns this field
       roles: string[];
     };
     tokens: {
@@ -59,9 +59,8 @@ interface LoginApiResponse {
   timestamp: string;
 }
 
-// Define RegisterForm interface
+// Define RegisterForm interface - BE only requires email, password, confirmPassword
 interface RegisterForm {
-  fullName: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -126,7 +125,7 @@ export const loginThunk = createAsyncThunk<
     // Tạo userStorage với structure mới
     const userStorage: UserAuth = {
       userId: response.data.user.userId,
-      username: response.data.user.fullName || response.data.user.email,
+      username: response.data.user.email, // Use email as username (fullName removed from backend)
       email: response.data.user.email,
       roles: userRoles,
       authProvider: "password",
@@ -190,7 +189,6 @@ export const registerThunk = createAsyncThunk<
         email: registerData.email,
         password: registerData.password,
         confirmPassword: registerData.confirmPassword,
-        fullName: registerData.fullName,
       });
 
       const message = handleResponseMessage(
@@ -368,7 +366,7 @@ export const googleLoginThunk = async (
     const user: UserAuth = {
       userId: response.data.user.userId,
       email: response.data.user.email,
-      username: response.data.user.fullName || response.data.user.email,
+      username: response.data.user.email, // Use email as username (fullName removed from backend)
       roles: userRoles,
       authProvider: "google",
     };

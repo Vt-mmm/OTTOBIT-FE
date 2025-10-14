@@ -209,7 +209,8 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     []
   );
 
-  // Auto reset map when result modals are dismissed (physical mode only)
+  // Auto reset map when DefeatModal is dismissed (all modes)
+  // VictoryModal: Only reset for physical mode when closed
   useEffect(() => {
     const wasVictoryOpen = prevVictoryOpenRef.current;
     const wasDefeatOpen = prevDefeatOpenRef.current;
@@ -223,8 +224,16 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     const victoryJustClosed = wasVictoryOpen && !isVictoryModalOpen;
     const defeatJustClosed = wasDefeatOpen && !isDefeatModalOpen;
 
-    if (isPhysical && (victoryJustClosed || defeatJustClosed)) {
-      // Reset the scene so the next simulate run starts clean
+    // Auto-restart logic:
+    // 1. DefeatModal: Always restart when closed (both simulation & physical)
+    // 2. VictoryModal: Only restart for physical mode
+    if (defeatJustClosed) {
+      // Restart map automatically when defeat modal is closed
+      if (!suppressAutoResetRef.current) {
+        restartScene().catch(() => {});
+      }
+    } else if (isPhysical && victoryJustClosed) {
+      // For physical mode, also reset on victory close
       if (!suppressAutoResetRef.current) {
         restartScene().catch(() => {});
       }

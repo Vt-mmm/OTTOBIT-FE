@@ -39,28 +39,8 @@ export default function AchievementsTab({
       ? Math.round((totalStars / maxPossibleStars) * 100)
       : 0;
 
-  const badges = [
-    {
-      title: "🥇 Người mới",
-      desc: "Hoàn thành bài đầu tiên",
-      unlocked: totalChallenges >= 1,
-    },
-    {
-      title: "🚀 Khám phá",
-      desc: "Hoàn thành 5 bài thách thức",
-      unlocked: totalChallenges >= 5,
-    },
-    {
-      title: "⭐ Sao sáng",
-      desc: "Đạt 10 sao vàng",
-      unlocked: totalStars >= 10,
-    },
-    {
-      title: "🏆 Chuyên gia",
-      desc: "Hoàn thành 20 bài thách thức",
-      unlocked: totalChallenges >= 20,
-    },
-  ];
+  // Filter star buckets to only show those with count > 0
+  const activeStarBuckets = starBuckets.filter(bucket => bucket.count > 0);
 
   if (loading) {
     return (
@@ -181,9 +161,10 @@ export default function AchievementsTab({
           </Typography>
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {starBuckets.map((bucket) => {
-              const maxCount = Math.max(...starBuckets.map((b) => b.count), 1);
-              const percentage = (bucket.count / maxCount) * 100;
+            {activeStarBuckets.length > 0 ? (
+              activeStarBuckets.map((bucket) => {
+                const maxCount = Math.max(...activeStarBuckets.map((b) => b.count), 1);
+                const percentage = (bucket.count / maxCount) * 100;
               return (
                 <Box key={bucket.star}>
                   <Box
@@ -230,93 +211,18 @@ export default function AchievementsTab({
                   />
                 </Box>
               );
-            })}
+              })
+            ) : (
+              <Box sx={{ textAlign: "center", py: 3 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Chưa có dữ liệu thách thức
+                </Typography>
+              </Box>
+            )}
           </Box>
         </CardContent>
       </Card>
 
-      {/* Badges */}
-      <Card
-        sx={{
-          borderRadius: 3,
-          boxShadow: "0 2px 12px rgba(0, 0, 0, 0.08)",
-          border: "1px solid",
-          borderColor: "divider",
-        }}
-      >
-        <CardContent sx={{ p: 3 }}>
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: 700,
-              mb: 3,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
-          >
-            🏅 Huy hiệu
-          </Typography>
-
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" },
-              gap: 3,
-            }}
-          >
-            {badges.map((badge, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-              >
-                <Box
-                  sx={{
-                    p: 3,
-                    borderRadius: 3,
-                    bgcolor: badge.unlocked ? "success.50" : "grey.100",
-                    border: "2px solid",
-                    borderColor: badge.unlocked ? "success.main" : "grey.300",
-                    transition: "all 0.3s ease",
-                    opacity: badge.unlocked ? 1 : 0.6,
-                    "&:hover": {
-                      transform: badge.unlocked ? "scale(1.05)" : "none",
-                    },
-                  }}
-                >
-                  <Typography variant="h5" sx={{ mb: 1, fontSize: "2rem" }}>
-                    {badge.title.split(" ")[0]}
-                  </Typography>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{ fontWeight: 700, mb: 0.5 }}
-                  >
-                    {badge.title.split(" ").slice(1).join(" ")}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {badge.desc}
-                  </Typography>
-                  {badge.unlocked && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: "success.main",
-                        fontWeight: 600,
-                        mt: 1,
-                        display: "block",
-                      }}
-                    >
-                      ✓ Đã mở khóa
-                    </Typography>
-                  )}
-                </Box>
-              </motion.div>
-            ))}
-          </Box>
-        </CardContent>
-      </Card>
     </Box>
   );
 }

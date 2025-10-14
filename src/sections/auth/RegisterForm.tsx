@@ -26,8 +26,8 @@ import { PATH_AUTH } from "../../routes/paths";
 import { useLocales } from "hooks";
 
 // Define register form interface
+// BE RegisterRequest: email, password, confirmPassword only
 interface RegisterFormType {
-  fullName: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -46,7 +46,6 @@ const RegisterForm: React.FC = () => {
 
   // Schema validation - inside component to use translate
   const schema = yup.object().shape({
-    fullName: yup.string().required(translate("auth.FullNameRequired")),
     email: yup
       .string()
       .email(translate("auth.EmailInvalid"))
@@ -65,7 +64,6 @@ const RegisterForm: React.FC = () => {
   const methods = useForm<RegisterFormType>({
     resolver: yupResolver(schema),
     defaultValues: {
-      fullName: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -249,45 +247,6 @@ const RegisterForm: React.FC = () => {
                         {localErrorMessage || errorMessage}
                       </Alert>
                     )}
-
-                    <Box>
-                      <Controller
-                        name="fullName"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            variant="outlined"
-                            fullWidth
-                            placeholder={translate("auth.FullNamePlaceholder")}
-                            size="medium"
-                            error={!!errors.fullName}
-                            helperText={errors.fullName?.message}
-                            sx={{
-                              "& .MuiOutlinedInput-root": {
-                                borderRadius: 2,
-                                backgroundColor: "#ffffff",
-                                fontSize: "16px",
-                                "& .MuiOutlinedInput-notchedOutline": {
-                                  borderColor: "#e2e8f0",
-                                },
-                                "&:hover .MuiOutlinedInput-notchedOutline": {
-                                  borderColor: "#22c55e",
-                                },
-                                "&.Mui-focused .MuiOutlinedInput-notchedOutline":
-                                  {
-                                    borderColor: "#22c55e",
-                                    borderWidth: "2px",
-                                  },
-                              },
-                              "& .MuiInputBase-input": {
-                                padding: "14px 16px",
-                              },
-                            }}
-                          />
-                        )}
-                      />
-                    </Box>
 
                     <Box>
                       <Controller

@@ -110,9 +110,11 @@ const LoginPage: React.FC = () => {
             display: "flex",
             alignItems: { xs: "flex-start", sm: "center" },
             justifyContent: "center",
-            p: { xs: 2, sm: 3, md: 4 },
-            pt: { xs: 8, sm: 3, md: 4 }, // Extra top padding on mobile for logo space
+            p: { xs: 3, sm: 4, md: 5 },
+            pt: { xs: 8, sm: 4, md: 5 }, // Extra top padding on mobile for logo space
             minHeight: { xs: "auto", sm: "500px" },
+            width: "100%",
+            boxSizing: "border-box",
           }}
         >
           <LoginForm />

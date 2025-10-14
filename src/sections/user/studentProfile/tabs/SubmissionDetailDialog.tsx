@@ -253,38 +253,6 @@ export default function SubmissionDetailDialog({
               </pre>
             </Paper>
           </Box>
-
-          {/* IDs (for advanced users/debugging) */}
-          <Box>
-            <Typography variant="caption" color="text.secondary" gutterBottom>
-              ID chi tiết (dành cho debug)
-            </Typography>
-            <Paper
-              variant="outlined"
-              sx={{ p: 1.5, backgroundColor: "grey.50" }}
-            >
-              <Stack spacing={0.5}>
-                <Typography
-                  variant="caption"
-                  sx={{ fontFamily: "monospace", fontSize: "0.7rem" }}
-                >
-                  <strong>Submission ID:</strong> {submission.id}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ fontFamily: "monospace", fontSize: "0.7rem" }}
-                >
-                  <strong>Challenge ID:</strong> {submission.challengeId}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ fontFamily: "monospace", fontSize: "0.7rem" }}
-                >
-                  <strong>Student ID:</strong> {submission.studentId}
-                </Typography>
-              </Stack>
-            </Paper>
-          </Box>
         </Stack>
       </DialogContent>
 

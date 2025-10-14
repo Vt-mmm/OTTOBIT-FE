@@ -32,6 +32,7 @@ const ResendEmailConfirmationPage = lazy(
 const SharedHomePage = lazy(() => import("pages/user/Homepage"));
 const CoursesPage = lazy(() => import("pages/user/CoursesPage"));
 const CourseDetailPage = lazy(() => import("pages/user/CourseDetailPage"));
+const CourseLearningPage = lazy(() => import("pages/user/CourseLearningPage"));
 const LessonDetailPage = lazy(() => import("pages/user/LessonDetailPage"));
 const ChallengeDetailPage = lazy(
   () => import("pages/user/ChallengeDetailPage")
@@ -240,6 +241,11 @@ function AppRouter() {
           <ReactRoute
             path={PATH_USER.courseDetail}
             element={<CourseDetailPage />}
+          />
+          {/* Course Learning Page - Only for enrolled students */}
+          <ReactRoute
+            path={PATH_USER.courseLearn}
+            element={<CourseLearningPage />}
           />
           <ReactRoute
             path={PATH_USER.lessonDetail}

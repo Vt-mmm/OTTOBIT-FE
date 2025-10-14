@@ -30,8 +30,8 @@ interface EditProfileDialogProps {
 
 // Local form interface - Matched with BE UpdateUserProfileCommand
 interface ProfileFormData {
-  fullName?: string;
   avatarUrl?: string;
+  phoneNumber?: string;
 }
 
 const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
@@ -56,8 +56,8 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
     formState: { errors },
   } = useForm<ProfileFormData>({
     defaultValues: {
-      fullName: profile.data?.fullName || userAuth?.username || "",
       avatarUrl: profile.data?.avatarUrl || "",
+      phoneNumber: profile.data?.phoneNumber || "",
     },
   });
 
@@ -147,17 +147,16 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
             <Grid container spacing={3}>
               <Grid item xs={12}>
                 <Controller
-                  name="fullName"
+                  name="phoneNumber"
                   control={control}
-                  rules={{ required: translate("profile.FullNameRequired") }}
                   render={({ field }) => (
                     <TextField
                       {...field}
                       fullWidth
-                      label={translate("profile.FullName")}
-                      placeholder={translate("profile.EnterFullName")}
-                      error={!!errors.fullName}
-                      helperText={errors.fullName?.message}
+                      label={translate("profile.PhoneNumber")}
+                      placeholder={translate("profile.EnterPhoneNumber")}
+                      error={!!errors.phoneNumber}
+                      helperText={errors.phoneNumber?.message}
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           "&.Mui-focused fieldset": {

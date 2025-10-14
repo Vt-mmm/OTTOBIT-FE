@@ -55,6 +55,7 @@ export default function CourseDetailPage() {
         minHeight: "100vh",
         maxWidth: "100vw",
         overflow: "hidden",
+        bgcolor: "#ffffff",
       }}
     >
       <Header />
@@ -72,7 +73,12 @@ export default function CourseDetailPage() {
       </Box>
 
       <Box
-        sx={{ flexGrow: 1, py: { xs: 2, sm: 3, md: 5 }, px: { xs: 0, sm: 2 } }}
+        sx={{ 
+          flexGrow: 1, 
+          py: { xs: 2, sm: 3, md: 5 }, 
+          px: { xs: 0, sm: 2 },
+          bgcolor: "#ffffff",
+        }}
       >
         <CourseDetailSection courseId={id} />
       </Box>

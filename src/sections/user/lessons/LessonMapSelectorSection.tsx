@@ -3,7 +3,7 @@
  * Simplified to coordinate between LessonHeroSection and LessonTabletSection
  */
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, CircularProgress } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
@@ -16,7 +16,7 @@ import {
 import { ChallengeResult } from "../../../common/@types/challenge";
 import { SubmissionResult } from "../../../common/@types/submission";
 import { navigateToStudio } from "../../../utils/studioNavigation";
-import LessonHeroSection, { LessonInfo } from "./LessonHeroSection";
+// import LessonHeroSection, { LessonInfo } from "./LessonHeroSection"; // Removed console UI
 import LessonTabletSection from "./LessonTabletSection";
 import { useLocales } from "hooks";
 
@@ -82,17 +82,17 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
     }
   }, [lessonId, courseId, dispatch]);
 
-  // Get current lesson info for terminal display
-  const currentLessonInfo: LessonInfo | null = useMemo(() => {
-    if (!lessonId || !currentLesson) return null;
-
-    return {
-      id: currentLesson.id,
-      title: currentLesson.title,
-      content: currentLesson.content,
-      order: currentLesson.order,
-    };
-  }, [lessonId, currentLesson]);
+  // Get current lesson info for terminal display - REMOVED
+  // const currentLessonInfo: LessonInfo | null = useMemo(() => {
+  //   if (!lessonId || !currentLesson) return null;
+  //
+  //   return {
+  //     id: currentLesson.id,
+  //     title: currentLesson.title,
+  //     content: currentLesson.content,
+  //     order: currentLesson.order,
+  //   };
+  // }, [lessonId, currentLesson]);
 
   // Process challenges data
   useEffect(() => {
@@ -129,7 +129,7 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
   };
 
   // Show loading state if needed
-  if (isLoading && !currentLessonInfo) {
+  if (isLoading && !currentLesson) {
     return (
       <Box
         sx={{
@@ -149,11 +149,11 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
 
   return (
     <Box sx={{ minHeight: "100vh", background: "#ffffff" }}>
-      {/* Hero Section with Terminal Preview */}
-      <LessonHeroSection
+      {/* Hero Section with Terminal Preview - REMOVED */}
+      {/* <LessonHeroSection
         currentLessonInfo={currentLessonInfo}
         onBackToCourse={onBackToCourse}
-      />
+      /> */}
 
       {/* Tablet Section with Challenges */}
       <div id="tablet-section">
@@ -166,6 +166,7 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
           onRetry={handleRetry}
           lessonId={lessonId}
           courseId={courseId} // Pass courseId for proper note scoping
+          onBackToCourse={onBackToCourse} // Pass back handler
         />
       </div>
     </Box>

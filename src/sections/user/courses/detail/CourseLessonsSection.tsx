@@ -22,8 +22,8 @@ import { Lesson, LessonProgressResult } from "common/@types/lesson";
 import {
   isLessonAccessible,
   getLessonProgress,
-  getLessonStatusText,
-  getLessonButtonText,
+  getLessonStatusKey,
+  getLessonButtonKey,
 } from "../../../../utils/lessonUtils";
 import { useLocales } from "../../../../hooks";
 
@@ -84,8 +84,8 @@ export default function CourseLessonsSection({
               ? isLessonAccessible(lesson, lessonProgresses)
               : index === 0;
             const progress = getLessonProgress(lesson.id, lessonProgresses);
-            const statusText = getLessonStatusText(lesson, lessonProgresses);
-            const buttonText = getLessonButtonText(lesson, lessonProgresses);
+            const statusKey = getLessonStatusKey(lesson, lessonProgresses);
+            const buttonKey = getLessonButtonKey(lesson, lessonProgresses);
             const challengeCount =
               (progress as any).totalChallenges ??
               (lesson as any).challengesCount ??
@@ -95,14 +95,15 @@ export default function CourseLessonsSection({
               <React.Fragment key={lesson.id}>
                 <ListItem disablePadding>
                   <ListItemButton
-                    onClick={() => isAccessible && onLessonClick(lesson.id)}
-                    disabled={!isAccessible}
+                    onClick={() => isUserEnrolled && isAccessible && onLessonClick(lesson.id)}
+                    disabled={!isUserEnrolled || !isAccessible}
                     sx={{
                       py: { xs: 2, sm: 2.5 },
                       px: { xs: 2, sm: 2.5, md: 3 },
                       opacity: !isAccessible ? 0.6 : 1,
+                      cursor: !isUserEnrolled ? "default" : "pointer",
                       "&:hover": {
-                        bgcolor: !isAccessible ? "transparent" : "action.hover",
+                        bgcolor: !isUserEnrolled || !isAccessible ? "transparent" : "action.hover",
                       },
                     }}
                   >
@@ -155,10 +156,10 @@ export default function CourseLessonsSection({
                           <Chip
                             label={
                               isUserEnrolled
-                                ? statusText
+                                ? translate(statusKey)
                                 : index === 0
-                                ? "Miễn phí"
-                                : "Cần tham gia"
+                                ? translate("courses.Free")
+                                : translate("courses.RequiresEnrollment")
                             }
                             size="small"
                             sx={{
@@ -200,7 +201,7 @@ export default function CourseLessonsSection({
                             sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}
                           >
                             <Chip
-                              label={`${challengeCount} thử thách`}
+                              label={`${challengeCount} ${translate("courses.Challenges")}`}
                               size="small"
                               variant="outlined"
                               sx={{
@@ -209,7 +210,7 @@ export default function CourseLessonsSection({
                               }}
                             />
                             <Chip
-                              label={`${lesson.durationInMinutes} phút`}
+                              label={`${lesson.durationInMinutes} ${translate("courses.Minutes")}`}
                               size="small"
                               variant="outlined"
                               icon={<AccessTimeIcon />}
@@ -225,41 +226,40 @@ export default function CourseLessonsSection({
                       }}
                     />
 
-                    <Button
-                      variant={isAccessible ? "contained" : "outlined"}
-                      startIcon={
-                        !isAccessible ? <LockIcon /> : <PlayArrowIcon />
-                      }
-                      size="medium"
-                      disabled={!isAccessible}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        isAccessible && onLessonClick(lesson.id);
-                      }}
-                      sx={{
-                        minWidth: 120,
-                        ...(isAccessible && {
-                          bgcolor: progress.isCompleted
-                            ? "#ff9800"
-                            : progress.isInProgress
-                            ? "#2196f3"
-                            : "#4caf50",
-                          "&:hover": {
+                    {/* Only show buttons when user is enrolled (learning mode) */}
+                    {isUserEnrolled && (
+                      <Button
+                        variant={isAccessible ? "contained" : "outlined"}
+                        startIcon={
+                          !isAccessible ? <LockIcon /> : <PlayArrowIcon />
+                        }
+                        size="medium"
+                        disabled={!isAccessible}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          isAccessible && onLessonClick(lesson.id);
+                        }}
+                        sx={{
+                          minWidth: 120,
+                          ...(isAccessible && {
                             bgcolor: progress.isCompleted
-                              ? "#f57c00"
+                              ? "#ff9800"
                               : progress.isInProgress
-                              ? "#1976d2"
-                              : "#43a047",
-                          },
-                        }),
-                      }}
-                    >
-                      {isUserEnrolled
-                        ? buttonText
-                        : index === 0
-                        ? "Thử ngay"
-                        : "Tham gia"}
-                    </Button>
+                              ? "#2196f3"
+                              : "#4caf50",
+                            "&:hover": {
+                              bgcolor: progress.isCompleted
+                                ? "#f57c00"
+                                : progress.isInProgress
+                                ? "#1976d2"
+                                : "#43a047",
+                            },
+                          }),
+                        }}
+                      >
+                        {translate(buttonKey)}
+                      </Button>
+                    )}
                   </ListItemButton>
                 </ListItem>
                 {index < lessons.length - 1 && <Divider />}

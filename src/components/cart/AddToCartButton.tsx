@@ -142,10 +142,9 @@ export default function AddToCartButton({
     <Button
       fullWidth={fullWidth}
       variant="contained"
-      color="primary"
       startIcon={
         isAdding ? (
-          <CircularProgress size={20} color="inherit" />
+          <CircularProgress size={20} sx={{ color: "#212121" }} />
         ) : (
           <ShoppingCartIcon />
         )
@@ -155,6 +154,23 @@ export default function AddToCartButton({
       sx={{
         textTransform: "none",
         fontWeight: 600,
+        bgcolor: "#ffffff",
+        color: "#212121",
+        border: "2px solid #e0e0e0",
+        py: 1.5,
+        px: 3,
+        borderRadius: 2,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+        "&:hover": {
+          bgcolor: "#f5f5f5",
+          borderColor: "#bdbdbd",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
+        },
+        "&:disabled": {
+          bgcolor: "#fafafa",
+          color: "#9e9e9e",
+          borderColor: "#e0e0e0",
+        },
       }}
     >
       {isAdding ? translate("cart.Adding") : translate("cart.AddToCart")}
