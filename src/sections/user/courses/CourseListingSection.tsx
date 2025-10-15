@@ -67,7 +67,6 @@ export default function CourseListingSection({
       const params = new URLSearchParams({
         PageNumber: String(currentPage),
         PageSize: String(pageSize),
-        IncludeDeleted: "false",
       });
 
       // Add filters (search handled externally)
@@ -81,9 +80,8 @@ export default function CourseListingSection({
       if (filters?.sortDirection != null)
         params.append("SortDirection", String(filters.sortDirection));
 
-      const url = `https://localhost:7292/api/v1/courses?${params.toString()}`;
-      // Use axiosClient to include Authorization for isEnrolled field
-      const { data } = await axiosClient.get(url);
+      // Call via axiosClient with baseURL from env (no hardcoded localhost)
+      const { data } = await axiosClient.get("/api/v1/courses", { params });
 
       setCourses(data?.data?.items || []);
       setTotalPages(data?.data?.totalPages || 1);
