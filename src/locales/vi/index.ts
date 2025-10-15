@@ -16,6 +16,7 @@ import student from "./student.json";
 import challenges from "./challenges.json";
 import admin from "./admin.json";
 import store from "./store.json";
+import image from "./image.json";
 
 export default {
   error,
@@ -36,4 +37,5 @@ export default {
   challenges,
   admin,
   store,
+  image,
 };

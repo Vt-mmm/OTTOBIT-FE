@@ -45,6 +45,8 @@ interface ComponentDetailsSectionProps {
   onDelete: () => void;
 }
 
+import useLocales from "hooks/useLocales";
+
 export default function ComponentDetailsSection({
   component,
   onBack,
@@ -52,6 +54,7 @@ export default function ComponentDetailsSection({
   onDelete,
 }: ComponentDetailsSectionProps) {
   const dispatch = useAppDispatch();
+  const { translate } = useLocales();
   const { operations } = useAppSelector((state) => state.component);
 
   const [currentTab, setCurrentTab] = useState(0);
@@ -73,17 +76,17 @@ export default function ComponentDetailsSection({
   };
   const getComponentTypeLabel = (type: ComponentType) => {
     const typeLabels = {
-      [ComponentType.SENSOR]: "Sensor",
-      [ComponentType.ACTUATOR]: "Actuator",
-      [ComponentType.CONTROLLER]: "Controller",
-      [ComponentType.POWER_SUPPLY]: "Power Supply",
-      [ComponentType.CONNECTIVITY]: "Connectivity",
-      [ComponentType.MECHANICAL]: "Mechanical",
-      [ComponentType.DISPLAY]: "Display",
-      [ComponentType.AUDIO]: "Audio",
-      [ComponentType.OTHER]: "Other",
+      [ComponentType.SENSOR]: translate("admin.component.typeSensor"),
+      [ComponentType.ACTUATOR]: translate("admin.component.typeActuator"),
+      [ComponentType.CONTROLLER]: translate("admin.component.typeController"),
+      [ComponentType.POWER_SUPPLY]: translate("admin.component.typePowerSupply"),
+      [ComponentType.CONNECTIVITY]: translate("admin.component.typeConnectivity"),
+      [ComponentType.MECHANICAL]: translate("admin.component.typeMechanical"),
+      [ComponentType.DISPLAY]: translate("admin.component.typeDisplay"),
+      [ComponentType.AUDIO]: translate("admin.component.typeAudio"),
+      [ComponentType.OTHER]: translate("admin.component.typeOther"),
     };
-    return typeLabels[type] || "Unknown";
+    return typeLabels[type] || translate("admin.component.typeUnknown");
   };
 
   const getComponentTypeColor = (
@@ -140,7 +143,7 @@ export default function ComponentDetailsSection({
         }}
       >
         <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
-          Back to List
+          {translate("admin.component.backToList")}
         </Button>
 
         <Box sx={{ display: "flex", gap: 1 }}>
@@ -149,7 +152,7 @@ export default function ComponentDetailsSection({
             startIcon={<EditIcon />}
             onClick={() => onEdit(component)}
           >
-            Edit
+            {translate("admin.edit")}
           </Button>
           <Button
             variant="outlined"
@@ -158,7 +161,7 @@ export default function ComponentDetailsSection({
             onClick={() => setShowDeleteConfirm(true)}
             disabled={operations.isDeleting}
           >
-            Delete
+            {translate("admin.delete")}
           </Button>
         </Box>
       </Box>
@@ -189,8 +192,8 @@ export default function ComponentDetailsSection({
             }
           }}
         >
-          <Tab label="Component Information" />
-          <Tab label="Images" />
+          <Tab label={translate("admin.component.componentInformation")} />
+          <Tab label={translate("admin.component.images")} />
         </Tabs>
       </Box>
 
@@ -288,7 +291,7 @@ export default function ComponentDetailsSection({
                           <ComponentIcon sx={{ fontSize: 40 }} />
                         </Avatar>
                         <Typography variant="body2" color="text.secondary">
-                          No component image available
+                          {translate("admin.component.noImageAvailable")}
                         </Typography>
                       </Box>
 
@@ -312,14 +315,14 @@ export default function ComponentDetailsSection({
                 </Box>
 
                 <Typography variant="body1" color="text.secondary" paragraph>
-                  {component.description || "No description available"}
+                  {component.description || translate("admin.component.noDescriptionAvailable")}
                 </Typography>
 
                 {/* Technical Specifications */}
                 {component.specifications && (
                   <Box sx={{ mb: 2 }}>
                     <Typography variant="h6" gutterBottom>
-                      Technical Specifications
+                      {translate("admin.component.technicalSpecifications")}
                     </Typography>
                     <Typography
                       variant="body2"
@@ -343,14 +346,14 @@ export default function ComponentDetailsSection({
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Component Information
+                  {translate("admin.component.componentInformation")}
                 </Typography>
 
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   {/* Basic Info */}
                   <Box>
                     <Typography variant="body2" color="text.secondary">
-                      Component ID
+                      {translate("admin.component.componentID")}
                     </Typography>
                     <Typography
                       variant="body1"
@@ -362,7 +365,7 @@ export default function ComponentDetailsSection({
 
                   <Box>
                     <Typography variant="body2" color="text.secondary">
-                      Type
+                      {translate("admin.component.type")}
                     </Typography>
                     <Typography variant="body1">
                       {getComponentTypeLabel(component.type)}
@@ -375,7 +378,7 @@ export default function ComponentDetailsSection({
                   <Box>
                     <Alert severity="info" sx={{ fontSize: "0.875rem" }}>
                       <Typography variant="body2">
-                        🛒 To purchase this component, please visit our sales channels:
+                        {translate("admin.component.visitSalesChannel")}
                       </Typography>
                       <Typography variant="caption" component="div" sx={{ mt: 1 }}>
                         • Facebook Shop<br/>
@@ -389,7 +392,7 @@ export default function ComponentDetailsSection({
                   {component.imageUrl && (
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Image URL
+                        {translate("admin.component.imageUrl")}
                       </Typography>
                       <Box
                         sx={{ display: "flex", alignItems: "center", gap: 1 }}
@@ -422,7 +425,7 @@ export default function ComponentDetailsSection({
                   {/* Timestamps */}
                   <Box>
                     <Typography variant="body2" color="text.secondary">
-                      Created
+                      {translate("admin.component.created")}
                     </Typography>
                     <Typography variant="body2">
                       {formatDate(component.createdAt)}
@@ -431,7 +434,7 @@ export default function ComponentDetailsSection({
 
                   <Box>
                     <Typography variant="body2" color="text.secondary">
-                      Last Updated
+                      {translate("admin.component.updated")}
                     </Typography>
                     <Typography variant="body2">
                       {formatDate(component.updatedAt)}
@@ -448,7 +451,7 @@ export default function ComponentDetailsSection({
       {currentTab === 1 && (
         <Box sx={{ p: 3 }}>
           <Alert severity="info">
-            Image management for components has been disabled. Images are now managed at the robot level only.
+            {translate("admin.component.images")}
           </Alert>
         </Box>
       )}
@@ -506,17 +509,17 @@ export default function ComponentDetailsSection({
       >
         <DialogContent>
           <Typography variant="h6" gutterBottom>
-            Delete Component
+            {translate("admin.component.deleteComponent")}
           </Typography>
           <Typography variant="body1" sx={{ mb: 3 }}>
-            Are you sure you want to delete "{component.name}"? This action cannot be undone.
+            {translate("admin.component.confirmDeleteMessage", { name: component.name })}
           </Typography>
           <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
             <Button
               variant="outlined"
               onClick={() => setShowDeleteConfirm(false)}
             >
-              Cancel
+              {translate("admin.cancel")}
             </Button>
             <Button
               variant="contained"
@@ -527,7 +530,7 @@ export default function ComponentDetailsSection({
               {operations.isDeleting ? (
                 <CircularProgress size={20} />
               ) : (
-                "Delete"
+                translate("admin.delete")
               )}
             </Button>
           </Box>

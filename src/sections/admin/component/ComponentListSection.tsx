@@ -55,6 +55,7 @@ export default function ComponentListSection({
   const { components, operations } = useAppSelector((state) => state.component);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [committedSearch, setCommittedSearch] = useState("");
   const [filterType, setFilterType] = useState<ComponentType | "all">("all");
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(12);
@@ -66,19 +67,31 @@ export default function ComponentListSection({
     componentName?: string;
   }>({ open: false });
 
+  // Debouncing for search
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchTerm.trim() !== committedSearch) {
+        setCommittedSearch(searchTerm.trim());
+        setPageNumber(1); // Reset to first page
+      }
+    }, 800);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, committedSearch]);
+
   // Fetch components on component mount and when filters change
   useEffect(() => {
     const filters = {
       page: pageNumber,
       size: pageSize,
-      searchTerm: searchTerm.trim() || undefined,
+      searchTerm: committedSearch.trim() || undefined,
       type: filterType !== "all" ? filterType : undefined,
       orderBy: "CreatedAt",
       orderDirection: "DESC" as const,
     };
 
     dispatch(getComponentsThunk(filters));
-  }, [dispatch, searchTerm, filterType, pageNumber, pageSize]);
+  }, [dispatch, committedSearch, filterType, pageNumber, pageSize]);
 
   // Clear success flags after operations
   useEffect(() => {
@@ -250,7 +263,7 @@ export default function ComponentListSection({
             {translate("admin.component.noComponentsFound")}
           </Typography>
           <Typography variant="body2" color="text.secondary" mb={3}>
-            {searchTerm || filterType !== "all"
+            {committedSearch || filterType !== "all"
               ? translate("admin.component.tryAdjustingFilters")
               : translate("admin.component.addFirstComponent")}
           </Typography>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Button,
@@ -45,6 +45,7 @@ export default function SubmissionListSection() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [committedSearch, setCommittedSearch] = useState("");
   const [starFrom, setStarFrom] = useState<number | "">("");
   const [starTo, setStarTo] = useState<number | "">("");
 
@@ -52,6 +53,19 @@ export default function SubmissionListSection() {
   const total = adminSubmissions.data?.total || 0;
   const isLoading = adminSubmissions.isLoading;
   const error = adminSubmissions.error;
+
+  // Debouncing for search input
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchInput.trim() !== committedSearch) {
+        setCommittedSearch(searchInput.trim());
+        setSearchTerm(searchInput.trim());
+        setPage(0); // Reset to first page
+      }
+    }, 800);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchInput, committedSearch]);
 
   // Fetch data
   useEffect(() => {
@@ -81,10 +95,11 @@ export default function SubmissionListSection() {
     setPage(0);
   };
 
-  const handleSearch = () => {
-    setSearchTerm(searchInput);
+  const handleSearch = useCallback(() => {
+    setCommittedSearch(searchInput.trim());
+    setSearchTerm(searchInput.trim());
     setPage(0);
-  };
+  }, [searchInput]);
 
   const handleViewDetails = (submissionId: string) => {
     navigate(PATH_ADMIN.submissionDetail.replace(":id", submissionId));

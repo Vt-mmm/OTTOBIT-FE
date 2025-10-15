@@ -31,6 +31,7 @@ import { deleteRobotThunk } from "store/robot/robotThunks";
 import { RobotResult } from "../../../common/@types/robot";
 import ImageManagement from "../../../components/admin/ImageManagement";
 import RobotComponentsTab from "./RobotComponentsTab";
+import useLocales from "hooks/useLocales";
 
 interface RobotDetailsSectionProps {
   robot: RobotResult | null;
@@ -46,6 +47,7 @@ export default function RobotDetailsSection({
   onDelete,
 }: RobotDetailsSectionProps) {
   const dispatch = useAppDispatch();
+  const { translate } = useLocales();
   const { operations } = useAppSelector((state) => state.robot);
 
   const [currentTab, setCurrentTab] = useState(0);
@@ -53,7 +55,7 @@ export default function RobotDetailsSection({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   if (!robot) {
-    return <Alert severity="error">Robot product not found</Alert>;
+    return <Alert severity="error">{translate("admin.noRobotData")}</Alert>;
   }
 
   const handleDelete = async () => {
@@ -81,7 +83,7 @@ export default function RobotDetailsSection({
         }}
       >
         <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
-          Back to List
+          {translate("admin.back")}
         </Button>
 
         <Box sx={{ display: "flex", gap: 1 }}>
@@ -90,7 +92,7 @@ export default function RobotDetailsSection({
             startIcon={<EditIcon />}
             onClick={() => onEdit(robot)}
           >
-            Edit
+            {translate("admin.edit")}
           </Button>
           <Button
             variant="outlined"
@@ -99,7 +101,7 @@ export default function RobotDetailsSection({
             onClick={() => setShowDeleteConfirm(true)}
             disabled={operations.isDeleting}
           >
-            Delete
+            {translate("admin.delete")}
           </Button>
         </Box>
       </Box>
@@ -130,9 +132,9 @@ export default function RobotDetailsSection({
             },
           }}
         >
-          <Tab label="Robot Information" />
-          <Tab label="Images" />
-          <Tab label="Components (BOM)" />
+          <Tab label={translate("admin.robotInformation")} />
+          <Tab label={translate("admin.component.images")} />
+          <Tab label={translate("admin.bom")} />
         </Tabs>
       </Box>
 
@@ -229,7 +231,7 @@ export default function RobotDetailsSection({
                           <RobotIcon sx={{ fontSize: 40 }} />
                         </Avatar>
                         <Typography variant="body2" color="text.secondary">
-                          No product image available
+                          {translate("admin.noRobotImage")}
                         </Typography>
                       </Box>
                     </Box>
@@ -246,14 +248,14 @@ export default function RobotDetailsSection({
                 </Typography>
 
                 <Typography variant="body1" color="text.secondary" paragraph>
-                  {robot.description || "No description available"}
+                  {robot.description || translate("admin.noDescriptionAvailable")}
                 </Typography>
 
                 {/* Technical Specifications */}
                 {robot.technicalSpecs && (
                   <Box sx={{ mb: 3 }}>
                     <Typography variant="h6" gutterBottom>
-                      Technical Specifications
+                      {translate("admin.technicalSpecifications")}
                     </Typography>
                     <Typography
                       variant="body2"
@@ -273,7 +275,7 @@ export default function RobotDetailsSection({
                 {robot.requirements && (
                   <Box sx={{ mb: 2 }}>
                     <Typography variant="h6" gutterBottom>
-                      Requirements
+                      {translate("admin.requirements")}
                     </Typography>
                     <Typography
                       variant="body2"
@@ -297,14 +299,14 @@ export default function RobotDetailsSection({
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Product Information
+                  {translate("admin.productInformation")}
                 </Typography>
 
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   {/* Basic Info */}
                   <Box>
                     <Typography variant="body2" color="text.secondary">
-                      Product ID
+                      {translate("admin.productID")}
                     </Typography>
                     <Typography
                       variant="body1"
@@ -316,7 +318,7 @@ export default function RobotDetailsSection({
 
                   <Box>
                     <Typography variant="body2" color="text.secondary">
-                      Brand & Model
+                      {translate("admin.brandModel")}
                     </Typography>
                     <Typography variant="body1">
                       {robot.brand} - {robot.model}
@@ -327,7 +329,7 @@ export default function RobotDetailsSection({
 
                   <Box>
                     <Typography variant="body2" color="text.secondary">
-                      Age Range
+                      {translate("admin.ageRange")}
                     </Typography>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <AgeIcon color="info" />
@@ -341,7 +343,7 @@ export default function RobotDetailsSection({
                   {robot.imageUrl && (
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Image URL
+                        {translate("admin.component.imageUrl")}
                       </Typography>
                       <Box
                         sx={{ display: "flex", alignItems: "center", gap: 1 }}
@@ -374,7 +376,7 @@ export default function RobotDetailsSection({
                   {/* Timestamps */}
                   <Box>
                     <Typography variant="body2" color="text.secondary">
-                      Created
+                      {translate("admin.component.created")}
                     </Typography>
                     <Typography variant="body2">
                       {formatDate(robot.createdAt)}
@@ -383,7 +385,7 @@ export default function RobotDetailsSection({
 
                   <Box>
                     <Typography variant="body2" color="text.secondary">
-                      Last Updated
+                      {translate("admin.component.updated")}
                     </Typography>
                     <Typography variant="body2">
                       {formatDate(robot.updatedAt)}
@@ -464,18 +466,17 @@ export default function RobotDetailsSection({
       >
         <DialogContent>
           <Typography variant="h6" gutterBottom>
-            Delete Robot Product
+            {translate("admin.deleteRobotProduct")}
           </Typography>
           <Typography variant="body1" sx={{ mb: 3 }}>
-            Are you sure you want to delete "{robot.name}"? This action cannot
-            be undone.
+            {translate("admin.confirmDeleteRobotProduct", { name: robot.name })}
           </Typography>
           <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
             <Button
               variant="outlined"
               onClick={() => setShowDeleteConfirm(false)}
             >
-              Cancel
+              {translate("admin.cancel")}
             </Button>
             <Button
               variant="contained"
@@ -486,7 +487,7 @@ export default function RobotDetailsSection({
               {operations.isDeleting ? (
                 <CircularProgress size={20} />
               ) : (
-                "Delete"
+                translate("admin.delete")
               )}
             </Button>
           </Box>

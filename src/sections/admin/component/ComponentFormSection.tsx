@@ -35,6 +35,7 @@ import {
   UpdateComponentRequest,
 } from "../../../common/@types/component";
 import { SimpleImageUploader } from "../../../components/common/SimpleImageUploader";
+import useLocales from "hooks/useLocales";
 
 interface ComponentFormSectionProps {
   mode: "create" | "edit";
@@ -58,6 +59,7 @@ export default function ComponentFormSection({
   onSuccess,
 }: ComponentFormSectionProps) {
   const dispatch = useAppDispatch();
+  const { translate } = useLocales();
   const { operations } = useAppSelector((state) => state.component);
 
   const [formData, setFormData] = useState<ComponentFormData>({
@@ -87,15 +89,15 @@ export default function ComponentFormSection({
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+      newErrors.name = translate("admin.component.nameRequired");
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = "Description is required";
+      newErrors.description = translate("admin.component.descriptionRequired");
     }
 
     if (formData.imageUrl && !isValidUrl(formData.imageUrl)) {
-      newErrors.imageUrl = "Please enter a valid image URL";
+      newErrors.imageUrl = translate("admin.component.invalidImageUrl");
     }
 
     setErrors(newErrors);
@@ -155,17 +157,17 @@ export default function ComponentFormSection({
 
   const getComponentTypeLabel = (type: ComponentType) => {
     const typeLabels = {
-      [ComponentType.SENSOR]: "Sensor",
-      [ComponentType.ACTUATOR]: "Actuator",
-      [ComponentType.CONTROLLER]: "Controller",
-      [ComponentType.POWER_SUPPLY]: "Power Supply",
-      [ComponentType.CONNECTIVITY]: "Connectivity",
-      [ComponentType.MECHANICAL]: "Mechanical",
-      [ComponentType.DISPLAY]: "Display",
-      [ComponentType.AUDIO]: "Audio",
-      [ComponentType.OTHER]: "Other",
+      [ComponentType.SENSOR]: translate("admin.component.typeSensor"),
+      [ComponentType.ACTUATOR]: translate("admin.component.typeActuator"),
+      [ComponentType.CONTROLLER]: translate("admin.component.typeController"),
+      [ComponentType.POWER_SUPPLY]: translate("admin.component.typePowerSupply"),
+      [ComponentType.CONNECTIVITY]: translate("admin.component.typeConnectivity"),
+      [ComponentType.MECHANICAL]: translate("admin.component.typeMechanical"),
+      [ComponentType.DISPLAY]: translate("admin.component.typeDisplay"),
+      [ComponentType.AUDIO]: translate("admin.component.typeAudio"),
+      [ComponentType.OTHER]: translate("admin.component.typeOther"),
     };
-    return typeLabels[type] || "Unknown";
+    return typeLabels[type] || translate("admin.component.typeUnknown");
   };
 
   const isLoading = operations.isCreating || operations.isUpdating;
@@ -176,7 +178,7 @@ export default function ComponentFormSection({
       {/* Header */}
       <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
         <Button startIcon={<ArrowBackIcon />} onClick={onBack} sx={{ mr: 2 }}>
-          Back to List
+          {translate("admin.component.backToList")}
         </Button>
       </Box>
 
@@ -187,7 +189,7 @@ export default function ComponentFormSection({
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Component Information
+                  {translate("admin.component.componentInformation")}
                 </Typography>
 
                 {/* Error Alert */}
@@ -200,24 +202,23 @@ export default function ComponentFormSection({
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                   {/* Component Name */}
                   <TextField
-                    label="Component Name"
+                    label={translate("admin.component.nameLabel")}
                     value={formData.name}
                     onChange={(e) => handleInputChange("name", e.target.value)}
                     error={!!errors.name}
                     helperText={errors.name}
                     fullWidth
                     required
-                    placeholder="e.g., Arduino Uno R3"
                   />
 
                   <Grid container spacing={2}>
                     {/* Component Type */}
                     <Grid item xs={12} sm={6}>
                       <FormControl fullWidth error={!!errors.type}>
-                        <InputLabel>Component Type</InputLabel>
+                        <InputLabel>{translate("admin.component.typeLabel")}</InputLabel>
                         <Select
                           value={formData.type}
-                          label="Component Type"
+                          label={translate("admin.component.typeLabel")}
                           onChange={(e) =>
                             handleInputChange("type", e.target.value)
                           }
@@ -237,7 +238,7 @@ export default function ComponentFormSection({
 
                   {/* Description */}
                   <TextField
-                    label="Description"
+                    label={translate("admin.component.descriptionLabel")}
                     value={formData.description}
                     onChange={(e) =>
                       handleInputChange("description", e.target.value)
@@ -248,12 +249,11 @@ export default function ComponentFormSection({
                     rows={3}
                     fullWidth
                     required
-                    placeholder="Describe the component's features and applications..."
                   />
 
                   {/* Technical Specifications */}
                   <TextField
-                    label="Technical Specifications"
+                    label={translate("admin.component.specificationsLabel")}
                     value={formData.specifications}
                     onChange={(e) =>
                       handleInputChange("specifications", e.target.value)
@@ -261,22 +261,18 @@ export default function ComponentFormSection({
                     multiline
                     rows={4}
                     fullWidth
-                    placeholder="List technical specifications, dimensions, voltage requirements, etc..."
                   />
 
                   {/* Image URL */}
                   <TextField
-                    label="Image URL (Optional)"
+                    label={translate("admin.component.imageUrlLabel")}
                     value={formData.imageUrl}
                     onChange={(e) =>
                       handleInputChange("imageUrl", e.target.value)
                     }
                     error={!!errors.imageUrl}
-                    helperText={
-                      errors.imageUrl || "URL to component's product image"
-                    }
+                    helperText={errors.imageUrl}
                     fullWidth
-                    placeholder="https://example.com/component-image.jpg"
                   />
                 </Box>
               </CardContent>
@@ -293,7 +289,10 @@ export default function ComponentFormSection({
                 disabled={isLoading}
                 size="large"
               >
-                {mode === "create" ? "Create Component" : "Update Component"}
+                {isLoading 
+                  ? (mode === "create" ? translate("admin.component.creating") : translate("admin.component.updating"))
+                  : (mode === "create" ? translate("admin.createComponent") : translate("admin.editComponent"))
+                }
               </Button>
               <Button
                 variant="outlined"
@@ -301,7 +300,7 @@ export default function ComponentFormSection({
                 disabled={isLoading}
                 size="large"
               >
-                Cancel
+                {translate("admin.cancel")}
               </Button>
             </Box>
           </Grid>
@@ -316,8 +315,8 @@ export default function ComponentFormSection({
               onImageChange={(url: string | null) =>
                 handleInputChange("imageUrl", url || "")
               }
-              title="Component Image"
-              description="Upload component image"
+              title={translate("admin.component.images")}
+              description={translate("admin.component.imageUrlLabel")}
               height={280}
               disabled={isLoading}
             />
@@ -326,13 +325,13 @@ export default function ComponentFormSection({
             <Card sx={{ mt: 3 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Component Preview
+                  {translate("admin.component.componentInformation")}
                 </Typography>
 
                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                   <ComponentIcon sx={{ mr: 1, color: "primary.main" }} />
                   <Typography variant="body1" fontWeight="medium">
-                    {formData.name || "Unnamed Component"}
+                    {formData.name || translate("admin.component.nameLabel")}
                   </Typography>
                 </Box>
 
@@ -341,29 +340,20 @@ export default function ComponentFormSection({
                   color="text.secondary"
                   sx={{ mb: 2 }}
                 >
-                  {formData.description || "No description provided"}
+                  {formData.description || translate("admin.component.noDescription")}
                 </Typography>
 
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                   <Typography variant="body2">
-                    <strong>Type:</strong>{" "}
+                    <strong>{translate("admin.component.type")}:</strong>{" "}
                     {getComponentTypeLabel(formData.type)}
                   </Typography>
 
                   {formData.specifications && (
                     <Typography variant="body2">
-                      <strong>Specifications:</strong> Available
+                      <strong>{translate("admin.component.specifications")}:</strong> {translate("admin.component.noDescription")}
                     </Typography>
                   )}
-
-                  {/* Status */}
-                  <Box
-                    sx={{ mt: 1, pt: 1, borderTop: 1, borderColor: "divider" }}
-                  >
-                    <Typography variant="body2" color="text.secondary">
-                      <strong>Category:</strong> Electronic Component
-                    </Typography>
-                  </Box>
                 </Box>
               </CardContent>
             </Card>
