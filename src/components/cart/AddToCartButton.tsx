@@ -38,7 +38,8 @@ export default function AddToCartButton({
   const { operations, itemExistsCache } = useAppSelector((state) => state.cart);
 
   const isInCart = itemExistsCache[courseId] || false;
-  const isAdding = operations.isAddingItem;
+  // Avoid making all buttons show loading: use local adding state per button
+  const [isAddingLocal, setIsAddingLocal] = useState<boolean>(false);
 
   // Check if we already have cache for this course
   const hasCache = courseId in itemExistsCache;
@@ -64,6 +65,7 @@ export default function AddToCartButton({
 
   const handleAddToCart = async () => {
     try {
+      setIsAddingLocal(true);
       await dispatch(
         addCartItemThunk({
           courseId,
@@ -110,6 +112,8 @@ export default function AddToCartButton({
       } else {
         showErrorToast(errorMessage);
       }
+    } finally {
+      setIsAddingLocal(false);
     }
   };
 
@@ -143,14 +147,14 @@ export default function AddToCartButton({
       fullWidth={fullWidth}
       variant="contained"
       startIcon={
-        isAdding ? (
+        isAddingLocal ? (
           <CircularProgress size={20} sx={{ color: "#212121" }} />
         ) : (
           <ShoppingCartIcon />
         )
       }
       onClick={handleAddToCart}
-      disabled={disabled || isAdding || isChecking}
+      disabled={disabled || isAddingLocal || isChecking}
       sx={{
         textTransform: "none",
         fontWeight: 600,
@@ -173,7 +177,7 @@ export default function AddToCartButton({
         },
       }}
     >
-      {isAdding ? translate("cart.Adding") : translate("cart.AddToCart")}
+      {isAddingLocal ? translate("cart.Adding") : translate("cart.AddToCart")}
     </Button>
   );
 }

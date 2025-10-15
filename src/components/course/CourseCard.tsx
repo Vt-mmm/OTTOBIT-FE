@@ -397,6 +397,10 @@ export default function CourseCard({
 
                   {/* Add to Cart Button */}
                   <Box
+                    onClick={(e) => {
+                      // Prevent card-level onClick (navigate) when adding to cart
+                      e.stopPropagation();
+                    }}
                     sx={{
                       "& .MuiButton-root": {
                         py: 0.75, // Nhỏ hơn
