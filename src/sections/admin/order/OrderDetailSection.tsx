@@ -158,7 +158,11 @@ export default function OrderDetailSection() {
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
-        <Button variant="contained" startIcon={<ArrowBackIcon />} onClick={handleBack}>
+        <Button
+          variant="contained"
+          startIcon={<ArrowBackIcon />}
+          onClick={handleBack}
+        >
           Back to Orders
         </Button>
       </Box>
@@ -171,7 +175,11 @@ export default function OrderDetailSection() {
         <Alert severity="warning" sx={{ mb: 2 }}>
           Order not found
         </Alert>
-        <Button variant="contained" startIcon={<ArrowBackIcon />} onClick={handleBack}>
+        <Button
+          variant="contained"
+          startIcon={<ArrowBackIcon />}
+          onClick={handleBack}
+        >
           Back to Orders
         </Button>
       </Box>
@@ -209,22 +217,40 @@ export default function OrderDetailSection() {
                 <Stack spacing={3}>
                   {/* Order Summary */}
                   <Box>
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      alignItems="center"
+                      sx={{ mb: 2 }}
+                    >
                       <ReceiptIcon color="primary" />
                       <Typography variant="h6" fontWeight={600}>
                         Order Summary
                       </Typography>
                     </Stack>
                     <Stack spacing={1.5}>
-                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
                         <Typography variant="body2" color="text.secondary">
                           Order ID:
                         </Typography>
-                        <Typography variant="body2" sx={{ fontFamily: "monospace" }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontFamily: "monospace" }}
+                        >
                           {order.id}
                         </Typography>
                       </Box>
-                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
                         <Typography variant="body2" color="text.secondary">
                           Created At:
                         </Typography>
@@ -232,7 +258,12 @@ export default function OrderDetailSection() {
                           {formatDate(order.createdAt)}
                         </Typography>
                       </Box>
-                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
                         <Typography variant="body2" color="text.secondary">
                           Last Updated:
                         </Typography>
@@ -247,35 +278,62 @@ export default function OrderDetailSection() {
 
                   {/* User Information */}
                   <Box>
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      alignItems="center"
+                      sx={{ mb: 2 }}
+                    >
                       <PersonIcon color="primary" />
                       <Typography variant="h6" fontWeight={600}>
                         User Information
                       </Typography>
                     </Stack>
                     <Stack spacing={1.5}>
-                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
                         <Typography variant="body2" color="text.secondary">
                           User ID:
                         </Typography>
-                        <Typography variant="body2" sx={{ fontFamily: "monospace" }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontFamily: "monospace" }}
+                        >
                           {order.userId}
                         </Typography>
                       </Box>
                       {order.userFullName && (
-                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
                           <Typography variant="body2" color="text.secondary">
                             Name:
                           </Typography>
-                          <Typography variant="body2">{order.userFullName}</Typography>
+                          <Typography variant="body2">
+                            {order.userFullName}
+                          </Typography>
                         </Box>
                       )}
                       {order.userEmail && (
-                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
                           <Typography variant="body2" color="text.secondary">
                             Email:
                           </Typography>
-                          <Typography variant="body2">{order.userEmail}</Typography>
+                          <Typography variant="body2">
+                            {order.userEmail}
+                          </Typography>
                         </Box>
                       )}
                     </Stack>
@@ -285,7 +343,12 @@ export default function OrderDetailSection() {
 
                   {/* Order Items */}
                   <Box>
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      alignItems="center"
+                      sx={{ mb: 2 }}
+                    >
                       <ShoppingCartIcon color="primary" />
                       <Typography variant="h6" fontWeight={600}>
                         Order Items
@@ -327,79 +390,92 @@ export default function OrderDetailSection() {
                   </Box>
 
                   {/* Payment Transactions */}
-                  {order.paymentTransactions && order.paymentTransactions.length > 0 && (
-                    <>
-                      <Divider />
-                      <Box>
-                        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-                          <PaymentIcon color="primary" />
-                          <Typography variant="h6" fontWeight={600}>
-                            Payment Transactions
-                          </Typography>
-                        </Stack>
-                        <TableContainer component={Paper} variant="outlined">
-                          <Table size="small">
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>Transaction ID</TableCell>
-                                <TableCell>Method</TableCell>
-                                <TableCell align="right">Amount</TableCell>
-                                <TableCell>Status</TableCell>
-                                <TableCell>Order Code</TableCell>
-                                <TableCell>Date</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {order.paymentTransactions.map((txn) => (
-                                <TableRow key={txn.id}>
-                                  <TableCell>
-                                    <Typography variant="body2" sx={{ fontFamily: "monospace" }}>
-                                      {txn.id.substring(0, 8)}...
-                                    </Typography>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Typography variant="body2">
-                                      {getPaymentMethodLabel(txn.method)}
-                                    </Typography>
-                                  </TableCell>
-                                  <TableCell align="right">
-                                    <Typography variant="body2">
-                                      {formatCurrency(txn.amount)}
-                                    </Typography>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Chip 
-                                      label={getPaymentStatusLabel(txn.status)} 
-                                      size="small"
-                                      color={
-                                        txn.status === PaymentStatus.Succeeded
-                                          ? "success"
-                                          : txn.status === PaymentStatus.Failed
-                                          ? "error"
-                                          : txn.status === PaymentStatus.Cancelled
-                                          ? "default"
-                                          : "warning"
-                                      }
-                                    />
-                                  </TableCell>
-                                  <TableCell>
-                                    <Typography variant="body2">
-                                      {txn.orderCode || "N/A"}
-                                    </Typography>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Typography variant="body2">
-                                      {formatDate(txn.createdAt)}
-                                    </Typography>
-                                  </TableCell>
+                  {order.paymentTransactions &&
+                    order.paymentTransactions.length > 0 && (
+                      <>
+                        <Divider />
+                        <Box>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                            sx={{ mb: 2 }}
+                          >
+                            <PaymentIcon color="primary" />
+                            <Typography variant="h6" fontWeight={600}>
+                              Payment Transactions
+                            </Typography>
+                          </Stack>
+                          <TableContainer component={Paper} variant="outlined">
+                            <Table size="small">
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell>Transaction ID</TableCell>
+                                  <TableCell>Method</TableCell>
+                                  <TableCell align="right">Amount</TableCell>
+                                  <TableCell>Status</TableCell>
+                                  <TableCell>Order Code</TableCell>
+                                  <TableCell>Date</TableCell>
                                 </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </TableContainer>
-                      </Box>
-                    </>
-                  )}
+                              </TableHead>
+                              <TableBody>
+                                {order.paymentTransactions.map((txn) => (
+                                  <TableRow key={txn.id}>
+                                    <TableCell>
+                                      <Typography
+                                        variant="body2"
+                                        sx={{ fontFamily: "monospace" }}
+                                      >
+                                        {txn.id.substring(0, 8)}...
+                                      </Typography>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Typography variant="body2">
+                                        {getPaymentMethodLabel(txn.method)}
+                                      </Typography>
+                                    </TableCell>
+                                    <TableCell align="right">
+                                      <Typography variant="body2">
+                                        {formatCurrency(txn.amount)}
+                                      </Typography>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Chip
+                                        label={getPaymentStatusLabel(
+                                          txn.status
+                                        )}
+                                        size="small"
+                                        color={
+                                          txn.status === PaymentStatus.Succeeded
+                                            ? "success"
+                                            : txn.status ===
+                                              PaymentStatus.Failed
+                                            ? "error"
+                                            : txn.status ===
+                                              PaymentStatus.Cancelled
+                                            ? "default"
+                                            : "warning"
+                                        }
+                                      />
+                                    </TableCell>
+                                    <TableCell>
+                                      <Typography variant="body2">
+                                        {txn.orderCode || "N/A"}
+                                      </Typography>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Typography variant="body2">
+                                        {formatDate(txn.createdAt)}
+                                      </Typography>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </TableContainer>
+                        </Box>
+                      </>
+                    )}
                 </Stack>
               </CardContent>
             </Card>
@@ -413,7 +489,9 @@ export default function OrderDetailSection() {
                   Price Summary
                 </Typography>
                 <Stack spacing={2}>
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
                     <Typography variant="body2" color="text.secondary">
                       Subtotal:
                     </Typography>
@@ -421,7 +499,9 @@ export default function OrderDetailSection() {
                       {formatCurrency(order.subtotal)}
                     </Typography>
                   </Box>
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
                     <Typography variant="body2" color="text.secondary">
                       Discount:
                     </Typography>
@@ -430,7 +510,9 @@ export default function OrderDetailSection() {
                     </Typography>
                   </Box>
                   <Divider />
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
                     <Typography variant="h6" fontWeight={600}>
                       Total:
                     </Typography>
@@ -447,4 +529,3 @@ export default function OrderDetailSection() {
     </Box>
   );
 }
-
