@@ -33,6 +33,9 @@ BlocksWorkspaceProps) {
   const [blocklyWorkspace, setBlocklyWorkspace] = useState<any>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const selectedCategoryRef = useRef<string>("");
+  // Guard to avoid re-rendering initial program repeatedly (e.g., when opening confirm dialogs)
+  const renderedInitialRef = useRef<boolean>(false);
+  const lastInitialJsonRef = useRef<string | null>(null);
 
   // Helper: safely create a number block with output and set value
   const createNumberBlock = (ws: any, value: number) => {
@@ -107,9 +110,7 @@ BlocksWorkspaceProps) {
       { kind: "block", type: "ottobit_bale_number" },
       { kind: "block", type: "ottobit_pin_number" },
     ],
-    arithmetic: [
-      { kind: "block", type: "ottobit_arithmetic" },
-    ],
+    arithmetic: [{ kind: "block", type: "ottobit_arithmetic" }],
     actions: [
       { kind: "block", type: "ottobit_collect_green" },
       { kind: "block", type: "ottobit_collect_red" },
@@ -212,7 +213,7 @@ BlocksWorkspaceProps) {
             // NGAY LẬP TỨC clear state để xóa hover
             setSelectedCategory("");
             selectedCategoryRef.current = "";
-            
+
             // Sau đó mới đóng flyout (delay nhẹ để tránh conflict với block creation)
             setTimeout(() => {
               try {
@@ -1994,10 +1995,28 @@ BlocksWorkspaceProps) {
     } catch {}
   }, [detectionsFromExecute, blocklyWorkspace]);
 
-  // Render from provided program (solutionJson parsed) when it changes in edit mode
+  // Render from provided program (solutionJson parsed) in edit mode.
+  // Avoid clearing/rebuilding unless initial JSON actually changes.
   useEffect(() => {
     if (!blocklyWorkspace) return;
     if (!initialProgramActionsJson) return;
+    // Stringify to detect real changes
+    let currentStr: string | null = null;
+    try {
+      currentStr = JSON.stringify(initialProgramActionsJson);
+    } catch {
+      currentStr = null;
+    }
+    // If we already rendered once and JSON did not change -> skip
+    if (
+      renderedInitialRef.current &&
+      lastInitialJsonRef.current === currentStr
+    ) {
+      return;
+    }
+    // Update last seen JSON and mark rendered
+    lastInitialJsonRef.current = currentStr;
+    renderedInitialRef.current = true;
 
     // Force cleanup field inputs trước khi render program
     fieldInputManager.forceCleanupAll();
@@ -2115,14 +2134,14 @@ BlocksWorkspaceProps) {
           // Case 1: Arithmetic expression object - NEW FORMAT: {type: "arithmetic", op: "*", left: ..., right: ...}
           if (typeof countValue === "object" && countValue?.type) {
             const exprType = String(countValue.type).toLowerCase();
-            
+
             // Handle new backend format: {type: "arithmetic", op: "*", left: "{{i}}", right: 2}
             if (exprType === "arithmetic" && countValue.op) {
               console.log(
                 `      🧮 [BlocksWorkspace] Creating arithmetic expression with op: ${countValue.op}`,
                 countValue
               );
-              
+
               // Map operator symbols to field values
               const opToFieldMap: Record<string, string> = {
                 "+": "ADD",
@@ -2131,13 +2150,14 @@ BlocksWorkspaceProps) {
                 "/": "DIVIDE",
                 "^": "POWER",
               };
-              
+
               // Create single arithmetic block
-              const arithmeticBlock = blocklyWorkspace.newBlock("ottobit_arithmetic");
+              const arithmeticBlock =
+                blocklyWorkspace.newBlock("ottobit_arithmetic");
               arithmeticBlock.setShadow(false);
               arithmeticBlock.initSvg();
               arithmeticBlock.render();
-              
+
               // Set operator dropdown
               try {
                 const opField = opToFieldMap[countValue.op] || "ADD";
@@ -2146,10 +2166,11 @@ BlocksWorkspaceProps) {
               } catch (err) {
                 console.warn(`      ⚠️ Failed to set operator: ${err}`);
               }
-              
+
               // Recursively create A and B operands
               if (countValue.left !== undefined) {
-                const inputA = arithmeticBlock.getInput && arithmeticBlock.getInput("A");
+                const inputA =
+                  arithmeticBlock.getInput && arithmeticBlock.getInput("A");
                 if (inputA?.connection) {
                   const blockA = createCountBlock(countValue.left);
                   if (blockA?.outputConnection) {
@@ -2158,9 +2179,10 @@ BlocksWorkspaceProps) {
                   }
                 }
               }
-              
+
               if (countValue.right !== undefined) {
-                const inputB = arithmeticBlock.getInput && arithmeticBlock.getInput("B");
+                const inputB =
+                  arithmeticBlock.getInput && arithmeticBlock.getInput("B");
                 if (inputB?.connection) {
                   const blockB = createCountBlock(countValue.right);
                   if (blockB?.outputConnection) {
@@ -2169,10 +2191,10 @@ BlocksWorkspaceProps) {
                   }
                 }
               }
-              
+
               return arithmeticBlock;
             }
-            
+
             // Variable object {type: "variable", name: "i"}
             if (exprType === "variable") {
               const varName = countValue.name || countValue.variableName;
@@ -2189,7 +2211,7 @@ BlocksWorkspaceProps) {
               return varBlock;
             }
           }
-          
+
           // Case 2: Variable template string like "{{i}}" or "{{count}}"
           if (typeof countValue === "string") {
             const varMatch = countValue.match(/^\{\{\s*(\w+)\s*\}\}$/);
@@ -3323,8 +3345,8 @@ BlocksWorkspaceProps) {
       {/* Custom Toolbox với UI đẹp - Hide in readOnly mode */}
       {!readOnly && (
         <Box id="studio-toolbox" sx={{ display: "flex" }}>
-          <BlockToolbox 
-            onCategorySelect={handleCategorySelect} 
+          <BlockToolbox
+            onCategorySelect={handleCategorySelect}
             selectedCategory={selectedCategory}
           />
         </Box>

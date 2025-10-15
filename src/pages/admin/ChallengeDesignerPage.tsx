@@ -575,6 +575,25 @@ const MapDesignerPage = () => {
     let solutionJsonToSave: string | null = null;
     try {
       if (solutionWorkspaceRef.current) {
+        try {
+          const ws = solutionWorkspaceRef.current;
+          const blocks = ws.getAllBlocks(false) || [];
+          console.log("[Save] workspace blocks:", blocks.length);
+          console.log(
+            "[Save] block types:",
+            blocks.map((b: any) => b.type)
+          );
+          const tops = ws.getTopBlocks(true) || [];
+          const start = tops.find((b: any) => b?.type === "ottobit_start");
+          const first = start?.nextConnection?.targetBlock?.();
+          let cur = first;
+          const seq: string[] = [];
+          while (cur) {
+            seq.push(cur.type);
+            cur = cur.nextConnection?.targetBlock?.() || null;
+          }
+          console.log("[Save] sequence after start:", seq);
+        } catch {}
         const program = BlocklyToPhaserConverter.convertWorkspace(
           solutionWorkspaceRef.current
         );
