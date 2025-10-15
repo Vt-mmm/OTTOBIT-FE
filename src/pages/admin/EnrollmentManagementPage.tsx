@@ -10,7 +10,11 @@ export default function EnrollmentManagementPage() {
     <AdminLayout>
       <Container
         maxWidth="xl"
-        sx={{ py: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}
+        sx={{ 
+          py: { xs: 2, sm: 3, md: 4 }, 
+          px: { xs: 1, sm: 2, md: 3 },
+          width: "100%"
+        }}
       >
         <Box sx={{ mb: { xs: 3, sm: 4 } }}>
           <Typography

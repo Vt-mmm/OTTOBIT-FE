@@ -63,6 +63,10 @@ function DetailRow({ icon, label, value }: DetailRowProps) {
   );
 }
 
+function safeNumber(value: any, fallback: number = 0): number {
+  return typeof value === 'number' && !isNaN(value) ? value : fallback;
+}
+
 export default function EnrollmentDetailsDialog({
   open,
   onClose,
@@ -110,7 +114,7 @@ export default function EnrollmentDetailsDialog({
     );
   };
 
-  const progressPercentage = Math.round(enrollment.progress ?? 0);
+  const progressPercentage = Math.round(safeNumber(enrollment.progress, 0));
 
   return (
     <Dialog
@@ -119,7 +123,11 @@ export default function EnrollmentDetailsDialog({
       maxWidth="md"
       fullWidth
       PaperProps={{
-        sx: { borderRadius: 2 },
+        sx: { 
+          borderRadius: { xs: 0, sm: 2 },
+          maxHeight: { xs: "100vh", sm: "90vh" },
+          m: { xs: 0, sm: 2 }
+        },
       }}
     >
       <DialogTitle
@@ -188,9 +196,10 @@ export default function EnrollmentDetailsDialog({
             />
             <Box
               sx={{
-                display: "flex",
-                justifyContent: "space-between",
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr 1fr", sm: "1fr 1fr 1fr" },
                 gap: 2,
+                textAlign: "center",
               }}
             >
               <Box>
@@ -198,7 +207,7 @@ export default function EnrollmentDetailsDialog({
                   {translate("admin.completedLessons")}
                 </Typography>
                 <Typography variant="h6" color="success.main">
-                  {enrollment.completedLessonsCount}
+                  {safeNumber(enrollment.completedLessonsCount, 0)}
                 </Typography>
               </Box>
               <Box>
@@ -206,16 +215,18 @@ export default function EnrollmentDetailsDialog({
                   {translate("admin.totalLessons")}
                 </Typography>
                 <Typography variant="h6">
-                  {enrollment.totalLessonsCount}
+                  {safeNumber(enrollment.totalLessonsCount, 0)}
                 </Typography>
               </Box>
-              <Box>
+              <Box sx={{ gridColumn: { xs: "1 / -1", sm: "auto" } }}>
                 <Typography variant="caption" color="text.secondary">
                   {translate("admin.remaining")}
                 </Typography>
                 <Typography variant="h6" color="warning.main">
-                  {enrollment.totalLessonsCount -
-                    enrollment.completedLessonsCount}
+                  {Math.max(0, 
+                    safeNumber(enrollment.totalLessonsCount, 0) - 
+                    safeNumber(enrollment.completedLessonsCount, 0)
+                  )}
                 </Typography>
               </Box>
             </Box>
@@ -330,7 +341,7 @@ export default function EnrollmentDetailsDialog({
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ p: 3 }}>
+      <DialogActions sx={{ p: { xs: 2, sm: 3 }, gap: 1 }}>
         <Button onClick={onClose} color="inherit">
           {translate("admin.close")}
         </Button>

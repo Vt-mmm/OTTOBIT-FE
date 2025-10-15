@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Card,
@@ -38,6 +38,11 @@ import dayjs from "dayjs";
 import EnrollmentDetailsDialog from "./EnrollmentDetailsDialog";
 import useLocales from "hooks/useLocales";
 
+// Helper function to safely handle numbers
+function safeNumber(value: any, fallback: number = 0): number {
+  return typeof value === 'number' && !isNaN(value) ? value : fallback;
+}
+
 interface EnrollmentListSectionProps {}
 
 export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
@@ -58,7 +63,21 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
   const [detailsDialog, setDetailsDialog] = useState<{
     open: boolean;
     enrollment?: EnrollmentResult;
-  }>({ open: false }); // Fetch enrollments
+  }>({ open: false });
+
+  // Debouncing for auto-search
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchTerm.trim() !== committedSearch) {
+        setCommittedSearch(searchTerm.trim());
+        setPageNumber(1);
+      }
+    }, 800); // 800ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, committedSearch]);
+
+  // Fetch enrollments
   useEffect(() => {
     const isCompleted =
       statusFilter === "completed"
@@ -67,14 +86,15 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
         ? false
         : undefined;
 
-    dispatch(
-      getEnrollments({
-        searchTerm: committedSearch || undefined,
-        isCompleted,
-        pageNumber,
-        pageSize,
-      })
-    );
+    const params = {
+      searchTerm: committedSearch || undefined,
+      isCompleted,
+      pageNumber,
+      pageSize,
+    };
+
+    // Call Enrollment API with parameters
+    dispatch(getEnrollments(params));
   }, [dispatch, committedSearch, statusFilter, pageNumber, pageSize]);
 
   // Handlers
@@ -82,10 +102,11 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
     setSearchTerm(event.target.value);
   };
 
-  const triggerSearch = () => {
+  const triggerSearch = useCallback(() => {
     setCommittedSearch(searchTerm.trim());
     setPageNumber(1);
-  };
+  }, [searchTerm]);
+
 
   const handleStatusFilterChange = (event: any) => {
     setStatusFilter(event.target.value);
@@ -117,13 +138,18 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
       {/* Header */}
 
       {/* Search and Filters */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <Box sx={{ 
+            display: "flex", 
+            gap: { xs: 1, sm: 2 }, 
+            alignItems: "flex-end", // Align to bottom to prevent shifting
+            flexDirection: { xs: "column", md: "row" }
+          }}>
             <TextField
               fullWidth
               placeholder={translate("admin.searchEnrollmentPlaceholder")}
@@ -132,12 +158,15 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
               onKeyDown={(e) => {
                 if (e.key === "Enter") triggerSearch();
               }}
+              inputProps={{
+                style: {
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis', 
+                  whiteSpace: 'nowrap',
+                }
+              }}
+              helperText={" "} // Fixed height to prevent layout shift
               InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
@@ -150,9 +179,17 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
                     </IconButton>
                   </InputAdornment>
                 ),
+                sx: {
+                  '& input': {
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }
+                }
               }}
             />
-            <FormControl sx={{ minWidth: 200 }}>
+            <Box sx={{ minHeight: 78 }}> {/* Match TextField with helperText height */}
+              <FormControl sx={{ minWidth: { xs: "100%", md: 200 } }}>
               <InputLabel>{translate("admin.status")}</InputLabel>
               <Select
                 value={statusFilter}
@@ -167,7 +204,8 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
                   {translate("admin.completed")}
                 </MenuItem>
               </Select>
-            </FormControl>
+              </FormControl>
+            </Box>
           </Box>
         </CardContent>
       </Card>
@@ -181,7 +219,8 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
 
       {/* Enrollments Table */}
       <Paper>
-        <Table>
+        <Box sx={{ overflowX: "auto" }}>
+          <Table sx={{ minWidth: { xs: 800, md: "auto" } }}>
           <TableHead>
             <TableRow>
               <TableCell>{translate("admin.student")}</TableCell>
@@ -198,7 +237,7 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
           <TableBody>
             {enrollments.data?.items?.map((enrollment) => (
               <TableRow key={enrollment.id} hover>
-                <TableCell>
+                <TableCell sx={{ minWidth: 150 }}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                     <PersonIcon color="primary" />
                     <Box>
@@ -212,7 +251,7 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ minWidth: 180 }}>
                   <Box sx={{ display: "flex", alignItems: "center" }}>
                     <CourseIcon sx={{ mr: 1, color: "secondary.main" }} />
                     <Box>
@@ -240,7 +279,7 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
                     icon={getStatusIcon(!!enrollment.isCompleted)}
                   />
                 </TableCell>
-                <TableCell align="center">
+                <TableCell align="center" sx={{ minWidth: 120 }}>
                   <Box
                     sx={{
                       display: "flex",
@@ -250,11 +289,11 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
                     }}
                   >
                     <Typography variant="body2" fontWeight="medium">
-                      {`${Math.round(enrollment.progress ?? 0)}%`}
+                      {`${Math.round(safeNumber(enrollment.progress, 0))}%`}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {enrollment.completedLessonsCount}/
-                      {enrollment.totalLessonsCount}{" "}
+                      {safeNumber(enrollment.completedLessonsCount, 0)}/
+                      {safeNumber(enrollment.totalLessonsCount, 0)}{" "}
                       {translate("admin.lessons")}
                     </Typography>
                   </Box>
@@ -280,7 +319,8 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+          </Table>
+        </Box>
 
         {/* Empty State */}
         {!enrollments.isLoading && enrollments.data?.items?.length === 0 && (
@@ -305,8 +345,10 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
             sx={{
               display: "flex",
               justifyContent: "space-between",
-              alignItems: "center",
-              p: 2,
+              alignItems: { xs: "stretch", sm: "center" },
+              p: { xs: 1, sm: 2 },
+              gap: 2,
+              flexDirection: { xs: "column", sm: "row" },
             }}
           >
             <FormControl size="small">
@@ -327,13 +369,15 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
                 ))}
               </Select>
             </FormControl>
-            <Pagination
-              count={enrollments.data.totalPages}
-              page={pageNumber}
-              onChange={(_, v) => setPageNumber(v)}
-              shape="rounded"
-              color="primary"
-            />
+            <Box sx={{ display: "flex", justifyContent: { xs: "center", sm: "flex-end" } }}>
+              <Pagination
+                count={enrollments.data.totalPages}
+                page={pageNumber}
+                onChange={(_, v) => setPageNumber(v)}
+                shape="rounded"
+                color="primary"
+              />
+            </Box>
           </Box>
         ) : null}
       </Paper>

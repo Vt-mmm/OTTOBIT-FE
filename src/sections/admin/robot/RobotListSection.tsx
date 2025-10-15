@@ -52,6 +52,7 @@ export default function RobotListSection({
   const { translate } = useLocales();
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [committedSearch, setCommittedSearch] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(12);
 
@@ -62,16 +63,28 @@ export default function RobotListSection({
     robotName?: string;
   }>({ open: false });
 
+  // Debouncing for search
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchTerm.trim() !== committedSearch) {
+        setCommittedSearch(searchTerm.trim());
+        setPageNumber(1); // Reset to first page
+      }
+    }, 800);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, committedSearch]);
+
   // Fetch robots on component mount and when filters change
   useEffect(() => {
     const filters = {
-      searchTerm: searchTerm.trim() || undefined,
+      searchTerm: committedSearch.trim() || undefined,
       pageNumber,
       pageSize,
     };
 
     dispatch(getRobotsThunk(filters));
-  }, [dispatch, searchTerm, pageNumber]);
+  }, [dispatch, committedSearch, pageNumber, pageSize]);
 
   // Clear success flags after operations
   useEffect(() => {
@@ -168,7 +181,7 @@ export default function RobotListSection({
             {translate("admin.noRobotProductsFound")}
           </Typography>
           <Typography variant="body2" color="text.secondary" mb={3}>
-            {searchTerm
+            {committedSearch
               ? translate("admin.tryAdjustingSearchOrFilters")
               : translate("admin.addYourFirstRobot")}
           </Typography>

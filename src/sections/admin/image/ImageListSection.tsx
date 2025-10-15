@@ -34,6 +34,7 @@ import {
 } from "../../../redux/image/imageThunks";
 import { clearSuccessFlags } from "../../../redux/image/imageSlice";
 import { ImageResult } from "../../../common/@types/image";
+import useLocales from "../../../hooks/useLocales";
 
 interface ImageListSectionProps {
   onViewModeChange: (
@@ -60,6 +61,7 @@ export default function ImageListSection({
   allowEdit = true,
   allowDelete = true,
 }: ImageListSectionProps) {
+  const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const { images, operations } = useAppSelector((state) => state.image);
 
@@ -88,7 +90,7 @@ export default function ImageListSection({
   }, [operations.deleteSuccess, dispatch]);
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this image?")) {
+    if (window.confirm(translate("image.image_list_confirm_delete"))) {
       await dispatch(deleteImageThunk(id));
     }
   };
@@ -142,9 +144,9 @@ export default function ImageListSection({
   const robotImagesCount = allImages.filter((image) => image.robotId).length;
 
   const getImageCategory = (image: ImageResult) => {
-    if (image.robotId) return "Robot";
+    if (image.robotId) return translate("image.image_list_category_robot");
     // Component relation removed
-    return "General";
+    return translate("image.image_list_category_general");
   };
 
   const getCategoryColor = (category: string) => {
@@ -171,7 +173,7 @@ export default function ImageListSection({
       {/* Header Actions */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
         <TextField
-          placeholder="Search images..."
+          placeholder={translate("image.image_list_search_placeholder")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           InputProps={{
@@ -191,7 +193,7 @@ export default function ImageListSection({
             onClick={() => onViewModeChange("create")}
             sx={{ ml: 2 }}
           >
-            Upload Image
+            {translate("image.image_list_upload_image")}
           </Button>
         )}
       </Box>
@@ -200,8 +202,8 @@ export default function ImageListSection({
       {!robotId && (
         <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
           <Tabs value={currentTab} onChange={handleTabChange}>
-            <Tab label={`All Images (${images.data?.total || 0})`} />
-            <Tab label={`Robot Images (${robotImagesCount})`} />
+            <Tab label={`${translate("image.image_list_tab_all")} (${images.data?.total || 0})`} />
+            <Tab label={`${translate("image.image_list_tab_robot")} (${robotImagesCount})`} />
           </Tabs>
         </Box>
       )}
@@ -209,7 +211,7 @@ export default function ImageListSection({
       {/* Success/Error Messages */}
       {operations.deleteSuccess && (
         <Alert severity="success" sx={{ mb: 2 }}>
-          Image deleted successfully!
+          {translate("image.image_list_delete_success")}
         </Alert>
       )}
 
@@ -224,19 +226,19 @@ export default function ImageListSection({
         <Box textAlign="center" py={8}>
           <Typography variant="h6" color="text.secondary" mb={2}>
             {searchTerm.trim()
-              ? "No images match your search"
-              : "No images found"}
+              ? translate("image.image_list_no_match")
+              : translate("image.image_list_no_images")}
           </Typography>
           <Typography variant="body2" color="text.secondary" mb={3}>
             {searchTerm.trim()
-              ? `Try adjusting your search term "${searchTerm}"`
+              ? translate("image.image_list_adjust_search", { term: searchTerm })
               : robotId
-              ? "This robot has no images yet. Upload images to get started."
+              ? translate("image.image_list_no_robot_images")
               : currentTab === 0
-              ? "Upload your first image to get started"
+              ? translate("image.image_list_upload_first")
               : currentTab === 1
-              ? "No robot images found. Upload images via Robot Management or assign existing images to robots."
-              : "No component images found. Upload images via Component Management or assign existing images to components."}
+              ? translate("image.image_list_no_robot_images_tab")
+              : translate("image.image_list_no_component_images_tab")}
           </Typography>
           {!searchTerm.trim() && allowCreate && (
             <Button
@@ -245,8 +247,8 @@ export default function ImageListSection({
               onClick={() => onViewModeChange("create")}
             >
               {robotId
-                ? "Upload Robot Images"
-                : "Upload First Image"}
+                ? translate("image.image_list_upload_robot_images")
+                : translate("image.image_list_upload_first_btn")}
             </Button>
           )}
         </Box>
@@ -422,9 +424,9 @@ export default function ImageListSection({
           }}
         >
           <FormControl size="small">
-            <InputLabel>Page Size</InputLabel>
+            <InputLabel>{translate("image.image_list_page_size")}</InputLabel>
             <Select
-              label="Page Size"
+              label={translate("image.image_list_page_size")}
               value={pageSize}
               onChange={(e) => {
                 setPageSize(Number(e.target.value));
@@ -451,3 +453,4 @@ export default function ImageListSection({
     </Box>
   );
 }
+

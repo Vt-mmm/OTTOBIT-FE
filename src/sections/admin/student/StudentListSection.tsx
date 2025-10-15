@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Card,
@@ -50,8 +50,11 @@ export default function StudentListSection({}: StudentListSectionProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [committedSearch, setCommittedSearch] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [committedPhoneNumber, setCommittedPhoneNumber] = useState("");
   const [state, setState] = useState("");
+  const [committedState, setCommittedState] = useState("");
   const [city, setCity] = useState("");
+  const [committedCity, setCommittedCity] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(12);
 
@@ -65,24 +68,72 @@ export default function StudentListSection({}: StudentListSectionProps) {
   const [detailsDialog, setDetailsDialog] = useState<{
     open: boolean;
     student?: StudentResult;
-  }>({ open: false }); // Fetch students on mount and when filters change
+  }>({ open: false });
+
+  // Debouncing for auto-search
   useEffect(() => {
-    dispatch(
-      getStudents({
-        searchTerm: committedSearch || undefined,
-        phoneNumber: phoneNumber || undefined,
-        state: state || undefined,
-        city: city || undefined,
-        pageNumber,
-        pageSize,
-      })
-    );
+    const timeoutId = setTimeout(() => {
+      setCommittedSearch(searchTerm.trim());
+      if (searchTerm.trim() !== committedSearch) {
+        setPageNumber(1);
+      }
+    }, 800); // 800ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setCommittedPhoneNumber(phoneNumber.trim());
+      if (phoneNumber.trim() !== committedPhoneNumber) {
+        setPageNumber(1);
+      }
+    }, 800);
+
+    return () => clearTimeout(timeoutId);
+  }, [phoneNumber]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setCommittedState(state.trim());
+      if (state.trim() !== committedState) {
+        setPageNumber(1);
+      }
+    }, 800);
+
+    return () => clearTimeout(timeoutId);
+  }, [state]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setCommittedCity(city.trim());
+      if (city.trim() !== committedCity) {
+        setPageNumber(1);
+      }
+    }, 800);
+
+    return () => clearTimeout(timeoutId);
+  }, [city]);
+
+  // Fetch students on mount and when filters change
+  useEffect(() => {
+    const params = {
+      searchTerm: committedSearch || undefined,
+      phoneNumber: committedPhoneNumber || undefined,
+      state: committedState || undefined,
+      city: committedCity || undefined,
+      pageNumber,
+      pageSize,
+    };
+    
+    // Call API with search parameters
+    dispatch(getStudents(params));
   }, [
     dispatch,
     committedSearch,
-    phoneNumber,
-    state,
-    city,
+    committedPhoneNumber,
+    committedState,
+    committedCity,
     pageNumber,
     pageSize,
   ]);
@@ -92,10 +143,14 @@ export default function StudentListSection({}: StudentListSectionProps) {
     setSearchTerm(event.target.value);
   };
 
-  const triggerSearch = () => {
+  const triggerSearch = useCallback(() => {
     setCommittedSearch(searchTerm.trim());
+    setCommittedPhoneNumber(phoneNumber.trim());
+    setCommittedState(state.trim());
+    setCommittedCity(city.trim());
     setPageNumber(1);
-  };
+  }, [searchTerm, phoneNumber, state, city]);
+
 
   const handleEditStudent = (student: StudentResult) => {
     setFormDialog({ open: true, mode: "edit", student });
@@ -153,53 +208,104 @@ export default function StudentListSection({}: StudentListSectionProps) {
           >
             <TextField
               fullWidth
+              multiline
+              maxRows={1} // Keep single line appearance but allow unlimited length
               placeholder={translate("admin.searchStudentPlaceholder")}
               value={searchTerm}
               onChange={handleSearchInput}
               onKeyDown={(e) => {
-                if (e.key === "Enter") triggerSearch();
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  triggerSearch();
+                }
               }}
+              helperText={" "} // Fixed height to prevent layout shift
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
                     <SearchIcon />
                   </InputAdornment>
                 ),
+                sx: {
+                  '& textarea': {
+                    resize: 'none', // Prevent manual resizing
+                    overflow: 'auto', // Allow scrolling within input
+                  }
+                }
               }}
             />
             <TextField
               fullWidth
               placeholder={translate("admin.phoneNumber")}
               value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
+              onChange={(e) => {
+                // Chỉ cho phép số và ký tự đặc biệt cho phone
+                const value = e.target.value.replace(/[^0-9+\-\s\(\)]/g, '');
+                setPhoneNumber(value);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") triggerSearch();
               }}
+              inputProps={{
+                style: {
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }
+              }}
+              helperText={" "} // Fixed height to prevent layout shift
+              error={!!(phoneNumber && phoneNumber.length > 0 && phoneNumber.length < 9)}
             />
             <TextField
               fullWidth
               placeholder={translate("admin.stateProvince")}
               value={state}
-              onChange={(e) => setState(e.target.value)}
+              onChange={(e) => {
+                // Chỉ cho phép chữ cái, khoảng trắng và dấu
+                const value = e.target.value.replace(/[^a-zA-Z\s\u00C0-\u017F\u1EA0-\u1EF9]/g, '');
+                setState(value);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") triggerSearch();
               }}
+              inputProps={{
+                style: {
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }
+              }}
+              helperText={" "} // Fixed height to prevent layout shift
             />
             <TextField
               fullWidth
               placeholder={translate("admin.cityDistrict")}
               value={city}
-              onChange={(e) => setCity(e.target.value)}
+              onChange={(e) => {
+                // Chỉ cho phép chữ cái, khoảng trắng và dấu
+                const value = e.target.value.replace(/[^a-zA-Z\s\u00C0-\u017F\u1EA0-\u1EF9]/g, '');
+                setCity(value);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") triggerSearch();
               }}
+              inputProps={{
+                style: {
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }
+              }}
+              helperText={" "} // Fixed height to prevent layout shift
             />
           </Box>
           <Box
             sx={{
               mt: { xs: 1.5, sm: 2 },
               display: "flex",
+              gap: 2,
               justifyContent: "flex-end",
+              flexDirection: { xs: "column", sm: "row" },
             }}
           >
             <Button
@@ -346,7 +452,7 @@ export default function StudentListSection({}: StudentListSectionProps) {
               color="text.secondary"
               sx={{ mb: 3, fontSize: { xs: "0.875rem", sm: "1rem" } }}
             >
-              {committedSearch
+              {(committedSearch || committedPhoneNumber || committedState || committedCity)
                 ? translate("admin.tryAdjustingSearch")
                 : translate("admin.noStudentsYet")}
             </Typography>

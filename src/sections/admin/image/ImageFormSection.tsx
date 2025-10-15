@@ -33,6 +33,7 @@ import {
   CreateImageRequest,
   UpdateImageRequest,
 } from "../../../common/@types/image";
+import useLocales from "../../../hooks/useLocales";
 
 interface ImageFormSectionProps {
   mode: "create" | "edit";
@@ -53,6 +54,7 @@ export default function ImageFormSection({
   onBack,
   onSuccess,
 }: ImageFormSectionProps) {
+  const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const { operations } = useAppSelector((state) => state.image);
   const { robots } = useAppSelector((state) => state.robot);
@@ -91,17 +93,17 @@ export default function ImageFormSection({
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.url.trim()) {
-      newErrors.url = "Image URL is required";
+      newErrors.url = translate("image.image_form_url_required");
     } else if (!isValidUrl(formData.url)) {
-      newErrors.url = "Please enter a valid URL";
+      newErrors.url = translate("image.image_form_url_invalid");
     }
 
     if (formData.assignmentType === "robot" && !formData.robotId) {
-      newErrors.robotId = "Please select a robot";
+      newErrors.robotId = translate("image.image_form_robot_required");
     }
 
     if (formData.assignmentType === "component" && !formData.componentId) {
-      newErrors.componentId = "Please select a component";
+      newErrors.componentId = translate("image.image_form_component_required");
     }
 
     setErrors(newErrors);
@@ -163,7 +165,7 @@ export default function ImageFormSection({
       {/* Header */}
       <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
         <Button startIcon={<ArrowBackIcon />} onClick={onBack} sx={{ mr: 2 }}>
-          Back to List
+          {translate("image.image_form_back_to_list")}
         </Button>
       </Box>
 
@@ -196,15 +198,15 @@ export default function ImageFormSection({
                     onImageChange={(url) =>
                       setFormData((prev) => ({ ...prev, url: url || "" }))
                     }
-                    title="Upload Image"
-                    description="Upload an image file or enter a URL below"
+                    title={translate("image.image_form_upload_title")}
+                    description={translate("image.image_form_upload_description")}
                     height={250}
                     disabled={isLoading}
                   />
 
                   {/* Alternative: Manual URL Input */}
                   <TextField
-                    label="Or enter Image URL directly"
+                    label={translate("image.image_form_url_label")}
                     value={formData.url}
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, url: e.target.value }))
@@ -212,37 +214,37 @@ export default function ImageFormSection({
                     error={!!errors.url}
                     helperText={
                       errors.url ||
-                      "Alternative: Enter the direct URL to an existing image"
+                      translate("image.image_form_url_helper")
                     }
                     fullWidth
-                    placeholder="https://example.com/robot-image.jpg"
+                    placeholder={translate("image.image_form_url_placeholder")}
                   />
 
                   {/* Assignment Type */}
                   <FormControl fullWidth>
-                    <InputLabel>Assignment</InputLabel>
+                    <InputLabel>{translate("image.image_form_assignment_label")}</InputLabel>
                     <Select
                       value={formData.assignmentType}
-                      label="Assignment"
+                      label={translate("image.image_form_assignment_label")}
                       onChange={(e) =>
                         handleAssignmentTypeChange(e.target.value)
                       }
                     >
                       <MenuItem value="general">
-                        General Use (No Assignment)
+                        {translate("image.image_form_assignment_general")}
                       </MenuItem>
-                      <MenuItem value="robot">Assign to Robot</MenuItem>
-                      <MenuItem value="component">Assign to Component</MenuItem>
+                      <MenuItem value="robot">{translate("image.image_form_assignment_robot")}</MenuItem>
+                      <MenuItem value="component">{translate("image.image_form_assignment_component")}</MenuItem>
                     </Select>
                   </FormControl>
 
                   {/* Robot Selection */}
                   {formData.assignmentType === "robot" && (
                     <FormControl fullWidth error={!!errors.robotId}>
-                      <InputLabel>Select Robot</InputLabel>
+                      <InputLabel>{translate("image.image_form_select_robot")}</InputLabel>
                       <Select
                         value={formData.robotId}
-                        label="Select Robot"
+                        label={translate("image.image_form_select_robot")}
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
@@ -272,10 +274,10 @@ export default function ImageFormSection({
                   {/* Component Selection */}
                   {formData.assignmentType === "component" && (
                     <FormControl fullWidth error={!!errors.componentId}>
-                      <InputLabel>Select Component</InputLabel>
+                      <InputLabel>{translate("image.image_form_select_component")}</InputLabel>
                       <Select
                         value={formData.componentId}
-                        label="Select Component"
+                        label={translate("image.image_form_select_component")}
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
@@ -317,7 +319,7 @@ export default function ImageFormSection({
                       disabled={isLoading}
                       size="large"
                     >
-                      {mode === "create" ? "Upload Image" : "Update Image"}
+                      {mode === "create" ? translate("image.image_form_upload_btn") : translate("image.image_form_update_btn")}
                     </Button>
                     <Button
                       variant="outlined"
@@ -325,7 +327,7 @@ export default function ImageFormSection({
                       disabled={isLoading}
                       size="large"
                     >
-                      Cancel
+                      {translate("image.image_form_cancel")}
                     </Button>
                   </Box>
                 </Box>
@@ -339,7 +341,7 @@ export default function ImageFormSection({
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Preview
+                {translate("image.image_form_preview")}
               </Typography>
 
               {formData.url && isValidUrl(formData.url) ? (
@@ -401,7 +403,7 @@ export default function ImageFormSection({
                       sx={{ fontSize: 48, color: "grey.400", mb: 1 }}
                     />
                     <Typography variant="body2" color="text.secondary">
-                      Image preview will appear here
+                      {translate("image.image_form_preview_placeholder")}
                     </Typography>
                   </Box>
                 </Box>
@@ -410,7 +412,7 @@ export default function ImageFormSection({
               {/* Assignment Info */}
               <Box sx={{ mt: 2 }}>
                 <Typography variant="body2" color="text.secondary">
-                  <strong>Assignment:</strong> {formData.assignmentType}
+                  <strong>{translate("image.image_form_assignment_info")}:</strong> {formData.assignmentType}
                 </Typography>
                 {formData.assignmentType === "robot" && formData.robotId && (
                   <Typography
@@ -418,7 +420,7 @@ export default function ImageFormSection({
                     color="text.secondary"
                     sx={{ mt: 0.5 }}
                   >
-                    <strong>Robot:</strong>{" "}
+                    <strong>{translate("image.image_form_robot_info")}:</strong>{" "}
                     {
                       robots.data?.items.find((r) => r.id === formData.robotId)
                         ?.name
@@ -432,7 +434,7 @@ export default function ImageFormSection({
                       color="text.secondary"
                       sx={{ mt: 0.5 }}
                     >
-                      <strong>Component:</strong>{" "}
+                      <strong>{translate("image.image_form_component_info")}:</strong>{" "}
                       {
                         components.data?.items.find(
                           (c) => c.id === formData.componentId
@@ -448,3 +450,4 @@ export default function ImageFormSection({
     </Box>
   );
 }
+

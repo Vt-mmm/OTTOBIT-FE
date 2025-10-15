@@ -101,7 +101,10 @@ export default function EnrollmentFormDialog({
       maxWidth="sm"
       fullWidth
       PaperProps={{
-        sx: { borderRadius: 2 },
+        sx: { 
+          borderRadius: { xs: 0, sm: 2 },
+          m: { xs: 0, sm: 2 }
+        },
       }}
     >
       <DialogTitle
@@ -213,15 +216,25 @@ export default function EnrollmentFormDialog({
           </Box>
         </DialogContent>
 
-        <DialogActions sx={{ p: 3, pt: 2 }}>
-          <Button onClick={onClose} disabled={isLoading} color="inherit">
+        <DialogActions sx={{ 
+          p: { xs: 2, sm: 3 }, 
+          pt: { xs: 1, sm: 2 }, 
+          gap: 1,
+          flexDirection: { xs: "column-reverse", sm: "row" }
+        }}>
+          <Button 
+            onClick={onClose} 
+            disabled={isLoading} 
+            color="inherit"
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
             {translate("admin.cancel")}
           </Button>
           <Button
             type="submit"
             variant="contained"
             disabled={isLoading || isLoadingCourses}
-            sx={{ minWidth: 120 }}
+            sx={{ width: { xs: '100%', sm: 'auto' }, minWidth: { xs: "auto", sm: 120 } }}
           >
             {isLoading ? translate("admin.creating") : translate("admin.createEnrollment")}
           </Button>
