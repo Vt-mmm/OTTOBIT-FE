@@ -35,7 +35,7 @@ export default function AddToCartButton({
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { translate } = useLocales();
-  const { operations, itemExistsCache } = useAppSelector((state) => state.cart);
+  const { itemExistsCache } = useAppSelector((state) => state.cart);
 
   const isInCart = itemExistsCache[courseId] || false;
   // Avoid making all buttons show loading: use local adding state per button
