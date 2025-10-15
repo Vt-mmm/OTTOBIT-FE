@@ -6,24 +6,29 @@ import {
   TextField,
   InputAdornment,
   Button,
+  IconButton,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import SearchIcon from "@mui/icons-material/Search";
+// import FilterListIcon from "@mui/icons-material/FilterList";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { useLocales } from "../../../hooks";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getCourses } from "../../../redux/course/courseSlice";
 import CourseCarousel3D from "../../../components/course/CourseCarousel3D";
 import AnimatedBlob from "../../../components/common/AnimatedBlob";
+import CourseFilterDialog, { CourseFilters } from "./CourseFilterDialog";
 
 interface CourseHeroSectionProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  onFilterApply?: (filters: CourseFilters) => void;
 }
 
 export default function CourseHeroSection({
   searchQuery,
   onSearchChange,
+  onFilterApply,
 }: CourseHeroSectionProps) {
   const { translate } = useLocales();
   const dispatch = useAppDispatch();
@@ -31,7 +36,19 @@ export default function CourseHeroSection({
     (state) => state.course.courses
   );
   const [displayedText, setDisplayedText] = useState("");
+  const [filterOpen, setFilterOpen] = useState(false);
   const fullText = translate("courses.Title");
+
+  // Listen for filter dialog open event
+  useEffect(() => {
+    const handleOpenFilter = () => {
+      setFilterOpen(true);
+    };
+
+    window.addEventListener("openCourseFilter", handleOpenFilter);
+    return () =>
+      window.removeEventListener("openCourseFilter", handleOpenFilter);
+  }, []);
 
   // Fetch courses for carousel
   useEffect(() => {
@@ -250,10 +267,20 @@ export default function CourseHeroSection({
                 placeholder={translate("courses.SearchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    onFilterApply?.({});
+                  }
+                }}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon sx={{ color: "#4caf50" }} />
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => onFilterApply?.({})}
+                        sx={{ color: "#4caf50" }}
+                      >
+                        <SearchIcon />
+                      </IconButton>
                     </InputAdornment>
                   ),
                   sx: {
@@ -285,10 +312,13 @@ export default function CourseHeroSection({
               />
             </Box>
 
-            {/* CTA Button */}
+            {/* Action Button */}
             <Button
               component={motion.button}
-              whileHover={{ scale: 1.05, boxShadow: "0 8px 30px rgba(76, 175, 80, 0.3)" }}
+              whileHover={{
+                scale: 1.05,
+                boxShadow: "0 8px 30px rgba(76, 175, 80, 0.3)",
+              }}
               whileTap={{ scale: 0.95 }}
               variant="contained"
               size="large"
@@ -311,11 +341,22 @@ export default function CourseHeroSection({
                 },
               }}
             >
-              {translate("courses.ExploreAllCourses") || "Khám phá tất cả khóa học"}
+              {translate("courses.ExploreAllCourses") ||
+                "Khám phá tất cả khóa học"}
             </Button>
           </Box>
         </Box>
       </Container>
+
+      {/* Filter Dialog */}
+      <CourseFilterDialog
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        onApply={(filters) => {
+          onFilterApply?.(filters);
+          setFilterOpen(false);
+        }}
+      />
     </Box>
   );
 }

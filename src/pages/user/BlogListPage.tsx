@@ -11,6 +11,7 @@ import {
   MenuItem,
   Select,
   FormControl,
+  InputLabel,
   Stack,
   Card,
   CardMedia,
@@ -301,29 +302,37 @@ const BlogListPage: React.FC = () => {
         </Grid>
 
         <Stack
-          direction="row"
-          alignItems="center"
+          direction={{ xs: "column", sm: "row" }}
           justifyContent="space-between"
+          alignItems="center"
+          spacing={2}
           mt={4}
         >
-          <FormControl size="small" sx={{ minWidth: 140 }}>
+          {/* Page Size Selector */}
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>Hiển thị</InputLabel>
             <Select
               value={pageSize}
+              label="Hiển thị"
               onChange={(e) => setPageSize(Number(e.target.value))}
             >
               {PAGE_SIZES.map((s) => (
                 <MenuItem key={s} value={s}>
-                  {s}/trang
+                  {s}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-          <Pagination
-            color="primary"
-            page={page}
-            count={totalPages}
-            onChange={(_, v) => setPage(v)}
-          />
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination
+              color="primary"
+              page={page}
+              count={totalPages}
+              onChange={(_, v) => setPage(v)}
+            />
+          )}
         </Stack>
 
         <UserBlogFilterDialog
