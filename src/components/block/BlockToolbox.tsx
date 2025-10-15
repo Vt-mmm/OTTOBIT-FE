@@ -6,7 +6,8 @@ import {
   Memory,
   Build,
   Psychology,
-  Functions
+  Functions,
+  Calculate
 } from '@mui/icons-material';
 
 interface ToolboxCategory {
@@ -60,6 +61,13 @@ const BlockToolbox: React.FC<BlockToolboxProps> = ({ onCategorySelect, selectedC
       icon: Psychology,
       color: '#9c27b0',
       selectedColor: '#7b1fa2'
+    },
+    {
+      id: 'arithmetic',
+      name: 'MATH',
+      icon: Calculate,
+      color: '#4CAF50',
+      selectedColor: '#388E3C'
     },
     {
       id: 'actions',

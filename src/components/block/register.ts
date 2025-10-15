@@ -4,6 +4,7 @@ import * as Blockly from "blockly/core";
 import { eventBlocks } from "./ottobit_events";
 import { movementBlocks } from "./ottobit_movement";
 import { controlBlocks } from "./ottobit_control";
+import { arithmeticBlocks } from "./ottobit_arithmetic";
 import { sensorBlocks } from "./ottobit_sensors";
 import { actionBlocks } from "./ottobit_actions";
 import { functionBlocks } from "./ottobit_functions";
@@ -51,6 +52,7 @@ export function registerottobitBlocks(): void {
     eventBlocks,
     movementBlocks,
     controlBlocks,
+    arithmeticBlocks,
     sensorBlocks,
     actionBlocks,
     functionBlocks,
@@ -224,6 +226,9 @@ export const BLOCK_TYPES = {
   // Logic blocks (cập nhật - đã thu gọn)
   ottobit_boolean: "ottobit_boolean",
   ottobit_logic_operation: "ottobit_logic_operation",
+
+  // Arithmetic block - unified operator with dropdown
+  ottobit_arithmetic: "ottobit_arithmetic",
 
   // Sensors (cập nhật)
   ottobit_read_sensor: "ottobit_read_sensor",

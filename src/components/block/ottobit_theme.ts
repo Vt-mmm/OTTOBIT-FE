@@ -122,6 +122,9 @@ export const ottobitTheme = Blockly.Theme.defineTheme("ottobitTheme", {
     ottobit_action_orange: triad(HP.actionOrange),
     ottobit_action_salmon: triad(HP.actionSalmon),
 
+    // Arithmetic blocks: green color for math operations
+    ottobit_arithmetic: triad("#4CAF50"),
+
     // If you ever decide to mirror more of HP categories
     math_blocks: triad(HP.math),
     text_blocks: triad(HP.text),
