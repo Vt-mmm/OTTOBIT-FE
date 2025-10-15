@@ -226,6 +226,26 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
     } catch {}
   }, [challengeId, currentChallengeId, workspace]);
 
+  // Prevent body scrollbar on studio page to avoid layout shifts
+  useEffect(() => {
+    // Save original body styles
+    const originalOverflow = document.body.style.overflow;
+    const originalMargin = document.body.style.margin;
+    const originalPadding = document.body.style.padding;
+
+    // Apply studio-specific body styles
+    document.body.style.overflow = "hidden";
+    document.body.style.margin = "0";
+    document.body.style.padding = "0";
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.margin = originalMargin;
+      document.body.style.padding = originalPadding;
+    };
+  }, []);
+
   return (
     <Box
       sx={{
@@ -287,8 +307,8 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
               xs: "100%",
               sm: "100%",
               md: "100%",
-              lg: "480px", // Compact hơn để dành chỗ cho map
-              xl: "680px", // Vẫn đủ space cho blocks
+              lg: "600px", // Compact hơn để dành chỗ cho map
+              xl: "800px", // Vẫn đủ space cho blocks
             },
             height: {
               xs: "45vh", // Giảm xuống để map có nhiều space hơn
@@ -334,7 +354,6 @@ const StudioContent = ({ challengeId }: { challengeId: string }) => {
           <SimulatorStageSection workspace={workspace} />
         </Box>
       </Box>
-
     </Box>
   );
 };

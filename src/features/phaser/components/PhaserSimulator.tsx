@@ -55,22 +55,35 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
   const prevDefeatOpenRef = useRef<boolean>(false);
   const suppressAutoResetRef = useRef<boolean>(false);
 
-  // Handle replay using proper restart logic from PhaserContext
+  // Handle replay using EXACT same logic as TopBar restart button
   const handleReplay = async () => {
     try {
-      // Sử dụng restartScene từ PhaserContext giống TopBar
+      // CRITICAL: Suppress auto-reset to prevent double restart
+      // (handleReplay does manual restart + modal close triggers auto-reset)
+      suppressAutoResetRef.current = true;
+      
+      // Use restartScene from PhaserContext - SAME as TopBar handleRestart
       await restartScene();
-      // Đóng modal
+      
+      // Close modals after successful restart
       hideVictoryModal();
       hideDefeatModal();
+      
+      // Re-enable auto-reset after a short delay
+      setTimeout(() => {
+        suppressAutoResetRef.current = false;
+      }, 100);
     } catch (error) {
-      // Fallback: Reload iframe nếu restart không thành công
-      const iframe = iframeRef.current;
-      if (iframe) {
-        iframe.src = iframe.src;
-      }
+      console.error("❌ [PhaserSimulator] Error restarting scene:", error);
+      
+      // Still close modals even on error - DON'T reload iframe (causes duplicate assets)
       hideVictoryModal();
       hideDefeatModal();
+      
+      // Re-enable auto-reset even on error
+      setTimeout(() => {
+        suppressAutoResetRef.current = false;
+      }, 100);
     }
   };
 

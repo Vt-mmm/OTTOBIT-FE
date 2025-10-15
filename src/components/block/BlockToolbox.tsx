@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
 import {
   PlayArrow,
@@ -19,10 +19,18 @@ interface ToolboxCategory {
 
 interface BlockToolboxProps {
   onCategorySelect: (categoryId: string) => void;
+  selectedCategory?: string; // Accept selected category from parent
 }
 
-const BlockToolbox: React.FC<BlockToolboxProps> = ({ onCategorySelect }) => {
+const BlockToolbox: React.FC<BlockToolboxProps> = ({ onCategorySelect, selectedCategory: externalSelectedCategory }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>(''); // Bắt đầu với toolbox đóng
+
+  // Sync internal state with external prop
+  useEffect(() => {
+    if (externalSelectedCategory !== undefined) {
+      setSelectedCategory(externalSelectedCategory);
+    }
+  }, [externalSelectedCategory]);
 
   const categories: ToolboxCategory[] = [
     {

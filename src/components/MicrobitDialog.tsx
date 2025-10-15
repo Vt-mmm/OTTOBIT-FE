@@ -468,6 +468,7 @@ while True:
       maxWidth="md"
       fullWidth
       disableEscapeKeyDown={isFlashing}
+      disableScrollLock={true}
     >
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">

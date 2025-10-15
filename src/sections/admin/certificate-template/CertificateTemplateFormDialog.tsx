@@ -93,14 +93,63 @@ export default function CertificateTemplateFormDialog({
         courseId: "",
         name: "",
         backgroundImageUrl: "",
-        bodyHtml: `<div style="text-align: center; padding: 40px;">
-  <h1 style="font-size: 48px; color: #1976d2;">CHỨNG CHỈ HOÀN THÀNH</h1>
-  <p style="font-size: 20px; margin: 20px 0;">Chứng nhận rằng</p>
-  <h2 style="font-size: 36px; color: #333; margin: 20px 0;">{{studentName}}</h2>
-  <p style="font-size: 18px; margin: 20px 0;">đã hoàn thành xuất sắc khóa học</p>
-  <h3 style="font-size: 28px; color: #1976d2; margin: 20px 0;">{{courseName}}</h3>
-  <p style="font-size: 16px; margin: 40px 0;">Cấp ngày: {{issueDate}}</p>
-  <p style="font-size: 14px; color: #666;">Mã chứng chỉ: {{certificateNo}}</p>
+        bodyHtml: `<div style="width:100%;min-height:600px;box-sizing:border-box;
+            padding:56px;background:#ffffff;
+            font-family:Segoe UI, Arial, Helvetica, sans-serif;color:#0A0A0A;">
+
+  <div style="max-width:1000px;margin:0 auto;border:3px solid #1f6f3f;
+              padding:48px;border-radius:12px;
+              background:rgba(255,255,255,.92);">
+
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-size:14px;letter-spacing:3px;color:#1f6f3f;font-weight:700;">
+        CERTIFICATE OF COMPLETION
+      </div>
+    </div>
+
+    <div style="text-align:center;font-size:16px;color:#4b5563;margin-top:8px;">
+      This certifies that
+    </div>
+
+    <div style="text-align:center;margin:14px 0 10px 0;">
+      <span style="display:inline-block;font-size:34px;font-weight:800;color:#0f5132;
+                   border-bottom:2px solid #1f6f3f;padding:6px 14px;">
+        {{StudentName}}
+      </span>
+    </div>
+
+    <div style="text-align:center;font-size:18px;color:#374151;margin-top:8px;">
+      has successfully completed the course
+    </div>
+
+    <div style="text-align:center;margin-top:8px;">
+      <span style="display:inline-block;font-size:22px;font-weight:700;color:#14532d;">
+        {{CourseTitle}}
+      </span>
+    </div>
+
+    <div style="display:flex;justify-content:center;gap:18px;margin-top:18px;
+                color:#6b7280;font-size:14px;">
+      <div>Issued on: <strong style="color:#0f5132;">{{IssueDate}}</strong></div>
+      <div style="opacity:.5;">|</div>
+      <div>Certificate ID: <strong style="color:#0f5132;">{{CertificateId}}</strong></div>
+    </div>
+
+    <div style="height:1px;background:linear-gradient(90deg,#1f6f3f,rgba(31,111,63,0));
+                margin:32px 0;"></div>
+
+    <div style="text-align:center;">
+      <img src="{{SignatureImageUrl}}" alt="signature"
+           style="max-height:72px;max-width:200px;object-fit:contain;margin-bottom:6px;"/>
+      <div style="font-weight:700;color:#0f5132;">{{IssuerName}}</div>
+      <div style="color:#4b5563;font-size:14px;">{{IssuerTitle}}</div>
+    </div>
+
+    <div style="text-align:center;margin-top:28px;color:#9ca3af;font-size:12px;">
+      Ottobit Academy · Robotics & STEM Education
+    </div>
+
+  </div>
 </div>`,
         issuerName: "",
         issuerTitle: "",
@@ -222,14 +271,13 @@ export default function CertificateTemplateFormDialog({
                 </strong>
               </Typography>
               <Typography variant="body2" component="div">
-                • <code>{"{{studentName}}"}</code> -{" "}
-                {translate("admin.certificateTemplate.studentNamePlaceholder")}
-                <br />• <code>{"{{courseName}}"}</code> -{" "}
-                {translate("admin.certificateTemplate.courseNamePlaceholder")}
-                <br />• <code>{"{{issueDate}}"}</code> -{" "}
-                {translate("admin.certificateTemplate.issueDatePlaceholder")}
-                <br />• <code>{"{{certificateNo}}"}</code> -{" "}
-                {translate("admin.certificateTemplate.certificateNoPlaceholder")}
+                • <code>{"{{StudentName}}"}</code> - Tên học viên
+                <br />• <code>{"{{CourseTitle}}"}</code> - Tên khóa học
+                <br />• <code>{"{{IssueDate}}"}</code> - Ngày cấp
+                <br />• <code>{"{{CertificateId}}"}</code> - Mã chứng chỉ
+                <br />• <code>{"{{SignatureImageUrl}}"}</code> - URL hình chữ ký (tự động thay thế)
+                <br />• <code>{"{{IssuerName}}"}</code> - Tên người cấp
+                <br />• <code>{"{{IssuerTitle}}"}</code> - Chức danh người cấp
               </Typography>
             </Alert>
             <TextField
