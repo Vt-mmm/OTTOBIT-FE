@@ -52,9 +52,7 @@ export default function OrderListSection() {
   // Pagination & Filter states
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "">("");
-  const [searchInput, setSearchInput] = useState("");
 
   // Confirmation dialog state
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -77,14 +75,13 @@ export default function OrderListSection() {
   // Fetch data
   useEffect(() => {
     fetchData();
-  }, [page, rowsPerPage, searchTerm, statusFilter]);
+  }, [page, rowsPerPage, statusFilter]);
 
   const fetchData = () => {
     dispatch(
       getOrdersForAdminThunk({
         page: page + 1,
         size: rowsPerPage,
-        searchTerm: searchTerm || undefined,
         status: statusFilter !== "" ? statusFilter : undefined,
       })
     );
@@ -106,11 +103,6 @@ export default function OrderListSection() {
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const handleSearch = () => {
-    setSearchTerm(searchInput);
     setPage(0);
   };
 
@@ -233,18 +225,7 @@ export default function OrderListSection() {
         {/* Filters */}
         <Card sx={{ p: 2 }}>
           <Stack direction="row" spacing={2} alignItems="center">
-            <TextField
-              label={translate("admin.searchOrderPlaceholder")}
-              variant="outlined"
-              size="small"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") handleSearch();
-              }}
-              sx={{ flexGrow: 1 }}
-            />
-            <FormControl size="small" sx={{ minWidth: 150 }}>
+            <FormControl size="small" sx={{ minWidth: 200 }}>
               <InputLabel>{translate("admin.status")}</InputLabel>
               <Select
                 value={statusFilter}
@@ -262,9 +243,6 @@ export default function OrderListSection() {
                 <MenuItem value={OrderStatus.Refunded}>{translate("admin.refunded")}</MenuItem>
               </Select>
             </FormControl>
-            <Button variant="contained" onClick={handleSearch}>
-              {translate("admin.search")}
-            </Button>
           </Stack>
         </Card>
 

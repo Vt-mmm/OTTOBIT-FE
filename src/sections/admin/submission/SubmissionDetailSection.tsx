@@ -254,12 +254,13 @@ export default function SubmissionDetailSection() {
                     <Box textAlign="center">
                       <Rating
                         value={submission.star}
+                        max={3}
                         readOnly
                         size="large"
                         sx={{ fontSize: "3rem" }}
                       />
                       <Typography variant="h4" fontWeight={600} mt={1}>
-                        {submission.star}/5
+                        {submission.star}/3
                       </Typography>
                     </Box>
                   </Stack>
