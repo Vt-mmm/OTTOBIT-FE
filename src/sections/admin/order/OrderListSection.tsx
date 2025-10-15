@@ -17,7 +17,6 @@ import {
   TableRow,
   Typography,
   Alert,
-  TextField,
   MenuItem,
   Select,
   FormControl,
@@ -236,11 +235,21 @@ export default function OrderListSection() {
                 label={translate("admin.status")}
               >
                 <MenuItem value="">{translate("admin.all")}</MenuItem>
-                <MenuItem value={OrderStatus.Pending}>{translate("admin.pending")}</MenuItem>
-                <MenuItem value={OrderStatus.Paid}>{translate("admin.paid")}</MenuItem>
-                <MenuItem value={OrderStatus.Failed}>{translate("admin.failed")}</MenuItem>
-                <MenuItem value={OrderStatus.Cancelled}>{translate("admin.cancelled")}</MenuItem>
-                <MenuItem value={OrderStatus.Refunded}>{translate("admin.refunded")}</MenuItem>
+                <MenuItem value={OrderStatus.Pending}>
+                  {translate("admin.pending")}
+                </MenuItem>
+                <MenuItem value={OrderStatus.Paid}>
+                  {translate("admin.paid")}
+                </MenuItem>
+                <MenuItem value={OrderStatus.Failed}>
+                  {translate("admin.failed")}
+                </MenuItem>
+                <MenuItem value={OrderStatus.Cancelled}>
+                  {translate("admin.cancelled")}
+                </MenuItem>
+                <MenuItem value={OrderStatus.Refunded}>
+                  {translate("admin.refunded")}
+                </MenuItem>
               </Select>
             </FormControl>
           </Stack>
@@ -254,12 +263,20 @@ export default function OrderListSection() {
                 <TableRow>
                   <TableCell>{translate("admin.orderID")}</TableCell>
                   <TableCell>{translate("admin.user")}</TableCell>
-                  <TableCell align="right">{translate("admin.subtotal")}</TableCell>
-                  <TableCell align="right">{translate("admin.discount")}</TableCell>
-                  <TableCell align="right">{translate("admin.total")}</TableCell>
+                  <TableCell align="right">
+                    {translate("admin.subtotal")}
+                  </TableCell>
+                  <TableCell align="right">
+                    {translate("admin.discount")}
+                  </TableCell>
+                  <TableCell align="right">
+                    {translate("admin.total")}
+                  </TableCell>
                   <TableCell>{translate("admin.status")}</TableCell>
                   <TableCell>{translate("admin.createdAt")}</TableCell>
-                  <TableCell align="center">{translate("admin.actions")}</TableCell>
+                  <TableCell align="center">
+                    {translate("admin.actions")}
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -335,10 +352,18 @@ export default function OrderListSection() {
                               />
                             </MenuItem>
                             <MenuItem value={OrderStatus.Paid}>
-                              <Chip label={translate("admin.paid")} size="small" color="success" />
+                              <Chip
+                                label={translate("admin.paid")}
+                                size="small"
+                                color="success"
+                              />
                             </MenuItem>
                             <MenuItem value={OrderStatus.Failed}>
-                              <Chip label={translate("admin.failed")} size="small" color="error" />
+                              <Chip
+                                label={translate("admin.failed")}
+                                size="small"
+                                color="error"
+                              />
                             </MenuItem>
                             <MenuItem value={OrderStatus.Cancelled}>
                               <Chip
@@ -401,12 +426,14 @@ export default function OrderListSection() {
         <DialogContent>
           <DialogContentText>
             {translate("admin.confirmStatusChangeMessage", {
-              currentStatus: confirmDialog.currentStatus !== null
-                ? getStatusLabel(confirmDialog.currentStatus)
-                : "",
-              newStatus: confirmDialog.newStatus !== null
-                ? getStatusLabel(confirmDialog.newStatus)
-                : ""
+              currentStatus:
+                confirmDialog.currentStatus !== null
+                  ? getStatusLabel(confirmDialog.currentStatus)
+                  : "",
+              newStatus:
+                confirmDialog.newStatus !== null
+                  ? getStatusLabel(confirmDialog.newStatus)
+                  : "",
             })}
           </DialogContentText>
           <Alert severity="warning" sx={{ mt: 2 }}>
@@ -427,7 +454,9 @@ export default function OrderListSection() {
             disabled={operations.isUpdatingStatus}
             autoFocus
           >
-            {operations.isUpdatingStatus ? translate("admin.updating") : translate("admin.confirm")}
+            {operations.isUpdatingStatus
+              ? translate("admin.updating")
+              : translate("admin.confirm")}
           </Button>
         </DialogActions>
       </Dialog>
