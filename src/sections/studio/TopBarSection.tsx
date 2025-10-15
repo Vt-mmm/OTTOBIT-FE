@@ -50,6 +50,7 @@ import { ChallengeMode } from "../../common/@types/challenge";
 import {
   generateStudioUrl,
   getStoredNavigationData,
+  storeStudioNavigationData,
 } from "../../utils/studioNavigation";
 import { isChallengeAccessible } from "../../utils/challengeUtils";
 import { getMySubmissionsThunk } from "../../redux/submission/submissionThunks";
@@ -166,15 +167,39 @@ function TopBarContent({
   // Derive lessonId from query params or stored navigation data
   useEffect(() => {
     const idFromQuery = searchParams.get("lesson");
+    console.log("🔍 [TopBar] Derive lessonId:", {
+      idFromQuery,
+      searchParams: Object.fromEntries(searchParams.entries()),
+      currentLessonId: lessonId,
+      currentChallengeId,
+    });
+    
     if (idFromQuery) {
+      console.log("✅ [TopBar] Setting lessonId from query:", idFromQuery);
       setLessonId(idFromQuery);
+      
+      // CRITICAL: Update sessionStorage with current challengeId and lessonId
+      if (currentChallengeId) {
+        storeStudioNavigationData({
+          challengeId: currentChallengeId,
+          lessonId: idFromQuery,
+          source: 'lesson'
+        });
+        console.log("💾 [TopBar] Updated sessionStorage with URL params");
+      }
       return;
     }
+    
     const stored = getStoredNavigationData();
+    console.log("📦 [TopBar] Stored navigation data:", stored);
+    
     if (stored?.lessonId) {
+      console.log("✅ [TopBar] Setting lessonId from storage:", stored.lessonId);
       setLessonId(stored.lessonId);
+    } else {
+      console.log("⚠️ [TopBar] No lessonId found - menu will be hidden");
     }
-  }, [searchParams]);
+  }, [searchParams, currentChallengeId]);
 
   // Fetch lesson challenges (up to 8) when lessonId is available
   useEffect(() => {
@@ -305,6 +330,11 @@ function TopBarContent({
 
   // Reset hasExecuted when challenge changes (fix: reset button not appearing on new map)
   useEffect(() => {
+    console.log('🔄 [TopBar] Challenge changed, resetting button state:', {
+      currentChallengeId,
+      resettingStates: { hasExecuted, isRunning }
+    });
+    
     setHasExecuted(false);
     setIsRunning(false);
   }, [currentChallengeId]);
@@ -338,6 +368,23 @@ function TopBarContent({
       offMessage("PROGRAM_STOPPED", handleDefeatComplete);
     };
   }, [onMessage, offMessage, handleVictory]); // Minimal dependencies
+
+  // FIXED: Only reset hasExecuted when user explicitly restarts via replay button
+  // Don't auto-reset when modals close - let user manually control reset via TopBar button
+  // This prevents the button from switching from "Reset Map" back to "Execute" after victory modal closes
+  
+  // Listen for replay events from modal to reset hasExecuted
+  useEffect(() => {
+    const handleReplayTriggered = () => {
+      setHasExecuted(false); // Reset to show Execute button after modal replay
+    };
+    
+    window.addEventListener('phaser-replay-triggered', handleReplayTriggered);
+    
+    return () => {
+      window.removeEventListener('phaser-replay-triggered', handleReplayTriggered);
+    };
+  }, []);
 
   const handleRun = async () => {
     // Prevent execution for physical maps
@@ -443,6 +490,21 @@ function TopBarContent({
         "warning"
       );
       return;
+    }
+
+    // IMMEDIATE: Reset button states when changing challenge
+    // This ensures button shows "Execute" for new map, not "Reset"
+    console.log('🔎 [TopBar] User selecting new challenge, resetting button states immediately');
+    setHasExecuted(false);
+    setIsRunning(false);
+
+    // Update navigation data BEFORE navigating to keep sessionStorage in sync
+    if (lessonId) {
+      storeStudioNavigationData({
+        challengeId: targetChallengeId,
+        lessonId,
+        source: 'lesson'
+      });
     }
 
     const url = lessonId
@@ -1100,6 +1162,19 @@ function TopBarContent({
 
           {/* Dynamic Execute/Reset Button - Only for Simulator maps */}
           {!isPhysicalMap && (
+            <>{/* Debug: Log button state */}
+            {console.log('🔘 [TopBar] Button state:', {
+              isRunning,
+              hasExecuted,
+              isVictoryModalOpen,
+              isDefeatModalOpen,
+              currentChallengeId,
+              buttonAction: isRunning 
+                ? 'Stop' 
+                : (hasExecuted || isVictoryModalOpen || isDefeatModalOpen) 
+                  ? 'Reset' 
+                  : 'Execute'
+            })}
             <Tooltip
               title={
                 isRunning
@@ -1169,6 +1244,7 @@ function TopBarContent({
                 </IconButton>
               </span>
             </Tooltip>
+            </>
           )}
         </Box>
       </Toolbar>

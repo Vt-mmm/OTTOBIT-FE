@@ -152,8 +152,6 @@ export default function SubmissionListSection() {
                   <MenuItem value={1}>1 ⭐</MenuItem>
                   <MenuItem value={2}>2 ⭐</MenuItem>
                   <MenuItem value={3}>3 ⭐</MenuItem>
-                  <MenuItem value={4}>4 ⭐</MenuItem>
-                  <MenuItem value={5}>5 ⭐</MenuItem>
                 </Select>
               </FormControl>
 
@@ -173,8 +171,6 @@ export default function SubmissionListSection() {
                   <MenuItem value={1}>1 ⭐</MenuItem>
                   <MenuItem value={2}>2 ⭐</MenuItem>
                   <MenuItem value={3}>3 ⭐</MenuItem>
-                  <MenuItem value={4}>4 ⭐</MenuItem>
-                  <MenuItem value={5}>5 ⭐</MenuItem>
                 </Select>
               </FormControl>
             </Stack>
@@ -258,11 +254,12 @@ export default function SubmissionListSection() {
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <Rating
                             value={submission.star}
+                            max={3}
                             readOnly
                             size="small"
                           />
                           <Typography variant="body2" color="text.secondary">
-                            ({submission.star}/5)
+                            ({submission.star}/3)
                           </Typography>
                         </Stack>
                       </TableCell>

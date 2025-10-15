@@ -75,7 +75,7 @@ export default function CourseHeroSection({
             }}
           >
             {/* Left Column - Course Content */}
-            <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Box sx={{ flex: 1, minWidth: 0, maxWidth: "100%", overflow: "hidden" }}>
               {/* Breadcrumbs */}
               <Breadcrumbs
                 separator={
@@ -142,6 +142,8 @@ export default function CourseHeroSection({
                   color: "#2c2c2c",
                   lineHeight: 1.2,
                   letterSpacing: "-0.02em",
+                  wordBreak: "break-word",
+                  overflowWrap: "break-word",
                 }}
               >
                 {course.title}
@@ -156,6 +158,8 @@ export default function CourseHeroSection({
                   fontSize: { xs: "1rem", md: "1.125rem" },
                   color: "#616161",
                   fontWeight: 400,
+                  wordBreak: "break-word",
+                  overflowWrap: "break-word",
                 }}
               >
                 {course.description}
