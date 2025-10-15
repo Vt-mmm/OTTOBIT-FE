@@ -87,6 +87,29 @@ export default function CourseDetailsSection({
     }
   }, [dispatch, course?.id]);
 
+  // Fetch course detail by id (admin)
+  const [detail, setDetail] = useState<CourseResult | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchDetail = async () => {
+      if (!course?.id) return;
+      setDetailLoading(true);
+      setDetailError(null);
+      try {
+        const res = await axiosClient.get(`/api/v1/courses/admin/${course.id}`);
+        const data = (res as any)?.data?.data as CourseResult | undefined;
+        if (data) setDetail(data);
+      } catch (_e) {
+        setDetailError("Không tải được chi tiết khóa học");
+      } finally {
+        setDetailLoading(false);
+      }
+    };
+    fetchDetail();
+  }, [course?.id]);
+
   // Fetch course maps for this course
   const [courseMaps, setCourseMaps] = useState<any[]>([]);
   const [courseMapsLoading, setCourseMapsLoading] = useState(false);
@@ -184,7 +207,28 @@ export default function CourseDetailsSection({
     }
   }, [addDialogOpen]);
 
-  if (!course) {
+  const renderCourse = detail ?? course;
+
+  if (detailLoading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (detailError) {
+    return (
+      <Box sx={{ textAlign: "center", py: 4 }}>
+        <Typography>{detailError}</Typography>
+        <Button onClick={onBack} sx={{ mt: 2 }}>
+          Quay lại
+        </Button>
+      </Box>
+    );
+  }
+
+  if (!renderCourse) {
     return (
       <Box sx={{ textAlign: "center", py: 4 }}>
         <Typography>Không tìm thấy thông tin khóa học</Typography>
@@ -219,10 +263,10 @@ export default function CourseDetailsSection({
               >
                 <Box sx={{ flex: 1 }}>
                   <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>
-                    {course.title}
+                    {renderCourse.title}
                   </Typography>
                   <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.7 }}>
-                    {course.description}
+                    {renderCourse.description}
                   </Typography>
 
                   <Stack direction="row" spacing={3} flexWrap="wrap">
@@ -267,18 +311,18 @@ export default function CourseDetailsSection({
                 <Button
                   variant="contained"
                   startIcon={<EditIcon />}
-                  onClick={() => onEdit(course)}
+                  onClick={() => onEdit(renderCourse)}
                   sx={{ ml: 2 }}
                 >
                   Chỉnh sửa
                 </Button>
               </Stack>
 
-              {course.imageUrl && (
+              {renderCourse.imageUrl && (
                 <Box sx={{ mb: 3 }}>
                   <img
-                    src={course.imageUrl}
-                    alt={course.title}
+                    src={renderCourse.imageUrl}
+                    alt={renderCourse.title}
                     style={{
                       width: "100%",
                       maxHeight: "300px",
@@ -311,10 +355,10 @@ export default function CourseDetailsSection({
                   </Typography>
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <Avatar sx={{ bgcolor: "primary.main" }}>
-                      {course.createdByName?.charAt(0) || "?"}
+                      {renderCourse.createdByName?.charAt(0) || "?"}
                     </Avatar>
                     <Typography variant="subtitle2">
-                      {course.createdByName || "Không xác định"}
+                      {renderCourse.createdByName || "Không xác định"}
                     </Typography>
                   </Stack>
                 </Box>
@@ -330,11 +374,14 @@ export default function CourseDetailsSection({
                     Ngày tạo
                   </Typography>
                   <Typography variant="subtitle2">
-                    {new Date(course.createdAt).toLocaleDateString("vi-VN", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
+                    {new Date(renderCourse.createdAt).toLocaleDateString(
+                      "vi-VN",
+                      {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      }
+                    )}
                   </Typography>
                 </Box>
 
@@ -349,11 +396,14 @@ export default function CourseDetailsSection({
                     Cập nhật lần cuối
                   </Typography>
                   <Typography variant="subtitle2">
-                    {new Date(course.updatedAt).toLocaleDateString("vi-VN", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
+                    {new Date(renderCourse.updatedAt).toLocaleDateString(
+                      "vi-VN",
+                      {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      }
+                    )}
                   </Typography>
                 </Box>
 
@@ -384,8 +434,8 @@ export default function CourseDetailsSection({
           <Card>
             <CardContent>
               <CourseRobotManagementSection
-                courseId={course.id}
-                courseName={course.title}
+                courseId={renderCourse.id}
+                courseName={renderCourse.title}
               />
             </CardContent>
           </Card>

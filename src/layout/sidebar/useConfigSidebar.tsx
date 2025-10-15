@@ -17,6 +17,7 @@ import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
+import ArticleIcon from "@mui/icons-material/Article";
 import { PATH_ADMIN, PATH_USER } from "routes/paths";
 import CollectionsBookmarkIcon from "@mui/icons-material/CollectionsBookmark";
 import { useLocales } from "hooks";
@@ -108,6 +109,11 @@ function useConfigSidebar() {
           title: translate("admin.sidebar.voucherManagement"),
           path: PATH_ADMIN.voucherManagement,
           icon: <LocalOfferIcon fontSize="small" />,
+        },
+        {
+          title: "Quản lý Blog",
+          path: PATH_ADMIN.blogManagement,
+          icon: <ArticleIcon fontSize="small" />,
         },
       ],
     },

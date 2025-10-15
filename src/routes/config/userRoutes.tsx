@@ -4,6 +4,7 @@ import HomePage from "pages/user/Homepage";
 import RobotStudioPage from "pages/studio/RobotStudioPage";
 import UserProfilePage from "pages/user/UserProfilePage";
 import CoursesPage from "pages/user/CoursesPage";
+import BlogListPage from "pages/user/BlogListPage";
 import CourseDetailPage from "pages/user/CourseDetailPage";
 import LessonDetailPage from "pages/user/LessonDetailPage";
 import ChallengeDetailPage from "pages/user/ChallengeDetailPage";
@@ -18,6 +19,16 @@ export const publicRoutes: Route[] = [
     path: PATH_PUBLIC.homepage,
     component: <HomePage />,
     index: true,
+  },
+  {
+    path: PATH_USER.courses,
+    component: <CoursesPage />,
+    index: false,
+  },
+  {
+    path: PATH_USER.blogs,
+    component: <BlogListPage />,
+    index: false,
   },
 ];
 

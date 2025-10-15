@@ -43,6 +43,8 @@ const StudentProfilePage = lazy(() => import("pages/user/StudentProfilePage"));
 const SecuritySettingsPage = lazy(
   () => import("pages/user/SecuritySettingsPage")
 );
+const BlogDetailPage = lazy(() => import("pages/user/BlogDetailPage"));
+const BlogListPage = lazy(() => import("pages/user/BlogListPage"));
 // Store pages
 const StorePage = lazy(() => import("pages/user/store/StorePage"));
 const RobotListPage = lazy(() => import("pages/user/store/RobotListPage"));
@@ -229,6 +231,12 @@ function AppRouter() {
 
           {/* Other User Routes */}
           <ReactRoute path={PATH_USER.courses} element={<CoursesPage />} />
+          <ReactRoute path={PATH_USER.blogs} element={<BlogListPage />} />
+          <ReactRoute
+            path={PATH_USER.blogDetail}
+            element={<BlogDetailPage />}
+          />
+          <ReactRoute path={PATH_USER.blogs} element={<BlogListPage />} />
 
           <ReactRoute
             path={PATH_USER.courseDetail}

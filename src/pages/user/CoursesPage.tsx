@@ -5,12 +5,18 @@ import Footer from "../../layout/components/footer/Footer";
 import { LanguageSwitcher } from "../../components/common";
 import CourseHeroSection from "../../sections/user/courses/CourseHeroSection";
 import CourseListingSection from "../../sections/user/courses/CourseListingSection";
+import { CourseFilters } from "../../sections/user/courses/CourseFilterDialog";
 
 export default function CoursesPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [courseFilters, setCourseFilters] = useState<CourseFilters>({});
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
+  };
+
+  const handleFilterApply = (filters: CourseFilters) => {
+    setCourseFilters(filters);
   };
 
   return (
@@ -39,9 +45,13 @@ export default function CoursesPage() {
         <CourseHeroSection
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
+          onFilterApply={handleFilterApply}
         />
         <Box sx={{ backgroundColor: "#ffffff", minHeight: "100vh" }}>
-          <CourseListingSection searchQuery={searchQuery} />
+          <CourseListingSection
+            searchQuery={searchQuery}
+            filters={courseFilters}
+          />
         </Box>
       </Box>
       <Footer />

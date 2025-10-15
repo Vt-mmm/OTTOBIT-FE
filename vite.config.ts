@@ -32,7 +32,8 @@ export default defineConfig({
     open: false,
     proxy: {
       "/api": {
-        target: "https://localhost:7093",
+        target: "https://localhost:7292",
+        // target: "https://localhost:7093",
         changeOrigin: true,
         secure: false, // Tắt SSL verification cho development
         rewrite: (path) => path,
@@ -87,7 +88,12 @@ export default defineConfig({
         // Remove ALL console statements in production
         drop_console: true, // Remove all console.* calls
         drop_debugger: true, // Remove debugger statements
-        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'],
+        pure_funcs: [
+          "console.log",
+          "console.info",
+          "console.debug",
+          "console.warn",
+        ],
       },
       format: {
         comments: false, // Remove all comments

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -7,48 +7,47 @@ import {
   Alert,
   Pagination,
   Snackbar,
-  Typography,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
+  Button,
+  Stack,
 } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
-import { getCourses } from "../../../redux/course/courseSlice";
+// import { getCourses } from "../../../redux/course/courseSlice";
 import { createEnrollment } from "../../../redux/enrollment/enrollmentSlice";
 import { getStudentByUserThunk } from "../../../redux/student/studentThunks";
 import { PATH_USER } from "../../../routes/paths";
 import StudentProfileRequiredDialog from "./StudentProfileRequiredDialog";
-// import CourseFilterSidebar from "./CourseFilterSidebar";
-// import CourseListingHeader, { SortOption } from "./CourseListingHeader";
-
-type SortOption = "newest" | "oldest" | "alphabetical" | "popular";
 import CourseCard from "../../../components/course/CourseCard";
+import { CourseFilters } from "./CourseFilterDialog";
+// import axios from "axios";
+import { axiosClient } from "axiosClient";
 import { useLocales } from "../../../hooks";
+import FilterListIcon from "@mui/icons-material/FilterList";
 
 interface CourseListingSectionProps {
   searchQuery: string;
+  filters?: CourseFilters;
 }
 
 export default function CourseListingSection({
-  searchQuery,
+  filters,
 }: CourseListingSectionProps) {
   const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const {
-    data: courses,
-    isLoading,
-    error,
-  } = useAppSelector((state) => state.course.courses);
-  // Fix: Don't create new object in selector - access property directly
   const studentData = useAppSelector(
     (state) => state.student.currentStudent.data
   );
 
   // State for UI
-  const [sortBy, setSortBy] = useState<SortOption>("newest");
+  const [courses, setCourses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -59,65 +58,51 @@ export default function CourseListingSection({
     courseName: "",
     courseId: "",
   });
-  const itemsPerPage = 9; // 3x3 grid per page
+  // Remove itemsPerPage since we use pageSize state
 
-  // Fetch courses with enrollment status
-  // BE will return isEnrolled & enrollmentDate if user is authenticated
+  // Fetch courses with API
+  const fetchCourses = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        PageNumber: String(currentPage),
+        PageSize: String(pageSize),
+        IncludeDeleted: "false",
+      });
+
+      // Add filters (search handled externally)
+      if (filters?.minPrice != null)
+        params.append("MinPrice", String(filters.minPrice));
+      if (filters?.maxPrice != null)
+        params.append("MaxPrice", String(filters.maxPrice));
+      if (filters?.type != null) params.append("Type", String(filters.type));
+      if (filters?.sortBy != null)
+        params.append("SortBy", String(filters.sortBy));
+      if (filters?.sortDirection != null)
+        params.append("SortDirection", String(filters.sortDirection));
+
+      const url = `https://localhost:7292/api/v1/courses?${params.toString()}`;
+      // Use axiosClient to include Authorization for isEnrolled field
+      const { data } = await axiosClient.get(url);
+
+      setCourses(data?.data?.items || []);
+      setTotalPages(data?.data?.totalPages || 1);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      setCourses([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, pageSize, filters]);
+
   useEffect(() => {
-    dispatch(getCourses({ pageSize: 10 })); // Increased for client-side pagination
-  }, [dispatch]);
+    fetchCourses();
+  }, [fetchCourses]);
 
-  // Note: We no longer need to fetch enrollments separately
-  // BE now includes isEnrolled & enrollmentDate directly in course data
-  // This useEffect can be removed or kept for backwards compatibility
-
-  // Filter and sort courses
-  const filteredAndSortedCourses = useMemo(() => {
-    if (!courses?.items) return [];
-
-    let filtered = courses.items.filter((course) => {
-      // Search filter
-      if (
-        searchQuery &&
-        !course.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !course.description.toLowerCase().includes(searchQuery.toLowerCase())
-      ) {
-        return false;
-      }
-      return true;
-    });
-
-    // Sort courses
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case "newest":
-          return (
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-        case "oldest":
-          return (
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          );
-        case "alphabetical":
-          return a.title.localeCompare(b.title);
-        case "popular":
-          return (b.enrollmentsCount || 0) - (a.enrollmentsCount || 0);
-        default:
-          return 0;
-      }
-    });
-
-    return filtered;
-  }, [courses?.items, searchQuery, sortBy]);
-
-  // Paginate courses
-  const paginatedCourses = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return filteredAndSortedCourses.slice(startIndex, endIndex);
-  }, [filteredAndSortedCourses, currentPage, itemsPerPage]);
-
-  const totalPages = Math.ceil(filteredAndSortedCourses.length / itemsPerPage);
+  // Reset page when filters or page size change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, pageSize]);
 
   const handleCourseClick = (courseId: string) => {
     navigate(PATH_USER.courseDetail.replace(":id", courseId));
@@ -150,7 +135,7 @@ export default function CourseListingSection({
 
   const handleEnrollCourse = async (courseId: string) => {
     // Find course name for better UX
-    const course = courses?.items?.find((c) => c.id === courseId);
+    const course = courses.find((c) => c.id === courseId);
     const courseName = course?.title || "khóa học này";
 
     try {
@@ -176,8 +161,8 @@ export default function CourseListingSection({
         severity: "success",
       });
 
-      // Refresh courses to get updated isEnrolled status from BE
-      dispatch(getCourses({ pageSize: 10 }));
+      // Refresh current list to update isEnrolled status from BE
+      fetchCourses();
     } catch (error: any) {
       // Check if error indicates missing student profile
       const requiresProfile =
@@ -230,18 +215,13 @@ export default function CourseListingSection({
     handleCloseProfileDialog();
   };
 
-  const handleSortChange = (newSort: SortOption) => {
-    setSortBy(newSort);
-    setCurrentPage(1);
-  };
-
   const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) => {
     setCurrentPage(page);
     // Scroll to top when page changes
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <Container maxWidth="xl">
         <Box
@@ -258,107 +238,60 @@ export default function CourseListingSection({
     );
   }
 
-  if (error) {
-    return (
-      <Container maxWidth="xl">
-        <Alert severity="error" sx={{ mt: 2 }}>
-          {error}
-        </Alert>
-      </Container>
-    );
-  }
-
   return (
     <Container id="courses-list" maxWidth="lg" sx={{ pt: 2, pb: 4 }}>
-      {/* Header with search result count and sort */}
+      {/* Filter Button */}
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent: "flex-end",
           alignItems: "center",
           mb: 4,
-          flexWrap: "wrap",
-          gap: 2,
         }}
       >
-        <Typography variant="h6" sx={{ color: "#666" }}>
-          {searchQuery ? (
-            <span
-              dangerouslySetInnerHTML={{
-                __html: translate("courses.FoundCoursesFor", {
-                  count: filteredAndSortedCourses.length,
-                  query: searchQuery,
-                }),
-              }}
-            />
-          ) : (
-            <>
-              <span
-                dangerouslySetInnerHTML={{
-                  __html: translate("courses.FoundCourses", {
-                    count: filteredAndSortedCourses.length,
-                  }),
-                }}
-              />{" "}
-              {translate("courses.PageInfo", {
-                current: currentPage,
-                total: Math.max(1, totalPages),
-              })}
-            </>
-          )}
-        </Typography>
-
-        {/* Sort Dropdown */}
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel>{translate("courses.SortBy")}</InputLabel>
-          <Select
-            value={sortBy}
-            label={translate("courses.SortBy")}
-            onChange={(e) => handleSortChange(e.target.value as SortOption)}
-          >
-            <MenuItem value="newest">
-              {translate("courses.SortByNewest")}
-            </MenuItem>
-            <MenuItem value="popular">
-              {translate("courses.SortByPopular")}
-            </MenuItem>
-            <MenuItem value="alphabetical">
-              {translate("courses.CourseName")}
-            </MenuItem>
-            <MenuItem value="oldest">
-              {translate("courses.SortByOldest")}
-            </MenuItem>
-          </Select>
-        </FormControl>
+        <Button
+          variant="outlined"
+          startIcon={<FilterListIcon />}
+          onClick={() => {
+            // Trigger filter dialog from parent
+            const filterEvent = new CustomEvent("openCourseFilter");
+            window.dispatchEvent(filterEvent);
+          }}
+          sx={{
+            borderColor: "#4caf50",
+            color: "#4caf50",
+            "&:hover": {
+              borderColor: "#45a049",
+              backgroundColor: "rgba(76, 175, 80, 0.04)",
+            },
+          }}
+        >
+          Bộ lọc
+        </Button>
       </Box>
 
       {/* Course Grid */}
-      {paginatedCourses.length === 0 ? (
+      {courses.length === 0 ? (
         <Box sx={{ textAlign: "center", py: 8 }}>
-          <Alert severity="info">
-            {courses?.items?.length === 0
-              ? translate("courses.NoCourses")
-              : searchQuery
-              ? translate("courses.NoCoursesForQuery", { query: searchQuery })
-              : translate("courses.NoCoursesFound")}
-          </Alert>
+          <Alert severity="info">Không có khóa học nào</Alert>
         </Box>
       ) : (
         <>
-          {/* Course Grid Layout - 2-3 columns */}
+          {/* Course Grid Layout - Max 3 columns */}
           <Box
             sx={{
               display: "grid",
               gridTemplateColumns: {
                 xs: "1fr",
                 sm: "repeat(2, 1fr)",
+                md: "repeat(3, 1fr)",
                 lg: "repeat(3, 1fr)",
               },
               gap: 3,
               mb: 4,
             }}
           >
-            {paginatedCourses.map((course) => (
+            {courses.map((course) => (
               <CourseCard
                 key={course.id}
                 id={course.id}
@@ -379,9 +312,32 @@ export default function CourseListingSection({
             ))}
           </Box>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+          {/* Pagination and Page Size Selector */}
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            justifyContent="space-between"
+            alignItems="center"
+            spacing={2}
+            sx={{ mt: 4 }}
+          >
+            {/* Page Size Selector */}
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel>Hiển thị</InputLabel>
+              <Select
+                value={pageSize}
+                label="Hiển thị"
+                onChange={(e) => setPageSize(Number(e.target.value))}
+              >
+                <MenuItem value={6}>6</MenuItem>
+                <MenuItem value={9}>9</MenuItem>
+                <MenuItem value={12}>12</MenuItem>
+                <MenuItem value={15}>15</MenuItem>
+                <MenuItem value={18}>18</MenuItem>
+              </Select>
+            </FormControl>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
               <Pagination
                 count={totalPages}
                 page={currentPage}
@@ -391,8 +347,8 @@ export default function CourseListingSection({
                 showFirstButton
                 showLastButton
               />
-            </Box>
-          )}
+            )}
+          </Stack>
         </>
       )}
 

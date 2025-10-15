@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Card, Typography, Box, Button, Chip, Rating } from "@mui/material";
 import { motion } from "framer-motion";
 import PeopleIcon from "@mui/icons-material/People";
@@ -7,6 +7,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { CourseType } from "common/@types/course";
 import { useLocales } from "hooks";
+import AddToCartButton from "../cart/AddToCartButton";
 
 interface CourseCardProps {
   id: string;
@@ -68,7 +69,6 @@ export default function CourseCard({
   enrollmentsCount,
   onClick,
   isEnrolled = false,
-  onEnroll,
   price = 0, // Default to 0 if not provided
   type = CourseType.Free, // Default to Free if not provided
 }: CourseCardProps) {
@@ -82,20 +82,13 @@ export default function CourseCard({
 
   // Determine course pricing display based on backend data
   const isFree = type === CourseType.Free || price === 0;
-  const priceDisplay = isFree
-    ? translate("courses.Free")
-    : `${price.toLocaleString()} VND`;
+  // priceDisplay no longer needed on card
 
   const handleImageError = () => {
     setImgSrc(DEFAULT_FALLBACK);
   };
 
-  const handleEnrollClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onEnroll) {
-      onEnroll(id);
-    }
-  };
+  // free join now navigates to detail; no direct enroll here
 
   return (
     <Card
@@ -155,24 +148,6 @@ export default function CourseCard({
           },
         }}
       >
-        {/* Pricing Badge */}
-        <Chip
-          label={priceDisplay}
-          size="small"
-          sx={{
-            position: "absolute",
-            top: 12,
-            left: 12,
-            backgroundColor: isFree ? "#4caf50" : "#2196f3",
-            color: "white",
-            fontSize: "0.75rem",
-            fontWeight: 700,
-            height: 28,
-            zIndex: 2,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-          }}
-        />
-
         {/* Enrolled Badge */}
         {isEnrolled && (
           <Chip
@@ -292,7 +267,10 @@ export default function CourseCard({
                 fontWeight: 500,
               }}
             >
-              {rating} <Box component="span" sx={{ color: "#999" }}>({reviewCount.toLocaleString()})</Box>
+              {rating}{" "}
+              <Box component="span" sx={{ color: "#999" }}>
+                ({reviewCount.toLocaleString()})
+              </Box>
             </Typography>
           </Box>
         </Box>
@@ -356,71 +334,123 @@ export default function CourseCard({
           </Box>
 
           {/* Action Button */}
-          <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", mt: 1 }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1.5,
+              alignItems: "center",
+              mt: 1,
+              justifyContent: "space-between",
+            }}
+          >
             {!isEnrolled ? (
-              <Button
-                component={motion.button}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                variant="contained"
-                size="medium"
-                onClick={handleEnrollClick}
-                endIcon={<ArrowForwardIcon className="course-arrow" />}
-                sx={{
-                  textTransform: "none",
-                  fontSize: "0.9rem",
-                  fontWeight: 600,
-                  px: 3,
-                  py: 1,
-                  borderRadius: 2,
-                  backgroundColor: isFree ? "#4caf50" : "#2196f3",
-                  boxShadow: isFree
-                    ? "0 4px 14px rgba(76, 175, 80, 0.3)"
-                    : "0 4px 14px rgba(33, 150, 243, 0.3)",
-                  "&:hover": {
-                    backgroundColor: isFree ? "#45a049" : "#1976d2",
-                    boxShadow: isFree
-                      ? "0 6px 20px rgba(76, 175, 80, 0.4)"
-                      : "0 6px 20px rgba(33, 150, 243, 0.4)",
-                  },
-                  "& .course-arrow": {
-                    transition: "transform 0.2s",
-                  },
-                }}
-              >
-                {isFree
-                  ? translate("courses.JoinFree")
-                  : translate("courses.JoinCourse")}
-              </Button>
+              isFree ? (
+                <Box
+                  sx={{
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <Button
+                    component={motion.button}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    variant="contained"
+                    size="medium"
+                    onClick={() => onClick(id)}
+                    endIcon={<ArrowForwardIcon className="course-arrow" />}
+                    sx={{
+                      textTransform: "none",
+                      fontSize: "0.8rem",
+                      fontWeight: 600,
+                      px: 2.5,
+                      py: 0.75,
+                      borderRadius: 2,
+                      backgroundColor: "#4caf50",
+                      boxShadow: "0 4px 14px rgba(76, 175, 80, 0.3)",
+                      "&:hover": {
+                        backgroundColor: "#45a049",
+                        boxShadow: "0 6px 20px rgba(76, 175, 80, 0.4)",
+                      },
+                      "& .course-arrow": {
+                        transition: "transform 0.2s",
+                      },
+                    }}
+                  >
+                    {translate("courses.JoinFree")}
+                  </Button>
+                </Box>
+              ) : (
+                <>
+                  {/* Price Display */}
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 700,
+                      color: "#1976d2",
+                      fontSize: "1rem",
+                    }}
+                  >
+                    {price.toLocaleString()} VND
+                  </Typography>
+
+                  {/* Add to Cart Button */}
+                  <Box
+                    sx={{
+                      "& .MuiButton-root": {
+                        py: 0.75, // Nhỏ hơn
+                        px: 2.5, // Nhỏ hơn
+                        fontSize: "0.8rem", // Nhỏ hơn
+                        fontWeight: 600,
+                        textTransform: "none",
+                        "& .MuiButton-startIcon": {
+                          display: "none", // Ẩn icon cart
+                        },
+                      },
+                    }}
+                  >
+                    <AddToCartButton courseId={id} coursePrice={price} />
+                  </Box>
+                </>
+              )
             ) : (
-              <Button
-                component={motion.button}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                variant="contained"
-                size="medium"
-                onClick={() => onClick(id)}
-                endIcon={<ArrowForwardIcon className="course-arrow" />}
+              <Box
                 sx={{
-                  textTransform: "none",
-                  fontSize: "0.9rem",
-                  fontWeight: 600,
-                  px: 3,
-                  py: 1,
-                  borderRadius: 2,
-                  backgroundColor: "#4caf50",
-                  boxShadow: "0 4px 14px rgba(76, 175, 80, 0.3)",
-                  "&:hover": {
-                    backgroundColor: "#45a049",
-                    boxShadow: "0 6px 20px rgba(76, 175, 80, 0.4)",
-                  },
-                  "& .course-arrow": {
-                    transition: "transform 0.2s",
-                  },
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "flex-end",
                 }}
               >
-                {translate("courses.ContinueLearning")}
-              </Button>
+                <Button
+                  component={motion.button}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  variant="contained"
+                  size="medium"
+                  onClick={() => onClick(id)}
+                  endIcon={<ArrowForwardIcon className="course-arrow" />}
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "0.8rem",
+                    fontWeight: 600,
+                    px: 2.5,
+                    py: 0.75,
+                    borderRadius: 2,
+                    backgroundColor: "#4caf50",
+                    boxShadow: "0 4px 14px rgba(76, 175, 80, 0.3)",
+                    "&:hover": {
+                      backgroundColor: "#45a049",
+                      boxShadow: "0 6px 20px rgba(76, 175, 80, 0.4)",
+                    },
+                    "& .course-arrow": {
+                      transition: "transform 0.2s",
+                    },
+                  }}
+                >
+                  {translate("courses.ContinueLearning")}
+                </Button>
+              </Box>
             )}
           </Box>
         </Box>
