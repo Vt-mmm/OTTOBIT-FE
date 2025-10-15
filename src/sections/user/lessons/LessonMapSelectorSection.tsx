@@ -58,12 +58,12 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
     if (!lessonId) return;
 
     // Load challenges and my submissions
-    dispatch(getChallengesByLesson({ lessonId, pageSize: 50 }));
-    dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 100 }));
+    dispatch(getChallengesByLesson({ lessonId, pageSize: 10 }));
+    dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 10 }));
 
     // Try to fetch my lesson progress for this course; only start if no record exists
     if (courseId) {
-      dispatch(getMyLessonProgress({ courseId, pageNumber: 1, pageSize: 50 }))
+      dispatch(getMyLessonProgress({ courseId, pageNumber: 1, pageSize: 10 }))
         .unwrap()
         .then((res) => {
           const exists = res.items?.some((p) => p.lessonId === lessonId);
@@ -123,8 +123,8 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
   // Handle retry for challenge loading
   const handleRetry = () => {
     if (lessonId) {
-      dispatch(getChallengesByLesson({ lessonId, pageSize: 50 }));
-      dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 100 }));
+      dispatch(getChallengesByLesson({ lessonId, pageSize: 10 }));
+      dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 10 }));
     }
   };
 

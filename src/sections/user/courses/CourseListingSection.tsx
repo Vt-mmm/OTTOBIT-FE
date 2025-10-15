@@ -42,7 +42,9 @@ export default function CourseListingSection({
     error,
   } = useAppSelector((state) => state.course.courses);
   // Fix: Don't create new object in selector - access property directly
-  const studentData = useAppSelector((state) => state.student.currentStudent.data);
+  const studentData = useAppSelector(
+    (state) => state.student.currentStudent.data
+  );
 
   // State for UI
   const [sortBy, setSortBy] = useState<SortOption>("newest");
@@ -62,7 +64,7 @@ export default function CourseListingSection({
   // Fetch courses with enrollment status
   // BE will return isEnrolled & enrollmentDate if user is authenticated
   useEffect(() => {
-    dispatch(getCourses({ pageSize: 100 })); // Increased for client-side pagination
+    dispatch(getCourses({ pageSize: 10 })); // Increased for client-side pagination
   }, [dispatch]);
 
   // Note: We no longer need to fetch enrollments separately
@@ -175,7 +177,7 @@ export default function CourseListingSection({
       });
 
       // Refresh courses to get updated isEnrolled status from BE
-      dispatch(getCourses({ pageSize: 100 }));
+      dispatch(getCourses({ pageSize: 10 }));
     } catch (error: any) {
       // Check if error indicates missing student profile
       const requiresProfile =

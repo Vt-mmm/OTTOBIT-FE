@@ -45,7 +45,7 @@ export default function AddRobotToCourseDialog({
   useEffect(() => {
     if (open) {
       // Fetch available robots
-      dispatch(getRobotsThunk({ pageSize: 100 }));
+      dispatch(getRobotsThunk({ pageSize: 10 }));
     }
   }, [open, dispatch]);
 

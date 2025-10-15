@@ -212,14 +212,14 @@ class ContextBuilder {
         if (typeof firstParse === "string") {
           firstParse = JSON.parse(firstParse);
         }
-        
+
         // If still string, parse again (BE returns stringified JSON)
         if (typeof firstParse === "string") {
           parsedSolution = JSON.parse(firstParse);
         } else {
           parsedSolution = firstParse;
         }
-        
+
         console.log("📝 Solution JSON parsed:", parsedSolution);
       } catch (error) {
         console.warn("⚠️ Could not parse challenge solutionJson:", error);
@@ -321,7 +321,7 @@ class ContextBuilder {
       try {
         await store.dispatch(
           getMyEnrollmentsThunk({
-            pageSize: 100, // Only pageSize
+            pageSize: 10, // Only pageSize
           }) as any
         );
       } catch (error) {

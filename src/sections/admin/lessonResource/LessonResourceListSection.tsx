@@ -124,7 +124,7 @@ export default function LessonResourceListSection({
     dispatch(
       getCoursesForAdmin({
         pageNumber: 1,
-        pageSize: 100,
+        pageSize: 10,
         includeDeleted: true,
       }) as any
     );
@@ -135,7 +135,7 @@ export default function LessonResourceListSection({
     dispatch(
       getLessons({
         pageNumber: 1,
-        pageSize: 100,
+        pageSize: 10,
         includeDeleted: true,
         courseId,
       }) as any

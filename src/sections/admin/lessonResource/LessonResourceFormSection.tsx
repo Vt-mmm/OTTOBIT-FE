@@ -62,7 +62,7 @@ export default function LessonResourceFormSection({
     dispatch(
       getCoursesForAdmin({
         pageNumber: 1,
-        pageSize: 100,
+        pageSize: 10,
         includeDeleted: true,
       }) as any
     );
@@ -73,7 +73,7 @@ export default function LessonResourceFormSection({
     dispatch(
       getLessons({
         pageNumber: 1,
-        pageSize: 100,
+        pageSize: 10,
         includeDeleted: true,
         courseId,
       }) as any
@@ -101,7 +101,7 @@ export default function LessonResourceFormSection({
           await dispatch(
             getLessons({
               pageNumber: 1,
-              pageSize: 100,
+              pageSize: 10,
               includeDeleted: true,
               courseId: data.courseId,
             }) as any

@@ -23,7 +23,7 @@ export default function CourseLearningPage() {
   // Fetch enrollments if not already loaded
   useEffect(() => {
     if (isAuthenticated && !myEnrollments.data && !myEnrollments.isLoading) {
-      dispatch(getMyEnrollments({ pageSize: 100 }));
+      dispatch(getMyEnrollments({ pageSize: 10 }));
     }
   }, [dispatch, isAuthenticated, myEnrollments.data, myEnrollments.isLoading]);
 
@@ -35,7 +35,12 @@ export default function CourseLearningPage() {
 
   // Redirect to course detail if not authenticated
   if (!isAuthenticated) {
-    return <Navigate to={PATH_USER.courseDetail.replace(":id", courseId || "")} replace />;
+    return (
+      <Navigate
+        to={PATH_USER.courseDetail.replace(":id", courseId || "")}
+        replace
+      />
+    );
   }
 
   // Show loading while checking enrollment
@@ -64,7 +69,12 @@ export default function CourseLearningPage() {
 
   // Redirect to course detail if not enrolled
   if (!isUserEnrolled) {
-    return <Navigate to={PATH_USER.courseDetail.replace(":id", courseId || "")} replace />;
+    return (
+      <Navigate
+        to={PATH_USER.courseDetail.replace(":id", courseId || "")}
+        replace
+      />
+    );
   }
 
   if (!courseId) {

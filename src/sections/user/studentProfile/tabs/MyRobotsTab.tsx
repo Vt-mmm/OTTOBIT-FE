@@ -41,11 +41,11 @@ export default function MyRobotsTab({
       getMyActivationCodesThunk({
         status: CodeStatus.Used,
         pageNumber: 1,
-        pageSize: 100,
+        pageSize: 10,
       })
     );
     // Lấy danh sách tất cả robots để có thông tin đầy đủ
-    dispatch(getRobotsThunk({ pageNumber: 1, pageSize: 100 }));
+    dispatch(getRobotsThunk({ pageNumber: 1, pageSize: 10 }));
   }, [dispatch]);
 
   const handleActivateSuccess = () => {
@@ -54,7 +54,7 @@ export default function MyRobotsTab({
       getMyActivationCodesThunk({
         status: CodeStatus.Used,
         pageNumber: 1,
-        pageSize: 100,
+        pageSize: 10,
       })
     );
   };

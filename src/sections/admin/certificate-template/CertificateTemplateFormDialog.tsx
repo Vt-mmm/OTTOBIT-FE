@@ -70,7 +70,7 @@ export default function CertificateTemplateFormDialog({
   // Load courses
   useEffect(() => {
     if (open) {
-      dispatch(getCoursesThunk({ pageNumber: 1, pageSize: 100 }));
+      dispatch(getCoursesThunk({ pageNumber: 1, pageSize: 10 }));
     }
   }, [open]);
 
@@ -275,7 +275,8 @@ export default function CertificateTemplateFormDialog({
                 <br />• <code>{"{{CourseTitle}}"}</code> - Tên khóa học
                 <br />• <code>{"{{IssueDate}}"}</code> - Ngày cấp
                 <br />• <code>{"{{CertificateId}}"}</code> - Mã chứng chỉ
-                <br />• <code>{"{{SignatureImageUrl}}"}</code> - URL hình chữ ký (tự động thay thế)
+                <br />• <code>{"{{SignatureImageUrl}}"}</code> - URL hình chữ ký
+                (tự động thay thế)
                 <br />• <code>{"{{IssuerName}}"}</code> - Tên người cấp
                 <br />• <code>{"{{IssuerTitle}}"}</code> - Chức danh người cấp
               </Typography>

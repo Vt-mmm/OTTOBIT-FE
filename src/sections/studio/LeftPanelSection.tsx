@@ -75,7 +75,7 @@ export default function LeftPanelSection({
           borderBottom: "1px solid #dee2e6",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: "center", // Center title as before
           minHeight: 48,
           flexShrink: 0,
         }}

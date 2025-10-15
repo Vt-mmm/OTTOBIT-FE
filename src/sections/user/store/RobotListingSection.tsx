@@ -31,8 +31,6 @@ export default function RobotListingSection() {
   const { translate } = useLocales();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterBrand, setFilterBrand] = useState("all");
-  const [filterStock, setFilterStock] = useState("all");
   // Age range from 1 to 99 years old
   const [ageRange, setAgeRange] = useState<[number, number]>([1, 99]);
   const [applyAgeFilter, setApplyAgeFilter] = useState(false);
@@ -46,7 +44,6 @@ export default function RobotListingSection() {
   useEffect(() => {
     const filters: GetRobotsRequest = {
       searchTerm: searchTerm.trim() || undefined,
-      brand: filterBrand !== "all" ? filterBrand : undefined,
       // inStock filter removed - no stock data available
       // Only apply age filter if user has interacted with it
       minAge: applyAgeFilter && ageRange[0] > 1 ? ageRange[0] : undefined,
@@ -79,8 +76,6 @@ export default function RobotListingSection() {
   }, [
     dispatch,
     searchTerm,
-    filterBrand,
-    filterStock,
     ageRange,
     applyAgeFilter,
     pageNumber,
@@ -95,9 +90,6 @@ export default function RobotListingSection() {
   };
 
   const robotList = robots.data?.items || [];
-  const uniqueBrands = Array.from(
-    new Set(robotList.map((robot) => robot.brand))
-  ).filter(Boolean);
 
   if (robots.isLoading && !robots.data) {
     return (
@@ -170,55 +162,6 @@ export default function RobotListingSection() {
               },
             }}
           />
-        </Box>
-
-        <Divider sx={{ my: 2 }} />
-
-        {/* Brand Filter */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
-            {translate('store.Brand')}
-          </Typography>
-          <FormControl fullWidth size="small">
-            <Select
-              value={filterBrand}
-              onChange={(e) => {
-                setFilterBrand(e.target.value);
-                setPageNumber(1);
-              }}
-              sx={{ borderRadius: 1.5 }}
-            >
-              <MenuItem value="all">{translate('store.AllBrands')}</MenuItem>
-              {uniqueBrands.map((brand) => (
-                <MenuItem key={brand} value={brand}>
-                  {brand}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Box>
-
-        <Divider sx={{ my: 2 }} />
-
-        {/* Stock Status */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
-            {translate('store.StockStatus')}
-          </Typography>
-          <FormControl fullWidth size="small">
-            <Select
-              value={filterStock}
-              onChange={(e) => {
-                setFilterStock(e.target.value);
-                setPageNumber(1);
-              }}
-              sx={{ borderRadius: 1.5 }}
-            >
-              <MenuItem value="all">{translate('store.AllProducts')}</MenuItem>
-              <MenuItem value="inStock">{translate('store.InStock')}</MenuItem>
-              <MenuItem value="outOfStock">{translate('store.OutOfStock')}</MenuItem>
-            </Select>
-          </FormControl>
         </Box>
 
         <Divider sx={{ my: 2 }} />
@@ -386,7 +329,7 @@ export default function RobotListingSection() {
                 {translate('store.NoRobotsFound')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {searchTerm || filterBrand !== "all" || filterStock !== "all"
+                {searchTerm
                   ? translate('store.TryAdjustingFilters')
                   : translate('store.NoRobotsAvailable')}
               </Typography>

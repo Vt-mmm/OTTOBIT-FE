@@ -46,7 +46,7 @@ export default function CreateBatchDialog({
   useEffect(() => {
     if (open) {
       // Fetch available robots
-      dispatch(getRobotsThunk({ pageSize: 100 }));
+      dispatch(getRobotsThunk({ pageSize: 10 }));
     }
   }, [open, dispatch]);
 
@@ -115,7 +115,7 @@ export default function CreateBatchDialog({
                 value={selectedRobot}
                 onChange={(_, newValue) => setSelectedRobot(newValue)}
                 renderInput={(params) => (
-                <TextField
+                  <TextField
                     {...params}
                     label={translate("admin.selectRobotRequired")}
                     placeholder={translate("admin.searchRobot")}
@@ -130,7 +130,11 @@ export default function CreateBatchDialog({
                         <Typography variant="caption" color="text.secondary">
                           {option.model} - {option.brand}
                           {option.price != null && (
-                            <> | {translate("common.Price")}: {option.price.toLocaleString()}đ</>
+                            <>
+                              {" "}
+                              | {translate("common.Price")}:{" "}
+                              {option.price.toLocaleString()}đ
+                            </>
                           )}
                         </Typography>
                       </Box>
@@ -203,15 +207,19 @@ export default function CreateBatchDialog({
                   <Typography
                     variant="body2"
                     dangerouslySetInnerHTML={{
-                      __html: translate("admin.createBatchInfo", {
-                        quantity: quantity.toString(),
-                        robotName: selectedRobot.name,
-                        batchId: batchId,
-                      }) + (hasExpiry && expiryDate
-                        ? translate("admin.createBatchInfoWithExpiry", {
-                            expiryDate: new Date(expiryDate).toLocaleDateString("vi-VN"),
-                          })
-                        : ""),
+                      __html:
+                        translate("admin.createBatchInfo", {
+                          quantity: quantity.toString(),
+                          robotName: selectedRobot.name,
+                          batchId: batchId,
+                        }) +
+                        (hasExpiry && expiryDate
+                          ? translate("admin.createBatchInfoWithExpiry", {
+                              expiryDate: new Date(
+                                expiryDate
+                              ).toLocaleDateString("vi-VN"),
+                            })
+                          : ""),
                     }}
                   />
                 </Alert>
@@ -232,7 +240,9 @@ export default function CreateBatchDialog({
           }
           startIcon={operations.isCreating && <CircularProgress size={16} />}
         >
-          {translate("admin.createQuantityCodes", { quantity: quantity.toString() })}
+          {translate("admin.createQuantityCodes", {
+            quantity: quantity.toString(),
+          })}
         </Button>
       </DialogActions>
     </Dialog>

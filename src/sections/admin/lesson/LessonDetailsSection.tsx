@@ -53,7 +53,7 @@ export default function LessonDetailsSection({
           lessonId: lesson.id,
           includeDeleted: true,
           pageNumber: 1,
-          pageSize: 100,
+          pageSize: 10,
         })
       );
     }
