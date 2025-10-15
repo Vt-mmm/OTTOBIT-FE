@@ -80,7 +80,7 @@ export default function LessonFormSection({
   const courses = coursesData?.items || [];
 
   useEffect(() => {
-    dispatch(getCoursesForAdmin({ pageSize: 100 } as any));
+    dispatch(getCoursesForAdmin({ pageSize: 10 } as any));
   }, [dispatch]);
 
   useEffect(() => {

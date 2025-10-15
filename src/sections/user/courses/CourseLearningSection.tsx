@@ -73,13 +73,13 @@ export default function CourseLearningSection({
 
   // Fetch lessons preview
   useEffect(() => {
-    dispatch(getLessonsPreview({ courseId, pageSize: 50 }));
+    dispatch(getLessonsPreview({ courseId, pageSize: 10 }));
   }, [dispatch, courseId]);
 
   // Fetch lesson progress
   useEffect(() => {
     dispatch(
-      getLessonProgress({ courseId, pageNumber: 1, pageSize: 50 } as any)
+      getLessonProgress({ courseId, pageNumber: 1, pageSize: 10 } as any)
     );
   }, [dispatch, courseId]);
 

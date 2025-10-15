@@ -28,12 +28,12 @@ export default function StudentProfileDisplay() {
     if (!isAuthenticated || !currentStudent?.data) return;
 
     // Fetch real data when component mounts
-    dispatch(getMyEnrollmentsThunk({ pageNumber: 1, pageSize: 100 }));
-    dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 100 }));
+    dispatch(getMyEnrollmentsThunk({ pageNumber: 1, pageSize: 10 }));
+    dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 10 }));
     dispatch(
       getMyLessonProgress({
         pageNumber: 1,
-        pageSize: 100,
+        pageSize: 10,
         sortBy: LessonProgressSortBy.LessonOrder,
         sortDirection: SortDirection.Ascending,
       })

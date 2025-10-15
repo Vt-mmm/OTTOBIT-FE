@@ -99,7 +99,7 @@ export default function ChallengeListSection({
     dispatch(
       getCoursesForAdmin({
         pageNumber: 1,
-        pageSize: 100,
+        pageSize: 10,
         includeDeleted: true,
       }) as any
     );
@@ -111,7 +111,7 @@ export default function ChallengeListSection({
     dispatch(
       getLessons({
         pageNumber: 1,
-        pageSize: 100,
+        pageSize: 10,
         includeDeleted: true,
         courseId,
       }) as any
@@ -187,9 +187,9 @@ export default function ChallengeListSection({
   const getModeColor = (mode: ChallengeMode) => {
     switch (mode) {
       case ChallengeMode.Simulation:
-        return "primary";      // Simulator (0) - blue
+        return "primary"; // Simulator (0) - blue
       case ChallengeMode.PhysicalFirst:
-        return "success";      // Vật lý (1) - green
+        return "success"; // Vật lý (1) - green
       default:
         return "default";
     }
@@ -316,7 +316,9 @@ export default function ChallengeListSection({
               <TableCell>{translate("admin.challenge")}</TableCell>
               <TableCell>{translate("admin.description")}</TableCell>
               <TableCell align="center">{translate("admin.mode")}</TableCell>
-              <TableCell align="center">{translate("admin.difficulty")}</TableCell>
+              <TableCell align="center">
+                {translate("admin.difficulty")}
+              </TableCell>
               <TableCell align="center">{translate("admin.order")}</TableCell>
               <TableCell>{translate("admin.status")}</TableCell>
               <TableCell>{translate("admin.created")}</TableCell>
@@ -500,7 +502,9 @@ export default function ChallengeListSection({
           {translate("admin.confirmDeleteMessage", { name: "challenge" })}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmOpen(false)}>{translate("admin.cancel")}</Button>
+          <Button onClick={() => setConfirmOpen(false)}>
+            {translate("admin.cancel")}
+          </Button>
           <Button
             color="error"
             variant="contained"
@@ -525,7 +529,9 @@ export default function ChallengeListSection({
           {translate("admin.confirmRestoreMessage", { name: "challenge" })}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setRestoreConfirmOpen(false)}>{translate("admin.cancel")}</Button>
+          <Button onClick={() => setRestoreConfirmOpen(false)}>
+            {translate("admin.cancel")}
+          </Button>
           <Button
             variant="contained"
             color="success"

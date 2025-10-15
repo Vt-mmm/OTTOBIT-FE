@@ -55,7 +55,7 @@ export default function LessonNotesPanel({
       fetchMyLessonNotes({
         lessonId,
         courseId, // Add courseId to ensure proper scoping
-        pageSize: 100,
+        pageSize: 10,
       })
     );
   }, [dispatch, lessonId, courseId]); // Add courseId to dependency array

@@ -52,7 +52,7 @@ export default function BestSellingProductSection() {
     dispatch(
       getRobotsThunk({
         pageNumber: 1,
-        pageSize: 12,
+        pageSize: 10,
         sortBy: 5, // CreatedAt enum value
         sortDirection: 2, // DESC enum value
       })
@@ -61,7 +61,7 @@ export default function BestSellingProductSection() {
     dispatch(
       getComponentsThunk({
         page: 1,
-        size: 12,
+        size: 10,
         orderBy: "CreatedAt",
         orderDirection: "DESC",
       })

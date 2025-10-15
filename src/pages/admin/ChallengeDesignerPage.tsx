@@ -115,13 +115,13 @@ const MapDesignerPage = () => {
 
   // Fetch courses and lessons
   useEffect(() => {
-    dispatch(getCoursesForAdmin({ pageSize: 100 }));
+    dispatch(getCoursesForAdmin({ pageSize: 10 }));
   }, [dispatch]);
 
   // Fetch lessons when courseId changes
   useEffect(() => {
     if (courseId) {
-      dispatch(getLessons({ courseId, pageSize: 100 }));
+      dispatch(getLessons({ courseId, pageSize: 10 }));
       setLessonId(""); // Reset lesson selection when course changes
     }
   }, [dispatch, courseId]);
@@ -1051,7 +1051,7 @@ const MapDesignerPage = () => {
               challengeJson={challengeJson}
               onSaveMap={handleSaveMap}
               onOpenMapPicker={() => {
-              if (!courseId) {
+                if (!courseId) {
                   alert(translate("admin.pleasSelectCourse"));
                   return;
                 }
@@ -1285,11 +1285,11 @@ const MapDesignerPage = () => {
         onClose={() => setOpenUpdateConfirm(false)}
       >
         <DialogTitle>{translate("admin.confirmUpdate")}</DialogTitle>
-        <DialogContent>
-          {translate("admin.confirmUpdateMessage")}
-        </DialogContent>
+        <DialogContent>{translate("admin.confirmUpdateMessage")}</DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenUpdateConfirm(false)}>{translate("admin.cancel")}</Button>
+          <Button onClick={() => setOpenUpdateConfirm(false)}>
+            {translate("admin.cancel")}
+          </Button>
           <Button
             variant="contained"
             onClick={async () => {

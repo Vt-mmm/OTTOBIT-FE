@@ -75,7 +75,7 @@ export default function ImageFormSection({
 
   // Load robots and components for assignment
   useEffect(() => {
-    dispatch(getRobotsThunk({ pageNumber: 1, pageSize: 100 }));
+    dispatch(getRobotsThunk({ pageNumber: 1, pageSize: 10 }));
     dispatch(getComponentsThunk({ page: 1, size: 100 }));
   }, [dispatch]);
 
@@ -369,7 +369,7 @@ export default function ImageFormSection({
                     }}
                     onError={(e) => {
                       // Hide broken image preview
-                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.style.display = "none";
                     }}
                   />
                 </Box>

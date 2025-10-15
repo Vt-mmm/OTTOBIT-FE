@@ -52,7 +52,6 @@ export default function RobotListSection({
   const { translate } = useLocales();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterBrand, setFilterBrand] = useState<string>("all");
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(12);
 
@@ -67,13 +66,12 @@ export default function RobotListSection({
   useEffect(() => {
     const filters = {
       searchTerm: searchTerm.trim() || undefined,
-      brand: filterBrand !== "all" ? filterBrand : undefined,
       pageNumber,
       pageSize,
     };
 
     dispatch(getRobotsThunk(filters));
-  }, [dispatch, searchTerm, filterBrand, pageNumber]);
+  }, [dispatch, searchTerm, pageNumber]);
 
   // Clear success flags after operations
   useEffect(() => {
@@ -102,17 +100,7 @@ export default function RobotListSection({
     setPageNumber(1); // Reset to first page when searching
   };
 
-  const handleBrandFilterChange = (brand: string) => {
-    setFilterBrand(brand);
-    setPageNumber(1); // Reset to first page when filtering
-  };
-
   const robotList = robots.data?.items || [];
-
-  // Get unique brands for filter
-  const uniqueBrands = Array.from(
-    new Set(robotList.map((robot) => robot.brand))
-  ).filter(Boolean);
 
   if (robots.isLoading && !robots.data) {
     return (
@@ -137,24 +125,8 @@ export default function RobotListSection({
               </InputAdornment>
             ),
           }}
-          sx={{ minWidth: 300 }}
+          sx={{ flexGrow: 1, minWidth: 300 }}
         />
-
-        <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>{translate("admin.brandFilter")}</InputLabel>
-          <Select
-            value={filterBrand}
-            label={translate("admin.brandFilter")}
-            onChange={(e) => handleBrandFilterChange(e.target.value)}
-          >
-            <MenuItem value="all">{translate("admin.allBrands")}</MenuItem>
-            {uniqueBrands.map((brand) => (
-              <MenuItem key={brand} value={brand}>
-                {brand}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
 
         <Button
           variant="contained"
@@ -196,7 +168,7 @@ export default function RobotListSection({
             {translate("admin.noRobotProductsFound")}
           </Typography>
           <Typography variant="body2" color="text.secondary" mb={3}>
-            {searchTerm || filterBrand !== "all"
+            {searchTerm
               ? translate("admin.tryAdjustingSearchOrFilters")
               : translate("admin.addYourFirstRobot")}
           </Typography>

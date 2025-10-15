@@ -52,7 +52,6 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const prevVictoryOpenRef = useRef<boolean>(false);
-  const prevDefeatOpenRef = useRef<boolean>(false);
   const suppressAutoResetRef = useRef<boolean>(false);
 
   // Handle replay using EXACT same logic as TopBar restart button
@@ -222,38 +221,28 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     []
   );
 
-  // Auto reset map when DefeatModal is dismissed (all modes)
-  // VictoryModal: Only reset for physical mode when closed
+  // REMOVED: Auto-reset logic for DefeatModal
+  // Now user manually controls reset via TopBar dynamic Execute/Reset button
+  // Only keep auto-reset for VictoryModal in physical mode
   useEffect(() => {
     const wasVictoryOpen = prevVictoryOpenRef.current;
-    const wasDefeatOpen = prevDefeatOpenRef.current;
     const isPhysical = Number(currentChallenge?.challengeMode) === 1;
 
     // Update refs for next tick
     prevVictoryOpenRef.current = isVictoryModalOpen;
-    prevDefeatOpenRef.current = isDefeatModalOpen;
 
     // Detect close event
     const victoryJustClosed = wasVictoryOpen && !isVictoryModalOpen;
-    const defeatJustClosed = wasDefeatOpen && !isDefeatModalOpen;
 
-    // Auto-restart logic:
-    // 1. DefeatModal: Always restart when closed (both simulation & physical)
-    // 2. VictoryModal: Only restart for physical mode
-    if (defeatJustClosed) {
-      // Restart map automatically when defeat modal is closed
-      if (!suppressAutoResetRef.current) {
-        restartScene().catch(() => {});
-      }
-    } else if (isPhysical && victoryJustClosed) {
-      // For physical mode, also reset on victory close
+    // Auto-restart logic: Only for VictoryModal in physical mode
+    if (isPhysical && victoryJustClosed) {
+      // For physical mode, reset on victory close
       if (!suppressAutoResetRef.current) {
         restartScene().catch(() => {});
       }
     }
   }, [
     isVictoryModalOpen,
-    isDefeatModalOpen,
     currentChallenge?.challengeMode,
     restartScene,
   ]);

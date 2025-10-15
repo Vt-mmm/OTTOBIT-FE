@@ -80,7 +80,7 @@ export default function CourseRobotManagementSection({
     dispatch(
       getCourseRobotsForAdminThunk({
         courseId,
-        pageSize: 100,
+        pageSize: 10,
         includeDelete: showDeleted, // Matches BE field name: IncludeDelete
       })
     );
@@ -93,7 +93,7 @@ export default function CourseRobotManagementSection({
       dispatch(
         getCourseRobotsForAdminThunk({
           courseId,
-          pageSize: 100,
+          pageSize: 10,
           includeDelete: showDeleted,
         })
       );
@@ -107,7 +107,7 @@ export default function CourseRobotManagementSection({
       dispatch(
         getCourseRobotsForAdminThunk({
           courseId,
-          pageSize: 100,
+          pageSize: 10,
           includeDelete: showDeleted,
         })
       );
@@ -121,7 +121,7 @@ export default function CourseRobotManagementSection({
     dispatch(
       getCourseRobotsForAdminThunk({
         courseId,
-        pageSize: 100,
+        pageSize: 10,
         includeDelete: showDeleted,
       })
     );
@@ -259,7 +259,9 @@ export default function CourseRobotManagementSection({
                 <TableCell>Model</TableCell>
                 <TableCell>Thương hiệu</TableCell>
                 <TableCell align="center">Bắt buộc</TableCell>
-                {showDeleted && <TableCell align="center">Trạng thái</TableCell>}
+                {showDeleted && (
+                  <TableCell align="center">Trạng thái</TableCell>
+                )}
                 <TableCell align="right">Thao tác</TableCell>
               </TableRow>
             </TableHead>
@@ -411,7 +413,10 @@ export default function CourseRobotManagementSection({
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleRestoreCancel} disabled={operations.isRestoring}>
+          <Button
+            onClick={handleRestoreCancel}
+            disabled={operations.isRestoring}
+          >
             Hủy
           </Button>
           <Button
@@ -419,9 +424,7 @@ export default function CourseRobotManagementSection({
             color="primary"
             variant="contained"
             disabled={operations.isRestoring}
-            startIcon={
-              operations.isRestoring && <CircularProgress size={16} />
-            }
+            startIcon={operations.isRestoring && <CircularProgress size={16} />}
           >
             Khôi phục
           </Button>
