@@ -90,7 +90,7 @@ export default function LessonListSection({
         sortDirection,
       })
     );
-    dispatch(getCoursesForAdmin({ pageSize: 100 } as any));
+    dispatch(getCoursesForAdmin({ pageSize: 10 } as any));
   }, [
     dispatch,
     committedSearch,
@@ -237,9 +237,15 @@ export default function LessonListSection({
               >
                 <MenuItem value={0}>{translate("admin.sortByTitle")}</MenuItem>
                 <MenuItem value={1}>{translate("admin.sortByOrder")}</MenuItem>
-                <MenuItem value={2}>{translate("admin.sortByDuration")}</MenuItem>
-                <MenuItem value={3}>{translate("admin.sortByCreatedAt")}</MenuItem>
-                <MenuItem value={4}>{translate("admin.sortByUpdatedAt")}</MenuItem>
+                <MenuItem value={2}>
+                  {translate("admin.sortByDuration")}
+                </MenuItem>
+                <MenuItem value={3}>
+                  {translate("admin.sortByCreatedAt")}
+                </MenuItem>
+                <MenuItem value={4}>
+                  {translate("admin.sortByUpdatedAt")}
+                </MenuItem>
               </Select>
             </FormControl>
             <FormControl size="small" sx={{ minWidth: 150 }}>

@@ -75,7 +75,9 @@ export default function CourseDetailSection({
   );
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   // Fix: Don't create new object in selector - access property directly
-  const studentData = useAppSelector((state) => state.student.currentStudent.data);
+  const studentData = useAppSelector(
+    (state) => state.student.currentStudent.data
+  );
   const { isEnrolling } = operations;
 
   // Check if user is enrolled in this course
@@ -94,13 +96,16 @@ export default function CourseDetailSection({
     const fetchCourseRobots = async () => {
       try {
         // Use correct endpoint: GET /course-robots?courseId={courseId}
-        const response = await axiosClient.get(ROUTES_API_COURSE_ROBOT.GET_ALL, {
-          params: {
-            courseId: courseId,
-            pageSize: 100, // Get all robots for this course
-          },
-        });
-        
+        const response = await axiosClient.get(
+          ROUTES_API_COURSE_ROBOT.GET_ALL,
+          {
+            params: {
+              courseId: courseId,
+              pageSize: 10, // Get all robots for this course
+            },
+          }
+        );
+
         // Transform CourseRobot response to CourseRobotInfo format
         const items = response.data.data?.items || response.data.data || [];
         const robots: CourseRobotInfo[] = items.map((item: any) => ({
@@ -108,10 +113,11 @@ export default function CourseDetailSection({
           robotName: item.robot?.name || item.robotName || "Unknown Robot",
           robotModel: item.robot?.model || item.robotModel || "N/A",
           robotBrand: item.robot?.brand || item.robotBrand || "N/A",
-          robotImageUrl: item.robot?.imageUrl,
+          // BE returns flat imageUrl field in CourseRobotResult
+          robotImageUrl: item.imageUrl || item.robot?.imageUrl,
           isRequired: item.isRequired,
         }));
-        
+
         setCourseRobots(robots);
       } catch (error) {
         // Failed to fetch course robots - silently continue without robots
@@ -126,19 +132,25 @@ export default function CourseDetailSection({
   // Fetch user's enrollments ONLY if authenticated and not already loaded/loading
   useEffect(() => {
     if (!isAuthenticated) return;
-    
+
     // Don't fetch if already loading or already have data or got error
     if (myEnrollments.isLoading || myEnrollments.data || myEnrollments.error) {
       return;
     }
-    
-    dispatch(getMyEnrollments({ pageSize: 100 }));
-  }, [dispatch, isAuthenticated, myEnrollments.isLoading, myEnrollments.data, myEnrollments.error]);
+
+    dispatch(getMyEnrollments({ pageSize: 10 }));
+  }, [
+    dispatch,
+    isAuthenticated,
+    myEnrollments.isLoading,
+    myEnrollments.data,
+    myEnrollments.error,
+  ]);
 
   // Always use preview for course detail page - individual lessons will be fetched when clicked
   useEffect(() => {
     // Always fetch preview lessons for course detail view
-    dispatch(getLessonsPreview({ courseId, pageSize: 50 }));
+    dispatch(getLessonsPreview({ courseId, pageSize: 10 }));
   }, [dispatch, courseId]);
 
   // Fetch lesson progress for enrolled users
@@ -146,7 +158,7 @@ export default function CourseDetailSection({
     if (isUserEnrolled) {
       // Ensure backend receives correct paging params (PageNumber/PageSize)
       dispatch(
-        getLessonProgress({ courseId, pageNumber: 1, pageSize: 50 } as any)
+        getLessonProgress({ courseId, pageNumber: 1, pageSize: 10 } as any)
       );
     }
   }, [dispatch, courseId, isUserEnrolled]);
@@ -203,7 +215,7 @@ export default function CourseDetailSection({
       });
 
       // Refresh enrollments to update UI immediately
-      dispatch(getMyEnrollments({ pageSize: 100 }));
+      dispatch(getMyEnrollments({ pageSize: 10 }));
     } catch (error: any) {
       // Check if error indicates missing student profile
       const requiresProfile =
@@ -258,7 +270,7 @@ export default function CourseDetailSection({
   const lessons = lessonsPreviewData?.items || [];
   // Cast to correct LessonProgressResult type from lessonProgress.ts
   const lessonProgresses = (lessonProgressData?.items || []) as any;
-  
+
   // Enrich course with robots data
   const enrichedCourse = course ? { ...course, courseRobots } : null;
 
@@ -338,7 +350,9 @@ export default function CourseDetailSection({
 
           {/* Benefits Section */}
           <Box sx={{ mb: 8 }}>
-            <CourseBenefitsSection isPremium={enrichedCourse!.type === CourseType.Premium} />
+            <CourseBenefitsSection
+              isPremium={enrichedCourse!.type === CourseType.Premium}
+            />
           </Box>
         </Container>
 

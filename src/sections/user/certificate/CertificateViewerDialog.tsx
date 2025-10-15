@@ -58,6 +58,7 @@ export default function CertificateViewerDialog({
       CertificateId: certificate.certificateNo,
       IssuerName: template.issuerName || "",
       IssuerTitle: template.issuerTitle || "",
+      SignatureImageUrl: template.signatureImageUrl || "",
     };
 
     // Replace all placeholders (case-insensitive)
@@ -65,6 +66,16 @@ export default function CertificateViewerDialog({
       const regex = new RegExp(`{{${key}}}`, "gi");
       html = html.replace(regex, value);
     });
+
+    // Remove img tag if no signature URL (avoid broken image)
+    if (!template.signatureImageUrl) {
+      html = html.replace(
+        /<img[^>]*src="{{SignatureImageUrl}}"[^>]*\/?>/gi,
+        ""
+      );
+      // Also remove empty img tags after replacement
+      html = html.replace(/<img[^>]*src=""[^>]*\/?>/gi, "");
+    }
 
     return html;
   };
@@ -181,83 +192,33 @@ export default function CertificateViewerDialog({
                 borderRadius: 2,
               }}
             >
+              {/* Certificate Body HTML - HTML từ BE đã có signature bên trong */}
               <Box
+                dangerouslySetInnerHTML={{ __html: renderCertificateHTML() }}
                 sx={{
-                  p: 4,
-                  minHeight: 500,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
+                  "& h1": { fontSize: "2.5rem", margin: "20px 0" },
+                  "& h2": { fontSize: "2rem", margin: "15px 0" },
+                  "& h3": { fontSize: "1.5rem", margin: "10px 0" },
+                  "& p": { margin: "10px 0" },
+                  "& img": {
+                    maxWidth: "100%",
+                    height: "auto",
+                    display: "block",
+                    margin: "0 auto",
+                  },
+                  // Hide broken images
+                  "& img[src='']": {
+                    display: "none",
+                  },
+                  "& code": {
+                    bgcolor: "grey.200",
+                    px: 1,
+                    py: 0.5,
+                    borderRadius: 0.5,
+                    fontFamily: "monospace",
+                  },
                 }}
-              >
-                {/* Certificate Body HTML */}
-                <Box
-                  dangerouslySetInnerHTML={{ __html: renderCertificateHTML() }}
-                  sx={{
-                    flex: 1,
-                    "& h1": { fontSize: "2.5rem", margin: "20px 0" },
-                    "& h2": { fontSize: "2rem", margin: "15px 0" },
-                    "& h3": { fontSize: "1.5rem", margin: "10px 0" },
-                    "& p": { margin: "10px 0" },
-                    "& code": {
-                      bgcolor: "grey.200",
-                      px: 1,
-                      py: 0.5,
-                      borderRadius: 0.5,
-                      fontFamily: "monospace",
-                    },
-                  }}
-                />
-
-                {/* Signature Section */}
-                {(template.signatureImageUrl || template.issuerName) && (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      flexDirection: "column",
-                      mt: 4,
-                      pt: 3,
-                      borderTop: "2px solid",
-                      borderColor: "divider",
-                    }}
-                  >
-                    {template.signatureImageUrl && (
-                      <Box
-                        component="img"
-                        src={template.signatureImageUrl}
-                        alt="Signature"
-                        sx={{
-                          maxWidth: 200,
-                          maxHeight: 100,
-                          mb: 2,
-                          objectFit: "contain",
-                        }}
-                      />
-                    )}
-                    {template.issuerName && (
-                      <Stack spacing={0.5} alignItems="center">
-                        <Typography
-                          variant="body1"
-                          sx={{ fontWeight: 600, fontSize: "1.1rem" }}
-                        >
-                          {template.issuerName}
-                        </Typography>
-                        {template.issuerTitle && (
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ fontStyle: "italic" }}
-                          >
-                            {template.issuerTitle}
-                          </Typography>
-                        )}
-                      </Stack>
-                    )}
-                  </Box>
-                )}
-              </Box>
+              />
             </Paper>
           )}
 

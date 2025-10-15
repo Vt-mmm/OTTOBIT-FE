@@ -67,6 +67,7 @@ export interface CourseRobotResult extends CourseRobot {
   robotName?: string;
   robotBrand?: string;
   robotModel?: string;
+  imageUrl?: string; // Robot image URL from backend
 }
 
 export interface CourseRobotsResponse {

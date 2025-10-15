@@ -124,7 +124,7 @@ export const getCourseRobotsByCourseThunk = createAsyncThunk<
         try {
           const fallbackResponse = await callApiWithRetry(() =>
             axiosClient.get(ROUTES_API_COURSE_ROBOT.GET_ALL, {
-              params: { courseId, pageSize: 100 },
+              params: { courseId, pageSize: 10 },
             })
           );
           const data = fallbackResponse.data.data || fallbackResponse.data;

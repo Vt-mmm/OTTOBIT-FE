@@ -262,48 +262,20 @@ export class BlocklyToPhaserConverter {
 
   /**
    * Convert move forward block
+   * Enhanced to support arithmetic expressions
    */
   private static convertMoveForward(block: any): ProgramAction {
-    // Hỗ trợ cả số và biến (ví dụ: i) giống như collect blocks
-    let countToken: string = "1";
+    let countValue: any = 1;
 
     // Lấy khối gắn vào input STEPS
     const inputBlock = block.getInputTargetBlock("STEPS");
     if (inputBlock) {
-      // Nếu là số (custom hoặc mặc định của Blockly)
-      if (
-        inputBlock.type === "ottobit_number" ||
-        inputBlock.type === "math_number"
-      ) {
-        const val = inputBlock.getFieldValue("NUM");
-        countToken = String(val ?? "1");
-      }
-      // Nếu là biến i (khối custom)
-      else if (inputBlock.type === "ottobit_variable_i") {
-        countToken = "{{i}}"; // Giữ placeholder để thay thế trong vòng lặp
-      }
-      // Biến dropdown tuỳ chọn (i/j/k/...)
-      else if (inputBlock.type === "ottobit_variable") {
-        const varName = inputBlock.getFieldValue("VAR") || "i";
-        countToken = `{{${varName}}}`;
-      }
-      // Nếu là biến chung của Blockly
-      else if (inputBlock.type === "variables_get") {
-        // Cố gắng lấy tên hiển thị của biến, fallback về giá trị trường VAR
-        const field: any = inputBlock.getField && inputBlock.getField("VAR");
-        const varName =
-          (field && typeof field.getText === "function" && field.getText()) ||
-          inputBlock.getFieldValue("VAR") ||
-          "i";
-        countToken = `{{${varName}}}`;
-      }
+      // parseArithmeticExpression returns:
+      // - Number: 3
+      // - Variable: "{{i}}"
+      // - Arithmetic: {type: "arithmetic", op: "*", left: "{{i}}", right: 2}
+      countValue = this.parseArithmeticExpression(inputBlock);
     }
-
-    // Giữ nguyên placeholder nếu có dạng {{var}}, ngược lại parse số
-    const tokenStr = String(countToken);
-    const countValue: any = tokenStr.match(/^\{\{.*\}\}$/)
-      ? tokenStr
-      : parseInt(tokenStr) || 1;
 
     return {
       type: "forward",
@@ -339,40 +311,21 @@ export class BlocklyToPhaserConverter {
 
   /**
    * Convert collect blocks - specific color variants only
+   * Enhanced to support arithmetic expressions
    */
   private static convertCollect(block: any): ProgramAction {
     const blockType = block.type;
-    let countToken: string = "1"; // giữ ở dạng string để có thể mang placeholder biến
+    let countValue: any = 1;
     let color = "green"; // default
 
-    // Lấy giá trị từ input value (có thể là số hoặc biến)
+    // Lấy giá trị từ input value (có thể là số, biến, hoặc biểu thức)
     const inputBlock = block.getInputTargetBlock("COUNT");
     if (inputBlock) {
-      // Nếu có khối gắn vào (số hoặc biến)
-      if (
-        inputBlock.type === "ottobit_number" ||
-        inputBlock.type === "math_number"
-      ) {
-        const val = inputBlock.getFieldValue("NUM");
-        countToken = String(val ?? "1");
-      } else if (
-        inputBlock.type === "ottobit_variable_i" ||
-        inputBlock.type === "ottobit_variable"
-      ) {
-        // Sử dụng placeholder để ProgramExecutor thay thế theo vòng lặp
-        const varName =
-          inputBlock.type === "ottobit_variable"
-            ? inputBlock.getFieldValue("VAR") || "i"
-            : "i";
-        countToken = `{{${varName}}}`;
-      } else if (inputBlock.type === "variables_get") {
-        const field: any = inputBlock.getField && inputBlock.getField("VAR");
-        const varName =
-          (field && typeof field.getText === "function" && field.getText()) ||
-          inputBlock.getFieldValue("VAR") ||
-          "i";
-        countToken = `{{${varName}}}`;
-      }
+      // parseArithmeticExpression returns:
+      // - Number: 3
+      // - Variable: "{{i}}"
+      // - Arithmetic: {type: "arithmetic", op: "*", left: "{{i}}", right: 2}
+      countValue = this.parseArithmeticExpression(inputBlock);
     }
 
     // Determine color based on block type
@@ -390,16 +343,8 @@ export class BlocklyToPhaserConverter {
         color = "green";
     }
 
-    // Không ép kiểu sang number ở đây để tránh làm mất placeholder của biến
-    // ProgramExecutor (JS) sẽ giữ nguyên string và thay thế khi mở rộng repeatRange
-    const tokenStr = String(countToken);
-    const countValue: any = tokenStr.match(/^\{\{.*\}\}$/)
-      ? tokenStr
-      : parseInt(tokenStr) || 1;
-
     return {
       type: "collect",
-      // Cho phép giữ string placeholder hoặc số đã parse
       count: countValue as any,
       color: color,
     } as any;
@@ -427,43 +372,25 @@ export class BlocklyToPhaserConverter {
 
   /**
    * Convert repeat block
+   * Enhanced to support arithmetic expressions
    */
   private static convertRepeat(block: any): ProgramAction {
-    // Read TIMES from input socket: number or variable placeholder
+    let countValue: any = 1;
+    
+    // Read TIMES from input socket: number, variable, or arithmetic expression
     const inputBlock = block.getInputTargetBlock("TIMES");
-    let countToken: number | string = 1;
     if (inputBlock) {
-      try {
-        if (
-          inputBlock.type === "ottobit_number" ||
-          inputBlock.type === "math_number"
-        ) {
-          const v = inputBlock.getFieldValue("NUM");
-          const n = parseInt(String(v));
-          countToken = isNaN(n) ? 1 : n;
-        } else if (inputBlock.type === "ottobit_variable") {
-          const name = inputBlock.getFieldValue("VAR") || "i";
-          countToken = `{{${name}}}`;
-        } else if (inputBlock.type === "variables_get") {
-          const field: any = inputBlock.getField && inputBlock.getField("VAR");
-          const name =
-            (field && typeof field.getText === "function" && field.getText()) ||
-            inputBlock.getFieldValue("VAR") ||
-            "i";
-          countToken = `{{${name}}}`;
-        }
-      } catch {}
+      countValue = this.parseArithmeticExpression(inputBlock);
     }
 
     const doBlock = block.getInputTargetBlock("DO");
-
     const bodyActions = doBlock
       ? this.parseBlocksToActionsFromBlock(doBlock)
       : [];
 
     return {
       type: "repeat",
-      count: countToken as any,
+      count: countValue as any,
       body: bodyActions,
     } as any;
   }
@@ -870,10 +797,76 @@ export class BlocklyToPhaserConverter {
   }
 
   /**
+   * Parse arithmetic expression block recursively
+   * Returns structured expression for backend to evaluate
+   * Format: {type: "arithmetic", op: "*", left: "{{i}}", right: 2}
+   */
+  private static parseArithmeticExpression(block: any): any {
+    if (!block) return 0;
+
+    // Handle arithmetic block
+    if (block.type === "ottobit_arithmetic") {
+      const operator = block.getFieldValue("OP") || "ADD";
+      const leftBlock = block.getInputTargetBlock("A");
+      const rightBlock = block.getInputTargetBlock("B");
+
+      // Map operator to symbol format for backend
+      const operatorMap: Record<string, string> = {
+        "ADD": "+",
+        "MINUS": "-",
+        "MULTIPLY": "*",
+        "DIVIDE": "/",
+        "POWER": "^",
+      };
+
+      return {
+        type: "arithmetic",
+        op: operatorMap[operator] || "+",
+        left: leftBlock ? this.parseArithmeticExpression(leftBlock) : 0,
+        right: rightBlock ? this.parseArithmeticExpression(rightBlock) : 0,
+      };
+    }
+
+    // Handle number blocks - return as number
+    if (block.type === "ottobit_number" || block.type === "math_number") {
+      const val = block.getFieldValue("NUM");
+      return parseInt(String(val)) || 0;
+    }
+
+    // Handle variable blocks - return as template string "{{varName}}"
+    if (block.type === "ottobit_variable_i") {
+      return "{{i}}";
+    }
+
+    if (block.type === "ottobit_variable") {
+      const varName = block.getFieldValue("VAR") || "i";
+      return `{{${varName}}}`;
+    }
+
+    if (block.type === "variables_get") {
+      const field: any = block.getField && block.getField("VAR");
+      const varName =
+        (field && typeof field.getText === "function" && field.getText()) ||
+        block.getFieldValue("VAR") ||
+        "i";
+      return `{{${varName}}}`;
+    }
+
+    // Fallback to 0 for unknown types
+    return 0;
+  }
+
+  /**
    * Extract variable name or value from blocks
+   * Enhanced to support arithmetic expressions
    */
   private static extractVariableOrValue(block: any): any {
     if (!block) return 0;
+
+    // Check if it's an arithmetic expression first
+    if (block.type === "ottobit_arithmetic") {
+      return this.parseArithmeticExpression(block);
+    }
 
     switch (block.type) {
       case "ottobit_variable_i":

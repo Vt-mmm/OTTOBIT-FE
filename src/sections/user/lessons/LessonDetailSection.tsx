@@ -44,7 +44,7 @@ export default function LessonDetailSection({
 
   const handleBackToCourse = () => {
     if (lesson?.courseId) {
-      navigate(PATH_USER.courseDetail.replace(":id", lesson.courseId));
+      navigate(PATH_USER.courseLearn.replace(":courseId", lesson.courseId));
     } else {
       navigate(PATH_USER.courses);
     }

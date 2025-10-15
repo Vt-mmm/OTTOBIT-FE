@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
 import {
   PlayArrow,
@@ -6,7 +6,8 @@ import {
   Memory,
   Build,
   Psychology,
-  Functions
+  Functions,
+  Calculate
 } from '@mui/icons-material';
 
 interface ToolboxCategory {
@@ -19,10 +20,18 @@ interface ToolboxCategory {
 
 interface BlockToolboxProps {
   onCategorySelect: (categoryId: string) => void;
+  selectedCategory?: string; // Accept selected category from parent
 }
 
-const BlockToolbox: React.FC<BlockToolboxProps> = ({ onCategorySelect }) => {
+const BlockToolbox: React.FC<BlockToolboxProps> = ({ onCategorySelect, selectedCategory: externalSelectedCategory }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>(''); // Bắt đầu với toolbox đóng
+
+  // Sync internal state with external prop
+  useEffect(() => {
+    if (externalSelectedCategory !== undefined) {
+      setSelectedCategory(externalSelectedCategory);
+    }
+  }, [externalSelectedCategory]);
 
   const categories: ToolboxCategory[] = [
     {
@@ -52,6 +61,13 @@ const BlockToolbox: React.FC<BlockToolboxProps> = ({ onCategorySelect }) => {
       icon: Psychology,
       color: '#9c27b0',
       selectedColor: '#7b1fa2'
+    },
+    {
+      id: 'arithmetic',
+      name: 'MATH',
+      icon: Calculate,
+      color: '#4CAF50',
+      selectedColor: '#388E3C'
     },
     {
       id: 'actions',

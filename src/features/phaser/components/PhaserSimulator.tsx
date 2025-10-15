@@ -52,25 +52,37 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const prevVictoryOpenRef = useRef<boolean>(false);
-  const prevDefeatOpenRef = useRef<boolean>(false);
   const suppressAutoResetRef = useRef<boolean>(false);
 
-  // Handle replay using proper restart logic from PhaserContext
+  // Handle replay using EXACT same logic as TopBar restart button
   const handleReplay = async () => {
     try {
-      // Sử dụng restartScene từ PhaserContext giống TopBar
+      // CRITICAL: Suppress auto-reset to prevent double restart
+      // (handleReplay does manual restart + modal close triggers auto-reset)
+      suppressAutoResetRef.current = true;
+      
+      // Use restartScene from PhaserContext - SAME as TopBar handleRestart
       await restartScene();
-      // Đóng modal
+      
+      // Close modals after successful restart
       hideVictoryModal();
       hideDefeatModal();
+      
+      // Re-enable auto-reset after a short delay
+      setTimeout(() => {
+        suppressAutoResetRef.current = false;
+      }, 100);
     } catch (error) {
-      // Fallback: Reload iframe nếu restart không thành công
-      const iframe = iframeRef.current;
-      if (iframe) {
-        iframe.src = iframe.src;
-      }
+      console.error("❌ [PhaserSimulator] Error restarting scene:", error);
+      
+      // Still close modals even on error - DON'T reload iframe (causes duplicate assets)
       hideVictoryModal();
       hideDefeatModal();
+      
+      // Re-enable auto-reset even on error
+      setTimeout(() => {
+        suppressAutoResetRef.current = false;
+      }, 100);
     }
   };
 
@@ -209,38 +221,28 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     []
   );
 
-  // Auto reset map when DefeatModal is dismissed (all modes)
-  // VictoryModal: Only reset for physical mode when closed
+  // REMOVED: Auto-reset logic for DefeatModal
+  // Now user manually controls reset via TopBar dynamic Execute/Reset button
+  // Only keep auto-reset for VictoryModal in physical mode
   useEffect(() => {
     const wasVictoryOpen = prevVictoryOpenRef.current;
-    const wasDefeatOpen = prevDefeatOpenRef.current;
     const isPhysical = Number(currentChallenge?.challengeMode) === 1;
 
     // Update refs for next tick
     prevVictoryOpenRef.current = isVictoryModalOpen;
-    prevDefeatOpenRef.current = isDefeatModalOpen;
 
     // Detect close event
     const victoryJustClosed = wasVictoryOpen && !isVictoryModalOpen;
-    const defeatJustClosed = wasDefeatOpen && !isDefeatModalOpen;
 
-    // Auto-restart logic:
-    // 1. DefeatModal: Always restart when closed (both simulation & physical)
-    // 2. VictoryModal: Only restart for physical mode
-    if (defeatJustClosed) {
-      // Restart map automatically when defeat modal is closed
-      if (!suppressAutoResetRef.current) {
-        restartScene().catch(() => {});
-      }
-    } else if (isPhysical && victoryJustClosed) {
-      // For physical mode, also reset on victory close
+    // Auto-restart logic: Only for VictoryModal in physical mode
+    if (isPhysical && victoryJustClosed) {
+      // For physical mode, reset on victory close
       if (!suppressAutoResetRef.current) {
         restartScene().catch(() => {});
       }
     }
   }, [
     isVictoryModalOpen,
-    isDefeatModalOpen,
     currentChallenge?.challengeMode,
     restartScene,
   ]);

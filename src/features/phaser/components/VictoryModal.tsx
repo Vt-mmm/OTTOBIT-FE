@@ -72,6 +72,7 @@ export default function VictoryModal({
         TransitionComponent={Transition}
         maxWidth="xs"
         fullWidth
+        disableScrollLock={true}
         PaperProps={{
           sx: {
             borderRadius: "20px",

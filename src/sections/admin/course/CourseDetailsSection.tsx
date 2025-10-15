@@ -81,7 +81,7 @@ export default function CourseDetailsSection({
           courseId: course.id,
           includeDeleted: true,
           pageNumber: 1,
-          pageSize: 100, // Lấy tất cả lessons của course
+          pageSize: 10, // Lấy tất cả lessons của course
         })
       );
     }

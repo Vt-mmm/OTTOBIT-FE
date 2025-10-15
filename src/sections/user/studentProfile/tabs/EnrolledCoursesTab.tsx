@@ -109,11 +109,11 @@ export default function EnrolledCoursesTab({
         const [rIn, rDone] = await Promise.all([
           axiosClient.get<ApiResponse<any>>(
             ROUTES_API_ENROLLMENT.MY_ENROLLMENTS,
-            { params: { pageNumber: 1, pageSize: 50, isCompleted: false } }
+            { params: { pageNumber: 1, pageSize: 10, isCompleted: false } }
           ),
           axiosClient.get<ApiResponse<any>>(
             ROUTES_API_ENROLLMENT.MY_ENROLLMENTS,
-            { params: { pageNumber: 1, pageSize: 50, isCompleted: true } }
+            { params: { pageNumber: 1, pageSize: 10, isCompleted: true } }
           ),
         ]);
         const list: EnrollmentItem[] = [
@@ -290,7 +290,8 @@ export default function EnrolledCoursesTab({
         !error &&
         visible.map((enrollment) => {
           // Use progress from backend if available, fallback to computed stats
-          const progressPct = enrollment.progress ?? stats[enrollment.courseId]?.percent ?? 0;
+          const progressPct =
+            enrollment.progress ?? stats[enrollment.courseId]?.percent ?? 0;
           // Navigate to learning page for enrolled courses
           const learningPath = PATH_USER.courseLearn.replace(
             ":courseId",
@@ -348,7 +349,7 @@ export default function EnrolledCoursesTab({
                       params: {
                         courseId: enrollment.courseId,
                         pageNumber: 1,
-                        pageSize: 100,
+                        pageSize: 10,
                       },
                     }
                   );
@@ -552,12 +553,17 @@ export default function EnrolledCoursesTab({
                             ":id",
                             lp.lessonId
                           );
-                          
+
                           // Backend returns numeric enum: 0=Locked, 1=Available, 2=InProgress, 3=Completed
-                          const status = typeof lp.status === 'number' ? lp.status : parseInt(String(lp.status));
-                          const isCompleted = status === 3 || (lp.status as any) === "Completed";
-                          const isInProgress = status === 2 || (lp.status as any) === "InProgress";
-                          
+                          const status =
+                            typeof lp.status === "number"
+                              ? lp.status
+                              : parseInt(String(lp.status));
+                          const isCompleted =
+                            status === 3 || (lp.status as any) === "Completed";
+                          const isInProgress =
+                            status === 2 || (lp.status as any) === "InProgress";
+
                           const statusColor = isCompleted
                             ? "success"
                             : isInProgress

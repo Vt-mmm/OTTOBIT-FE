@@ -165,9 +165,38 @@ export default function SolutionHintDialog({
   }, [open, challengeId]);
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="lg"
+      fullWidth
+      disableScrollLock={true}
+      PaperProps={{
+        sx: {
+          // Isolate dialog from causing layout shifts
+          position: "fixed",
+          overflow: "hidden",
+          // Prevent Blockly from affecting parent layout
+          contain: "layout style paint",
+        },
+      }}
+      sx={{
+        // Ensure backdrop doesn't cause scrollbar
+        "& .MuiBackdrop-root": {
+          position: "fixed",
+        },
+      }}
+    >
       <DialogTitle>Gợi ý lời giải</DialogTitle>
-      <DialogContent dividers sx={{ p: 0 }}>
+      <DialogContent
+        dividers
+        sx={{
+          p: 0,
+          // Isolate content to prevent layout propagation
+          overflow: "hidden",
+          position: "relative",
+        }}
+      >
         {loading && (
           <Box sx={{ p: 3, display: "flex", alignItems: "center", gap: 2 }}>
             <CircularProgress size={24} />
@@ -180,7 +209,15 @@ export default function SolutionHintDialog({
           </Box>
         )}
         {!loading && !error && program && (
-          <Box sx={{ height: 500 }}>
+          <Box
+            sx={{
+              height: 500,
+              // Strict containment for Blockly workspace
+              overflow: "hidden",
+              position: "relative",
+              contain: "strict",
+            }}
+          >
             <BlocksWorkspace
               key={`hint-${challengeId}-${program?.actions?.length || 0}`}
               initialProgramActionsJson={program}

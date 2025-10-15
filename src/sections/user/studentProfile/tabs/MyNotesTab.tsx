@@ -56,7 +56,7 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
 
   // Load all notes on mount
   useEffect(() => {
-    dispatch(fetchMyLessonNotes({ pageSize: 100 }));
+    dispatch(fetchMyLessonNotes({ pageSize: 10 }));
   }, [dispatch]);
 
   // Get unique courses from notes
@@ -120,7 +120,7 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
     if (window.confirm(translate("student.ConfirmDeleteNote"))) {
       await dispatch(deleteLessonNote(noteId));
       // Reload notes after delete
-      dispatch(fetchMyLessonNotes({ pageSize: 100 }));
+      dispatch(fetchMyLessonNotes({ pageSize: 10 }));
     }
   };
 

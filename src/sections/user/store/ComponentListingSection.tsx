@@ -30,7 +30,6 @@ export default function ComponentListingSection() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<ComponentType | "all">("all");
-  const [filterStock, setFilterStock] = useState("all");
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(12);
 
@@ -41,13 +40,12 @@ export default function ComponentListingSection() {
       size: pageSize,
       searchTerm: searchTerm.trim() || undefined,
       type: filterType !== "all" ? filterType : undefined,
-      inStock: filterStock === "inStock" ? true : filterStock === "outOfStock" ? false : undefined,
       orderBy: "CreatedAt",
       orderDirection: "DESC" as const,
     };
 
     dispatch(getComponentsThunk(filters));
-  }, [dispatch, searchTerm, filterType, filterStock, pageNumber, pageSize]);
+  }, [dispatch, searchTerm, filterType, pageNumber, pageSize]);
 
   const handleComponentClick = (componentId: string) => {
     const path = isAuthenticated
@@ -128,25 +126,7 @@ export default function ComponentListingSection() {
             </FormControl>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <FormControl fullWidth>
-              <InputLabel>Stock Status</InputLabel>
-              <Select
-                value={filterStock}
-                label="Stock Status"
-                onChange={(e) => {
-                  setFilterStock(e.target.value);
-                  setPageNumber(1);
-                }}
-              >
-                <MenuItem value="all">All Items</MenuItem>
-                <MenuItem value="inStock">In Stock</MenuItem>
-                <MenuItem value="outOfStock">Out of Stock</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Grid item xs={12} md={2}>
+          <Grid item xs={12} md={3}>
             <FormControl fullWidth>
               <InputLabel>Per Page</InputLabel>
               <Select
@@ -172,7 +152,6 @@ export default function ComponentListingSection() {
           Showing {componentList.length} of {components.data.total} components
           {searchTerm && ` for "${searchTerm}"`}
           {filterType !== "all" && ` • Type: ${getComponentTypeLabel(filterType)}`}
-          {filterStock !== "all" && ` • Stock: ${filterStock}`}
         </Typography>
       )}
 
@@ -197,7 +176,7 @@ export default function ComponentListingSection() {
             No components found
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {searchTerm || filterType !== "all" || filterStock !== "all"
+            {searchTerm || filterType !== "all"
               ? "Try adjusting your search or filters"
               : "No components available at the moment"}
           </Typography>
