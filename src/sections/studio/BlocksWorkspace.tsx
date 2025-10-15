@@ -182,7 +182,16 @@ BlocksWorkspaceProps) {
       // Thêm event listeners để xử lý drag behavior
       workspace.addChangeListener((event: any) => {
         if (event.type === Blockly.Events.BLOCK_DRAG) {
-          if (event.isStart === false) {
+          if (event.isStart === true) {
+            // Khi BẮT ĐẦU kéo block từ flyout, NGAY LẬP TỨC clear hover state
+            if (
+              selectedCategoryRef.current &&
+              selectedCategoryRef.current !== ""
+            ) {
+              setSelectedCategory("");
+              selectedCategoryRef.current = "";
+            }
+          } else if (event.isStart === false) {
             // Khi kết thúc drag, reset trạng thái
             setTimeout(() => {
               workspace.getToolbox()?.clearSelection();
@@ -197,12 +206,13 @@ BlocksWorkspaceProps) {
             selectedCategoryRef.current &&
             selectedCategoryRef.current !== ""
           ) {
-            // Delay nhẹ để tránh ảnh hưởng quá trình tạo block
+            // NGAY LẬP TỨC clear state để xóa hover
+            setSelectedCategory("");
+            selectedCategoryRef.current = "";
+            
+            // Sau đó mới đóng flyout (delay nhẹ để tránh conflict với block creation)
             setTimeout(() => {
               try {
-                // Đóng bằng cả 2 cách: state + cập nhật toolbox rỗng ngay lập tức
-                setSelectedCategory("");
-                selectedCategoryRef.current = "";
                 if (!readOnly) {
                   const emptyToolbox = {
                     kind: "flyoutToolbox",
@@ -213,7 +223,7 @@ BlocksWorkspaceProps) {
                   if (flyout) flyout.setVisible(false);
                 }
               } catch {}
-            }, 30);
+            }, 10);
           }
         }
       });
@@ -3232,7 +3242,10 @@ BlocksWorkspaceProps) {
       {/* Custom Toolbox với UI đẹp - Hide in readOnly mode */}
       {!readOnly && (
         <Box id="studio-toolbox" sx={{ display: "flex" }}>
-          <BlockToolbox onCategorySelect={handleCategorySelect} />
+          <BlockToolbox 
+            onCategorySelect={handleCategorySelect} 
+            selectedCategory={selectedCategory}
+          />
         </Box>
       )}
 

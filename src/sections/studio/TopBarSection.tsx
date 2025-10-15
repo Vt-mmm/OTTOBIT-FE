@@ -91,16 +91,29 @@ function TopBarContent({
   const [showHintDialog, setShowHintDialog] = useState(false);
   const [isCameraLoading, setIsCameraLoading] = useState(false);
 
-  // Helper: close Blockly toolbox/flyout safely
+  // Helper: close Blockly toolbox/flyout safely without causing layout shifts
   const closeWorkspaceToolbox = useCallback(() => {
     try {
       if (!workspace) return;
-      const toolbox = workspace.getToolbox && workspace.getToolbox();
-      toolbox?.clearSelection?.();
-      const flyout = workspace.getFlyout && workspace.getFlyout();
-      const emptyToolbox = { kind: "flyoutToolbox", contents: [] as any[] };
-      workspace.updateToolbox(emptyToolbox);
-      if (flyout) flyout.setVisible(false);
+
+      // Use requestAnimationFrame to defer DOM updates and prevent layout shifts
+      requestAnimationFrame(() => {
+        try {
+          const toolbox = workspace.getToolbox && workspace.getToolbox();
+          toolbox?.clearSelection?.();
+
+          const flyout = workspace.getFlyout && workspace.getFlyout();
+          if (flyout && typeof flyout.setVisible === "function") {
+            flyout.setVisible(false);
+          }
+
+          // Update to empty toolbox quietly
+          const emptyToolbox = { kind: "flyoutToolbox", contents: [] as any[] };
+          if (typeof workspace.updateToolbox === "function") {
+            workspace.updateToolbox(emptyToolbox);
+          }
+        } catch {}
+      });
     } catch {}
   }, [workspace]);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -135,7 +148,6 @@ function TopBarContent({
     runProgramFromWorkspace,
     stopProgram,
     restartScene,
-    gameState,
     currentChallengeId,
     currentChallenge,
     onMessage,
@@ -145,7 +157,8 @@ function TopBarContent({
   } = usePhaserContext();
 
   // Detect if current challenge is physical mode
-  const isPhysicalMap = currentChallenge?.challengeMode === ChallengeMode.PhysicalFirst;
+  const isPhysicalMap =
+    currentChallenge?.challengeMode === ChallengeMode.PhysicalFirst;
 
   // Derive lessonId from query params or stored navigation data
   useEffect(() => {
@@ -289,12 +302,29 @@ function TopBarContent({
 
   // Listen for victory events from Phaser - optimized effect with minimal dependencies
   useEffect(() => {
-    // Register victory listener
-    onMessage("VICTORY", handleVictory);
+    // Combined handler for victory: submission + UI state
+    const handleVictoryComplete = (victoryData: any) => {
+      // Handle submission
+      handleVictory(victoryData);
+      // Reset UI state
+      setIsRunning(false);
+    };
+
+    // Combined handler for defeat: UI state only
+    const handleDefeatComplete = () => {
+      setIsRunning(false);
+    };
+
+    // Register victory and defeat listeners
+    onMessage("VICTORY", handleVictoryComplete);
+    onMessage("LOSE", handleDefeatComplete);
+    onMessage("PROGRAM_STOPPED", handleDefeatComplete);
 
     // Cleanup listener on unmount or effect re-run
     return () => {
-      offMessage("VICTORY", handleVictory);
+      offMessage("VICTORY", handleVictoryComplete);
+      offMessage("LOSE", handleDefeatComplete);
+      offMessage("PROGRAM_STOPPED", handleDefeatComplete);
     };
   }, [onMessage, offMessage, handleVictory]); // Minimal dependencies
 
@@ -305,6 +335,11 @@ function TopBarContent({
         "Map vật lý không hỗ trợ chạy trên simulator. Vui lòng sử dụng nút 'Send to micro:bit' để nạp code lên thiết bị.",
         "warning"
       );
+      return;
+    }
+
+    // Prevent double execution
+    if (isRunning) {
       return;
     }
 
@@ -322,49 +357,30 @@ function TopBarContent({
     setIsRunning(true);
 
     try {
-      // Đảm bảo Phaser thực sự sẵn sàng
-
+      // Verify Phaser is ready
       if (!phaserConnected || !phaserReady) {
-        // Đợi một chút để Phaser sẵn sàng
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        if (!phaserConnected || !phaserReady) {
-          console.error("❌ [TopBar] Phaser still not ready after wait");
-          setIsRunning(false);
-          return;
-        }
+        console.error("❌ [TopBar] Phaser not ready");
+        setIsRunning(false);
+        return;
       }
 
-      // Thêm delay nhỏ trước khi gửi message để đảm bảo Phaser thực sự sẵn sàng
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
+      // Single call to runProgramFromWorkspace - no duplicates
+      // Note: UI state reset (setIsRunning(false)) is handled by permanent listeners in useEffect
       await runProgramFromWorkspace(workspace);
+
+      // Safety timeout: force reset isRunning after 30 seconds if no message received
+      setTimeout(() => {
+        setIsRunning(false);
+      }, 30000);
     } catch (error) {
       console.error("❌ [TopBar] Error during execution:", error);
 
       // CRITICAL: Cleanup again on error to prevent leaks
       forceCleanupBeforeExecute();
-
-      // ENHANCED: Also cleanup field inputs on error
       forceCleanupFields();
 
       setIsRunning(false);
-      return;
     }
-
-    // Theo dõi trạng thái chương trình và cập nhật UI
-    const checkProgramStatus = () => {
-      if (gameState?.programStatus === "running") {
-        // Nếu chương trình vẫn đang chạy, tiếp tục kiểm tra
-        setTimeout(checkProgramStatus, 1000);
-      } else {
-        // Chương trình đã dừng hoặc hoàn thành
-        setIsRunning(false);
-      }
-    };
-
-    // Bắt đầu kiểm tra sau 2 giây để Phaser có thời gian xử lý
-    setTimeout(checkProgramStatus, 2000);
   };
 
   const handleStop = async () => {
@@ -575,13 +591,16 @@ function TopBarContent({
       formData.append("file", file, file.name);
 
       // Make API call
-      const response = await fetch("https://otto-detect.felixtien.dev/detect?min_thresh=0.5", {
-        method: "POST",
-        headers: {
-          accept: "application/json",
-        },
-        body: formData,
-      });
+      const response = await fetch(
+        "https://otto-detect.felixtien.dev/detect?min_thresh=0.5",
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+          },
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -675,6 +694,7 @@ function TopBarContent({
         bgcolor: "#10b981",
         borderBottom: "1px solid #059669",
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        overflow: "hidden", // Prevent scroll bar
       }}
     >
       <Toolbar
@@ -682,8 +702,9 @@ function TopBarContent({
           minHeight: { xs: "56px", sm: "64px", md: "72px" },
           px: { xs: 1, sm: 2 },
           gap: { xs: 1, sm: 2 },
-          flexWrap: { xs: "wrap", md: "nowrap" }, // Allow wrapping on mobile
-          position: "relative", // Allow absolute centering for map selector
+          flexWrap: "nowrap", // Prevent wrapping to avoid layout shift
+          position: "relative",
+          overflow: "hidden", // Prevent scroll bar on toolbar
         }}
       >
         {/* Ottobit Logo - Mobile Responsive with Navigation */}
@@ -724,19 +745,6 @@ function TopBarContent({
           />
         </Box>
 
-        {/* Project Title - Responsive without Navigation */}
-        <Typography
-          variant="h5"
-          sx={{
-            fontWeight: 700,
-            color: "#ffffff",
-            fontSize: { xs: "18px", sm: "20px", md: "24px" },
-            letterSpacing: "0.5px",
-            display: { xs: "none", sm: "block" }, // Hide on very small screens
-          }}
-        >
-          Ottobit Studio
-        </Typography>
 
         {/* Short title for mobile without Navigation */}
         <Typography
@@ -746,7 +754,9 @@ function TopBarContent({
             color: "#ffffff",
             fontSize: "16px",
             letterSpacing: "0.5px",
-            display: { xs: "block", sm: "none" }, // Only show on very small screens
+            display: { xs: "block", sm: "none" },
+            flexShrink: 0, // Prevent shrinking
+            whiteSpace: "nowrap", // Prevent text wrap
           }}
         >
           Ottobit
@@ -939,7 +949,8 @@ function TopBarContent({
             display: "flex",
             gap: { xs: 0.5, sm: 0.6, md: 0.8 },
             alignItems: "center",
-            flexWrap: { xs: "wrap", sm: "nowrap" },
+            flexWrap: "nowrap", // Prevent wrapping to avoid layout shift
+            flexShrink: 0, // Prevent shrinking
           }}
         >
           <Tooltip title="Send to micro:bit">
@@ -1133,6 +1144,7 @@ function TopBarContent({
         onClose={handleCloseCameraDialog}
         maxWidth="md"
         fullWidth
+        disableScrollLock={true}
         PaperProps={{
           sx: {
             borderRadius: 2,

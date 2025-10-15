@@ -124,6 +124,7 @@ export default function DefeatModal({
         TransitionComponent={Transition}
         maxWidth="sm"
         fullWidth
+        disableScrollLock={true}
         PaperProps={{
           sx: {
             borderRadius: "24px",
