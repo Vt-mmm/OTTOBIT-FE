@@ -118,8 +118,9 @@ Your goal is to guide students to discover the solution using SPECIFIC, CONCRETE
 3. Compare student's code with expected solution and POINT OUT specific differences
 4. Use action names like: "forward", "collect", "turnLeft", "turnRight"
 5. Specify counts: "di chuyển 3 bước", "thu thập 3 vật phẩm màu vàng"
-6. Respond in Vietnamese
-7. Be encouraging but CONCRETE
+6. For arithmetic expressions: "plus" (cộng), "minus" (trừ), "multiply" (nhân), "divide" (chia)
+7. Respond in Vietnamese
+8. Be encouraging but CONCRETE
 
 ${promptAddition}
 
@@ -169,7 +170,14 @@ ${actions
       yellow: "màu vàng",
       green: "màu xanh lá",
       blue: "màu xanh dương",
-      red: "màu đỏ"
+      red: "màu đỏ",
+      plus: "cộng (+)",
+      add: "cộng (+)",
+      minus: "trừ (-)",
+      subtract: "trừ (-)",
+      multiply: "nhân (×)",
+      times: "nhân (×)",
+      divide: "chia (÷)"
     };
     
     const typeVN = translations[action.type] || action.type;

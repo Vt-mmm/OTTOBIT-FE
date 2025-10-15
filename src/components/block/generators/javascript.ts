@@ -537,6 +537,53 @@ javascriptGenerator.forBlock["ottobit_function_call"] = function (
   return code;
 };
 
+// === ARITHMETIC BLOCK ===
+// Unified arithmetic operator with dropdown (HP Robots style)
+javascriptGenerator.forBlock["ottobit_arithmetic"] = function (
+  block: any
+): [string, number] {
+  const operator = block.getFieldValue("OP") || "ADD";
+  
+  // Get order based on operator
+  let order: number;
+  let jsOperator: string;
+  
+  switch (operator) {
+    case "POWER":
+      order = Order.COMMA;
+      // JavaScript uses Math.pow(a, b) for power
+      const valueAPow = javascriptGenerator.valueToCode(block, "A", Order.COMMA) || "0";
+      const valueBPow = javascriptGenerator.valueToCode(block, "B", Order.COMMA) || "1";
+      const powCode = `Math.pow(${valueAPow}, ${valueBPow})`;
+      return [powCode, Order.FUNCTION_CALL];
+    case "MULTIPLY":
+      order = Order.MULTIPLICATION;
+      jsOperator = "*";
+      break;
+    case "DIVIDE":
+      order = Order.DIVISION;
+      jsOperator = "/";
+      break;
+    case "ADD":
+      order = Order.ADDITION;
+      jsOperator = "+";
+      break;
+    case "MINUS":
+      order = Order.SUBTRACTION;
+      jsOperator = "-";
+      break;
+    default:
+      order = Order.ADDITION;
+      jsOperator = "+";
+  }
+  
+  const valueA = javascriptGenerator.valueToCode(block, "A", order) || "0";
+  const valueB = javascriptGenerator.valueToCode(block, "B", order) || (operator === "DIVIDE" ? "1" : "0");
+  
+  const code = `(${valueA} ${jsOperator} ${valueB})`;
+  return [code, order];
+};
+
 // === PROCEDURES BLOCKS (không sử dụng nữa) ===
 // Đã thay thế bằng custom function blocks
 /**

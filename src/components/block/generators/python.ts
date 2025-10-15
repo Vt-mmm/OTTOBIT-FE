@@ -329,6 +329,50 @@ pythonGenerator.forBlock["ottobit_function_call"] = function (block: any): strin
   return `${functionName}();\n`;
 };
 
+// === ARITHMETIC BLOCK ===
+// Unified arithmetic operator with dropdown (HP Robots style)
+pythonGenerator.forBlock["ottobit_arithmetic"] = function (
+  block: any
+): [string, number] {
+  const operator = block.getFieldValue("OP") || "ADD";
+  
+  // Get order and Python operator based on operator type
+  let order: number;
+  let pyOperator: string;
+  
+  switch (operator) {
+    case "POWER":
+      order = Order.EXPONENTIATION;
+      pyOperator = "**"; // Python power operator
+      break;
+    case "MULTIPLY":
+      order = Order.MULTIPLICATIVE;
+      pyOperator = "*";
+      break;
+    case "DIVIDE":
+      order = Order.MULTIPLICATIVE;
+      pyOperator = "/";
+      break;
+    case "ADD":
+      order = Order.ADDITIVE;
+      pyOperator = "+";
+      break;
+    case "MINUS":
+      order = Order.ADDITIVE;
+      pyOperator = "-";
+      break;
+    default:
+      order = Order.ADDITIVE;
+      pyOperator = "+";
+  }
+  
+  const valueA = pythonGenerator.valueToCode(block, "A", order) || "0";
+  const valueB = pythonGenerator.valueToCode(block, "B", order) || (operator === "DIVIDE" ? "1" : "0");
+  
+  const code = `(${valueA} ${pyOperator} ${valueB})`;
+  return [code, order];
+};
+
 /**
  * Generate Python code from workspace
  */

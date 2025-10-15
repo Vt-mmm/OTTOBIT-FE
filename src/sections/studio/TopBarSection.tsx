@@ -303,6 +303,12 @@ function TopBarContent({
     [submitSolution, lessonId, dispatch]
   ); // Only depend on memoized submitSolution
 
+  // Reset hasExecuted when challenge changes (fix: reset button not appearing on new map)
+  useEffect(() => {
+    setHasExecuted(false);
+    setIsRunning(false);
+  }, [currentChallengeId]);
+
   // Listen for victory events from Phaser - optimized effect with minimal dependencies
   useEffect(() => {
     // Combined handler for victory: submission + UI state

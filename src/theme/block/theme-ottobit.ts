@@ -112,6 +112,12 @@ export const ThemeOttobit = Blockly.Theme.defineTheme("ottobit-theme", {
       colourSecondary: "#5D6D7E",
       colourTertiary: "#1B2631",
     },
+    // Arithmetic blocks - Xanh lá cho toán tử số học
+    ottobit_arithmetic: {
+      colourPrimary: "#4CAF50", // Xanh lá cho +, -, ×, ÷
+      colourSecondary: "#66BB6A",
+      colourTertiary: "#388E3C",
+    },
     // Default cho blocks không có style riêng
     ottobit_default: {
       colourPrimary: "#95A5A6", // Xám cho default

@@ -107,6 +107,9 @@ BlocksWorkspaceProps) {
       { kind: "block", type: "ottobit_bale_number" },
       { kind: "block", type: "ottobit_pin_number" },
     ],
+    arithmetic: [
+      { kind: "block", type: "ottobit_arithmetic" },
+    ],
     actions: [
       { kind: "block", type: "ottobit_collect_green" },
       { kind: "block", type: "ottobit_collect_red" },
@@ -2108,8 +2111,86 @@ BlocksWorkspaceProps) {
 
         // Helper function to create number or variable block based on count value
         // Moved outside try block so it can be used by repeatRange logic too
-        const createCountBlock = (countValue: any) => {
-          // Case 1: Variable template string like "{{i}}" or "{{count}}"
+        const createCountBlock = (countValue: any): any => {
+          // Case 1: Arithmetic expression object - NEW FORMAT: {type: "arithmetic", op: "*", left: ..., right: ...}
+          if (typeof countValue === "object" && countValue?.type) {
+            const exprType = String(countValue.type).toLowerCase();
+            
+            // Handle new backend format: {type: "arithmetic", op: "*", left: "{{i}}", right: 2}
+            if (exprType === "arithmetic" && countValue.op) {
+              console.log(
+                `      🧮 [BlocksWorkspace] Creating arithmetic expression with op: ${countValue.op}`,
+                countValue
+              );
+              
+              // Map operator symbols to field values
+              const opToFieldMap: Record<string, string> = {
+                "+": "ADD",
+                "-": "MINUS",
+                "*": "MULTIPLY",
+                "/": "DIVIDE",
+                "^": "POWER",
+              };
+              
+              // Create single arithmetic block
+              const arithmeticBlock = blocklyWorkspace.newBlock("ottobit_arithmetic");
+              arithmeticBlock.setShadow(false);
+              arithmeticBlock.initSvg();
+              arithmeticBlock.render();
+              
+              // Set operator dropdown
+              try {
+                const opField = opToFieldMap[countValue.op] || "ADD";
+                arithmeticBlock.setFieldValue(opField, "OP");
+                console.log(`      ✅ Set operator to: ${opField}`);
+              } catch (err) {
+                console.warn(`      ⚠️ Failed to set operator: ${err}`);
+              }
+              
+              // Recursively create A and B operands
+              if (countValue.left !== undefined) {
+                const inputA = arithmeticBlock.getInput && arithmeticBlock.getInput("A");
+                if (inputA?.connection) {
+                  const blockA = createCountBlock(countValue.left);
+                  if (blockA?.outputConnection) {
+                    inputA.connection.connect(blockA.outputConnection);
+                    console.log(`      ✅ Connected left operand`);
+                  }
+                }
+              }
+              
+              if (countValue.right !== undefined) {
+                const inputB = arithmeticBlock.getInput && arithmeticBlock.getInput("B");
+                if (inputB?.connection) {
+                  const blockB = createCountBlock(countValue.right);
+                  if (blockB?.outputConnection) {
+                    inputB.connection.connect(blockB.outputConnection);
+                    console.log(`      ✅ Connected right operand`);
+                  }
+                }
+              }
+              
+              return arithmeticBlock;
+            }
+            
+            // Variable object {type: "variable", name: "i"}
+            if (exprType === "variable") {
+              const varName = countValue.name || countValue.variableName;
+              console.log(
+                `      🔤 [BlocksWorkspace] Detected variable object: ${varName}`
+              );
+              const varBlock = blocklyWorkspace.newBlock("ottobit_variable");
+              varBlock.setShadow(false);
+              varBlock.initSvg();
+              varBlock.render();
+              try {
+                varBlock.setFieldValue(varName, "VAR");
+              } catch {}
+              return varBlock;
+            }
+          }
+          
+          // Case 2: Variable template string like "{{i}}" or "{{count}}"
           if (typeof countValue === "string") {
             const varMatch = countValue.match(/^\{\{\s*(\w+)\s*\}\}$/);
             if (varMatch) {
@@ -2139,7 +2220,7 @@ BlocksWorkspaceProps) {
               return num;
             }
           }
-          // Case 2: Number literal
+          // Case 3: Number literal
           else if (typeof countValue === "number") {
             const num = blocklyWorkspace.newBlock("ottobit_number");
             num.setShadow(false); // Mark as real block, not shadow

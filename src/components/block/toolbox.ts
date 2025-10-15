@@ -99,6 +99,17 @@ export const ottobit_TOOLBOX = {
     },
     {
       kind: "category",
+      name: "Arithmetic",
+      colour: "#4CAF50",
+      contents: [
+        {
+          kind: "block",
+          type: "ottobit_arithmetic",
+        },
+      ],
+    },
+    {
+      kind: "category",
       name: "Sensors",
       colour: "#FF6B35",
       contents: [
