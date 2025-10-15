@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   generateStudioUrl,
   getStoredNavigationData,
+  storeStudioNavigationData,
 } from "../../../utils/studioNavigation";
 import { usePhaserContext } from "../context/PhaserContext.js";
 import { getLastProgram } from "../../socket/actionSocket.js";
@@ -67,6 +68,10 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
       // Close modals after successful restart
       hideVictoryModal();
       hideDefeatModal();
+      
+      // NOTIFY TopBar that restart was triggered from modal
+      // This ensures TopBar resets hasExecuted properly
+      window.dispatchEvent(new CustomEvent('phaser-replay-triggered'));
       
       // Re-enable auto-reset after a short delay
       setTimeout(() => {
@@ -142,6 +147,9 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
       if (program) {
         await runProgram(program);
       }
+      
+      // NOTIFY TopBar that restart was triggered from modal simulate
+      window.dispatchEvent(new CustomEvent('phaser-replay-triggered'));
     } catch (_e) {
       // silently ignore
     } finally {
@@ -157,6 +165,12 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     try {
       const nav = getStoredNavigationData();
       const lessonId = nav?.lessonId;
+      
+      console.log('▶️ [PhaserSimulator] Play Next triggered:', {
+        currentChallengeId,
+        lessonId,
+        lessonChallengesCount: ((lessonChallenges as any)?.items || []).length
+      });
 
       // Ensure we have lesson challenge list
       let items = ((lessonChallenges as any)?.items || []) as Array<any>;
@@ -170,12 +184,41 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
       // Find current index and next
       const currentIndex = items.findIndex((c) => c.id === currentChallengeId);
       const next = currentIndex >= 0 ? items[currentIndex + 1] : null;
+      
+      console.log('🔄 [PhaserSimulator] Navigation info:', {
+        currentIndex,
+        nextChallengeId: next?.id,
+        totalChallenges: items.length
+      });
 
       if (next) {
+        // CRITICAL: Hide modal FIRST before navigation
+        // This ensures button logic doesn't see isVictoryModalOpen=true on new map
+        hideVictoryModal();
+        
+        // IMMEDIATELY notify TopBar to reset button states for new map
+        window.dispatchEvent(new CustomEvent('phaser-map-changed', {
+          detail: { newChallengeId: next.id, action: 'playNext' }
+        }));
+        
+        // Update navigation data with new challenge BEFORE navigating
+        storeStudioNavigationData({
+          challengeId: next.id,
+          lessonId,
+          source: 'lesson'
+        });
+        
+        // NOTIFY that we're about to navigate to next challenge
+        console.log('🚀 [PhaserSimulator] Navigating to next challenge:', next.id);
+        
         const url = generateStudioUrl(next.id, lessonId || undefined);
         navigate(url);
+      } else {
+        console.log('⚠️ [PhaserSimulator] No next challenge found');
       }
-    } finally {
+    } catch (error) {
+      console.error('❌ [PhaserSimulator] Error in handlePlayNext:', error);
+      // Still hide modal on error
       hideVictoryModal();
     }
   }, [

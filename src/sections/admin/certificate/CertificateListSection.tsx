@@ -56,16 +56,29 @@ export default function CertificateListSection() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
+  const [committedSearch, setCommittedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [openDetailDialog, setOpenDetailDialog] = useState(false);
   const [openRevokeDialog, setOpenRevokeDialog] = useState(false);
   const [selectedCertificate, setSelectedCertificate] =
     useState<CertificateResult | null>(null);
 
+  // Debouncing for search
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchTerm.trim() !== committedSearch) {
+        setCommittedSearch(searchTerm.trim());
+        setPage(0); // Reset to first page
+      }
+    }, 800);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, committedSearch]);
+
   // Load data
   useEffect(() => {
     loadCertificates();
-  }, [page, rowsPerPage, searchTerm, statusFilter]);
+  }, [page, rowsPerPage, committedSearch, statusFilter]);
 
   const loadCertificates = () => {
     const params: any = {
@@ -73,7 +86,7 @@ export default function CertificateListSection() {
       size: rowsPerPage,
     };
 
-    if (searchTerm.trim()) params.searchTerm = searchTerm.trim();
+    if (committedSearch.trim()) params.searchTerm = committedSearch.trim();
     if (statusFilter !== "all") params.status = parseInt(statusFilter);
 
     dispatch(getCertificatesThunk(params));

@@ -4,6 +4,7 @@ import ImageListSection from "../../sections/admin/image/ImageListSection";
 import ImageFormSection from "../../sections/admin/image/ImageFormSection";
 import ImageDetailsSection from "../../sections/admin/image/ImageDetailsSection";
 import { ImageResult } from "../../common/@types/image";
+import useLocales from "../../hooks/useLocales";
 
 type ViewMode = "list" | "create" | "edit" | "details";
 
@@ -33,7 +34,7 @@ export interface ImageManagementProps {
 export default function ImageManagement({
   robotId,
   // componentId,
-  title = "Image Management",
+  title,
   description,
   showHeader = true,
   allowCreate = true,
@@ -42,6 +43,7 @@ export default function ImageManagement({
   onImageChange,
   height,
 }: ImageManagementProps) {
+  const { translate } = useLocales();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [selectedImage, setSelectedImage] = useState<ImageResult | null>(null);
 
@@ -109,14 +111,14 @@ export default function ImageManagement({
     switch (viewMode) {
       case "create":
         return robotId
-          ? "Upload Robot Images"
-          : "Upload New Image";
+          ? translate("image.image_management_upload_robot_images")
+          : translate("image.image_management_upload_new_image");
       case "edit":
-        return "Edit Image";
+        return translate("image.image_management_edit_image");
       case "details":
-        return "Image Details";
+        return translate("image.image_management_image_details");
       default:
-        return title;
+        return title || translate("image.image_management_title");
     }
   };
 
@@ -126,16 +128,16 @@ export default function ImageManagement({
     switch (viewMode) {
       case "create":
         return robotId
-          ? "Upload new images for this robot"
-          : "Upload a new image to the system";
+          ? translate("image.image_management_description_upload_robot")
+          : translate("image.image_management_description_upload_new");
       case "edit":
-        return "Update image information and assignments";
+        return translate("image.image_management_description_edit");
       case "details":
-        return "View detailed image information";
+        return translate("image.image_management_description_details");
       default:
         return robotId
-          ? "Manage images for this robot"
-          : "Manage images for robots and general use";
+          ? translate("image.image_management_description_manage_robot")
+          : translate("image.image_management_description_manage_all");
     }
   };
 

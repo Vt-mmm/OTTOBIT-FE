@@ -24,6 +24,7 @@ import {
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { deleteImageThunk } from "../../../redux/image/imageThunks";
 import { ImageResult } from "../../../common/@types/image";
+import useLocales from "../../../hooks/useLocales";
 
 interface ImageDetailsSectionProps {
   image: ImageResult | null;
@@ -44,6 +45,7 @@ export default function ImageDetailsSection({
   allowEdit = true,
   allowDelete = true,
 }: ImageDetailsSectionProps) {
+  const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const { operations } = useAppSelector((state) => state.image);
   
@@ -53,7 +55,7 @@ export default function ImageDetailsSection({
   if (!image) {
     return (
       <Alert severity="error">
-        Image not found
+        {translate("image.image_details_not_found")}
       </Alert>
     );
   }
@@ -70,9 +72,9 @@ export default function ImageDetailsSection({
   };
 
   const getImageCategory = () => {
-    if (image.robotId) return "Robot";
+    if (image.robotId) return translate("image.image_details_category_robot");
     // Component relation removed
-    return "General";
+    return translate("image.image_details_category_general");
   };
 
   const getCategoryColor = (category: string) => {
@@ -98,7 +100,7 @@ export default function ImageDetailsSection({
           startIcon={<ArrowBackIcon />}
           onClick={onBack}
         >
-          Back to List
+          {translate("image.image_details_back_to_list")}
         </Button>
         
         <Box sx={{ display: "flex", gap: 1 }}>
@@ -108,7 +110,7 @@ export default function ImageDetailsSection({
               startIcon={<EditIcon />}
               onClick={() => onEdit(image)}
             >
-              Edit
+              {translate("image.image_details_edit")}
             </Button>
           )}
           {allowDelete && (
@@ -119,7 +121,7 @@ export default function ImageDetailsSection({
               onClick={() => setShowDeleteConfirm(true)}
               disabled={operations.isDeleting}
             >
-              Delete
+              {translate("image.image_details_delete")}
             </Button>
           )}
         </Box>
@@ -205,14 +207,14 @@ export default function ImageDetailsSection({
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Image Information
+                {translate("image.image_details_information")}
               </Typography>
 
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {/* Basic Info */}
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    ID
+                    {translate("image.image_details_id")}
                   </Typography>
                   <Typography variant="body1" sx={{ wordBreak: "break-all" }}>
                     {image.id}
@@ -221,7 +223,7 @@ export default function ImageDetailsSection({
 
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    URL
+                    {translate("image.image_details_url")}
                   </Typography>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <Typography 
@@ -249,7 +251,7 @@ export default function ImageDetailsSection({
                 {/* Assignment Info */}
                 <Box>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Assignment
+                    {translate("image.image_details_assignment")}
                   </Typography>
                   <Chip
                     label={getImageCategory()}
@@ -262,7 +264,7 @@ export default function ImageDetailsSection({
                 {image.robot && (
                   <Box>
                     <Typography variant="body2" color="text.secondary">
-                      Robot
+                      {translate("image.image_details_robot")}
                     </Typography>
                     <Typography variant="body1" color="primary.main">
                       {image.robot.name}
@@ -277,7 +279,7 @@ export default function ImageDetailsSection({
                 {/* Timestamps */}
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    Created
+                    {translate("image.image_details_created")}
                   </Typography>
                   <Typography variant="body1">
                     {formatDate(image.createdAt)}
@@ -286,7 +288,7 @@ export default function ImageDetailsSection({
 
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    Last Updated
+                    {translate("image.image_details_last_updated")}
                   </Typography>
                   <Typography variant="body1">
                     {formatDate(image.updatedAt)}
@@ -349,17 +351,17 @@ export default function ImageDetailsSection({
       >
         <DialogContent>
           <Typography variant="h6" gutterBottom>
-            Delete Image
+            {translate("image.image_details_delete_title")}
           </Typography>
           <Typography variant="body1" sx={{ mb: 3 }}>
-            Are you sure you want to delete this image? This action cannot be undone.
+            {translate("image.image_details_delete_confirm")}
           </Typography>
           <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
             <Button
               variant="outlined"
               onClick={() => setShowDeleteConfirm(false)}
             >
-              Cancel
+              {translate("image.image_details_cancel")}
             </Button>
             <Button
               variant="contained"
@@ -367,7 +369,7 @@ export default function ImageDetailsSection({
               onClick={handleDelete}
               disabled={operations.isDeleting}
             >
-              Delete
+              {translate("image.image_details_delete_btn")}
             </Button>
           </Box>
         </DialogContent>
@@ -375,3 +377,4 @@ export default function ImageDetailsSection({
     </Box>
   );
 }
+
