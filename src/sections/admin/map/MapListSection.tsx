@@ -74,6 +74,7 @@ export default function MapListSection() {
   );
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(12);
+  const [status, setStatus] = useState<"all" | "active">("all");
 
   useEffect(() => {
     dispatch(
@@ -81,20 +82,28 @@ export default function MapListSection() {
         searchTerm: committedSearch || undefined,
         sortBy,
         sortDirection,
-        includeDeleted: true,
+        includeDeleted: status === "all",
         pageNumber,
         pageSize,
       })
     );
-  }, [dispatch, committedSearch, sortBy, sortDirection, pageNumber, pageSize]);
+  }, [
+    dispatch,
+    committedSearch,
+    sortBy,
+    sortDirection,
+    pageNumber,
+    pageSize,
+    status,
+  ]);
 
   const refreshList = () => {
     dispatch(
       getMaps({
         searchTerm: committedSearch || undefined,
-      sortBy,
-      sortDirection,
-        includeDeleted: true,
+        sortBy,
+        sortDirection,
+        includeDeleted: status === "all",
         pageNumber,
         pageSize,
       })
@@ -163,8 +172,8 @@ export default function MapListSection() {
         const errorMessage = extractApiErrorMessage(e, "Failed to delete map.");
         showToast(errorMessage, "error");
       } finally {
-      setDeleteDialogOpen(false);
-      setMapToDelete(null);
+        setDeleteDialogOpen(false);
+        setMapToDelete(null);
       }
     }
   };
@@ -204,24 +213,30 @@ export default function MapListSection() {
         <CardContent>
           <Box
             sx={{
-              display: "flex",
+              display: "grid",
               gap: 2,
               alignItems: "center",
-              flexWrap: { xs: "wrap", sm: "nowrap" },
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, minmax(0, 1fr))",
+                md: "repeat(3, minmax(0, 1fr))",
+                lg: "repeat(4, minmax(0, 1fr))",
+              },
             }}
           >
-              <TextField
-                fullWidth
+            <TextField
+              fullWidth
               placeholder={translate("admin.map.searchPlaceholder")}
-                value={searchTerm}
+              value={searchTerm}
               onChange={handleSearchInput}
               onKeyDown={(e) => {
                 if (e.key === "Enter") triggerSearch();
               }}
               sx={{
+                gridColumn: { xs: "1 / -1", md: "auto" },
                 "& .MuiInputBase-root": { pr: 4 },
               }}
-                InputProps={{
+              InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
@@ -232,10 +247,10 @@ export default function MapListSection() {
                     >
                       <SearchIcon />
                     </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
+                  </InputAdornment>
+                ),
+              }}
+            />
             <FormControl size="small" sx={{ minWidth: 150 }}>
               <InputLabel>{translate("admin.map.sortBy")}</InputLabel>
               <Select
@@ -256,6 +271,20 @@ export default function MapListSection() {
                 <MenuItem value={SortDirection.Descending}>
                   {translate("admin.map.newestFirst")}
                 </MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl size="small" sx={{ minWidth: 160 }}>
+              <InputLabel>{translate("admin.status")}</InputLabel>
+              <Select
+                label={translate("admin.status")}
+                value={status}
+                onChange={(e) => {
+                  setStatus(e.target.value as any);
+                  setPageNumber(1);
+                }}
+              >
+                <MenuItem value="all">{translate("admin.all")}</MenuItem>
+                <MenuItem value="active">{translate("admin.active")}</MenuItem>
               </Select>
             </FormControl>
             <Button
@@ -414,14 +443,14 @@ export default function MapListSection() {
                     <RestoreIcon />
                   </IconButton>
                 ) : (
-                <IconButton
-                  size="small"
-                  onClick={() => handleDeleteConfirm(map)}
-                  color="error"
+                  <IconButton
+                    size="small"
+                    onClick={() => handleDeleteConfirm(map)}
+                    color="error"
                     title={translate("admin.map.deleteMap")}
-                >
-                  <DeleteIcon />
-                </IconButton>
+                  >
+                    <DeleteIcon />
+                  </IconButton>
                 )}
               </Box>
             </Card>

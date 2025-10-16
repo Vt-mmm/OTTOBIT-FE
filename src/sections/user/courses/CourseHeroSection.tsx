@@ -22,12 +22,14 @@ import CourseFilterDialog, { CourseFilters } from "./CourseFilterDialog";
 interface CourseHeroSectionProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  onSearchSubmit?: () => void; // trigger API when user hits search
   onFilterApply?: (filters: CourseFilters) => void;
 }
 
 export default function CourseHeroSection({
   searchQuery,
   onSearchChange,
+  onSearchSubmit,
   onFilterApply,
 }: CourseHeroSectionProps) {
   const { translate } = useLocales();
@@ -269,14 +271,14 @@ export default function CourseHeroSection({
                 onChange={(e) => onSearchChange(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    onFilterApply?.({});
+                    onSearchSubmit?.();
                   }
                 }}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
-                        onClick={() => onFilterApply?.({})}
+                        onClick={() => onSearchSubmit?.()}
                         sx={{ color: "#4caf50" }}
                       >
                         <SearchIcon />

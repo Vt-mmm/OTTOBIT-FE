@@ -385,7 +385,9 @@ export const ROUTES_API_BLOG = {
   // Public endpoints
   GET_ALL: ROOTS_BLOG, // GET /api/v1/Blog?SearchTerm=&PageNumber=&PageSize=
   GET_BY_ID: (id: string) => path(ROOTS_BLOG, `/${id}`), // GET /api/v1/Blog/{id}
-  GET_BY_SLUG: (slug: string) => path(ROOTS_BLOG, `/slug/${slug}`), // GET /api/v1/Blog/slug/{slug}
+  GET_BY_SLUG: (slug: string) =>
+    path(ROOTS_BLOG, `/slug/${encodeURIComponent(slug)}`), // GET /api/v1/Blog/slug/{slug}
+  VIEW_COUNT: (id: string) => path(ROOTS_BLOG, `/${id}/view-count`), // PUT /api/v1/Blog/{id}/view-count
 };
 
 // Tag endpoints

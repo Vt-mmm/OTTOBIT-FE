@@ -19,7 +19,11 @@ import {
   FormControlLabel,
   Checkbox,
   FormHelperText,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
+import Pagination from "@mui/material/Pagination";
 import { createPortal } from "react-dom";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useNotification } from "hooks/useNotification";
@@ -34,6 +38,8 @@ import {
   getIsometricGridDimensions,
   ISOMETRIC_CONFIG,
 } from "sections/admin/mapDesigner/isometricHelpers";
+import { axiosClient } from "axiosClient";
+import { ROUTES_API_CHALLENGE } from "constants/routesApiKeys";
 // (use existing imports at top of file)
 
 interface WinConditionsSectionProps {
@@ -438,6 +444,64 @@ export default function WinConditionsSection({
     setTooltipState((prev) => ({ ...prev, open: false }));
   };
 
+  const [showOrderDialog, setShowOrderDialog] = useState(false);
+  const [orderItems, setOrderItems] = useState<
+    Array<{
+      id: string;
+      title: string;
+      order: number;
+      isDeleted?: boolean;
+      lessonTitle?: string;
+      courseTitle?: string;
+    }>
+  >([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [ordersError, setOrdersError] = useState<string | null>(null);
+  const [orderPage, setOrderPage] = useState(1);
+  const [orderPageSize] = useState(12);
+  const [orderTotalPages, setOrderTotalPages] = useState(1);
+
+  useEffect(() => {
+    if (!showOrderDialog) return;
+    if (!lessonId) return;
+    let cancelled = false;
+    const fetchOrders = async () => {
+      setLoadingOrders(true);
+      setOrdersError(null);
+      try {
+        const res = await axiosClient.get(ROUTES_API_CHALLENGE.ADMIN_GET_ALL, {
+          params: {
+            LessonId: lessonId,
+            IncludeDeleted: true,
+            PageNumber: orderPage,
+            PageSize: orderPageSize,
+          },
+        });
+        const items = (res as any)?.data?.data?.items || [];
+        const mapped = items.map((it: any) => ({
+          id: it.id,
+          title: it.title,
+          order: it.order,
+          isDeleted: it.isDeleted,
+          lessonTitle: it.lessonTitle,
+          courseTitle: it.courseTitle,
+        }));
+        if (!cancelled) {
+          setOrderItems(mapped);
+          setOrderTotalPages((res as any)?.data?.data?.totalPages || 1);
+        }
+      } catch (e: any) {
+        if (!cancelled) setOrdersError("Không tải được danh sách thứ tự");
+      } finally {
+        if (!cancelled) setLoadingOrders(false);
+      }
+    };
+    fetchOrders();
+    return () => {
+      cancelled = true;
+    };
+  }, [showOrderDialog, lessonId, orderPage]);
+
   return (
     <Paper
       sx={{
@@ -625,20 +689,35 @@ export default function WinConditionsSection({
           ) : null}
         </FormControl>
 
-        <FormControl fullWidth size="small">
-          <InputLabel>Order (1-8)</InputLabel>
-          <Select
-            label="Order (1-8)"
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", sm: "1fr auto" },
+            gap: 1,
+          }}
+        >
+          <TextField
+            fullWidth
+            size="small"
+            type="number"
+            label="Order"
             value={order}
             onChange={(e) => onOrderChange(Number(e.target.value))}
+            inputProps={{ min: 1, step: 1 }}
+          />
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => {
+              setOrderPage(1);
+              setShowOrderDialog(true);
+            }}
+            disabled={!lessonId}
+            sx={{ whiteSpace: "nowrap" }}
           >
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-              <MenuItem key={n} value={n}>
-                {n}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+            Xem thứ tự hiện có
+          </Button>
+        </Box>
 
         <FormControl fullWidth size="small">
           <InputLabel>Difficulty (1-5)</InputLabel>
@@ -2200,6 +2279,71 @@ export default function WinConditionsSection({
           </Box>,
           document.body
         )}
+      <Dialog
+        open={showOrderDialog}
+        onClose={() => setShowOrderDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Thứ tự hiện có trong bài học
+          {orderItems.length > 0 &&
+            orderItems[0].courseTitle &&
+            orderItems[0].lessonTitle && (
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                {orderItems[0].courseTitle} &gt; {orderItems[0].lessonTitle}
+              </Typography>
+            )}
+        </DialogTitle>
+        <DialogContent dividers>
+          {loadingOrders ? (
+            <Typography variant="body2">Đang tải...</Typography>
+          ) : ordersError ? (
+            <Typography variant="body2" color="error">
+              {ordersError}
+            </Typography>
+          ) : orderItems.length === 0 ? (
+            <Typography variant="body2">Chưa có thử thách nào</Typography>
+          ) : (
+            <>
+              <List dense>
+                {orderItems
+                  .slice()
+                  .sort((a, b) => a.order - b.order)
+                  .map((it) => (
+                    <ListItem
+                      key={it.id}
+                      disableGutters
+                      secondaryAction={
+                        <Chip
+                          size="small"
+                          label={it.isDeleted ? "Đã xóa" : "Đang hoạt động"}
+                          color={it.isDeleted ? "error" : "success"}
+                          variant="outlined"
+                        />
+                      }
+                    >
+                      <ListItemText primary={`#${it.order} — ${it.title}`} />
+                    </ListItem>
+                  ))}
+              </List>
+              {orderTotalPages > 1 && (
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                  <Pagination
+                    count={orderTotalPages}
+                    page={orderPage}
+                    onChange={(_, page: number) => setOrderPage(page)}
+                    size="small"
+                  />
+                </Box>
+              )}
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowOrderDialog(false)}>Đóng</Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 }

@@ -462,6 +462,7 @@ export default function LessonDetailsSection({
                     <Table stickyHeader>
                       <TableHead>
                         <TableRow>
+                          <TableCell align="center">Thứ tự</TableCell>
                           <TableCell>Tên thử thách</TableCell>
                           <TableCell>Mô tả</TableCell>
                           <TableCell align="center">Chế độ</TableCell>
@@ -482,6 +483,9 @@ export default function LessonDetailsSection({
                                 : "inherit",
                             }}
                           >
+                            <TableCell align="center">
+                              {challenge.order}
+                            </TableCell>
                             <TableCell>
                               <Typography
                                 variant="subtitle2"

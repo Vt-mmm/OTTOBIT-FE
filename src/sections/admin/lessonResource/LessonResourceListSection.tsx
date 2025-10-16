@@ -76,6 +76,7 @@ export default function LessonResourceListSection({
   const [courseId, setCourseId] = useState<string>("");
   const [lessonId, setLessonId] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<string>("");
+  const [status, setStatus] = useState<"all" | "active">("all");
   const [confirmDelete, setConfirmDelete] = useState<any | null>(null);
   const [confirmRestore, setConfirmRestore] = useState<any | null>(null);
   const [snackbar, setSnackbar] = useState<{
@@ -153,7 +154,7 @@ export default function LessonResourceListSection({
             PageNumber: page,
             PageSize: pageSize,
             SearchTerm: committedSearch || undefined,
-            IncludeDeleted: true,
+            IncludeDeleted: status === "all",
             CourseId: courseId || undefined,
             LessonId: lessonId || undefined,
             Type: typeFilter || undefined,
@@ -161,7 +162,8 @@ export default function LessonResourceListSection({
         }
       );
       const data = res?.data?.data;
-      setItems(data?.items || []);
+      const raw = data?.items || [];
+      setItems(raw);
       const total = data?.total || 0;
       const size = data?.size || pageSize;
       setTotalPages(Math.max(1, Math.ceil(total / size)));
@@ -175,7 +177,7 @@ export default function LessonResourceListSection({
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [committedSearch, page, pageSize, courseId, lessonId, typeFilter]);
+  }, [committedSearch, page, pageSize, courseId, lessonId, typeFilter, status]);
 
   const refresh = () => fetchData();
 
@@ -294,10 +296,15 @@ export default function LessonResourceListSection({
         <CardContent>
           <Box
             sx={{
-              display: "flex",
+              display: "grid",
               gap: 2,
               alignItems: "center",
-              flexWrap: { xs: "wrap", sm: "nowrap" },
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, minmax(0, 1fr))",
+                md: "repeat(3, minmax(0, 1fr))",
+                lg: "repeat(4, minmax(0, 1fr))",
+              },
             }}
           >
             <TextField
@@ -311,6 +318,7 @@ export default function LessonResourceListSection({
                   setPage(1);
                 }
               }}
+              sx={{ gridColumn: { xs: "1 / -1", md: "auto" } }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -363,6 +371,20 @@ export default function LessonResourceListSection({
                     {l.title}
                   </MenuItem>
                 ))}
+              </Select>
+            </FormControl>
+            <FormControl size="small" sx={{ minWidth: 160 }}>
+              <InputLabel>Trạng thái</InputLabel>
+              <Select
+                label="Trạng thái"
+                value={status}
+                onChange={(e) => {
+                  setStatus(e.target.value as any);
+                  setPage(1);
+                }}
+              >
+                <MenuItem value="all">Tất cả</MenuItem>
+                <MenuItem value="active">Đang hoạt động</MenuItem>
               </Select>
             </FormControl>
             <FormControl size="small" sx={{ minWidth: 200 }}>

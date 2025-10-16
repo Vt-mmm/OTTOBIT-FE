@@ -62,6 +62,7 @@ export interface GetCoursesRequest {
   minPrice?: number; // NEW: Filter by minimum price
   maxPrice?: number; // NEW: Filter by maximum price
   includeDeleted?: boolean;
+  IsDeleted?: boolean; // Admin: filter only deleted or only active
   pageNumber?: number;
   pageSize?: number;
   sortBy?: number;

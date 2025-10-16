@@ -35,6 +35,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import SendIcon from "@mui/icons-material/Send";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { ROUTES_API_BLOG_COMMENT } from "constants/routesApiKeys";
+import { extractApiErrorMessage } from "utils/errorHandler";
 import { useAppSelector } from "store/config";
 
 type BlogTag = { id: string; name: string };
@@ -77,6 +78,8 @@ export default function BlogDetailPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [viewCountTriggered, setViewCountTriggered] = useState(false);
+  const [viewTimerDone, setViewTimerDone] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -111,6 +114,36 @@ export default function BlogDetailPage() {
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Start a 30s timer per slug
+  useEffect(() => {
+    setViewTimerDone(false);
+    setViewCountTriggered(false);
+    const timer = setTimeout(() => setViewTimerDone(true), 30000);
+    return () => clearTimeout(timer);
+  }, [slug]);
+
+  // Trigger view count once per session when timer done and scrolled >= 50%
+  useEffect(() => {
+    const tryTrigger = async () => {
+      if (!data?.id) return;
+      const key = `blog_viewcount_${data.id}`;
+      if (sessionStorage.getItem(key)) return;
+      try {
+        await axiosClient.put(ROUTES_API_BLOG.VIEW_COUNT(data.id));
+        sessionStorage.setItem(key, "1");
+        setViewCountTriggered(true);
+      } catch {}
+    };
+    if (
+      !viewCountTriggered &&
+      viewTimerDone &&
+      scrollProgress >= 50 &&
+      data?.id
+    ) {
+      tryTrigger();
+    }
+  }, [viewTimerDone, scrollProgress, data?.id, viewCountTriggered]);
 
   const loadComments = async () => {
     if (!data?.id) return;
@@ -158,7 +191,10 @@ export default function BlogDetailPage() {
       setCommentError("");
       setCommentPage(1);
       loadComments();
-    } catch {}
+    } catch (e: any) {
+      const msg = extractApiErrorMessage(e, "Không thể gửi bình luận");
+      setCommentError(msg);
+    }
   };
 
   return (
@@ -173,7 +209,12 @@ export default function BlogDetailPage() {
       <Header />
       <Container
         maxWidth="md"
-        sx={{ py: 4, flexGrow: 1, mt: { xs: 6, md: 8 } }}
+        sx={{
+          py: { xs: 2, md: 3 },
+          flexGrow: 1,
+          mt: { xs: 3, md: 4 },
+          minHeight: 0,
+        }}
       >
         <Breadcrumbs sx={{ mb: 2 }}>
           <MuiLink color="inherit" href="/">
@@ -211,7 +252,9 @@ export default function BlogDetailPage() {
               alignItems="center"
               sx={{ color: "text.secondary", mb: 2 }}
             >
-              <Typography variant="body2">{data.authorName}</Typography>
+              <Typography variant="body2">
+                {(data.authorName || "").split("@")[0] || data.authorName}
+              </Typography>
               <Divider orientation="vertical" flexItem />
               <Typography variant="body2">
                 {new Date(data.createdAt).toLocaleString()}
@@ -245,12 +288,32 @@ export default function BlogDetailPage() {
               </Stack>
             )}
             {/* Content */}
-            <Typography
-              variant="body1"
-              sx={{ whiteSpace: "pre-wrap", lineHeight: 1.8 }}
+            <Box
+              sx={{
+                lineHeight: 1.8,
+                whiteSpace: "pre-wrap",
+                height: { xs: 520, md: 720 },
+                overflowY: "auto",
+                WebkitOverflowScrolling: "touch",
+                overscrollBehavior: "contain",
+                pr: 1,
+                borderRadius: 1,
+                border: "1px solid",
+                borderColor: "divider",
+                p: { xs: 2, md: 3 },
+                bgcolor: "background.paper",
+                flex: "0 0 auto",
+                display: "block",
+              }}
             >
-              {data.content}
-            </Typography>
+              <Typography
+                variant="body1"
+                component="div"
+                sx={{ overflowWrap: "anywhere", wordBreak: "break-word" }}
+              >
+                {data.content}
+              </Typography>
+            </Box>
           </>
         )}
 
@@ -339,7 +402,13 @@ export default function BlogDetailPage() {
                     </Avatar>
                     <Box>
                       <Typography fontWeight={600}>
-                        {c.userName || c.authorName || "Người dùng"}
+                        {(() => {
+                          const name =
+                            c.userName || c.authorName || "Người dùng";
+                          return typeof name === "string"
+                            ? name.split("@")[0]
+                            : name;
+                        })()}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {c.createdAt

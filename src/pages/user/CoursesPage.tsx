@@ -8,11 +8,17 @@ import CourseListingSection from "../../sections/user/courses/CourseListingSecti
 import { CourseFilters } from "../../sections/user/courses/CourseFilterDialog";
 
 export default function CoursesPage() {
+  // Decouple typing input from applied search term
+  const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [courseFilters, setCourseFilters] = useState<CourseFilters>({});
 
   const handleSearchChange = (query: string) => {
-    setSearchQuery(query);
+    setSearchInput(query);
+  };
+
+  const handleSearchSubmit = () => {
+    setSearchQuery(searchInput.trim());
   };
 
   const handleFilterApply = (filters: CourseFilters) => {
@@ -43,8 +49,9 @@ export default function CoursesPage() {
       </Box>
       <Box sx={{ flexGrow: 1 }}>
         <CourseHeroSection
-          searchQuery={searchQuery}
+          searchQuery={searchInput}
           onSearchChange={handleSearchChange}
+          onSearchSubmit={handleSearchSubmit}
           onFilterApply={handleFilterApply}
         />
         <Box sx={{ backgroundColor: "#ffffff", minHeight: "100vh" }}>

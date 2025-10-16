@@ -33,6 +33,7 @@ interface CourseListingSectionProps {
 }
 
 export default function CourseListingSection({
+  searchQuery,
   filters,
 }: CourseListingSectionProps) {
   const { translate } = useLocales();
@@ -69,7 +70,12 @@ export default function CourseListingSection({
         PageSize: String(pageSize),
       });
 
-      // Add filters (search handled externally)
+      // Add search (from parent state)
+      if (searchQuery && searchQuery.trim().length > 0) {
+        params.append("SearchTerm", searchQuery.trim());
+      }
+
+      // Add filters
       if (filters?.minPrice != null)
         params.append("MinPrice", String(filters.minPrice));
       if (filters?.maxPrice != null)
@@ -91,7 +97,7 @@ export default function CourseListingSection({
     } finally {
       setLoading(false);
     }
-  }, [currentPage, pageSize, filters]);
+  }, [currentPage, pageSize, filters, searchQuery]);
 
   useEffect(() => {
     fetchCourses();
@@ -100,7 +106,7 @@ export default function CourseListingSection({
   // Reset page when filters or page size change
   useEffect(() => {
     setCurrentPage(1);
-  }, [filters, pageSize]);
+  }, [filters, pageSize, searchQuery]);
 
   const handleCourseClick = (courseId: string) => {
     navigate(PATH_USER.courseDetail.replace(":id", courseId));

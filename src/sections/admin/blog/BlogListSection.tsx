@@ -50,6 +50,7 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
   const [items, setItems] = useState<BlogItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [committedSearch, setCommittedSearch] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
@@ -58,6 +59,7 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
   const [advancedFilters, setAdvancedFilters] = useState<AdminBlogFilters>({
     sortBy: "CreatedAt",
     sortDirection: "Desc",
+    status: "all",
   });
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailItem, setDetailItem] = useState<BlogItem | null>(null);
@@ -68,13 +70,11 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
   } | null>(null);
   const { showNotification } = useNotification();
 
-  const includeDeleted = true;
-
   const fetchList = async () => {
     setIsLoading(true);
     try {
       const params = new URLSearchParams({
-        IncludeDeleted: String(includeDeleted),
+        IncludeDeleted: String((advancedFilters.status || "all") === "all"),
         PageNumber: String(pageNumber),
         PageSize: String(pageSize),
       });
@@ -94,14 +94,15 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
         params.append("SortBy", advancedFilters.sortBy);
       if (advancedFilters.sortDirection)
         params.append("SortDirection", advancedFilters.sortDirection);
-      if (searchTerm.trim()) {
-        params.append("SearchTerm", searchTerm.trim());
+      if (committedSearch.trim()) {
+        params.append("SearchTerm", committedSearch.trim());
       }
       selectedTags.forEach((t) => params.append("TagIds", t.id));
       const url = `${ROUTES_API_BLOG.ADMIN_GET_ALL}?${params.toString()}`;
       const res = await axiosClient.get<BlogListResponse>(url);
       const data = res?.data?.data;
-      setItems(data?.items || []);
+      const raw = data?.items || [];
+      setItems(raw);
       setTotalPages(data?.totalPages || 1);
     } catch (error) {
       // Silent fail; optionally add notification hook
@@ -113,11 +114,11 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
   useEffect(() => {
     fetchList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageNumber, pageSize, selectedTags]);
+  }, [pageNumber, pageSize, selectedTags, status, committedSearch]);
 
   const handleSearch = () => {
+    setCommittedSearch(searchTerm);
     setPageNumber(1);
-    fetchList();
   };
 
   const openDetails = async (id: string) => {
@@ -225,16 +226,12 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
                 }}
               />
             </Grid>
-            <Grid
-              item
-              xs={12}
-              md={4}
-              sx={{
-                display: "flex",
-                justifyContent: { xs: "flex-start", md: "flex-end" },
-              }}
-            >
-              <Stack direction="row" spacing={1}>
+            <Grid item xs={12} md={4}>
+              <Stack
+                direction="row"
+                spacing={1}
+                justifyContent={{ xs: "flex-start", md: "flex-end" }}
+              >
                 <IconButton
                   color="primary"
                   onClick={() => setAdvancedFilterOpen(true)}
