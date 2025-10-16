@@ -15,6 +15,7 @@ import {
   Chip,
   Divider,
   Paper,
+  Pagination,
 } from "@mui/material";
 import {
   ArrowForward as ArrowForwardIcon,
@@ -49,6 +50,8 @@ export default function CourseLearningSection({
     message: "",
     severity: "success" as "success" | "error" | "warning",
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
 
   const {
     data: course,
@@ -71,17 +74,17 @@ export default function CourseLearningSection({
     dispatch(getCourseById(courseId));
   }, [dispatch, courseId]);
 
-  // Fetch lessons preview
+  // Fetch lessons preview with pagination
   useEffect(() => {
-    dispatch(getLessonsPreview({ courseId, pageSize: 10 }));
-  }, [dispatch, courseId]);
+    dispatch(getLessonsPreview({ courseId, pageNumber: currentPage, pageSize }));
+  }, [dispatch, courseId, currentPage, pageSize]);
 
-  // Fetch lesson progress
+  // Fetch lesson progress with pagination
   useEffect(() => {
     dispatch(
-      getLessonProgress({ courseId, pageNumber: 1, pageSize: 10 } as any)
+      getLessonProgress({ courseId, pageNumber: currentPage, pageSize } as any)
     );
-  }, [dispatch, courseId]);
+  }, [dispatch, courseId, currentPage, pageSize]);
 
   const handleLessonClick = (lessonId: string) => {
     // 🔍 DEBUG: Log lesson navigation
@@ -128,6 +131,12 @@ export default function CourseLearningSection({
 
   const handleCloseSnackbar = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
+  };
+
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of lessons section
+    window.scrollTo({ top: 400, behavior: 'smooth' });
   };
 
   const isLoading = courseLoading || lessonsPreviewLoading;
@@ -500,6 +509,42 @@ export default function CourseLearningSection({
                     isUserEnrolled={true}
                     onLessonClick={handleLessonClick}
                   />
+
+                  {/* Pagination */}
+                  {lessonsPreviewData && lessonsPreviewData.totalPages > 1 && (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        mt: 3,
+                        pt: 3,
+                        borderTop: "1px solid",
+                        borderColor: "grey.200",
+                      }}
+                    >
+                      <Pagination
+                        count={lessonsPreviewData.totalPages}
+                        page={currentPage}
+                        onChange={handlePageChange}
+                        color="primary"
+                        size="large"
+                        showFirstButton
+                        showLastButton
+                        sx={{
+                          "& .MuiPaginationItem-root": {
+                            fontWeight: 500,
+                          },
+                          "& .Mui-selected": {
+                            bgcolor: "#00AB55",
+                            color: "white",
+                            "&:hover": {
+                              bgcolor: "#007B55",
+                            },
+                          },
+                        }}
+                      />
+                    </Box>
+                  )}
                 </CardContent>
               </Card>
             </Grid>
