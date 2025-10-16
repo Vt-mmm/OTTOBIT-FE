@@ -135,16 +135,19 @@ const setupAxiosClient = (store: Store<RootState>) => {
       // Get a fresh token on each request to ensure we have the latest
       const accessToken = getAccessToken();
       
-      // ✅ PROACTIVE TOKEN REFRESH: Check if token will expire soon (within 5 minutes)
-      if (accessToken && shouldRefreshToken(accessToken, 5)) {
-        console.log('🔄 [Proactive] Token will expire soon, refreshing before request');
+      // ✅ PROACTIVE TOKEN REFRESH: Check if token will expire soon (within 1 minute)
+      // ⚠️ Note: BE currently issues 60s tokens, so we check 1 min before expiry
+      // When BE increases to 15min tokens, this threshold should be adjusted
+      if (accessToken && shouldRefreshToken(accessToken, 1)) {
+        console.log('🔄 [Proactive] Token will expire soon (< 1 min), refreshing before request');
         
         const state = store.getState() as RootState;
         const userId = state.auth.userAuth?.userId;
         const isAuthenticated = state.auth.isAuthenticated;
         
-        if (isAuthenticated && userId && !isRefreshing) {
-          // Wait for token refresh to complete before continuing with request
+        if (isAuthenticated && userId) {
+          // ✅ FIX: ALWAYS wait for token refresh, even if already refreshing
+          // This prevents multiple concurrent requests from sending stale tokens
           try {
             await refreshTokenProactively(userId, store);
             
@@ -235,12 +238,16 @@ const setupAxiosClient = (store: Store<RootState>) => {
               RefreshToken: refreshToken,
             };
 
-            // 🔍 DEBUG: Log refresh token request
+            // 🔍 DEBUG: Log refresh token request with timestamp
             console.group("🔄 Refreshing Token");
+            console.log("Timestamp:", new Date().toISOString());
             console.log("User ID:", userId);
             console.log("Refresh Token (first 20 chars):", refreshToken.substring(0, 20) + "...");
+            console.log("Refresh Token (last 8 chars):", "..." + refreshToken.slice(-8));
             console.log("Request URL:", ROUTES_API_AUTH.REFRESH_TOKEN);
-            console.log("Request Data (PascalCase):", { UserId: userId, RefreshToken: refreshToken.substring(0, 20) + "..." });
+            console.log("Request Data (PascalCase):", { UserId: userId, RefreshToken: refreshToken.substring(0, 20) + "..." + refreshToken.slice(-8) });
+            console.log("isRefreshing flag:", isRefreshing);
+            console.log("Pending requests count:", pendingRequests.length);
             console.groupEnd();
 
             // ✅ Make token refresh request WITHOUT Authorization header
@@ -303,14 +310,19 @@ const setupAxiosClient = (store: Store<RootState>) => {
             const errorMessage = error?.response?.data?.message || "";
             const statusCode = error?.response?.status;
 
-            // 🔍 DEBUG: Log refresh token error
+            // 🔍 DEBUG: Log refresh token error with context
             console.group("❌ Refresh Token Error");
+            console.error("Timestamp:", new Date().toISOString());
             console.error("Status Code:", statusCode);
             console.error("Error Code:", errorCode);
             console.error("Error Message:", errorMessage);
             console.error("Full Error Response:", error?.response?.data);
             console.error("Request URL:", error?.config?.url);
-            console.error("Request Headers:", error?.config?.headers);
+            console.error("Sent UserId:", error?.config?.data ? JSON.parse(error.config.data).UserId : 'N/A');
+            console.error("Sent RefreshToken (first 20):", error?.config?.data ? JSON.parse(error.config.data).RefreshToken.substring(0, 20) + '...' : 'N/A');
+            console.error("Sent RefreshToken (last 8):", error?.config?.data ? '...' + JSON.parse(error.config.data).RefreshToken.slice(-8) : 'N/A');
+            console.error("isRefreshing flag:", isRefreshing);
+            console.error("Pending requests:", pendingRequests.length);
             console.groupEnd();
 
             // Only logout for truly expired tokens, not for temporary mismatches
