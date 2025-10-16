@@ -64,6 +64,7 @@ export default function LessonListSection({
   const [courseId, setCourseId] = useState("");
   const [sortDirection, setSortDirection] = useState(1); // 0 = asc, 1 = desc
   const [sortBy, setSortBy] = useState(3); // Default: CreatedAt (0..4)
+  const [status, setStatus] = useState<"all" | "active">("all");
   const [confirmDelete, setConfirmDelete] = useState<LessonResult | null>(null);
   const [confirmRestore, setConfirmRestore] = useState<LessonResult | null>(
     null
@@ -85,7 +86,7 @@ export default function LessonListSection({
         pageNumber: page,
         pageSize,
         courseId: courseId || undefined,
-        includeDeleted: true,
+        includeDeleted: status === "all",
         sortBy,
         sortDirection,
       })
@@ -99,6 +100,7 @@ export default function LessonListSection({
     courseId,
     sortBy,
     sortDirection,
+    status,
   ]);
 
   useEffect(() => {
@@ -183,10 +185,15 @@ export default function LessonListSection({
         <CardContent>
           <Box
             sx={{
-              display: "flex",
+              display: "grid",
               gap: 2,
               alignItems: "center",
-              flexWrap: { xs: "wrap", sm: "nowrap" },
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, minmax(0, 1fr))",
+                md: "repeat(3, minmax(0, 1fr))",
+                lg: "repeat(4, minmax(0, 1fr))",
+              },
             }}
           >
             <TextField
@@ -197,7 +204,10 @@ export default function LessonListSection({
               onKeyDown={(e) => {
                 if (e.key === "Enter") triggerSearch();
               }}
-              sx={{ "& .MuiInputBase-root": { pr: 4 } }}
+              sx={{
+                gridColumn: { xs: "1 / -1", md: "auto" },
+                "& .MuiInputBase-root": { pr: 4 },
+              }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -226,6 +236,20 @@ export default function LessonListSection({
                     {course.title}
                   </MenuItem>
                 ))}
+              </Select>
+            </FormControl>
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel>{translate("admin.status")}</InputLabel>
+              <Select
+                label={translate("admin.status")}
+                value={status}
+                onChange={(e) => {
+                  setStatus(e.target.value as any);
+                  setPage(1);
+                }}
+              >
+                <MenuItem value="all">{translate("admin.all")}</MenuItem>
+                <MenuItem value="active">{translate("admin.active")}</MenuItem>
               </Select>
             </FormControl>
             <FormControl size="small" sx={{ minWidth: 150 }}>
@@ -263,7 +287,12 @@ export default function LessonListSection({
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => onCreateNew(courseId)}
-              sx={{ flexShrink: 0, whiteSpace: "nowrap", minWidth: "auto" }}
+              sx={{
+                flexShrink: 0,
+                whiteSpace: "nowrap",
+                minWidth: "auto",
+                justifySelf: { xs: "stretch", sm: "start" },
+              }}
             >
               Tạo bài học
             </Button>

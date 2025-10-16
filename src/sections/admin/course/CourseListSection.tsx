@@ -67,6 +67,7 @@ export default function CourseListSection({
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
   const [type, setType] = useState<number | "">("");
+  const [status, setStatus] = useState<"all" | "active">("all");
   const [confirmDelete, setConfirmDelete] = useState<CourseResult | null>(null);
   const [confirmRestore, setConfirmRestore] = useState<CourseResult | null>(
     null
@@ -83,7 +84,7 @@ export default function CourseListSection({
         searchTerm: committedSearch || undefined,
         pageNumber: page,
         pageSize,
-        includeDeleted: true,
+        includeDeleted: status === "all", // include deleted only for All
         sortBy: 1, // Mặc định sortBy = 1
         sortDirection, // 0 = oldest first, 1 = newest first (default)
         MinPrice: minPrice !== "" ? Number(minPrice) : undefined,
@@ -100,6 +101,7 @@ export default function CourseListSection({
     minPrice,
     maxPrice,
     type,
+    status,
   ]);
 
   useEffect(() => {
@@ -117,7 +119,7 @@ export default function CourseListSection({
         searchTerm: committedSearch || undefined,
         pageNumber: page,
         pageSize,
-        includeDeleted: true,
+        includeDeleted: status === "all",
         sortBy: 1,
         sortDirection,
         MinPrice: minPrice !== "" ? Number(minPrice) : undefined,
@@ -221,6 +223,20 @@ export default function CourseListSection({
                 ),
               }}
             />
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel>{translate("admin.status")}</InputLabel>
+              <Select
+                label={translate("admin.status")}
+                value={status}
+                onChange={(e) => {
+                  setStatus(e.target.value as any);
+                  setPage(1);
+                }}
+              >
+                <MenuItem value="all">{translate("admin.all")}</MenuItem>
+                <MenuItem value="active">{translate("admin.active")}</MenuItem>
+              </Select>
+            </FormControl>
             <FormControl size="small" sx={{ minWidth: 150 }}>
               <InputLabel>{translate("admin.sortBy")}</InputLabel>
               <Select

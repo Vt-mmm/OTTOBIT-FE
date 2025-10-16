@@ -77,6 +77,8 @@ export default function BlogDetailPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [viewCountTriggered, setViewCountTriggered] = useState(false);
+  const [viewTimerDone, setViewTimerDone] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -111,6 +113,36 @@ export default function BlogDetailPage() {
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Start a 30s timer per slug
+  useEffect(() => {
+    setViewTimerDone(false);
+    setViewCountTriggered(false);
+    const timer = setTimeout(() => setViewTimerDone(true), 30000);
+    return () => clearTimeout(timer);
+  }, [slug]);
+
+  // Trigger view count once per session when timer done and scrolled >= 50%
+  useEffect(() => {
+    const tryTrigger = async () => {
+      if (!data?.id) return;
+      const key = `blog_viewcount_${data.id}`;
+      if (sessionStorage.getItem(key)) return;
+      try {
+        await axiosClient.put(ROUTES_API_BLOG.VIEW_COUNT(data.id));
+        sessionStorage.setItem(key, "1");
+        setViewCountTriggered(true);
+      } catch {}
+    };
+    if (
+      !viewCountTriggered &&
+      viewTimerDone &&
+      scrollProgress >= 50 &&
+      data?.id
+    ) {
+      tryTrigger();
+    }
+  }, [viewTimerDone, scrollProgress, data?.id, viewCountTriggered]);
 
   const loadComments = async () => {
     if (!data?.id) return;

@@ -80,6 +80,7 @@ export default function ChallengeListSection({
   const [committedSearch, setCommittedSearch] = useState<string>("");
   const [courseId, setCourseId] = useState<string>("");
   const [lessonId, setLessonId] = useState<string>("");
+  const [status, setStatus] = useState<"all" | "active">("all");
 
   useEffect(() => {
     dispatch(
@@ -87,12 +88,12 @@ export default function ChallengeListSection({
         searchTerm: committedSearch || undefined,
         pageNumber: page,
         pageSize,
-        includeDeleted: true,
+        includeDeleted: status === "all",
         courseId: courseId || undefined,
         lessonId: lessonId || undefined,
       }) as any
     );
-  }, [dispatch, committedSearch, page, pageSize, courseId, lessonId]);
+  }, [dispatch, committedSearch, page, pageSize, courseId, lessonId, status]);
 
   // Load courses once
   useEffect(() => {
@@ -141,7 +142,7 @@ export default function ChallengeListSection({
         searchTerm: committedSearch || undefined,
         pageNumber: page,
         pageSize,
-        includeDeleted: true,
+        includeDeleted: status === "all",
         courseId: courseId || undefined,
         lessonId: lessonId || undefined,
       }) as any
@@ -212,10 +213,15 @@ export default function ChallengeListSection({
         <CardContent>
           <Box
             sx={{
-              display: "flex",
+              display: "grid",
               gap: 2,
               alignItems: "center",
-              flexWrap: { xs: "wrap", sm: "nowrap" },
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, minmax(0, 1fr))",
+                md: "repeat(3, minmax(0, 1fr))",
+                lg: "repeat(4, minmax(0, 1fr))",
+              },
             }}
           >
             <TextField
@@ -227,6 +233,7 @@ export default function ChallengeListSection({
                 if (e.key === "Enter") triggerSearch();
               }}
               sx={{
+                gridColumn: { xs: "1 / -1", md: "auto" },
                 "& .MuiInputBase-root": { pr: 4 },
               }}
               InputProps={{
@@ -279,6 +286,20 @@ export default function ChallengeListSection({
                     {l.title}
                   </MenuItem>
                 ))}
+              </Select>
+            </FormControl>
+            <FormControl size="small" sx={{ minWidth: 160 }}>
+              <InputLabel>{translate("admin.status")}</InputLabel>
+              <Select
+                label={translate("admin.status")}
+                value={status}
+                onChange={(e) => {
+                  setStatus(e.target.value as any);
+                  setPage(1);
+                }}
+              >
+                <MenuItem value="all">{translate("admin.all")}</MenuItem>
+                <MenuItem value="active">{translate("admin.active")}</MenuItem>
               </Select>
             </FormControl>
             <Button

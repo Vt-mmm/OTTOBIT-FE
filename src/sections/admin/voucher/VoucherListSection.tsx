@@ -23,6 +23,10 @@ import {
   TableHead,
   TableRow,
   Paper,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -58,6 +62,7 @@ export default function VoucherListSection({
   const [pageSize] = useState(12);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [status, setStatus] = useState<"all" | "active">("all");
   const [confirmDelete, setConfirmDelete] = useState<Voucher | null>(null);
   const [confirmRestore, setConfirmRestore] = useState<Voucher | null>(null);
 
@@ -67,7 +72,7 @@ export default function VoucherListSection({
       const params = new URLSearchParams({
         PageNumber: page.toString(),
         PageSize: pageSize.toString(),
-        IncludeDeleted: "true",
+        IncludeDeleted: status === "all" ? "true" : "false",
       });
 
       if (committedSearch) {
@@ -87,7 +92,8 @@ export default function VoucherListSection({
       );
 
       if (response.data?.data) {
-        setVouchers(response.data.data.items || []);
+        const raw = response.data.data.items || [];
+        setVouchers(raw);
         setTotal(response.data.data.total || 0);
         setTotalPages(response.data.data.totalPages || 1);
       }
@@ -103,7 +109,7 @@ export default function VoucherListSection({
 
   useEffect(() => {
     fetchVouchers();
-  }, [page, committedSearch, startDate, endDate]);
+  }, [page, committedSearch, startDate, endDate, status]);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -259,6 +265,22 @@ export default function VoucherListSection({
                 onChange={handleEndDateChange}
                 InputLabelProps={{ shrink: true }}
               />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Trạng thái</InputLabel>
+                <Select
+                  label="Trạng thái"
+                  value={status}
+                  onChange={(e) => {
+                    setStatus(e.target.value as any);
+                    setPage(1);
+                  }}
+                >
+                  <MenuItem value="all">Tất cả</MenuItem>
+                  <MenuItem value="active">Đang hoạt động</MenuItem>
+                </Select>
+              </FormControl>
             </Grid>
           </Grid>
         </CardContent>

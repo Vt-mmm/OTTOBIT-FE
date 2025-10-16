@@ -61,29 +61,29 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
       // CRITICAL: Suppress auto-reset to prevent double restart
       // (handleReplay does manual restart + modal close triggers auto-reset)
       suppressAutoResetRef.current = true;
-      
+
       // Use restartScene from PhaserContext - SAME as TopBar handleRestart
       await restartScene();
-      
+
       // Close modals after successful restart
       hideVictoryModal();
       hideDefeatModal();
-      
+
       // NOTIFY TopBar that restart was triggered from modal
       // This ensures TopBar resets hasExecuted properly
-      window.dispatchEvent(new CustomEvent('phaser-replay-triggered'));
-      
+      window.dispatchEvent(new CustomEvent("phaser-replay-triggered"));
+
       // Re-enable auto-reset after a short delay
       setTimeout(() => {
         suppressAutoResetRef.current = false;
       }, 100);
     } catch (error) {
       console.error("❌ [PhaserSimulator] Error restarting scene:", error);
-      
+
       // Still close modals even on error - DON'T reload iframe (causes duplicate assets)
       hideVictoryModal();
       hideDefeatModal();
-      
+
       // Re-enable auto-reset even on error
       setTimeout(() => {
         suppressAutoResetRef.current = false;
@@ -147,9 +147,9 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
       if (program) {
         await runProgram(program);
       }
-      
+
       // NOTIFY TopBar that restart was triggered from modal simulate
-      window.dispatchEvent(new CustomEvent('phaser-replay-triggered'));
+      window.dispatchEvent(new CustomEvent("phaser-replay-triggered"));
     } catch (_e) {
       // silently ignore
     } finally {
@@ -165,11 +165,11 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     try {
       const nav = getStoredNavigationData();
       const lessonId = nav?.lessonId;
-      
-      console.log('▶️ [PhaserSimulator] Play Next triggered:', {
+
+      console.log("▶️ [PhaserSimulator] Play Next triggered:", {
         currentChallengeId,
         lessonId,
-        lessonChallengesCount: ((lessonChallenges as any)?.items || []).length
+        lessonChallengesCount: ((lessonChallenges as any)?.items || []).length,
       });
 
       // Ensure we have lesson challenge list
@@ -184,40 +184,45 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
       // Find current index and next
       const currentIndex = items.findIndex((c) => c.id === currentChallengeId);
       const next = currentIndex >= 0 ? items[currentIndex + 1] : null;
-      
-      console.log('🔄 [PhaserSimulator] Navigation info:', {
+
+      console.log("🔄 [PhaserSimulator] Navigation info:", {
         currentIndex,
         nextChallengeId: next?.id,
-        totalChallenges: items.length
+        totalChallenges: items.length,
       });
 
       if (next) {
         // CRITICAL: Hide modal FIRST before navigation
         // This ensures button logic doesn't see isVictoryModalOpen=true on new map
         hideVictoryModal();
-        
+
         // IMMEDIATELY notify TopBar to reset button states for new map
-        window.dispatchEvent(new CustomEvent('phaser-map-changed', {
-          detail: { newChallengeId: next.id, action: 'playNext' }
-        }));
-        
+        window.dispatchEvent(
+          new CustomEvent("phaser-map-changed", {
+            detail: { newChallengeId: next.id, action: "playNext" },
+          })
+        );
+
         // Update navigation data with new challenge BEFORE navigating
         storeStudioNavigationData({
           challengeId: next.id,
           lessonId,
-          source: 'lesson'
+          source: "lesson",
         });
-        
+
         // NOTIFY that we're about to navigate to next challenge
-        console.log('🚀 [PhaserSimulator] Navigating to next challenge:', next.id);
-        
+        console.log(
+          "🚀 [PhaserSimulator] Navigating to next challenge:",
+          next.id
+        );
+
         const url = generateStudioUrl(next.id, lessonId || undefined);
         navigate(url);
       } else {
-        console.log('⚠️ [PhaserSimulator] No next challenge found');
+        console.log("⚠️ [PhaserSimulator] No next challenge found");
       }
     } catch (error) {
-      console.error('❌ [PhaserSimulator] Error in handlePlayNext:', error);
+      console.error("❌ [PhaserSimulator] Error in handlePlayNext:", error);
       // Still hide modal on error
       hideVictoryModal();
     }
@@ -264,31 +269,12 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     []
   );
 
-  // REMOVED: Auto-reset logic for DefeatModal
-  // Now user manually controls reset via TopBar dynamic Execute/Reset button
-  // Only keep auto-reset for VictoryModal in physical mode
+  // Disable auto-reset when closing VictoryModal.
+  // Only restart when user taps Replay/Simulate buttons.
   useEffect(() => {
-    const wasVictoryOpen = prevVictoryOpenRef.current;
-    const isPhysical = Number(currentChallenge?.challengeMode) === 1;
-
-    // Update refs for next tick
+    // Keep ref updated for potential future logic, but do not auto-restart.
     prevVictoryOpenRef.current = isVictoryModalOpen;
-
-    // Detect close event
-    const victoryJustClosed = wasVictoryOpen && !isVictoryModalOpen;
-
-    // Auto-restart logic: Only for VictoryModal in physical mode
-    if (isPhysical && victoryJustClosed) {
-      // For physical mode, reset on victory close
-      if (!suppressAutoResetRef.current) {
-        restartScene().catch(() => {});
-      }
-    }
-  }, [
-    isVictoryModalOpen,
-    currentChallenge?.challengeMode,
-    restartScene,
-  ]);
+  }, [isVictoryModalOpen]);
 
   // Handle iframe resize based on container size (debounced)
   const handleContainerResize = useCallback(

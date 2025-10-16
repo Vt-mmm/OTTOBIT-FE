@@ -32,6 +32,7 @@ export type AdminBlogFilters = {
   viewCountMax?: number;
   sortBy?: "CreatedAt" | "ViewCount";
   sortDirection?: "Asc" | "Desc";
+  status?: "all" | "active";
 };
 
 interface Props {
@@ -54,6 +55,7 @@ export default function AdminBlogFilterDialog({
   const [values, setValues] = useState<AdminBlogFilters>({
     sortBy: "CreatedAt",
     sortDirection: "Desc",
+    status: "all",
   });
 
   // Inline tag picker state
@@ -263,6 +265,18 @@ export default function AdminBlogFilterDialog({
               >
                 <MenuItem value="Asc">Tăng dần</MenuItem>
                 <MenuItem value="Desc">Giảm dần</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                select
+                fullWidth
+                label="Trạng thái"
+                value={values.status || "all"}
+                onChange={(e) => handleChange("status", e.target.value as any)}
+              >
+                <MenuItem value="all">Tất cả</MenuItem>
+                <MenuItem value="active">Đang hoạt động</MenuItem>
               </TextField>
             </Grid>
           </Grid>
