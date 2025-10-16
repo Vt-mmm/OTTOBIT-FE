@@ -8,6 +8,7 @@ import { getAccessToken, getRefreshToken } from "utils";
 import { axiosClient, resetAuthHeaders } from "axiosClient/axiosClient";
 import { TokenResponse } from "common/models";
 import { Store } from "@reduxjs/toolkit";
+import { shouldRefreshToken } from "utils/tokenUtils";
 
 // Track if we're in the middle of a token refresh to prevent multiple refreshes
 let isRefreshing = false;
@@ -15,6 +16,79 @@ let pendingRequests: Array<{
   resolve: (value: unknown) => void;
   reject: (reason?: unknown) => void;
 }> = [];
+
+/**
+ * Proactively refresh token before it expires
+ * Called by request interceptor when token is about to expire
+ */
+async function refreshTokenProactively(
+  userId: string,
+  store: Store<RootState>
+): Promise<void> {
+  if (isRefreshing) {
+    // Already refreshing - wait for it to complete
+    return new Promise<void>((resolve, reject) => {
+      pendingRequests.push({ resolve: resolve as (value: unknown) => void, reject });
+    });
+  }
+
+  isRefreshing = true;
+
+  try {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) {
+      throw new Error('Missing refresh token');
+    }
+
+    const data = {
+      UserId: userId,
+      RefreshToken: refreshToken,
+    };
+
+    console.log('🔄 [Proactive] Refreshing token...', {
+      userId: userId.substring(0, 8) + '...',
+    });
+
+    const response = await axiosClient.post(
+      ROUTES_API_AUTH.REFRESH_TOKEN,
+      data
+    );
+
+    if (
+      !response?.data?.data?.tokens?.accessToken ||
+      !response?.data?.data?.tokens?.refreshToken
+    ) {
+      throw new Error('Invalid token refresh response');
+    }
+
+    const tokenResponse: TokenResponse = {
+      accessToken: response.data.data.tokens.accessToken,
+      refreshToken: response.data.data.tokens.refreshToken,
+    };
+
+    // Update tokens in Redux
+    await store.dispatch(
+      updateLocalAccessToken({
+        accessToken: tokenResponse.accessToken,
+        refreshToken: tokenResponse.refreshToken,
+      })
+    );
+
+    // Wait for storage write to complete
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
+    console.log('✅ [Proactive] Token refreshed successfully');
+
+    // Process all queued requests
+    processQueue(null);
+  } catch (error) {
+    console.error('❌ [Proactive] Token refresh failed:', error);
+    processQueue(error);
+    throw error;
+  } finally {
+    isRefreshing = false;
+  }
+}
 
 // Track if interceptors are added to prevent duplicates
 let interceptorsAdded = false;
@@ -60,8 +134,37 @@ const setupAxiosClient = (store: Store<RootState>) => {
 
       // Get a fresh token on each request to ensure we have the latest
       const accessToken = getAccessToken();
-      if (accessToken) {
-        // Set Authorization header with current token
+      
+      // ✅ PROACTIVE TOKEN REFRESH: Check if token will expire soon (within 5 minutes)
+      if (accessToken && shouldRefreshToken(accessToken, 5)) {
+        console.log('🔄 [Proactive] Token will expire soon, refreshing before request');
+        
+        const state = store.getState() as RootState;
+        const userId = state.auth.userAuth?.userId;
+        const isAuthenticated = state.auth.isAuthenticated;
+        
+        if (isAuthenticated && userId && !isRefreshing) {
+          // Wait for token refresh to complete before continuing with request
+          try {
+            await refreshTokenProactively(userId, store);
+            
+            // Get fresh token after refresh
+            const newAccessToken = getAccessToken();
+            if (newAccessToken) {
+              config.headers.Authorization = `Bearer ${newAccessToken}`;
+            }
+          } catch (error) {
+            console.error('❌ [Proactive] Token refresh failed:', error);
+            // Continue with old token - let 401 handler deal with it
+            if (accessToken) {
+              config.headers.Authorization = `Bearer ${accessToken}`;
+            }
+          }
+        } else if (accessToken) {
+          config.headers.Authorization = `Bearer ${accessToken}`;
+        }
+      } else if (accessToken) {
+        // Token is still valid - use it
         config.headers.Authorization = `Bearer ${accessToken}`;
       } else {
         // Clear Authorization header if no token exists
@@ -69,6 +172,7 @@ const setupAxiosClient = (store: Store<RootState>) => {
         delete config.headers.Authorization;
         delete axiosClient.defaults.headers.common.Authorization;
       }
+      
       return config;
     },
     (error) => {

@@ -5,3 +5,4 @@ export * from "./session";
 export * from "./formatCurrency";
 export * from "./toErrorKey";
 export * from "./toMessageKey";
+export * from "./tokenUtils";

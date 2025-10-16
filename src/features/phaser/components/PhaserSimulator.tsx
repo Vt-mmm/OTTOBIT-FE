@@ -160,6 +160,42 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
     }
   };
 
+  // Check if current challenge is the last one in lesson (highest order)
+  const isLastChallengeInLesson = useCallback(() => {
+    const items = ((lessonChallenges as any)?.items || []) as Array<any>;
+    if (!items || items.length === 0 || !currentChallengeId) return false;
+    
+    // Find current challenge index
+    const currentIndex = items.findIndex((c) => c.id === currentChallengeId);
+    if (currentIndex < 0) return false;
+    
+    // Check if this is the last challenge
+    return currentIndex === items.length - 1;
+  }, [lessonChallenges, currentChallengeId]);
+
+  // Handle back to lesson from victory modal (when completing last challenge)
+  const handleBackToLesson = useCallback(() => {
+    try {
+      const nav = getStoredNavigationData();
+      const lessonId = nav?.lessonId;
+      
+      console.log('🏠 [PhaserSimulator] Back to Lesson triggered:', { lessonId });
+      
+      hideVictoryModal();
+      
+      if (lessonId) {
+        // Navigate to lesson detail page using correct path: /user/lessons/:id
+        navigate(`/user/lessons/${lessonId}`);
+      } else {
+        // Fallback: go back
+        navigate(-1);
+      }
+    } catch (error) {
+      console.error('❌ [PhaserSimulator] Error in handleBackToLesson:', error);
+      hideVictoryModal();
+    }
+  }, [navigate, hideVictoryModal]);
+
   // Handle next challenge navigation from victory modal
   const handlePlayNext = useCallback(async () => {
     try {
@@ -451,14 +487,11 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
           open={isVictoryModalOpen}
           onClose={hideVictoryModal}
           victoryData={victoryData}
-          onPlayNext={handlePlayNext}
+          onPlayNext={isLastChallengeInLesson() ? undefined : handlePlayNext}
           onReplay={handleReplay}
           showSimulateButton={Number(currentChallenge?.challengeMode) === 1}
           onSimulate={handleSimulate}
-          onGoHome={() => {
-            // TODO: Implement go home logic
-            hideVictoryModal();
-          }}
+          onBackToLesson={isLastChallengeInLesson() ? handleBackToLesson : undefined}
         />
       </VictoryErrorBoundary>
 

@@ -31,6 +31,7 @@ import {
   Delete as DeleteIcon,
   Visibility as ViewIcon,
   FilterList as FilterIcon,
+  Search as SearchIcon,
 } from "@mui/icons-material";
 import { AppDispatch } from "store/config";
 import {
@@ -65,7 +66,6 @@ export default function CertificateTemplateListSection({
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
-  const [committedSearch, setCommittedSearch] = useState("");
   const [courseIdFilter] = useState(""); // Removed unused setter
   const [isActiveFilter, setIsActiveFilter] = useState<string>("all");
   const [openFormDialog, setOpenFormDialog] = useState(false);
@@ -75,34 +75,40 @@ export default function CertificateTemplateListSection({
   const [previewTemplate, setPreviewTemplate] =
     useState<CertificateTemplateResult | null>(null);
 
-  // Debouncing for search
+
+  // Load data on mount and filter/pagination changes (no search)
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchTerm.trim() !== committedSearch) {
-        setCommittedSearch(searchTerm.trim());
-        setPage(0); // Reset to first page
-      }
-    }, 800);
+    loadTemplatesWithoutSearch();
+  }, [page, rowsPerPage, courseIdFilter, isActiveFilter]);
 
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm, committedSearch]);
-
-  // Load data
-  useEffect(() => {
-    loadTemplates();
-  }, [page, rowsPerPage, committedSearch, courseIdFilter, isActiveFilter]);
-
-  const loadTemplates = () => {
+  const loadTemplatesWithoutSearch = () => {
     const params: any = {
       page: page + 1,
       size: rowsPerPage,
     };
 
-    if (committedSearch.trim()) params.searchTerm = committedSearch.trim();
     if (courseIdFilter) params.courseId = courseIdFilter;
     if (isActiveFilter !== "all") params.isActive = isActiveFilter === "active";
 
     dispatch(getCertificateTemplatesThunk(params));
+  };
+
+  const loadTemplates = (searchValue?: string) => {
+    const params: any = {
+      page: page + 1,
+      size: rowsPerPage,
+    };
+
+    if (searchValue?.trim()) params.searchTerm = searchValue.trim();
+    if (courseIdFilter) params.courseId = courseIdFilter;
+    if (isActiveFilter !== "all") params.isActive = isActiveFilter === "active";
+
+    dispatch(getCertificateTemplatesThunk(params));
+  };
+
+  const handleSearch = () => {
+    setPage(0);
+    loadTemplates(searchTerm);
   };
 
   // Handle success
@@ -204,8 +210,12 @@ export default function CertificateTemplateListSection({
             )}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             sx={{ flex: 1 }}
           />
+          <IconButton onClick={handleSearch} color="primary">
+            <SearchIcon />
+          </IconButton>
           <FormControl size="small" sx={{ minWidth: 150 }}>
             <InputLabel>
               {translate("admin.certificateTemplate.status")}

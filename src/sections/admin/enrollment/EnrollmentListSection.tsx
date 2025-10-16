@@ -52,7 +52,6 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
 
   // Search & Filter states
   const [searchTerm, setSearchTerm] = useState("");
-  const [committedSearch, setCommittedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<
     "" | "completed" | "in_progress"
   >("");
@@ -65,19 +64,8 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
     enrollment?: EnrollmentResult;
   }>({ open: false });
 
-  // Debouncing for auto-search
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchTerm.trim() !== committedSearch) {
-        setCommittedSearch(searchTerm.trim());
-        setPageNumber(1);
-      }
-    }, 800); // 800ms debounce
 
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm, committedSearch]);
-
-  // Fetch enrollments
+  // Fetch enrollments on mount and filter/pagination changes (no search)
   useEffect(() => {
     const isCompleted =
       statusFilter === "completed"
@@ -87,15 +75,14 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
         : undefined;
 
     const params = {
-      searchTerm: committedSearch || undefined,
       isCompleted,
       pageNumber,
       pageSize,
     };
 
-    // Call Enrollment API with parameters
+    // Call Enrollment API without search term
     dispatch(getEnrollments(params));
-  }, [dispatch, committedSearch, statusFilter, pageNumber, pageSize]);
+  }, [dispatch, statusFilter, pageNumber, pageSize]);
 
   // Handlers
   const handleSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,9 +90,23 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
   };
 
   const triggerSearch = useCallback(() => {
-    setCommittedSearch(searchTerm.trim());
+    const isCompleted =
+      statusFilter === "completed"
+        ? true
+        : statusFilter === "in_progress"
+        ? false
+        : undefined;
+
+    const params = {
+      searchTerm: searchTerm.trim() || undefined,
+      isCompleted,
+      pageNumber: 1,
+      pageSize,
+    };
+
     setPageNumber(1);
-  }, [searchTerm]);
+    dispatch(getEnrollments(params));
+  }, [dispatch, searchTerm, statusFilter, pageSize]);
 
 
   const handleStatusFilterChange = (event: any) => {
@@ -332,7 +333,7 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
               {translate("admin.noEnrollmentsFound")}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              {committedSearch || statusFilter
+              {searchTerm.trim() || statusFilter
                 ? translate("admin.tryAdjustingFilters")
                 : translate("admin.noEnrollmentsYet")}
             </Typography>
