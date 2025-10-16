@@ -84,6 +84,14 @@ export default function CourseLearningSection({
   }, [dispatch, courseId]);
 
   const handleLessonClick = (lessonId: string) => {
+    // 🔍 DEBUG: Log lesson navigation
+    console.log('🛤️ [CourseLearning] Lesson clicked:', {
+      lessonId,
+      lessonTitle: lessons.find((l) => l.id === lessonId)?.title,
+      courseId,
+      totalLessons: lessons.length,
+    });
+    
     const lessonProgresses = lessonProgressData?.items || [];
     const currentLesson = lessons.find((l) => l.id === lessonId);
 
@@ -113,7 +121,9 @@ export default function CourseLearningSection({
     }
 
     // Navigate to lesson detail
-    navigate(PATH_USER.lessonDetail.replace(":id", lessonId));
+    const targetPath = PATH_USER.lessonDetail.replace(":id", lessonId);
+    console.log('➡️ [CourseLearning] Navigating to:', targetPath);
+    navigate(targetPath);
   };
 
   const handleCloseSnackbar = () => {

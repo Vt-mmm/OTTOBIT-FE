@@ -227,11 +227,41 @@ function TopBarContent({
   const { mySubmissions } = useAppSelector((state) => state.submission);
   const submissionsItems = mySubmissions?.data?.items || [];
 
-  // Fetch submissions when lessonId is present
+  // Track if submissions have been fetched for this lesson
+  const hasFetchedSubmissions = useRef(false);
+  const [submissionsReady, setSubmissionsReady] = useState(false);
+  
+  // Fetch submissions when lessonId is present (only once per lesson)
   useEffect(() => {
     if (!lessonId) return;
-    dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 10 }));
+    
+    // ✅ FIX: Only fetch if we haven't fetched for this lesson yet
+    if (!hasFetchedSubmissions.current) {
+      console.log('📥 [TopBar] Fetching submissions for lesson:', lessonId);
+      setSubmissionsReady(false); // Mark as not ready while fetching
+      
+      dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 50 }))
+        .unwrap()
+        .then(() => {
+          hasFetchedSubmissions.current = true;
+          setSubmissionsReady(true); // Mark as ready
+          console.log('✅ [TopBar] Submissions fetched and ready');
+        })
+        .catch((error) => {
+          console.error('❌ [TopBar] Failed to fetch submissions:', error);
+          setSubmissionsReady(true); // Still mark as ready to show UI (with empty data)
+        });
+    } else {
+      // Already fetched - mark as ready immediately
+      setSubmissionsReady(true);
+    }
   }, [lessonId, dispatch]);
+  
+  // Reset fetch flag when lessonId changes
+  useEffect(() => {
+    hasFetchedSubmissions.current = false;
+    setSubmissionsReady(false);
+  }, [lessonId]);
 
   // Check accessibility using the same logic as LessonTabletSection
   const isChallengeUnlocked = useCallback(
@@ -935,7 +965,10 @@ function TopBarContent({
         </Box>
 
         {/* Center Section: Map selector */}
-        {lessonChallengeItems && lessonChallengeItems.length > 0 && (
+        {/* ✅ FIX: Only render when both challenges AND submissions are ready */}
+        {lessonChallengeItems && 
+         lessonChallengeItems.length > 0 && 
+         submissionsReady && ( // Wait for submissions to be fetched before rendering
           <Box
             sx={{
               flex: 1,

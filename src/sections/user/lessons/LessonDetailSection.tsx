@@ -31,11 +31,18 @@ export default function LessonDetailSection({
   } = useAppSelector((state) => state.lesson.currentLesson);
 
   useEffect(() => {
-    // Only fetch if lesson not already loaded or lessonId changed
+    // ✅ CRITICAL FIX: Always fetch when lessonId changes to prevent stale data
+    // This ensures switching between lessons works correctly
+    console.log('🔄 [LessonDetail] Fetching lesson:', {
+      newLessonId: lessonId,
+      currentLessonId: lesson?.id,
+      willFetch: lesson?.id !== lessonId || !lesson,
+    });
+    
     if (!lesson || lesson.id !== lessonId) {
       dispatch(getLessonByIdThunk(lessonId));
     }
-  }, [dispatch, lessonId, lesson?.id]);
+  }, [dispatch, lessonId]); // ⚠️ Remove lesson?.id from deps to prevent stale check
 
   const handleChallengeSelect = (challengeId: string) => {
     // Navigate to studio with challenge ID and preserve lesson context
