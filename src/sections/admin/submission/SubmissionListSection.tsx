@@ -43,9 +43,7 @@ export default function SubmissionListSection() {
   // Pagination & Filter states
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [searchTerm, setSearchTerm] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const [committedSearch, setCommittedSearch] = useState("");
   const [starFrom, setStarFrom] = useState<number | "">("");
   const [starTo, setStarTo] = useState<number | "">("");
 
@@ -54,25 +52,24 @@ export default function SubmissionListSection() {
   const isLoading = adminSubmissions.isLoading;
   const error = adminSubmissions.error;
 
-  // Debouncing for search input
+
+  // Fetch data on mount and pagination/filter changes (no search)
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchInput.trim() !== committedSearch) {
-        setCommittedSearch(searchInput.trim());
-        setSearchTerm(searchInput.trim());
-        setPage(0); // Reset to first page
-      }
-    }, 800);
+    fetchDataWithoutSearch();
+  }, [page, rowsPerPage, starFrom, starTo]);
 
-    return () => clearTimeout(timeoutId);
-  }, [searchInput, committedSearch]);
+  const fetchDataWithoutSearch = () => {
+    dispatch(
+      getSubmissionsForAdminThunk({
+        pageNumber: page + 1,
+        pageSize: rowsPerPage,
+        starFrom: starFrom !== "" ? starFrom : undefined,
+        starTo: starTo !== "" ? starTo : undefined,
+      })
+    );
+  };
 
-  // Fetch data
-  useEffect(() => {
-    fetchData();
-  }, [page, rowsPerPage, searchTerm, starFrom, starTo]);
-
-  const fetchData = () => {
+  const fetchData = (searchTerm?: string) => {
     dispatch(
       getSubmissionsForAdminThunk({
         pageNumber: page + 1,
@@ -96,10 +93,9 @@ export default function SubmissionListSection() {
   };
 
   const handleSearch = useCallback(() => {
-    setCommittedSearch(searchInput.trim());
-    setSearchTerm(searchInput.trim());
     setPage(0);
-  }, [searchInput]);
+    fetchData(searchInput.trim());
+  }, [searchInput, rowsPerPage, starFrom, starTo]);
 
   const handleViewDetails = (submissionId: string) => {
     navigate(PATH_ADMIN.submissionDetail.replace(":id", submissionId));
@@ -122,7 +118,7 @@ export default function SubmissionListSection() {
           <Button
             variant="outlined"
             startIcon={<RefreshIcon />}
-            onClick={fetchData}
+            onClick={() => fetchData()}
             disabled={isLoading}
           >
             {translate("admin.refresh")}
