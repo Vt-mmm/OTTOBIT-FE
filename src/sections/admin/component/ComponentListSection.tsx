@@ -55,7 +55,6 @@ export default function ComponentListSection({
   const { components, operations } = useAppSelector((state) => state.component);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [committedSearch, setCommittedSearch] = useState("");
   const [filterType, setFilterType] = useState<ComponentType | "all">("all");
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(12);
@@ -67,31 +66,19 @@ export default function ComponentListSection({
     componentName?: string;
   }>({ open: false });
 
-  // Debouncing for search
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchTerm.trim() !== committedSearch) {
-        setCommittedSearch(searchTerm.trim());
-        setPageNumber(1); // Reset to first page
-      }
-    }, 800);
 
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm, committedSearch]);
-
-  // Fetch components on component mount and when filters change
+  // Fetch components on component mount and filter/pagination changes (no search)
   useEffect(() => {
     const filters = {
       page: pageNumber,
       size: pageSize,
-      searchTerm: committedSearch.trim() || undefined,
       type: filterType !== "all" ? filterType : undefined,
       orderBy: "CreatedAt",
       orderDirection: "DESC" as const,
     };
 
     dispatch(getComponentsThunk(filters));
-  }, [dispatch, committedSearch, filterType, pageNumber, pageSize]);
+  }, [dispatch, filterType, pageNumber, pageSize]);
 
   // Clear success flags after operations
   useEffect(() => {
@@ -115,9 +102,17 @@ export default function ComponentListSection({
     }
   };
 
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setPageNumber(1); // Reset to first page when searching
+  const handleSearchClick = () => {
+    const filters = {
+      page: 1,
+      size: pageSize,
+      searchTerm: searchTerm.trim() || undefined,
+      type: filterType !== "all" ? filterType : undefined,
+      orderBy: "CreatedAt",
+      orderDirection: "DESC" as const,
+    };
+    setPageNumber(1);
+    dispatch(getComponentsThunk(filters));
   };
 
   const handleTypeFilterChange = (type: ComponentType | "all") => {
@@ -190,11 +185,14 @@ export default function ComponentListSection({
         <TextField
           placeholder={translate("admin.component.searchPlaceholder")}
           value={searchTerm}
-          onChange={(e) => handleSearch(e.target.value)}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSearchClick()}
           InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={handleSearchClick} edge="end">
+                  <SearchIcon />
+                </IconButton>
               </InputAdornment>
             ),
           }}
@@ -263,7 +261,7 @@ export default function ComponentListSection({
             {translate("admin.component.noComponentsFound")}
           </Typography>
           <Typography variant="body2" color="text.secondary" mb={3}>
-            {committedSearch || filterType !== "all"
+            {searchTerm.trim() || filterType !== "all"
               ? translate("admin.component.tryAdjustingFilters")
               : translate("admin.component.addFirstComponent")}
           </Typography>

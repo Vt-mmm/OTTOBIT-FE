@@ -26,16 +26,14 @@ import {
 } from "@mui/material";
 import {
   Search as SearchIcon,
-  Edit as EditIcon,
   Person as PersonIcon,
   School as SchoolIcon,
   Visibility as ViewIcon,
 } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "store/config";
-import { getStudents, updateStudent } from "store/student/studentSlice";
+import { getStudents } from "store/student/studentSlice";
 import { StudentResult } from "common/@types/student";
 import dayjs from "dayjs";
-import StudentFormDialog from "./StudentFormDialog";
 import StudentDetailsDialog from "./StudentDetailsDialog";
 import useLocales from "hooks/useLocales";
 
@@ -44,96 +42,34 @@ interface StudentListSectionProps {}
 export default function StudentListSection({}: StudentListSectionProps) {
   const dispatch = useAppDispatch();
   const { translate } = useLocales();
-  const { students, operations } = useAppSelector((state) => state.student);
+  const { students } = useAppSelector((state) => state.student);
 
   // Search & Filter states
   const [searchTerm, setSearchTerm] = useState("");
-  const [committedSearch, setCommittedSearch] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [committedPhoneNumber, setCommittedPhoneNumber] = useState("");
   const [state, setState] = useState("");
-  const [committedState, setCommittedState] = useState("");
   const [city, setCity] = useState("");
-  const [committedCity, setCommittedCity] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(12);
 
-  // Dialog states
-  const [formDialog, setFormDialog] = useState<{
-    open: boolean;
-    mode: "create" | "edit";
-    student?: StudentResult;
-  }>({ open: false, mode: "create" });
 
   const [detailsDialog, setDetailsDialog] = useState<{
     open: boolean;
     student?: StudentResult;
   }>({ open: false });
 
-  // Debouncing for auto-search
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setCommittedSearch(searchTerm.trim());
-      if (searchTerm.trim() !== committedSearch) {
-        setPageNumber(1);
-      }
-    }, 800); // 800ms debounce
 
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm]);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setCommittedPhoneNumber(phoneNumber.trim());
-      if (phoneNumber.trim() !== committedPhoneNumber) {
-        setPageNumber(1);
-      }
-    }, 800);
-
-    return () => clearTimeout(timeoutId);
-  }, [phoneNumber]);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setCommittedState(state.trim());
-      if (state.trim() !== committedState) {
-        setPageNumber(1);
-      }
-    }, 800);
-
-    return () => clearTimeout(timeoutId);
-  }, [state]);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setCommittedCity(city.trim());
-      if (city.trim() !== committedCity) {
-        setPageNumber(1);
-      }
-    }, 800);
-
-    return () => clearTimeout(timeoutId);
-  }, [city]);
-
-  // Fetch students on mount and when filters change
+  // Fetch students on mount and when pagination changes (without search filters)
   useEffect(() => {
     const params = {
-      searchTerm: committedSearch || undefined,
-      phoneNumber: committedPhoneNumber || undefined,
-      state: committedState || undefined,
-      city: committedCity || undefined,
       pageNumber,
       pageSize,
     };
     
-    // Call API with search parameters
+    // Call API only on initial load and pagination changes (no search filters)
     dispatch(getStudents(params));
   }, [
     dispatch,
-    committedSearch,
-    committedPhoneNumber,
-    committedState,
-    committedCity,
     pageNumber,
     pageSize,
   ]);
@@ -144,42 +80,26 @@ export default function StudentListSection({}: StudentListSectionProps) {
   };
 
   const triggerSearch = useCallback(() => {
-    setCommittedSearch(searchTerm.trim());
-    setCommittedPhoneNumber(phoneNumber.trim());
-    setCommittedState(state.trim());
-    setCommittedCity(city.trim());
+    const params = {
+      searchTerm: searchTerm.trim() || undefined,
+      phoneNumber: phoneNumber.trim() || undefined,
+      state: state.trim() || undefined,
+      city: city.trim() || undefined,
+      pageNumber: 1,
+      pageSize,
+    };
+    
     setPageNumber(1);
-  }, [searchTerm, phoneNumber, state, city]);
+    dispatch(getStudents(params));
+  }, [dispatch, searchTerm, phoneNumber, state, city, pageSize]);
 
 
-  const handleEditStudent = (student: StudentResult) => {
-    setFormDialog({ open: true, mode: "edit", student });
-  };
 
   const handleViewDetails = (student: StudentResult) => {
     setDetailsDialog({ open: true, student });
   };
 
-  const handleFormSubmit = async (data: any) => {
-    try {
-      if (formDialog.mode === "edit" && formDialog.student) {
-        await dispatch(
-          updateStudent({ id: formDialog.student.id, ...data })
-        ).unwrap();
-        setFormDialog({ open: false, mode: "create" });
-      }
-      // Create is disabled for admin (users create their own profile)
-    } catch (error) {
-      // Error is handled in Redux
-    }
-  };
 
-  const handleEditFromDetails = () => {
-    if (detailsDialog.student) {
-      setDetailsDialog({ open: false });
-      handleEditStudent(detailsDialog.student);
-    }
-  };
 
   // Loading state
   if (students.isLoading && !students.data) {
@@ -408,14 +328,6 @@ export default function StudentListSection({}: StudentListSectionProps) {
                     >
                       <ViewIcon />
                     </IconButton>
-                    <IconButton
-                      size="small"
-                      title={translate("admin.editStudent")}
-                      onClick={() => handleEditStudent(student)}
-                      color="secondary"
-                    >
-                      <EditIcon />
-                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
@@ -452,7 +364,7 @@ export default function StudentListSection({}: StudentListSectionProps) {
               color="text.secondary"
               sx={{ mb: 3, fontSize: { xs: "0.875rem", sm: "1rem" } }}
             >
-              {(committedSearch || committedPhoneNumber || committedState || committedCity)
+              {(searchTerm.trim() || phoneNumber.trim() || state.trim() || city.trim())
                 ? translate("admin.tryAdjustingSearch")
                 : translate("admin.noStudentsYet")}
             </Typography>
@@ -502,23 +414,12 @@ export default function StudentListSection({}: StudentListSectionProps) {
         ) : null}
       </Paper>
 
-      {/* Form Dialog */}
-      <StudentFormDialog
-        open={formDialog.open}
-        mode={formDialog.mode}
-        initialData={formDialog.student}
-        onClose={() => setFormDialog({ open: false, mode: "create" })}
-        onSubmit={handleFormSubmit}
-        isLoading={operations.isUpdating}
-        error={operations.updateError}
-      />
 
       {/* Details Dialog */}
       <StudentDetailsDialog
         open={detailsDialog.open}
         student={detailsDialog.student || null}
         onClose={() => setDetailsDialog({ open: false })}
-        onEdit={handleEditFromDetails}
       />
     </Box>
   );

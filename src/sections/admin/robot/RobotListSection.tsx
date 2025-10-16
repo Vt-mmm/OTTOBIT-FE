@@ -52,7 +52,6 @@ export default function RobotListSection({
   const { translate } = useLocales();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [committedSearch, setCommittedSearch] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(12);
 
@@ -63,28 +62,16 @@ export default function RobotListSection({
     robotName?: string;
   }>({ open: false });
 
-  // Debouncing for search
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchTerm.trim() !== committedSearch) {
-        setCommittedSearch(searchTerm.trim());
-        setPageNumber(1); // Reset to first page
-      }
-    }, 800);
 
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm, committedSearch]);
-
-  // Fetch robots on component mount and when filters change
+  // Fetch robots on component mount and pagination changes (no search)
   useEffect(() => {
     const filters = {
-      searchTerm: committedSearch.trim() || undefined,
       pageNumber,
       pageSize,
     };
 
     dispatch(getRobotsThunk(filters));
-  }, [dispatch, committedSearch, pageNumber, pageSize]);
+  }, [dispatch, pageNumber, pageSize]);
 
   // Clear success flags after operations
   useEffect(() => {
@@ -108,9 +95,14 @@ export default function RobotListSection({
     }
   };
 
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setPageNumber(1); // Reset to first page when searching
+  const handleSearchClick = () => {
+    const filters = {
+      searchTerm: searchTerm.trim() || undefined,
+      pageNumber: 1,
+      pageSize,
+    };
+    setPageNumber(1);
+    dispatch(getRobotsThunk(filters));
   };
 
   const robotList = robots.data?.items || [];
@@ -130,11 +122,14 @@ export default function RobotListSection({
         <TextField
           placeholder={translate("admin.searchRobotPlaceholder")}
           value={searchTerm}
-          onChange={(e) => handleSearch(e.target.value)}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSearchClick()}
           InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={handleSearchClick} edge="end">
+                  <SearchIcon />
+                </IconButton>
               </InputAdornment>
             ),
           }}
@@ -181,7 +176,7 @@ export default function RobotListSection({
             {translate("admin.noRobotProductsFound")}
           </Typography>
           <Typography variant="body2" color="text.secondary" mb={3}>
-            {committedSearch
+            {searchTerm.trim()
               ? translate("admin.tryAdjustingSearchOrFilters")
               : translate("admin.addYourFirstRobot")}
           </Typography>

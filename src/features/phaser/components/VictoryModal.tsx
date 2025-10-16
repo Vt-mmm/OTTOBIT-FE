@@ -12,7 +12,7 @@ import {
   IconButton,
   Button,
 } from "@mui/material";
-import { Close, PlayArrow, Replay, Star, SmartToy } from "@mui/icons-material";
+import { Close, PlayArrow, Replay, Star, SmartToy, ArrowBack } from "@mui/icons-material";
 import { TransitionProps } from "@mui/material/transitions";
 import { VictoryData } from "../types/phaser";
 
@@ -23,6 +23,7 @@ interface VictoryModalProps {
   onPlayNext?: () => void;
   onReplay?: () => void;
   onGoHome?: () => void; // kept for API compatibility (unused in minimal UI)
+  onBackToLesson?: () => void; // NEW: Show when completing last challenge
   showSimulateButton?: boolean;
   onSimulate?: () => void;
 }
@@ -51,6 +52,7 @@ export default function VictoryModal({
   victoryData,
   onPlayNext,
   onReplay,
+  onBackToLesson,
   showSimulateButton,
   onSimulate,
 }: VictoryModalProps) {
@@ -192,6 +194,7 @@ export default function VictoryModal({
               </IconButton>
             )}
 
+            {/* Show Play Next button for non-last challenges */}
             {onPlayNext && (
               <IconButton
                 onClick={onPlayNext}
@@ -215,6 +218,33 @@ export default function VictoryModal({
                 }}
               >
                 <PlayArrow sx={{ fontSize: 30, color: "#0f172a" }} />
+              </IconButton>
+            )}
+
+            {/* Show Back to Lesson button for last challenge */}
+            {onBackToLesson && (
+              <IconButton
+                onClick={onBackToLesson}
+                aria-label="back to lesson"
+                sx={{
+                  width: 68,
+                  height: 68,
+                  borderRadius: "50%",
+                  border: "2px solid rgba(15,23,42,.25)",
+                  backgroundColor: "#f0f9ff",
+                  boxShadow:
+                    "0 2px 0 rgba(2,6,23,.08), inset 0 -2px 0 rgba(2,6,23,.05)",
+                  transition:
+                    "transform .15s ease, box-shadow .15s ease, background-color .15s ease",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                    backgroundColor: "#e0f2fe",
+                    boxShadow:
+                      "0 6px 16px rgba(2,6,23,.12), inset 0 -2px 0 rgba(2,6,23,.05)",
+                  },
+                }}
+              >
+                <ArrowBack sx={{ fontSize: 30, color: "#0f172a" }} />
               </IconButton>
             )}
 

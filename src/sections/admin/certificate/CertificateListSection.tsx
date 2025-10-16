@@ -28,6 +28,7 @@ import {
   Delete as DeleteIcon,
   Block as RevokeIcon,
   FilterList as FilterIcon,
+  Search as SearchIcon,
 } from "@mui/icons-material";
 import { AppDispatch } from "store/config";
 import {
@@ -56,40 +57,44 @@ export default function CertificateListSection() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
-  const [committedSearch, setCommittedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [openDetailDialog, setOpenDetailDialog] = useState(false);
   const [openRevokeDialog, setOpenRevokeDialog] = useState(false);
   const [selectedCertificate, setSelectedCertificate] =
     useState<CertificateResult | null>(null);
 
-  // Debouncing for search
+
+  // Load data on mount and filter/pagination changes (no search)
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchTerm.trim() !== committedSearch) {
-        setCommittedSearch(searchTerm.trim());
-        setPage(0); // Reset to first page
-      }
-    }, 800);
+    loadCertificatesWithoutSearch();
+  }, [page, rowsPerPage, statusFilter]);
 
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm, committedSearch]);
-
-  // Load data
-  useEffect(() => {
-    loadCertificates();
-  }, [page, rowsPerPage, committedSearch, statusFilter]);
-
-  const loadCertificates = () => {
+  const loadCertificatesWithoutSearch = () => {
     const params: any = {
       page: page + 1,
       size: rowsPerPage,
     };
 
-    if (committedSearch.trim()) params.searchTerm = committedSearch.trim();
     if (statusFilter !== "all") params.status = parseInt(statusFilter);
 
     dispatch(getCertificatesThunk(params));
+  };
+
+  const loadCertificates = (searchValue?: string) => {
+    const params: any = {
+      page: page + 1,
+      size: rowsPerPage,
+    };
+
+    if (searchValue?.trim()) params.searchTerm = searchValue.trim();
+    if (statusFilter !== "all") params.status = parseInt(statusFilter);
+
+    dispatch(getCertificatesThunk(params));
+  };
+
+  const handleSearch = () => {
+    setPage(0);
+    loadCertificates(searchTerm);
   };
 
   // Handlers
@@ -166,8 +171,12 @@ export default function CertificateListSection() {
             placeholder={translate("admin.searchCertificatePlaceholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             sx={{ flex: 1 }}
           />
+          <IconButton onClick={handleSearch} color="primary">
+            <SearchIcon />
+          </IconButton>
           <FormControl size="small" sx={{ minWidth: 150 }}>
             <InputLabel>{translate("admin.status")}</InputLabel>
             <Select
