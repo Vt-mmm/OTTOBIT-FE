@@ -48,7 +48,7 @@ export default function BlogFormDialog({ open, onClose, onSuccess }: Props) {
   const fetchTags = async () => {
     try {
       const res = await axiosClient.get(
-        `${ROUTES_API_TAG.GET_ALL}?PageNumber=1&PageSize=50`
+        `${ROUTES_API_TAG.GET_ALL}?PageNumber=1&PageSize=20`
       );
       const data = res?.data?.data?.items || [];
       setTags(data);
@@ -61,9 +61,22 @@ export default function BlogFormDialog({ open, onClose, onSuccess }: Props) {
     }
   }, [open]);
 
+  // Ensure names resolve for newly selected tag ids by refetching if any id is unknown
+  useEffect(() => {
+    if (!open) return;
+    if (tagIds.length === 0) return;
+    const knownIds = new Set(tags.map((t) => t.id));
+    const hasUnknown = tagIds.some((id) => !knownIds.has(id));
+    if (hasUnknown) {
+      fetchTags();
+    }
+  }, [open, tagIds, tags]);
+
   const handleChangeTags = (event: SelectChangeEvent<string[]>) => {
     const value = event.target.value as string[];
     setTagIds(value);
+    // Ensure latest names are available immediately after selection
+    fetchTags();
   };
 
   const handleSubmit = async () => {
@@ -126,8 +139,9 @@ export default function BlogFormDialog({ open, onClose, onSuccess }: Props) {
               onChange={handleChangeTags}
               input={<OutlinedInput label="Tags" />}
               renderValue={(selected) =>
-                selected
-                  .map((id) => tags.find((t) => t.id === id)?.name || id)
+                tags
+                  .filter((t) => (selected as string[]).includes(t.id))
+                  .map((t) => t.name)
                   .join(", ")
               }
             >

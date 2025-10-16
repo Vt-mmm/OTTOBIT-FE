@@ -163,9 +163,7 @@ export default function LessonResourceListSection({
       );
       const data = res?.data?.data;
       const raw = data?.items || [];
-      setItems(
-        status === "deleted" ? raw.filter((x: any) => x.isDeleted) : raw
-      );
+      setItems(raw);
       const total = data?.total || 0;
       const size = data?.size || pageSize;
       setTotalPages(Math.max(1, Math.ceil(total / size)));

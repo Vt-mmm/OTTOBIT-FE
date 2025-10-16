@@ -23,6 +23,7 @@ import {
   ListItem,
   ListItemText,
 } from "@mui/material";
+import Pagination from "@mui/material/Pagination";
 import { createPortal } from "react-dom";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useNotification } from "hooks/useNotification";
@@ -2331,7 +2332,7 @@ export default function WinConditionsSection({
                   <Pagination
                     count={orderTotalPages}
                     page={orderPage}
-                    onChange={(_, page) => setOrderPage(page)}
+                    onChange={(_, page: number) => setOrderPage(page)}
                     size="small"
                   />
                 </Box>

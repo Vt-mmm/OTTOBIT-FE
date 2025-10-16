@@ -150,7 +150,7 @@ const BlogListPage: React.FC = () => {
             display: "flex",
             flexDirection: "column",
           }}
-          onClick={() => navigate(`/user/blogs/${b.slug}`)}
+          onClick={() => navigate(`/user/blogs/${encodeURIComponent(b.slug)}`)}
           role="button"
           style={{ cursor: "pointer" }}
         >

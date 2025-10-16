@@ -102,7 +102,6 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
       const res = await axiosClient.get<BlogListResponse>(url);
       const data = res?.data?.data;
       const raw = data?.items || [];
-      const effStatus = advancedFilters.status || "all";
       setItems(raw);
       setTotalPages(data?.totalPages || 1);
     } catch (error) {

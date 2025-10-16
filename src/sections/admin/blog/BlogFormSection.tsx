@@ -14,6 +14,7 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { axiosClient } from "axiosClient/axiosClient";
 import { ROUTES_API_BLOG, ROUTES_API_TAG } from "constants/routesApiKeys";
+import { ImageUploader } from "components/common/ImageUploader";
 import TagPickerDialog from "./TagPickerDialog";
 import { useNotification } from "hooks/useNotification";
 import { BlogItem, BlogUpdateRequest } from "types/blog";
@@ -196,8 +197,61 @@ export default function BlogFormSection({
       </Box>
 
       <Grid container spacing={2}>
-        {/* Left column - main content */}
-        <Grid item xs={12} md={8}>
+        {/* Top row - image and tags */}
+        <Grid item xs={12}>
+          <Card>
+            <CardContent>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={6}>
+                  <Stack spacing={1.5}>
+                    <ImageUploader
+                      entityType="general"
+                      currentImageUrl={thumbnailUrl}
+                      onImageChange={(url) => {
+                        setThumbnailUrl(url || "");
+                        clearFieldError("thumbnailUrl");
+                      }}
+                      height={220}
+                      title="Thumbnail"
+                      description="Chọn ảnh và tự động tải lên Firebase, form sẽ lấy URL trả về."
+                    />
+                    {!!validationErrors.thumbnailUrl && (
+                      <Typography variant="caption" color="error">
+                        {validationErrors.thumbnailUrl}
+                      </Typography>
+                    )}
+                  </Stack>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Stack spacing={1.5}>
+                    <TextField
+                      label="Tags"
+                      value={tags
+                        .filter((t) => tagIds.includes(t.id))
+                        .map((t) => t.name)
+                        .join(", ")}
+                      placeholder="Chọn tags..."
+                      InputProps={{ readOnly: true }}
+                      onClick={() => setOpenTagPicker(true)}
+                      error={!!validationErrors.tagIds}
+                      helperText={validationErrors.tagIds}
+                      required
+                    />
+                    <Button
+                      variant="outlined"
+                      onClick={() => setOpenTagPicker(true)}
+                    >
+                      Chọn tag
+                    </Button>
+                  </Stack>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Bottom row - main content full width */}
+        <Grid item xs={12}>
           <Card>
             <CardContent>
               <Stack spacing={2}>
@@ -218,7 +272,8 @@ export default function BlogFormSection({
                   label="Nội dung"
                   fullWidth
                   multiline
-                  minRows={16}
+                  minRows={22}
+                  maxRows={22}
                   value={content}
                   onChange={(e) => {
                     setContent(e.target.value);
@@ -227,92 +282,17 @@ export default function BlogFormSection({
                   error={!!validationErrors.content}
                   helperText={validationErrors.content}
                   required
+                  sx={{
+                    "& .MuiInputBase-inputMultiline": {
+                      minHeight: 520,
+                      maxHeight: 840,
+                      overflowY: "auto",
+                    },
+                  }}
                 />
               </Stack>
             </CardContent>
           </Card>
-        </Grid>
-
-        {/* Right column - meta */}
-        <Grid item xs={12} md={4}>
-          <Stack spacing={2}>
-            <Card>
-              <CardContent>
-                <Stack spacing={1.5}>
-                  <TextField
-                    label="Ảnh thumbnail URL"
-                    fullWidth
-                    value={thumbnailUrl}
-                    onChange={(e) => {
-                      setThumbnailUrl(e.target.value);
-                      clearFieldError("thumbnailUrl");
-                    }}
-                    error={!!validationErrors.thumbnailUrl}
-                    helperText={validationErrors.thumbnailUrl}
-                    required
-                  />
-                  <Box
-                    sx={{
-                      mt: 1,
-                      height: 180,
-                      borderRadius: 1,
-                      overflow: "hidden",
-                      border: "1px solid #eee",
-                      bgcolor: "#fafafa",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {thumbnailUrl ? (
-                      <Box
-                        component="img"
-                        src={thumbnailUrl}
-                        alt="thumbnail preview"
-                        sx={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                        onError={(e: any) =>
-                          (e.currentTarget.style.display = "none")
-                        }
-                      />
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        Xem trước ảnh thumbnail
-                      </Typography>
-                    )}
-                  </Box>
-                </Stack>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent>
-                <Stack spacing={1.5}>
-                  <TextField
-                    label="Tags"
-                    value={tagIds
-                      .map((id) => tags.find((t) => t.id === id)?.name || id)
-                      .join(", ")}
-                    placeholder="Chọn tags..."
-                    InputProps={{ readOnly: true }}
-                    onClick={() => setOpenTagPicker(true)}
-                    error={!!validationErrors.tagIds}
-                    helperText={validationErrors.tagIds}
-                    required
-                  />
-                  <Button
-                    variant="outlined"
-                    onClick={() => setOpenTagPicker(true)}
-                  >
-                    Chọn tag
-                  </Button>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Stack>
         </Grid>
       </Grid>
       <TagPickerDialog
@@ -322,6 +302,7 @@ export default function BlogFormSection({
         onSave={(ids) => {
           setTagIds(ids);
           setOpenTagPicker(false);
+          fetchTags();
         }}
       />
       <NotificationComponent />
