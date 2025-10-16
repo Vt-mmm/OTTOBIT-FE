@@ -3,7 +3,7 @@
  * Simplified to coordinate between LessonHeroSection and LessonTabletSection
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Box, CircularProgress } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
@@ -45,6 +45,7 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
     data: challengesData,
     isLoading: challengesLoading,
     error: challengesError,
+    lessonId: storedLessonId, // ✅ CRITICAL: Get lessonId from Redux to check staleness
   } = useAppSelector((state) => state.challenge.lessonChallenges);
 
   const { mySubmissions } = useAppSelector((state) => state.submission);
@@ -52,14 +53,106 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
 
   const [challenges, setChallenges] = useState<ChallengeResult[]>([]);
   const [submissions, setSubmissions] = useState<SubmissionResult[]>([]);
+  
+  // ✅ Track which lessons have been started to prevent duplicate API calls
+  const startedLessonsRef = useRef<Set<string>>(new Set());
+  
+  // ✅ Track last submissions fetch timestamp to prevent rapid refetching
+  const lastSubmissionsFetchRef = useRef<number>(0);
+  
+  // ✅ Track if we've fetched submissions for current page load
+  const hasInitialFetchRef = useRef<boolean>(false);
+
+  // ✅ CRITICAL: Detect if returning from Studio and force fresh data fetch
+  // This MUST run BEFORE the main useEffect to ensure submissions are fresh
+  useEffect(() => {
+    // ⚠️ PREVENT DUPLICATE FETCH: Only run once per page load
+    if (hasInitialFetchRef.current) {
+      console.log('⚠️ [LessonMapSelector] Skipping duplicate initial fetch');
+      return;
+    }
+    
+    // Check sessionStorage for studio navigation marker
+    const studioNavData = sessionStorage.getItem('studio_navigation_data');
+    if (studioNavData) {
+      console.log('🔄 [LessonMapSelector] Detected return from Studio - forcing fresh submissions fetch');
+      
+      hasInitialFetchRef.current = true; // Mark as fetched
+      lastSubmissionsFetchRef.current = Date.now();
+      
+      // Fetch fresh submissions immediately with higher pageSize to ensure we get all
+      dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 50 }))
+        .unwrap()
+        .then((result) => {
+          console.log('✅ [LessonMapSelector] Fresh submissions fetched from Studio return:', {
+            count: result.items?.length || 0,
+            total: result.total,
+          });
+        })
+        .catch((error) => {
+          console.error('❌ [LessonMapSelector] Failed to fetch fresh submissions:', error);
+        });
+    }
+  }, [dispatch]);
 
   // Start lesson (only if not already started/completed) and load challenges data
   useEffect(() => {
     if (!lessonId) return;
+    
+    // 🔍 CRITICAL DEBUG: Log which lessonId we're loading challenges for
+    console.log('🎯 [LessonMapSelector] Loading data for lessonId:', lessonId);
 
-    // Load challenges and my submissions
-    dispatch(getChallengesByLesson({ lessonId, pageSize: 10 }));
-    dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 10 }));
+    // ✅ CRITICAL FIX: Check if challenges belong to DIFFERENT lesson
+    // Use storedLessonId from Redux state, NOT from challenges data (which doesn't have lessonId field!)
+    const isChallengesStale = 
+      !challengesData || 
+      !challengesData.items || 
+      challengesData.items.length === 0 ||
+      storedLessonId !== lessonId; // ✅ FIX: Compare with Redux stored lessonId
+
+    console.log('🔍 [LessonMapSelector] Challenges staleness check:', {
+      currentLessonId: lessonId,
+      storedLessonId,
+      isChallengesStale,
+      hasData: !!challengesData,
+      challengesCount: challengesData?.items?.length || 0,
+    });
+
+    if (isChallengesStale) {
+      console.log('🔄 [LessonMapSelector] Fetching challenges for NEW lesson:', lessonId);
+      dispatch(getChallengesByLesson({ lessonId, pageSize: 10 }));
+    } else {
+      console.log('✅ [LessonMapSelector] Using cached challenges for lesson:', lessonId);
+    }
+
+    // ✅ FIX: Only fetch submissions if NOT already fetched in initial effect
+    if (!hasInitialFetchRef.current) {
+      const now = Date.now();
+      const timeSinceLastFetch = now - lastSubmissionsFetchRef.current;
+      const shouldFetchSubmissions = 
+        timeSinceLastFetch > 30000 || // 30 seconds
+        !mySubmissions?.data?.items || 
+        mySubmissions.data.items.length === 0;
+
+      if (shouldFetchSubmissions) {
+        console.log('📥 [LessonMapSelector] Fetching submissions (initial load)');
+        hasInitialFetchRef.current = true;
+        lastSubmissionsFetchRef.current = now;
+        dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 50 }));
+      }
+    } else {
+      console.log('✅ [LessonMapSelector] Submissions already fetched, skipping');
+    }
+
+    // ✅ FIX: Only start lesson once - use ref to prevent duplicate calls
+    // This is CRITICAL to prevent progress reset when navigating back from Studio
+    if (startedLessonsRef.current.has(lessonId)) {
+      // Already started this lesson in current session - skip
+      return;
+    }
+
+    // Mark as started immediately to prevent race conditions
+    startedLessonsRef.current.add(lessonId);
 
     // Try to fetch my lesson progress for this course; only start if no record exists
     if (courseId) {
@@ -71,15 +164,18 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
             // Create progress by starting the lesson
             dispatch(startLesson(lessonId));
           }
+          // If exists, DO NOT call startLesson to avoid resetting progress
         })
         .catch(() => {
           // If we fail to load progress, try starting (BE will reject if already completed)
+          // Backend should be idempotent and not reset existing progress
           dispatch(startLesson(lessonId));
         });
     } else {
       // No courseId provided, fallback to start (BE will reject if already completed)
       dispatch(startLesson(lessonId));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lessonId, courseId, dispatch]);
 
   // Get current lesson info for terminal display - REMOVED
@@ -98,6 +194,19 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
   useEffect(() => {
     if (challengesData?.items) {
       setChallenges(challengesData.items);
+      
+      // 🔍 DEBUG: Log challenges data for unlock diagnosis
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🎯 [LessonMapSelector] Challenges loaded:', {
+          count: challengesData.items.length,
+          challenges: challengesData.items.map((c) => ({
+            id: c.id,
+            title: c.title,
+            order: c.order,
+            hasPrerequisites: !!(c as any).prerequisiteChallenges,
+          })),
+        });
+      }
     }
   }, [challengesData]);
 
@@ -105,9 +214,37 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
   useEffect(() => {
     if (mySubmissions?.data?.items) {
       setSubmissions(mySubmissions.data.items);
+      
+      // 🔍 DEBUG: Log submissions data for unlock diagnosis
+      if (process.env.NODE_ENV === 'development') {
+        console.log('⭐ [LessonMapSelector] Submissions loaded:', {
+          count: mySubmissions.data.items.length,
+          submissions: mySubmissions.data.items.map((s) => ({
+            id: s.id.substring(0, 8),
+            challengeId: s.challengeId.substring(0, 8),
+            star: s.star,
+          })),
+        });
+        
+        // 🔍 Log challenge-to-submission mapping
+        if (challenges.length > 0 && mySubmissions.data) {
+          console.log('🔗 [LessonMapSelector] Challenge-Submission mapping:');
+          challenges.forEach((c) => {
+            const submissions = mySubmissions.data!.items.filter(
+              (s) => s.challengeId === c.id
+            );
+            const bestStar = submissions.reduce((max, s) => (s.star > max ? s.star : max), 0);
+            console.log(`  - ${c.title} (order ${c.order}): ${submissions.length} submission(s), best star = ${bestStar}`);
+          });
+        }
+      }
     } else {
       // Set empty array if no submissions yet
       setSubmissions([]);
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('⚠️ [LessonMapSelector] No submissions data available');
+      }
     }
   }, [mySubmissions]);
 

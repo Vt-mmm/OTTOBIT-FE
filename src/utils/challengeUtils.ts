@@ -60,9 +60,26 @@ export function isChallengeAccessible(
     return true;
   }
 
-  const bestStarForPrev = submissions
-    .filter((s) => s.challengeId === prev.id)
-    .reduce((max, s) => (s.star > max ? s.star : max), 0);
+  const prevSubmissions = submissions.filter((s) => s.challengeId === prev.id);
+  const bestStarForPrev = prevSubmissions.reduce(
+    (max, s) => (s.star > max ? s.star : max),
+    0
+  );
+
+  // 🔓 DEBUG: Log unlock logic to help diagnose issues
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🔑 [Challenge Unlock] Checking challenge order ${order}:`, {
+      challengeId: challenge.id,
+      challengeTitle: challenge.title,
+      requiresOrder: previousOrder,
+      prevChallengeId: prev.id,
+      prevChallengeTitle: prev.title,
+      prevSubmissionsCount: prevSubmissions.length,
+      bestStarForPrev,
+      isAccessible: bestStarForPrev > 0,
+      totalSubmissions: submissions.length,
+    });
+  }
 
   return bestStarForPrev > 0;
 }
