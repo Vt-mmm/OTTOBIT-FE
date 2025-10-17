@@ -40,7 +40,6 @@ import {
 } from "store/certificateTemplate/certificateTemplateThunks";
 import { clearSuccessFlags } from "store/certificateTemplate/certificateTemplateSlice";
 import type { CertificateTemplateResult } from "common/@types/certificateTemplate";
-import { toast } from "react-toastify";
 import CertificateTemplateFormDialog from "./CertificateTemplateFormDialog";
 import CertificateTemplatePreviewDialog from "./CertificateTemplatePreviewDialog";
 
@@ -157,12 +156,9 @@ export default function CertificateTemplateListSection({
 
     try {
       await dispatch(deleteCertificateTemplateThunk(id)).unwrap();
-      toast.success(translate("admin.certificateTemplate.deleteSuccess"));
       loadTemplates();
     } catch (error: any) {
-      toast.error(
-        error || translate("admin.certificateTemplate.deleteError")
-      );
+      // Error toast is already handled in thunk
     }
   };
 

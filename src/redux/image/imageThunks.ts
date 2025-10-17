@@ -1,6 +1,17 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { axiosClient } from "axiosClient/axiosClient";
+
+// Local action creators
+const setMessageSuccess = (message: string) => ({
+  type: "image/setMessageSuccess",
+  payload: message,
+});
+
+const setMessageError = (message: string) => ({
+  type: "image/setMessageError",
+  payload: message,
+});
 import { ROUTES_API_IMAGE } from "constants/routesApiKeys";
 import {
   ImageResult,
@@ -118,7 +129,7 @@ export const createImageThunk = createAsyncThunk<
   ImageResult,
   CreateImageRequest,
   { rejectValue: string }
->("image/create", async (imageData, { rejectWithValue }) => {
+>("image/create", async (imageData, thunkAPI) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.post<ApiResponse<ImageResult>>(
@@ -139,13 +150,20 @@ export const createImageThunk = createAsyncThunk<
       throw new Error("No image data received");
     }
 
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Đã tạo ảnh thành công!"));
+
     return response.data.data;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to create image"
     );
-    return rejectWithValue(errorMessage);
+
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
@@ -154,7 +172,7 @@ export const updateImageThunk = createAsyncThunk<
   ImageResult,
   { id: string; data: UpdateImageRequest },
   { rejectValue: string }
->("image/update", async ({ id, data }, { rejectWithValue }) => {
+>("image/update", async ({ id, data }, thunkAPI) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.put<ApiResponse<ImageResult>>(
@@ -175,13 +193,20 @@ export const updateImageThunk = createAsyncThunk<
       throw new Error("No image data received");
     }
 
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Đã cập nhật ảnh!"));
+
     return response.data.data;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to update image"
     );
-    return rejectWithValue(errorMessage);
+
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
@@ -190,7 +215,7 @@ export const deleteImageThunk = createAsyncThunk<
   string,
   string,
   { rejectValue: string }
->("image/delete", async (id, { rejectWithValue }) => {
+>("image/delete", async (id, thunkAPI) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.delete<ApiResponse<string>>(ROUTES_API_IMAGE.DELETE(id))
@@ -204,12 +229,19 @@ export const deleteImageThunk = createAsyncThunk<
       throw new Error(errorMessage);
     }
 
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Đã xóa ảnh!"));
+
     return id;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to delete image"
     );
-    return rejectWithValue(errorMessage);
+
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });

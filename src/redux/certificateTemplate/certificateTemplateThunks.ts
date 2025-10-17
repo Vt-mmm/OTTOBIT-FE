@@ -10,6 +10,10 @@ import {
   UpdateCertificateTemplateRequest,
 } from "common/@types/certificateTemplate";
 import { extractApiErrorMessage } from "utils/errorHandler";
+import {
+  setMessageSuccess,
+  setMessageError,
+} from "store/certificateTemplate/certificateTemplateSlice";
 
 // API Response wrapper interface
 interface ApiResponse<T> {
@@ -92,16 +96,20 @@ export const createCertificateTemplateThunk = createAsyncThunk<
   { rejectValue: string }
 >(
   "certificateTemplate/createCertificateTemplate",
-  async (data, { rejectWithValue }) => {
+  async (data, { rejectWithValue, dispatch }) => {
     try {
-      return await callApiWithRetry(async () => {
+      const result = await callApiWithRetry(async () => {
         const response = await axiosClient.post<
           ApiResponse<CertificateTemplateResult>
         >(ROUTES_API_CERTIFICATE_TEMPLATE.CREATE, data);
         return response.data.data;
       });
+      dispatch(setMessageSuccess("Certificate template created successfully"));
+      return result;
     } catch (error) {
-      return rejectWithValue(extractApiErrorMessage(error));
+      const errorMessage = extractApiErrorMessage(error);
+      dispatch(setMessageError(errorMessage));
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -113,16 +121,20 @@ export const updateCertificateTemplateThunk = createAsyncThunk<
   { rejectValue: string }
 >(
   "certificateTemplate/updateCertificateTemplate",
-  async ({ id, data }, { rejectWithValue }) => {
+  async ({ id, data }, { rejectWithValue, dispatch }) => {
     try {
-      return await callApiWithRetry(async () => {
+      const result = await callApiWithRetry(async () => {
         const response = await axiosClient.put<
           ApiResponse<CertificateTemplateResult>
         >(ROUTES_API_CERTIFICATE_TEMPLATE.UPDATE(id), data);
         return response.data.data;
       });
+      dispatch(setMessageSuccess("Certificate template updated successfully"));
+      return result;
     } catch (error) {
-      return rejectWithValue(extractApiErrorMessage(error));
+      const errorMessage = extractApiErrorMessage(error);
+      dispatch(setMessageError(errorMessage));
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -134,13 +146,16 @@ export const deleteCertificateTemplateThunk = createAsyncThunk<
   { rejectValue: string }
 >(
   "certificateTemplate/deleteCertificateTemplate",
-  async (id, { rejectWithValue }) => {
+  async (id, { rejectWithValue, dispatch }) => {
     try {
-      return await callApiWithRetry(async () => {
+      await callApiWithRetry(async () => {
         await axiosClient.delete(ROUTES_API_CERTIFICATE_TEMPLATE.DELETE(id));
       });
+      dispatch(setMessageSuccess("Certificate template deleted successfully"));
     } catch (error) {
-      return rejectWithValue(extractApiErrorMessage(error));
+      const errorMessage = extractApiErrorMessage(error);
+      dispatch(setMessageError(errorMessage));
+      return rejectWithValue(errorMessage);
     }
   }
 );

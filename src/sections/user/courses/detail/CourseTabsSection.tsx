@@ -5,6 +5,7 @@ import CourseSkillsSection from "./CourseSkillsSection";
 import CourseModulesSection from "./CourseModulesSection";
 import CourseAboutSection from "./CourseAboutSection";
 import CourseCertificatePreviewSection from "./CourseCertificatePreviewSection";
+import CourseRatingSection from "./CourseRatingSection";
 import { CourseResult } from "common/@types/course";
 import { LessonResult } from "common/@types/lesson";
 import { LessonProgressResult } from "common/@types/lessonProgress";
@@ -174,44 +175,10 @@ export default function CourseTabsSection({
 
       {/* Reviews Tab */}
       <TabPanel value={value} index={4}>
-        <Typography 
-          variant="h5" 
-          sx={{ 
-            fontWeight: 600, 
-            mb: 4, 
-            color: "#1f1f1f",
-            fontSize: { xs: "1.5rem", md: "1.75rem" },
-          }}
-        >
-          {translate("courses.StudentReviews")}
-        </Typography>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: 300,
-            bgcolor: "#fafafa",
-            borderRadius: 2,
-            border: "1px solid #e0e0e0",
-            p: 4,
-          }}
-        >
-          <Typography 
-            variant="h6" 
-            sx={{ 
-              mb: 2, 
-              color: "#5f6368",
-              fontWeight: 500,
-            }}
-          >
-            {translate("courses.ReviewsComingSoon")}
-          </Typography>
-          <Typography variant="body2" sx={{ color: "#9e9e9e" }}>
-            {translate("courses.ReviewsWillBeAvailable")}
-          </Typography>
-        </Box>
+        <CourseRatingSection
+          courseId={course.id}
+          isUserEnrolled={isUserEnrolled}
+        />
       </TabPanel>
     </Box>
   );

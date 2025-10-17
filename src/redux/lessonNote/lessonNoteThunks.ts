@@ -1,4 +1,15 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
+
+// Local action creators
+const setMessageSuccess = (message: string) => ({
+  type: "lessonNote/setMessageSuccess",
+  payload: message,
+});
+
+const setMessageError = (message: string) => ({
+  type: "lessonNote/setMessageError",
+  payload: message,
+});
 import type {
   CreateLessonNotePayload,
   GetMyLessonNotesParams,
@@ -65,17 +76,24 @@ export const createLessonNote = createAsyncThunk<
   LessonNote,
   CreateLessonNotePayload,
   { rejectValue: string }
->("lessonNote/createLessonNote", async (payload, { rejectWithValue }) => {
+>("lessonNote/createLessonNote", async (payload, thunkAPI) => {
   try {
     const response = await axiosClient.post(
       ROUTES_API_LESSON_NOTE.CREATE,
       payload
     );
+
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Đã tạo ghi chú thành công!"));
+
     return response.data.data;
   } catch (error: any) {
-    return rejectWithValue(
-      error.response?.data?.message || "Failed to create lesson note"
-    );
+    const errorMessage = error.response?.data?.message || "Failed to create lesson note";
+
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
@@ -86,17 +104,24 @@ export const updateLessonNote = createAsyncThunk<
   { rejectValue: string }
 >(
   "lessonNote/updateLessonNote",
-  async ({ id, payload }, { rejectWithValue }) => {
+  async ({ id, payload }, thunkAPI) => {
     try {
       const response = await axiosClient.put(
         ROUTES_API_LESSON_NOTE.UPDATE(id),
         payload
       );
+
+      // Success toast
+      thunkAPI.dispatch(setMessageSuccess("Đã cập nhật ghi chú!"));
+
       return response.data.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to update lesson note"
-      );
+      const errorMessage = error.response?.data?.message || "Failed to update lesson note";
+
+      // Error toast
+      thunkAPI.dispatch(setMessageError(errorMessage));
+
+      return thunkAPI.rejectWithValue(errorMessage);
     }
   }
 );
@@ -106,13 +131,20 @@ export const deleteLessonNote = createAsyncThunk<
   string,
   string,
   { rejectValue: string }
->("lessonNote/deleteLessonNote", async (id, { rejectWithValue }) => {
+>("lessonNote/deleteLessonNote", async (id, thunkAPI) => {
   try {
     await axiosClient.delete(ROUTES_API_LESSON_NOTE.DELETE(id));
+
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Đã xóa ghi chú!"));
+
     return id; // Return the deleted note ID
   } catch (error: any) {
-    return rejectWithValue(
-      error.response?.data?.message || "Failed to delete lesson note"
-    );
+    const errorMessage = error.response?.data?.message || "Failed to delete lesson note";
+
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });

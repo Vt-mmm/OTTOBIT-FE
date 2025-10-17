@@ -1,6 +1,17 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { axiosClient } from "axiosClient/axiosClient";
+
+// Local action creators
+const setMessageSuccess = (message: string) => ({
+  type: "submission/setMessageSuccess",
+  payload: message,
+});
+
+const setMessageError = (message: string) => ({
+  type: "submission/setMessageError",
+  payload: message,
+});
 import { ROUTES_API_SUBMISSION } from "constants/routesApiKeys";
 import {
   SubmissionResult,
@@ -149,7 +160,7 @@ export const createSubmissionThunk = createAsyncThunk<
   SubmissionResult,
   CreateSubmissionRequest,
   { rejectValue: string }
->("submission/create", async (submissionData, { rejectWithValue }) => {
+>("submission/create", async (submissionData, thunkAPI) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.post<ApiResponse<SubmissionResult>>(
@@ -166,12 +177,18 @@ export const createSubmissionThunk = createAsyncThunk<
       throw new Error("No submission data received");
     }
 
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Đã nộp bài thành công!"));
+
     return response.data.data;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to submit solution"
-    );
+    const errorMessage = err.response?.data?.message || "Failed to submit solution";
+
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 

@@ -1,6 +1,17 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { axiosClient } from "axiosClient/axiosClient";
+
+// Local action creators
+const setMessageSuccess = (message: string) => ({
+  type: "order/setMessageSuccess",
+  payload: message,
+});
+
+const setMessageError = (message: string) => ({
+  type: "order/setMessageError",
+  payload: message,
+});
 import { ROUTES_API_ORDER } from "constants/routesApiKeys";
 import {
   CreateOrderFromCartRequest,
@@ -25,19 +36,27 @@ interface ApiResponse<T> {
 // Create order from cart
 export const createOrderFromCartThunk = createAsyncThunk(
   "order/createOrderFromCart",
-  async (request: CreateOrderFromCartRequest, { rejectWithValue }) => {
+  async (request: CreateOrderFromCartRequest, thunkAPI) => {
     try {
       const response = await axiosClient.post<ApiResponse<OrderResult>>(
         ROUTES_API_ORDER.CREATE_FROM_CART,
         request
       );
+
+      // Success toast
+      thunkAPI.dispatch(setMessageSuccess("Đặt hàng thành công!"));
+
       return response.data.data;
     } catch (error) {
       const message = extractApiErrorMessage(
         error as AxiosError,
         "Failed to create order"
       );
-      return rejectWithValue(message);
+
+      // Error toast
+      thunkAPI.dispatch(setMessageError(message));
+
+      return thunkAPI.rejectWithValue(message);
     }
   }
 );
@@ -83,18 +102,26 @@ export const getOrderByIdThunk = createAsyncThunk(
 // Cancel order
 export const cancelOrderThunk = createAsyncThunk(
   "order/cancelOrder",
-  async (orderId: string, { rejectWithValue }) => {
+  async (orderId: string, thunkAPI) => {
     try {
       await axiosClient.put<ApiResponse<void>>(
         ROUTES_API_ORDER.CANCEL(orderId)
       );
+
+      // Success toast
+      thunkAPI.dispatch(setMessageSuccess("Đã hủy đơn hàng!"));
+
       return { orderId };
     } catch (error) {
       const message = extractApiErrorMessage(
         error as AxiosError,
         "Failed to cancel order"
       );
-      return rejectWithValue(message);
+
+      // Error toast
+      thunkAPI.dispatch(setMessageError(message));
+
+      return thunkAPI.rejectWithValue(message);
     }
   }
 );
@@ -145,20 +172,28 @@ export const updateOrderStatusThunk = createAsyncThunk(
   "order/updateOrderStatus",
   async (
     { orderId, ...data }: UpdateOrderStatusRequest & { orderId: string },
-    { rejectWithValue }
+    thunkAPI
   ) => {
     try {
       const response = await axiosClient.put<ApiResponse<OrderResult>>(
         ROUTES_API_ORDER.UPDATE_STATUS(orderId),
         data
       );
+
+      // Success toast
+      thunkAPI.dispatch(setMessageSuccess("Đã cập nhật trạng thái đơn hàng!"));
+
       return response.data.data;
     } catch (error) {
       const message = extractApiErrorMessage(
         error as AxiosError,
         "Failed to update order status"
       );
-      return rejectWithValue(message);
+
+      // Error toast
+      thunkAPI.dispatch(setMessageError(message));
+
+      return thunkAPI.rejectWithValue(message);
     }
   }
 );

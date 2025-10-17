@@ -10,6 +10,10 @@ import {
   GetCoursesRequest,
 } from "common/@types/course";
 import { extractApiErrorMessage } from "utils/errorHandler";
+import {
+  setMessageSuccess,
+  setMessageError,
+} from "store/course/courseSlice";
 
 // API Response wrapper interface
 interface ApiResponse<T> {
@@ -195,7 +199,7 @@ export const createCourseThunk = createAsyncThunk<
   CourseResult,
   CreateCourseRequest,
   { rejectValue: string }
->("course/create", async (courseData, { rejectWithValue }) => {
+>("course/create", async (courseData, { rejectWithValue, dispatch }) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.post<ApiResponse<CourseResult>>(
@@ -216,12 +220,14 @@ export const createCourseThunk = createAsyncThunk<
       throw new Error("No course data received");
     }
 
+    dispatch(setMessageSuccess("Course created successfully"));
     return response.data.data;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to create course"
     );
+    dispatch(setMessageError(errorMessage));
     return rejectWithValue(errorMessage);
   }
 });
@@ -231,7 +237,7 @@ export const updateCourseThunk = createAsyncThunk<
   CourseResult,
   { id: string; data: UpdateCourseRequest },
   { rejectValue: string }
->("course/update", async ({ id, data }, { rejectWithValue }) => {
+>("course/update", async ({ id, data }, { rejectWithValue, dispatch }) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.put<ApiResponse<CourseResult>>(
@@ -252,12 +258,14 @@ export const updateCourseThunk = createAsyncThunk<
       throw new Error("No course data received");
     }
 
+    dispatch(setMessageSuccess("Course updated successfully"));
     return response.data.data;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to update course"
     );
+    dispatch(setMessageError(errorMessage));
     return rejectWithValue(errorMessage);
   }
 });
@@ -267,7 +275,7 @@ export const deleteCourseThunk = createAsyncThunk<
   string,
   string,
   { rejectValue: string }
->("course/delete", async (id, { rejectWithValue }) => {
+>("course/delete", async (id, { rejectWithValue, dispatch }) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.delete<ApiResponse<string>>(ROUTES_API_COURSE.DELETE(id))
@@ -281,12 +289,14 @@ export const deleteCourseThunk = createAsyncThunk<
       throw new Error(errorMessage);
     }
 
+    dispatch(setMessageSuccess("Course deleted successfully"));
     return id;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to delete course"
     );
+    dispatch(setMessageError(errorMessage));
     return rejectWithValue(errorMessage);
   }
 });
@@ -296,12 +306,13 @@ export const restoreCourseThunk = createAsyncThunk<
   CourseResult,
   string,
   { rejectValue: string }
->("course/restore", async (id, { rejectWithValue }) => {
+>("course/restore", async (id, { rejectWithValue, dispatch }) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.post<CourseResult>(ROUTES_API_COURSE.RESTORE(id))
     );
 
+    dispatch(setMessageSuccess("Course restored successfully"));
     // API restore trả về trực tiếp CourseResult, không wrap trong ApiResponse
     return response.data;
   } catch (error: any) {
@@ -309,6 +320,7 @@ export const restoreCourseThunk = createAsyncThunk<
       error,
       "Failed to restore course"
     );
+    dispatch(setMessageError(errorMessage));
     return rejectWithValue(errorMessage);
   }
 });

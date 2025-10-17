@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 import {
   PaymentTransactionResult,
   PaymentHistoryResult,
@@ -86,6 +87,14 @@ const paymentSlice = createSlice({
       state.operations.initiateError = null;
       state.operations.cancelError = null;
     },
+
+    // Toast actions
+    setMessageSuccess: (_state, action: PayloadAction<string>) => {
+      toast.success(action.payload);
+    },
+    setMessageError: (_state, action: PayloadAction<string>) => {
+      toast.error(action.payload);
+    },
   },
   extraReducers: (builder) => {
     // Get payment history
@@ -165,7 +174,12 @@ const paymentSlice = createSlice({
   },
 });
 
-export const { clearPaymentLink, clearCurrentPayment, clearPaymentErrors } =
-  paymentSlice.actions;
+export const {
+  clearPaymentLink,
+  clearCurrentPayment,
+  clearPaymentErrors,
+  setMessageSuccess,
+  setMessageError,
+} = paymentSlice.actions;
 
 export default paymentSlice.reducer;

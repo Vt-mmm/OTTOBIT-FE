@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 import {
   LessonResult,
   LessonsResponse,
@@ -225,6 +226,14 @@ const lessonSlice = createSlice({
           state.lessons.data.items = lessons;
         }
       }
+    },
+
+    // Toast actions
+    setMessageSuccess: (_state, action: PayloadAction<string>) => {
+      toast.success(action.payload);
+    },
+    setMessageError: (_state, action: PayloadAction<string>) => {
+      toast.error(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -525,6 +534,8 @@ export const {
   clearLessonErrors,
   resetLessonState,
   reorderLessons,
+  setMessageSuccess,
+  setMessageError,
 } = lessonSlice.actions;
 
 // Export thunks

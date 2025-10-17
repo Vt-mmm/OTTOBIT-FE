@@ -1,6 +1,17 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { axiosClient } from "axiosClient/axiosClient";
+
+// Local action creators to avoid circular dependency
+const setMessageSuccess = (message: string) => ({
+  type: "enrollment/setMessageSuccess",
+  payload: message,
+});
+
+const setMessageError = (message: string) => ({
+  type: "enrollment/setMessageError",
+  payload: message,
+});
 import { ROUTES_API_ENROLLMENT } from "constants/routesApiKeys";
 import {
   EnrollmentResult,
@@ -181,7 +192,7 @@ export const createEnrollmentThunk = createAsyncThunk<
   EnrollmentResult,
   CreateEnrollmentRequest,
   { rejectValue: string }
->("enrollment/create", async (enrollmentData, { rejectWithValue }) => {
+>("enrollment/create", async (enrollmentData, thunkAPI) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.post<ApiResponse<EnrollmentResult>>(
@@ -197,6 +208,9 @@ export const createEnrollmentThunk = createAsyncThunk<
     if (!response.data.data) {
       throw new Error("No enrollment data received");
     }
+
+    // Dispatch success toast
+    thunkAPI.dispatch(setMessageSuccess("Đăng ký khóa học thành công!"));
 
     return response.data.data;
   } catch (error: any) {
@@ -220,7 +234,10 @@ export const createEnrollmentThunk = createAsyncThunk<
       errorMessage = err.message;
     }
 
-    return rejectWithValue(errorMessage);
+    // Dispatch error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
@@ -229,7 +246,7 @@ export const completeEnrollmentThunk = createAsyncThunk<
   EnrollmentResult,
   string,
   { rejectValue: string }
->("enrollment/complete", async (id, { rejectWithValue }) => {
+>("enrollment/complete", async (id, thunkAPI) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.post<ApiResponse<EnrollmentResult>>(
@@ -245,11 +262,17 @@ export const completeEnrollmentThunk = createAsyncThunk<
       throw new Error("No enrollment data received");
     }
 
+    // Dispatch success toast
+    thunkAPI.dispatch(setMessageSuccess("Hoàn thành khóa học thành công! Chúc mừng bạn!"));
+
     return response.data.data;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to complete enrollment"
-    );
+    const errorMessage = err.response?.data?.message || "Failed to complete enrollment";
+    
+    // Dispatch error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+    
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });

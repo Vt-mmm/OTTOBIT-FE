@@ -183,7 +183,6 @@ export default function CertificateTemplateFormDialog({
             data: formData as UpdateCertificateTemplateRequest,
           })
         ).unwrap();
-        toast.success(translate("admin.certificateTemplate.updateSuccess"));
       } else {
         // Create
         await dispatch(
@@ -191,11 +190,10 @@ export default function CertificateTemplateFormDialog({
             formData as CreateCertificateTemplateRequest
           )
         ).unwrap();
-        toast.success(translate("admin.certificateTemplate.createSuccess"));
       }
       onClose();
     } catch (error: any) {
-      toast.error(error || translate("admin.certificateTemplate.error"));
+      // Error toast is already handled in thunk
     }
   };
 

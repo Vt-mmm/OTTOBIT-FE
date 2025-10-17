@@ -1,6 +1,17 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { axiosClient } from "axiosClient/axiosClient";
+
+// Local action creators
+const setMessageSuccess = (message: string) => ({
+  type: "payment/setMessageSuccess",
+  payload: message,
+});
+
+const setMessageError = (message: string) => ({
+  type: "payment/setMessageError",
+  payload: message,
+});
 import { ROUTES_API_PAYMENT, ROUTES_API_PAYOS } from "constants/routesApiKeys";
 import {
   InitiatePaymentRequest,
@@ -63,19 +74,27 @@ export const getPaymentByOrderIdThunk = createAsyncThunk(
 // Initiate payment
 export const initiatePaymentThunk = createAsyncThunk(
   "payment/initiatePayment",
-  async (request: InitiatePaymentRequest, { rejectWithValue }) => {
+  async (request: InitiatePaymentRequest, thunkAPI) => {
     try {
       const response = await axiosClient.post<ApiResponse<PaymentLinkResult>>(
         ROUTES_API_PAYOS.INITIATE,
         request
       );
+
+      // Success toast
+      thunkAPI.dispatch(setMessageSuccess("Đã khởi tạo thanh toán!"));
+
       return response.data.data;
     } catch (error) {
       const message = extractApiErrorMessage(
         error as AxiosError,
         "Failed to initiate payment"
       );
-      return rejectWithValue(message);
+
+      // Error toast
+      thunkAPI.dispatch(setMessageError(message));
+
+      return thunkAPI.rejectWithValue(message);
     }
   }
 );
@@ -85,20 +104,28 @@ export const cancelPaymentThunk = createAsyncThunk(
   "payment/cancelPayment",
   async (
     { orderId, request }: { orderId: string; request: CancelPaymentRequest },
-    { rejectWithValue }
+    thunkAPI
   ) => {
     try {
       await axiosClient.post<ApiResponse<void>>(
         ROUTES_API_PAYMENT.CANCEL_PAYMENT(orderId),
         request
       );
+
+      // Success toast
+      thunkAPI.dispatch(setMessageSuccess("Đã hủy thanh toán!"));
+
       return { orderId };
     } catch (error) {
       const message = extractApiErrorMessage(
         error as AxiosError,
         "Failed to cancel payment"
       );
-      return rejectWithValue(message);
+
+      // Error toast
+      thunkAPI.dispatch(setMessageError(message));
+
+      return thunkAPI.rejectWithValue(message);
     }
   }
 );

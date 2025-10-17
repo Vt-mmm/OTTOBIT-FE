@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 import { OrderResult } from "common/@types/order";
 import { Paginate } from "common/@types";
 import {
@@ -107,6 +108,14 @@ const orderSlice = createSlice({
     // Clear update status success flag
     clearUpdateStatusSuccess: (state) => {
       state.operations.updateStatusSuccess = false;
+    },
+
+    // Toast actions
+    setMessageSuccess: (_state, action: PayloadAction<string>) => {
+      toast.success(action.payload);
+    },
+    setMessageError: (_state, action: PayloadAction<string>) => {
+      toast.error(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -270,6 +279,8 @@ export const {
   clearCurrentOrder,
   clearOrderErrors,
   clearUpdateStatusSuccess,
+  setMessageSuccess,
+  setMessageError,
 } = orderSlice.actions;
 
 export default orderSlice.reducer;

@@ -1,6 +1,17 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { axiosClient } from "axiosClient/axiosClient";
+
+// Local action creators
+const setMessageSuccess = (message: string) => ({
+  type: "activationCode/setMessageSuccess",
+  payload: message,
+});
+
+const setMessageError = (message: string) => ({
+  type: "activationCode/setMessageError",
+  payload: message,
+});
 import { ROUTES_API_ACTIVATION_CODE } from "constants/routesApiKeys";
 import {
   ValidateActivationCodeRequest,
@@ -82,18 +93,25 @@ export const getActivationCodesThunk = createAsyncThunk<
 export const createActivationCodeBatchThunk = createAsyncThunk<
   CreateActivationCodeBatchResponse,
   CreateActivationCodeBatchRequest
->("activationCode/createBatch", async (data, { rejectWithValue }) => {
+>("activationCode/createBatch", async (data, thunkAPI) => {
   try {
     const response = await axiosClient.post(
       ROUTES_API_ACTIVATION_CODE.ADMIN_CREATE_BATCH,
       data
     );
+
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Đã tạo mã kích hoạt thành công!"));
+
     return response.data.data || response.data;
   } catch (error) {
     const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to create activation codes"
-    );
+    const errorMessage = err.response?.data?.message || "Failed to create activation codes";
+
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
@@ -103,18 +121,25 @@ export const updateActivationCodeStatusThunk = createAsyncThunk<
   { id: string; status: CodeStatus }
 >(
   "activationCode/updateStatus",
-  async ({ id, status }, { rejectWithValue }) => {
+  async ({ id, status }, thunkAPI) => {
     try {
       const response = await axiosClient.put(
         ROUTES_API_ACTIVATION_CODE.ADMIN_UPDATE_STATUS(id),
         { status }
       );
+
+      // Success toast
+      thunkAPI.dispatch(setMessageSuccess("Đã cập nhật trạng thái mã!"));
+
       return response.data.data || response.data;
     } catch (error) {
       const err = error as AxiosError<ErrorResponse>;
-      return rejectWithValue(
-        err.response?.data?.message || "Failed to update activation code status"
-      );
+      const errorMessage = err.response?.data?.message || "Failed to update activation code status";
+
+      // Error toast
+      thunkAPI.dispatch(setMessageError(errorMessage));
+
+      return thunkAPI.rejectWithValue(errorMessage);
     }
   }
 );
@@ -154,15 +179,22 @@ export const exportActivationCodesCsvThunk = createAsyncThunk<void, string>(
 // Delete Activation Code (Admin)
 export const deleteActivationCodeThunk = createAsyncThunk<string, string>(
   "activationCode/delete",
-  async (id, { rejectWithValue }) => {
+  async (id, thunkAPI) => {
     try {
       await axiosClient.delete(ROUTES_API_ACTIVATION_CODE.ADMIN_DELETE(id));
+
+      // Success toast
+      thunkAPI.dispatch(setMessageSuccess("Đã xóa mã kích hoạt!"));
+
       return id;
     } catch (error) {
       const err = error as AxiosError<ErrorResponse>;
-      return rejectWithValue(
-        err.response?.data?.message || "Failed to delete activation code"
-      );
+      const errorMessage = err.response?.data?.message || "Failed to delete activation code";
+
+      // Error toast
+      thunkAPI.dispatch(setMessageError(errorMessage));
+
+      return thunkAPI.rejectWithValue(errorMessage);
     }
   }
 );
@@ -219,17 +251,24 @@ export const getMyActivationCodesThunk = createAsyncThunk<
 export const redeemActivationCodeThunk = createAsyncThunk<
   RedeemActivationCodeResponse,
   RedeemActivationCodeRequest
->("activationCode/redeem", async (data, { rejectWithValue }) => {
+>("activationCode/redeem", async (data, thunkAPI) => {
   try {
     const response = await axiosClient.post(
       ROUTES_API_ACTIVATION_CODE.REDEEM,
       data
     );
+
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Đã kích hoạt robot thành công!"));
+
     return response.data;
   } catch (error) {
     const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to redeem activation code"
-    );
+    const errorMessage = err.response?.data?.message || "Failed to redeem activation code";
+
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });

@@ -34,6 +34,7 @@ const ROOTS_VOUCHER_USAGE = "/api/v1/voucher-usages";
 const ROOTS_BLOG = "/api/v1/Blog";
 const ROOTS_TAG = "/api/v1/Tag";
 const ROOTS_BLOG_COMMENT = "/api/v1/blog-comments";
+const ROOTS_COURSE_RATING = "/api/v1/courses";
 
 export const ROUTES_API_AUTH = {
   // Authentication endpoints
@@ -404,4 +405,17 @@ export const ROUTES_API_BLOG_COMMENT = {
   CREATE: ROOTS_BLOG_COMMENT, // POST /api/v1/blog-comments
   UPDATE: (commentId: string) => path(ROOTS_BLOG_COMMENT, `/${commentId}`), // PUT /api/v1/blog-comments/{id}
   DELETE: (commentId: string) => path(ROOTS_BLOG_COMMENT, `/${commentId}`), // DELETE /api/v1/blog-comments/{id}
+};
+
+// Course Rating endpoints
+export const ROUTES_API_COURSE_RATING = {
+  // User endpoints
+  CREATE: (courseId: string) => path(ROOTS_COURSE_RATING, `/${courseId}/ratings`), // POST /api/v1/courses/{courseId}/ratings (User)
+  UPDATE: (courseId: string) => path(ROOTS_COURSE_RATING, `/${courseId}/ratings`), // PUT /api/v1/courses/{courseId}/ratings (User)
+  DELETE: (courseId: string) => path(ROOTS_COURSE_RATING, `/${courseId}/ratings`), // DELETE /api/v1/courses/{courseId}/ratings (User)
+  GET_MINE: (courseId: string) => path(ROOTS_COURSE_RATING, `/${courseId}/ratings/mine`), // GET /api/v1/courses/{courseId}/ratings/mine (User)
+  
+  // Public endpoint - BE chỉ hỗ trợ page và size
+  GET_BY_COURSE: (courseId: string, page: number = 1, size: number = 10) => 
+    `${ROOTS_COURSE_RATING}/${courseId}/ratings?page=${page}&size=${size}`, // GET /api/v1/courses/{courseId}/ratings (Public)
 };

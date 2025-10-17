@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 import {
   CartResult,
   CartSummaryResult,
@@ -190,6 +191,14 @@ const cartSlice = createSlice({
       action: PayloadAction<{ courseId: string; exists: boolean }>
     ) => {
       state.itemExistsCache[action.payload.courseId] = action.payload.exists;
+    },
+
+    // Toast actions
+    setMessageSuccess: (_state, action: PayloadAction<string>) => {
+      toast.success(action.payload);
+    },
+    setMessageError: (_state, action: PayloadAction<string>) => {
+      toast.error(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -466,6 +475,8 @@ export const {
   updateItemExistsCache,
   applyVoucherLocally,
   removeVoucherLocally,
+  setMessageSuccess,
+  setMessageError,
 } = cartSlice.actions;
 
 export default cartSlice.reducer;

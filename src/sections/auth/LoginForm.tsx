@@ -9,7 +9,6 @@ import {
   Divider,
   InputAdornment,
   IconButton,
-  Alert,
   CircularProgress,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -34,13 +33,10 @@ const LoginForm: React.FC = () => {
   const { translate } = useLocales();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { isLoading, errorMessage, isAuthenticated, userAuth } = useAppSelector(
+  const { isLoading, isAuthenticated, userAuth } = useAppSelector(
     (state) => state.auth
   );
   const [showPassword, setShowPassword] = useState(false);
-  const [localErrorMessage, setLocalErrorMessage] = useState<string | null>(
-    null
-  );
 
   // Schema validation - inside component to use translate
   const schema = yup.object().shape({
@@ -58,12 +54,10 @@ const LoginForm: React.FC = () => {
   useEffect(() => {
     // Clear errors when component mounts
     dispatch(clearAuthErrors());
-    setLocalErrorMessage(null);
 
     // Clean up when component unmounts
     return () => {
       dispatch(clearAuthErrors());
-      setLocalErrorMessage(null);
     };
   }, [dispatch]);
 
@@ -100,26 +94,16 @@ const LoginForm: React.FC = () => {
     try {
       await dispatch(login(params)).unwrap();
       dispatch(setIsLogout(false));
-      setLocalErrorMessage(null);
-
-      // The thunk will handle navigation to user homepage after successful login
+      // The thunk will handle navigation and show toast
     } catch (error: unknown) {
-      // Error handling without console logging
-      // Lưu message lỗi vào state để hiển thị
-      if (typeof error === "string") {
-        setLocalErrorMessage(error);
-      } else if (error && typeof error === "object" && "message" in error) {
-        setLocalErrorMessage(error.message as string);
-      } else {
-        setLocalErrorMessage(translate("auth.LoginFailed"));
-      }
+      // Error already shown via toast in thunk
     }
   };
 
   // Handle Google login
   const handleGoogleLogin = async (response: CredentialResponse) => {
     if (!response.credential) {
-      setLocalErrorMessage(translate("auth.GoogleAuthError"));
+      // Error already handled via toast in thunk
       return;
     }
 
@@ -133,7 +117,6 @@ const LoginForm: React.FC = () => {
       }
 
       // Clear any error messages
-      setLocalErrorMessage(null);
       dispatch(setIsLogout(false));
 
       // Navigate based on user role
@@ -145,10 +128,7 @@ const LoginForm: React.FC = () => {
         navigate(PATH_USER.homepage);
       }
     } catch (error: any) {
-      // Error handling without console logging
-      setLocalErrorMessage(
-        error?.message || translate("auth.GoogleLoginFailed")
-      );
+      // Error already shown via toast
     }
   };
 
@@ -194,36 +174,6 @@ const LoginForm: React.FC = () => {
         </Box>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2.5}>
-            {(localErrorMessage || errorMessage) && (
-              <Alert
-                severity="error"
-                sx={{ mb: 2 }}
-                action={
-                  // Hiển thị button resend email nếu lỗi là email chưa confirm
-                  (localErrorMessage || errorMessage)?.includes(
-                    "Email is not confirmed"
-                  ) ? (
-                    <Button
-                      component={RouterLink}
-                      to={PATH_AUTH.resendEmailConfirmation}
-                      color="inherit"
-                      size="small"
-                      sx={{
-                        textDecoration: "underline",
-                        "&:hover": {
-                          textDecoration: "underline",
-                        },
-                      }}
-                    >
-                      {translate("auth.ResendEmailConfirmation")}
-                    </Button>
-                  ) : null
-                }
-              >
-                {localErrorMessage || errorMessage}
-              </Alert>
-            )}
-
             <Box>
               <Controller
                 name="email"
@@ -435,7 +385,7 @@ const LoginForm: React.FC = () => {
                 <GoogleLogin
                   onSuccess={handleGoogleLogin}
                   onError={() => {
-                    setLocalErrorMessage(translate("auth.GoogleLoginFailed"));
+                    // Error already handled via toast in thunk
                   }}
                   theme="outline"
                   size="large"

@@ -1,4 +1,5 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 import {
   CertificateResult,
   CertificatesResponse,
@@ -92,6 +93,14 @@ const certificateSlice = createSlice({
     clearCurrentCertificate: (state) => {
       state.currentCertificate.data = null;
       state.currentCertificate.error = null;
+    },
+
+    // Toast actions
+    setMessageSuccess: (_state, action: PayloadAction<string>) => {
+      toast.success(action.payload);
+    },
+    setMessageError: (_state, action: PayloadAction<string>) => {
+      toast.error(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -192,7 +201,12 @@ const certificateSlice = createSlice({
   },
 });
 
-export const { clearErrors, clearSuccessFlags, clearCurrentCertificate } =
-  certificateSlice.actions;
+export const {
+  clearErrors,
+  clearSuccessFlags,
+  clearCurrentCertificate,
+  setMessageSuccess,
+  setMessageError,
+} = certificateSlice.actions;
 
 export default certificateSlice.reducer;

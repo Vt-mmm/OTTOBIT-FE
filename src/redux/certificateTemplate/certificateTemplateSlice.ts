@@ -1,4 +1,5 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 import {
   CertificateTemplateResult,
   CertificateTemplatesResponse,
@@ -86,6 +87,14 @@ const certificateTemplateSlice = createSlice({
     clearCurrentTemplate: (state) => {
       state.currentTemplate.data = null;
       state.currentTemplate.error = null;
+    },
+
+    // Toast actions
+    setMessageSuccess: (_state, action: PayloadAction<string>) => {
+      toast.success(action.payload);
+    },
+    setMessageError: (_state, action: PayloadAction<string>) => {
+      toast.error(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -184,7 +193,12 @@ const certificateTemplateSlice = createSlice({
   },
 });
 
-export const { clearErrors, clearSuccessFlags, clearCurrentTemplate } =
-  certificateTemplateSlice.actions;
+export const {
+  clearErrors,
+  clearSuccessFlags,
+  clearCurrentTemplate,
+  setMessageSuccess,
+  setMessageError,
+} = certificateTemplateSlice.actions;
 
 export default certificateTemplateSlice.reducer;

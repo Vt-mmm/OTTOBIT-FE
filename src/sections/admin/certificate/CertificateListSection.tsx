@@ -41,7 +41,6 @@ import {
   CERTIFICATE_STATUS_LABELS,
   CERTIFICATE_STATUS_COLORS,
 } from "common/enums/certificate.enum";
-import { toast } from "react-toastify";
 import CertificateDetailDialog from "sections/admin/certificate/CertificateDetailDialog";
 import RevokeCertificateDialog from "sections/admin/certificate/RevokeCertificateDialog";
 import { useLocales } from "hooks";
@@ -131,10 +130,9 @@ export default function CertificateListSection() {
 
     try {
       await dispatch(deleteCertificateThunk(id)).unwrap();
-      toast.success(translate("admin.deleteCertificateSuccess"));
       loadCertificates();
     } catch (error: any) {
-      toast.error(error || translate("admin.deleteCertificateError"));
+      // Error toast is already handled in thunk
     }
   };
 
