@@ -28,7 +28,6 @@ import {
 import {
   ConnectionStatus,
   type ConnectionStatusEvent,
-  type BackgroundErrorEvent,
 } from "@microbit/microbit-connection";
 import { microbitBoardId } from "@microbit/microbit-universal-hex";
 import { MicropythonFsHex } from "@microbit/microbit-fs";
