@@ -25,6 +25,10 @@ import {
   BoardId,
   type BoardVersion,
 } from "@microbit/microbit-connection";
+import {
+  ConnectionStatus,
+  type ConnectionStatusEvent,
+} from "@microbit/microbit-connection";
 import { microbitBoardId } from "@microbit/microbit-universal-hex";
 import { MicropythonFsHex } from "@microbit/microbit-fs";
 import MicrobitConnectionGuide from "./MicrobitConnectionGuide";
@@ -62,6 +66,7 @@ export default function MicrobitDialog({
   const deviceRef = useRef(createWebUSBConnection());
   const flashingRef = useRef(false);
   const templateRef = useRef<string>("");
+  const detachDeviceListenersRef = useRef<null | (() => void)>(null);
 
   // Current challenge from Redux (for challengeJson)
   const currentChallenge = useAppSelector(
@@ -234,6 +239,100 @@ export default function MicrobitDialog({
     setProgress(progressValue);
   };
 
+  // Helper to attach/detach listeners for a device instance
+  const attachDeviceListeners = (device: any) => {
+    if (!device) return () => {};
+
+    const onStatus = (e: Event) => {
+      const { status } = e as ConnectionStatusEvent;
+      if (status === ConnectionStatus.CONNECTED) {
+        setIsConnected(true);
+        setStatusMessage("Connected to micro:bit");
+        addLog("USB status: CONNECTED");
+      } else if (status === ConnectionStatus.DISCONNECTED) {
+        setIsConnected(false);
+        setIsFlashing(false);
+        flashingRef.current = false;
+        setProgress(0);
+        setStatusMessage("Disconnected");
+        addLog("USB status: DISCONNECTED");
+        try {
+          device.disconnect?.();
+        } catch {}
+      } else if (status === ConnectionStatus.NO_AUTHORIZED_DEVICE) {
+        setIsConnected(false);
+        setStatusMessage("No authorized device.");
+        addLog("USB status: NO_AUTHORIZED_DEVICE");
+      } else if (status === ConnectionStatus.NOT_SUPPORTED) {
+        setStatusMessage("WebUSB not supported.");
+        addLog("USB status: NOT_SUPPORTED");
+      }
+    };
+
+    const onBackgroundError = (e: Event) => {
+      const anyE = e as any;
+      const err = anyE?.error || anyE?.detail?.error || anyE;
+      addLog(`Background error: ${err?.message || String(err)}`);
+      setIsConnected(false);
+      setIsFlashing(false);
+      flashingRef.current = false;
+      setStatusMessage("Disconnected");
+      setProgress(0);
+      try {
+        device.disconnect?.();
+      } catch {}
+    };
+
+    device.addEventListener?.("status", onStatus as any);
+    device.addEventListener?.("background-error", onBackgroundError as any);
+
+    return () => {
+      device.removeEventListener?.("status", onStatus as any);
+      device.removeEventListener?.(
+        "background-error",
+        onBackgroundError as any
+      );
+    };
+  };
+
+  // Attach device status/background-error listeners and browser USB events
+  useEffect(() => {
+    // Attach on mount
+    detachDeviceListenersRef.current = attachDeviceListeners(
+      deviceRef.current as any
+    );
+
+    const onUsbDisconnect = () => {
+      addLog("Browser USB event: disconnect");
+      setIsConnected(false);
+      setIsFlashing(false);
+      flashingRef.current = false;
+      setStatusMessage("Disconnected");
+      setProgress(0);
+    };
+    const onUsbConnect = () => {
+      addLog("Browser USB event: connect");
+    };
+
+    if ((navigator as any).usb) {
+      (navigator as any).usb.addEventListener("disconnect", onUsbDisconnect);
+      (navigator as any).usb.addEventListener("connect", onUsbConnect);
+    }
+
+    return () => {
+      try {
+        detachDeviceListenersRef.current?.();
+      } catch {}
+      if ((navigator as any).usb) {
+        (navigator as any).usb.removeEventListener(
+          "disconnect",
+          onUsbDisconnect
+        );
+        (navigator as any).usb.removeEventListener("connect", onUsbConnect);
+      }
+    };
+  }, []);
+
   // Smooth progress animation
   const animateProgress = (targetValue: number, duration: number = 300) => {
     const startValue = progress;
@@ -299,6 +398,12 @@ export default function MicrobitDialog({
     try {
       setStatusMessage("Connecting...");
       setError(null);
+      // Ensure listeners are attached for current instance
+      if (!detachDeviceListenersRef.current) {
+        detachDeviceListenersRef.current = attachDeviceListeners(
+          deviceRef.current as any
+        );
+      }
       await deviceRef.current.connect();
       setIsConnected(true);
       setStatusMessage("Connected to micro:bit");
@@ -306,6 +411,32 @@ export default function MicrobitDialog({
       setStatusMessage("Connect failed");
       setError(`Connect error: ${err?.message || err}`);
       addLog(`Connect error: ${err?.message || err}`);
+      const msg = String(err?.message || err || "").toLowerCase();
+      if (
+        msg.includes("device was disconnected") ||
+        msg.includes("failed to execute 'open' on 'usbdevice'") ||
+        msg.includes("device must be opened")
+      ) {
+        // Recreate connection instance and reattach listeners, then retry once
+        try {
+          detachDeviceListenersRef.current?.();
+        } catch {}
+        try {
+          deviceRef.current?.disconnect?.();
+        } catch {}
+        deviceRef.current = createWebUSBConnection();
+        detachDeviceListenersRef.current = attachDeviceListeners(
+          deviceRef.current as any
+        );
+        try {
+          await deviceRef.current.connect();
+          setIsConnected(true);
+          setStatusMessage("Connected to micro:bit");
+          return;
+        } catch (retryErr: any) {
+          addLog(`Reconnect failed: ${retryErr?.message || retryErr}`);
+        }
+      }
     }
   };
 

@@ -68,7 +68,7 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
     type: "delete" | "restore";
     blog: BlogItem;
   } | null>(null);
-  const { showNotification } = useNotification();
+  const { showNotification, NotificationComponent } = useNotification();
 
   const fetchList = async () => {
     setIsLoading(true);
@@ -515,6 +515,7 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
           fetchList();
         }}
       />
+      <NotificationComponent />
     </Box>
   );
 }

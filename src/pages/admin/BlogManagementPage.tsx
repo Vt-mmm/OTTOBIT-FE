@@ -13,7 +13,7 @@ type ViewMode = "list" | "create" | "edit" | "details";
 export default function BlogManagementPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [editingBlog, setEditingBlog] = useState<BlogItem | null>(null);
-  const { showNotification } = useNotification();
+  const { showNotification, NotificationComponent } = useNotification();
 
   const handleBackToList = () => {
     setViewMode("list");
@@ -45,7 +45,10 @@ export default function BlogManagementPage() {
           <BlogFormSection
             mode="create"
             onBack={handleBackToList}
-            onSuccess={handleBackToList}
+            onSuccess={() => {
+              handleBackToList();
+              showNotification("Tạo blog thành công", "success");
+            }}
           />
         );
       case "edit":
@@ -53,7 +56,10 @@ export default function BlogManagementPage() {
           <BlogFormSection
             mode="edit"
             onBack={handleBackToList}
-            onSuccess={handleBackToList}
+            onSuccess={() => {
+              handleBackToList();
+              showNotification("Cập nhật blog thành công", "success");
+            }}
             initialData={editingBlog || undefined}
             onUpdate={handleUpdateBlog}
           />
@@ -103,6 +109,7 @@ export default function BlogManagementPage() {
           </Typography>
         </Box>
         {renderContent()}
+        <NotificationComponent />
       </Container>
     </AdminLayout>
   );

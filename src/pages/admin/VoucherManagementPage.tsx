@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Box, Container, Typography, Tabs, Tab } from "@mui/material";
+import { useNotification } from "../../hooks/useNotification";
 import AdminLayout from "../../layout/admin/AdminLayout";
 import VoucherListSection from "../../sections/admin/voucher/VoucherListSection";
 import VoucherFormSection from "../../sections/admin/voucher/VoucherFormSection";
@@ -16,6 +17,7 @@ export default function VoucherManagementPage() {
   const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
   const [activeTab, setActiveTab] = useState<TabValue>("vouchers");
   const [selectedUsageId, setSelectedUsageId] = useState<string | null>(null);
+  const { showNotification, NotificationComponent } = useNotification();
 
   const handleViewModeChange = (mode: ViewMode, voucher?: Voucher) => {
     setViewMode(mode);
@@ -64,7 +66,10 @@ export default function VoucherManagementPage() {
           <VoucherFormSection
             mode="create"
             onBack={handleBackToList}
-            onSuccess={handleBackToList}
+            onSuccess={() => {
+              handleBackToList();
+              showNotification("Tạo voucher thành công", "success");
+            }}
           />
         );
 
@@ -74,7 +79,10 @@ export default function VoucherManagementPage() {
             mode="edit"
             voucher={selectedVoucher}
             onBack={handleBackToList}
-            onSuccess={handleBackToList}
+            onSuccess={() => {
+              handleBackToList();
+              showNotification("Cập nhật voucher thành công", "success");
+            }}
           />
         );
 
@@ -204,6 +212,7 @@ export default function VoucherManagementPage() {
         )}
 
         {renderContent()}
+        <NotificationComponent />
       </Container>
     </AdminLayout>
   );
