@@ -87,5 +87,9 @@
   "MockCourse4Desc": "Teamwork on integrated STEM projects, from idea to product",
   "LevelBasic": "Basic",
   "LevelIntermediate": "Intermediate",
-  "LevelAdvanced": "Advanced"
+  "LevelAdvanced": "Advanced",
+  "HeroHeading": "Meet",
+  "HeroDescription": "Your unique STEM learning companion - fast, friendly and engaging. Turn learning into a complete robotics experience with our solution.",
+  "LoginButton": "Login Now",
+  "ExploreProductsButton": "Explore Products"
 }
