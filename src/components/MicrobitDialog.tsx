@@ -271,8 +271,9 @@ export default function MicrobitDialog({
     };
 
     const onBackgroundError = (e: Event) => {
-      const { error } = e as BackgroundErrorEvent;
-      addLog(`Background error: ${error?.message || String(error)}`);
+      const anyE = e as any;
+      const err = anyE?.error || anyE?.detail?.error || anyE;
+      addLog(`Background error: ${err?.message || String(err)}`);
       setIsConnected(false);
       setIsFlashing(false);
       flashingRef.current = false;
