@@ -45,12 +45,12 @@ const HeroSection = () => {
         playsInline
         sx={{
           position: "absolute",
-          top: "50%",
+          top: { xs: "60%", md: "50%" },
           right: { xs: "50%", md: "5%" },
           transform: { xs: "translate(50%, -50%)", md: "translateY(-50%)" },
-          width: { xs: "90%", md: "55%" },
+          width: { xs: "120%", sm: "100%", md: "55%" },
           height: "auto",
-          maxHeight: "95%",
+          maxHeight: { xs: "50%", md: "95%" },
           objectFit: "contain",
           zIndex: 0,
           opacity: 1,
@@ -61,15 +61,18 @@ const HeroSection = () => {
         <source src="/video/original-f12cae43867f9ff8f5c64c09017e4355.mp4" type="video/mp4" />
       </Box>
 
-      {/* Stronger gradient overlay for text readability */}
+      {/* Gradient overlay for text readability */}
       <Box
         sx={{
           position: "absolute",
           top: 0,
           left: 0,
-          width: { xs: "100%", md: "50%" },
+          width: "100%",
           height: "100%",
-          background: "linear-gradient(to right, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.85) 50%, rgba(255,255,255,0) 100%)",
+          background: {
+            xs: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.5) 60%, rgba(255,255,255,0.2) 100%)",
+            md: "linear-gradient(to right, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.5) 40%, rgba(255,255,255,0) 70%)"
+          },
           zIndex: 1,
           pointerEvents: "none",
         }}
@@ -102,13 +105,15 @@ const HeroSection = () => {
             transition={{ duration: 0.8 }}
             sx={{
               width: { xs: "100%", md: "auto" },
-              maxWidth: { md: "520px" },
+              maxWidth: { xs: "100%", md: "520px" },
               zIndex: 2,
-              padding: { xs: 3, md: 0 },
-              position: "absolute",
-              left: { xs: "50%", md: "8%" },
-              top: { xs: "55%", md: "50%" },
-              transform: { xs: "translate(-50%, -50%)", md: "translateY(-50%)" },
+              padding: { xs: 4, sm: 3, md: 0 },
+              position: { xs: "relative", md: "absolute" },
+              left: { xs: "auto", md: "8%" },
+              top: { xs: "auto", md: "50%" },
+              transform: { xs: "none", md: "translateY(-50%)" },
+              textAlign: { xs: "center", md: "left" },
+              mt: { xs: 12, sm: 15, md: 0 },
             }}
           >
             {/* Main Heading */}
@@ -116,9 +121,9 @@ const HeroSection = () => {
               variant="h1"
               sx={{
                 fontWeight: 700,
-                fontSize: { xs: "3rem", sm: "3.5rem", md: "4rem" },
-                lineHeight: 1.1,
-                mb: 3,
+                fontSize: { xs: "2rem", sm: "2.75rem", md: "4rem" },
+                lineHeight: { xs: 1.2, md: 1.1 },
+                mb: { xs: 2, md: 3 },
                 color: "#000000",
                 textShadow: "2px 2px 4px rgba(255,255,255,0.8)",
               }}
@@ -140,10 +145,10 @@ const HeroSection = () => {
             {/* Subtitle */}
             <Typography
               sx={{
-                fontSize: { xs: "1.0625rem", md: "1.125rem" },
-                lineHeight: 1.8,
+                fontSize: { xs: "0.95rem", sm: "1.0625rem", md: "1.125rem" },
+                lineHeight: { xs: 1.6, md: 1.8 },
                 color: "#1f2937",
-                mb: 4,
+                mb: { xs: 3, md: 4 },
                 fontWeight: 500,
                 textShadow: "1px 1px 2px rgba(255,255,255,0.9)",
               }}
@@ -159,12 +164,13 @@ const HeroSection = () => {
                 backgroundColor: "#a3e635",
                 color: "#000000",
                 fontWeight: 600,
-                px: 4,
-                py: 1.5,
-                fontSize: "1rem",
+                px: { xs: 3, md: 4 },
+                py: { xs: 1.25, md: 1.5 },
+                fontSize: { xs: "0.95rem", md: "1rem" },
                 borderRadius: "12px",
                 textTransform: "none",
                 boxShadow: "0 4px 14px rgba(163, 230, 53, 0.4)",
+                width: { xs: "auto", sm: "auto" },
                 "&:hover": {
                   backgroundColor: "#84cc16",
                   boxShadow: "0 6px 20px rgba(132, 204, 22, 0.5)",
