@@ -26,10 +26,10 @@ const HeroSection = () => {
       transition={{ duration: 0.6 }}
       sx={{
         width: "100%",
-        pt: { xs: 16, md: 18 },
+        pt: { xs: 0, md: 0 },
         pb: { xs: 8, md: 10 },
         position: "relative",
-        minHeight: { xs: "800px", md: "950px" },
+        minHeight: { xs: "100vh", md: "100vh" },
         display: "flex",
         alignItems: "center",
         overflow: "hidden",
@@ -107,7 +107,7 @@ const HeroSection = () => {
               padding: { xs: 3, md: 0 },
               position: "absolute",
               left: { xs: "50%", md: "8%" },
-              top: "50%",
+              top: { xs: "55%", md: "50%" },
               transform: { xs: "translate(-50%, -50%)", md: "translateY(-50%)" },
             }}
           >
