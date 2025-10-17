@@ -50,7 +50,7 @@ export default function VoucherListSection({
   onEditVoucher,
   onViewDetails,
 }: Props) {
-  const { showNotification } = useNotification();
+  const { showNotification, NotificationComponent } = useNotification();
 
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -452,6 +452,8 @@ export default function VoucherListSection({
           </Button>
         </DialogActions>
       </Dialog>
+
+      <NotificationComponent />
     </Box>
   );
 }

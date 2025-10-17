@@ -47,6 +47,7 @@ import Pagination from "@mui/material/Pagination";
 import { axiosClient } from "axiosClient";
 import { extractApiErrorMessage } from "utils/errorHandler";
 import { useLocales } from "hooks";
+import { useNotification } from "hooks/useNotification";
 
 interface ChallengeListSectionProps {
   onCreateNew?: () => void;
@@ -70,9 +71,15 @@ export default function ChallengeListSection({
   const [pageSize, setPageSize] = useState(12);
   const [totalPages, setTotalPages] = useState(1);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [pendingDeleteItem, setPendingDeleteItem] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
   const [restoreConfirmOpen, setRestoreConfirmOpen] = useState(false);
-  const [pendingRestoreId, setPendingRestoreId] = useState<string | null>(null);
+  const [pendingRestoreItem, setPendingRestoreItem] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState<any>(null);
 
@@ -81,6 +88,7 @@ export default function ChallengeListSection({
   const [courseId, setCourseId] = useState<string>("");
   const [lessonId, setLessonId] = useState<string>("");
   const [status, setStatus] = useState<"all" | "active">("all");
+  const { showNotification, NotificationComponent } = useNotification();
 
   useEffect(() => {
     dispatch(
@@ -149,34 +157,44 @@ export default function ChallengeListSection({
     );
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, title?: string) => {
     try {
       await (axiosClient as any).delete(`/api/v1/challenges/admin/${id}`);
       refresh();
+      showNotification(`Xóa thử thách "${title ?? ""}" thành công`, "success");
     } catch (error: any) {
       const errorMessage = extractApiErrorMessage(
         error,
         "Failed to delete challenge"
       );
       console.error("Delete challenge error:", errorMessage);
+      showNotification(`Không thể xóa thử thách "${title ?? ""}"`, "error");
     }
   };
 
-  const handleRestore = async (id: string) => {
+  const handleRestore = async (id: string, title?: string) => {
     try {
       await (axiosClient as any).post(`/api/v1/challenges/admin/${id}/restore`);
       refresh();
+      showNotification(
+        `Khôi phục thử thách "${title ?? ""}" thành công`,
+        "success"
+      );
     } catch (error: any) {
       const errorMessage = extractApiErrorMessage(
         error,
         "Failed to restore challenge"
       );
       console.error("Restore challenge error:", errorMessage);
+      showNotification(
+        `Không thể khôi phục thử thách "${title ?? ""}"`,
+        "error"
+      );
     }
   };
 
-  const handleRestoreConfirm = (id: string) => {
-    setPendingRestoreId(id);
+  const handleRestoreConfirm = (challenge: { id: string; title: string }) => {
+    setPendingRestoreItem({ id: challenge.id, title: challenge.title });
     setRestoreConfirmOpen(true);
   };
 
@@ -520,7 +538,9 @@ export default function ChallengeListSection({
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
         <DialogTitle>{translate("admin.confirmDelete")}</DialogTitle>
         <DialogContent>
-          {translate("admin.confirmDeleteMessage", { name: "challenge" })}
+          {`Bạn có chắc muốn xóa thử thách: "${
+            pendingDeleteItem?.title ?? ""
+          }"?`}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmOpen(false)}>
@@ -530,9 +550,13 @@ export default function ChallengeListSection({
             color="error"
             variant="contained"
             onClick={async () => {
-              if (pendingDeleteId) await handleDelete(pendingDeleteId);
+              if (pendingDeleteItem)
+                await handleDelete(
+                  pendingDeleteItem.id,
+                  pendingDeleteItem.title
+                );
               setConfirmOpen(false);
-              setPendingDeleteId(null);
+              setPendingDeleteItem(null);
             }}
           >
             {translate("admin.delete")}
@@ -547,7 +571,9 @@ export default function ChallengeListSection({
       >
         <DialogTitle>{translate("admin.confirmRestore")}</DialogTitle>
         <DialogContent>
-          {translate("admin.confirmRestoreMessage", { name: "challenge" })}
+          {`Bạn có chắc muốn khôi phục thử thách: "${
+            pendingRestoreItem?.title ?? ""
+          }"?`}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setRestoreConfirmOpen(false)}>
@@ -557,10 +583,10 @@ export default function ChallengeListSection({
             variant="contained"
             color="success"
             onClick={() => {
-              if (pendingRestoreId) {
-                handleRestore(pendingRestoreId);
+              if (pendingRestoreItem) {
+                handleRestore(pendingRestoreItem.id, pendingRestoreItem.title);
                 setRestoreConfirmOpen(false);
-                setPendingRestoreId(null);
+                setPendingRestoreItem(null);
               }
             }}
           >
@@ -731,7 +757,10 @@ export default function ChallengeListSection({
                 color="success"
                 startIcon={<RestoreIcon />}
                 onClick={() => {
-                  handleRestoreConfirm(selectedChallenge.id);
+                  handleRestoreConfirm({
+                    id: selectedChallenge.id,
+                    title: selectedChallenge.title,
+                  });
                   setViewDialogOpen(false);
                 }}
               >
@@ -743,7 +772,10 @@ export default function ChallengeListSection({
                 color="error"
                 startIcon={<DeleteIcon />}
                 onClick={() => {
-                  setPendingDeleteId(selectedChallenge.id);
+                  setPendingDeleteItem({
+                    id: selectedChallenge.id,
+                    title: selectedChallenge.title,
+                  });
                   setConfirmOpen(true);
                   setViewDialogOpen(false);
                 }}
@@ -754,6 +786,7 @@ export default function ChallengeListSection({
           </Box>
         </DialogActions>
       </Dialog>
+      <NotificationComponent />
     </Box>
   );
 }

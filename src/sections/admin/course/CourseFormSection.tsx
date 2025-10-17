@@ -227,7 +227,7 @@ export default function CourseFormSection({
                       const value = e.target.value;
                       setFormData((prev) => ({
                         ...prev,
-                        price: value === "" ? 0 : parseInt(value, 10),
+                        price: value === "" ? 0 : parseFloat(value),
                       }));
                     }}
                     onFocus={(e) => {
@@ -236,12 +236,12 @@ export default function CourseFormSection({
                     }}
                     onBlur={(e) => {
                       // Set to 0 if empty or negative on blur
-                      const value = parseInt(e.target.value, 10);
+                      const value = parseFloat(e.target.value);
                       if (e.target.value === "" || isNaN(value) || value < 0) {
                         setFormData((prev) => ({ ...prev, price: 0 }));
                       }
                     }}
-                    inputProps={{ min: 0, step: 1000 }}
+                    inputProps={{ min: 0, step: "any" }}
                   />
 
                   <FormControl fullWidth>

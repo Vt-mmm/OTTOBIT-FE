@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Box,
   Card,
@@ -10,11 +10,7 @@ import {
   CircularProgress,
   Button,
 } from "@mui/material";
-import { 
-  PhotoCamera, 
-  Delete, 
-  CloudUpload,
-} from "@mui/icons-material";
+import { PhotoCamera, Delete, CloudUpload } from "@mui/icons-material";
 import { useFirebaseStorage } from "../../hooks/useFirebaseStorage";
 import ImageCropDialog from "./ImageCropDialog";
 
@@ -56,6 +52,15 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   const { uploading, uploadProgress, uploadAvatar, deleteAvatar } =
     useFirebaseStorage();
 
+  // Sync preview when parent updates currentImageUrl (e.g., editing existing entity)
+  useEffect(() => {
+    // Only update from prop when not actively uploading
+    if (!uploading) {
+      setPreviewUrl(currentImageUrl || null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentImageUrl]);
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -63,7 +68,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     // Show local preview immediately and start upload
     const objectUrl = URL.createObjectURL(file);
     setPreviewUrl(objectUrl);
-    
+
     // Start upload to Firebase
     handleUpload(file);
 
@@ -92,10 +97,10 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     try {
       // Generate folder path based on entity type
       const folder = `${entityType}s`; // "robots", "components", or "generals"
-      
+
       // Use entityId if available, otherwise use timestamp for general images
       const uploadId = entityId || `general_${Date.now()}`;
-      
+
       const result = await uploadAvatar({
         userId: uploadId,
         file,
@@ -144,7 +149,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           {title}
         </Typography>
       )}
-      
+
       {/* Description */}
       {description && (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -153,8 +158,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       )}
 
       {/* Image Display Card */}
-      <Card 
-        sx={{ 
+      <Card
+        sx={{
           border: previewUrl ? "2px solid" : "2px dashed",
           borderColor: previewUrl ? "primary.main" : "grey.300",
           backgroundColor: previewUrl ? "background.paper" : "grey.50",
@@ -188,9 +193,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             {!previewUrl && (
               <Box sx={{ textAlign: "center", color: "text.secondary" }}>
                 <CloudUpload sx={{ fontSize: 48, mb: 1 }} />
-                <Typography variant="body2">
-                  Click to upload image
-                </Typography>
+                <Typography variant="body2">Click to upload image</Typography>
                 <Typography variant="caption">
                   JPEG, PNG, GIF, WebP (max 5MB)
                 </Typography>
@@ -216,10 +219,10 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                 <Tooltip title="Change image">
                   <IconButton
                     size="small"
-                    sx={{ 
-                      backgroundColor: "primary.main", 
+                    sx={{
+                      backgroundColor: "primary.main",
                       color: "white",
-                      "&:hover": { backgroundColor: "primary.dark" }
+                      "&:hover": { backgroundColor: "primary.dark" },
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -230,14 +233,14 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                     <PhotoCamera fontSize="small" />
                   </IconButton>
                 </Tooltip>
-                
+
                 <Tooltip title="Remove image">
                   <IconButton
                     size="small"
-                    sx={{ 
-                      backgroundColor: "error.main", 
+                    sx={{
+                      backgroundColor: "error.main",
                       color: "white",
-                      "&:hover": { backgroundColor: "error.dark" }
+                      "&:hover": { backgroundColor: "error.dark" },
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -306,9 +309,13 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           {/* Image Info */}
           {previewUrl && (
             <Box sx={{ mt: 2 }}>
-              <Typography variant="caption" color="text.secondary" display="block">
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                display="block"
+              >
                 {entityType === "robot" && "Robot Image"}
-                {entityType === "component" && "Component Image"} 
+                {entityType === "component" && "Component Image"}
                 {entityType === "general" && "General Image"}
                 {entityId && ` (${entityId.slice(0, 8)}...)`}
               </Typography>
