@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 import { EnrollmentResult, EnrollmentsResponse } from "common/@types/enrollment";
 import {
   getMyEnrollmentsThunk,
@@ -68,6 +69,14 @@ const enrollmentSlice = createSlice({
   name: "enrollment",
   initialState,
   reducers: {
+    // Toast actions
+    setMessageSuccess: (_state, action: PayloadAction<string>) => {
+      toast.success(action.payload);
+    },
+    setMessageError: (_state, action: PayloadAction<string>) => {
+      toast.error(action.payload);
+    },
+    
     // Clear my enrollments
     clearMyEnrollments: (state) => {
       state.myEnrollments.data = null;
@@ -247,6 +256,8 @@ const enrollmentSlice = createSlice({
 });
 
 export const {
+  setMessageSuccess,
+  setMessageError,
   clearMyEnrollments,
   clearEnrollments,
   clearCurrentEnrollment,

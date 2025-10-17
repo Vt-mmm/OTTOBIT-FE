@@ -13,7 +13,6 @@ import {
 import { PATH_USER } from "routes/paths";
 import { useLocales } from "hooks";
 import {
-  showSuccessToast,
   showErrorToast,
   showWarningToast,
   showInfoToast,
@@ -82,8 +81,7 @@ export default function AddToCartButton({
       // Update exists cache
       await dispatch(checkItemExistsThunk(courseId));
 
-      // Show success message
-      showSuccessToast("Đã thêm khóa học vào giỏ hàng!");
+      // Success toast is already handled in thunk
     } catch (error: any) {
       // Error from unwrap() is already the string message from rejectWithValue
       const errorMessage =

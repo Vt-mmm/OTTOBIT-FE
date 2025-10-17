@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 import { ChallengeResult, ChallengesResponse } from "common/@types/challenge";
 import {
   getChallengesThunk,
@@ -126,6 +127,14 @@ const challengeSlice = createSlice({
 
     resetChallengeState: () => {
       return initialState;
+    },
+
+    // Toast actions
+    setMessageSuccess: (_state, action: PayloadAction<string>) => {
+      toast.success(action.payload);
+    },
+    setMessageError: (_state, action: PayloadAction<string>) => {
+      toast.error(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -282,6 +291,8 @@ export const {
   incrementAttempt,
   clearChallengeErrors,
   resetChallengeState,
+  setMessageSuccess,
+  setMessageError,
 } = challengeSlice.actions;
 
 export {

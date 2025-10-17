@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 import { StudentResult, StudentsResponse } from "common/@types/student";
 import {
   getStudentByUserThunk,
@@ -55,6 +56,14 @@ const studentSlice = createSlice({
   name: "student",
   initialState,
   reducers: {
+    // Toast actions
+    setMessageSuccess: (_state, action: PayloadAction<string>) => {
+      toast.success(action.payload);
+    },
+    setMessageError: (_state, action: PayloadAction<string>) => {
+      toast.error(action.payload);
+    },
+    
     // Clear current student
     clearCurrentStudent: (state) => {
       state.currentStudent.data = null;
@@ -187,6 +196,8 @@ const studentSlice = createSlice({
 });
 
 export const {
+  setMessageSuccess,
+  setMessageError,
   clearCurrentStudent,
   clearStudents,
   clearStudentErrors,

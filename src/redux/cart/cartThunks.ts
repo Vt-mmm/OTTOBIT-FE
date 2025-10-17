@@ -1,6 +1,17 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { axiosClient } from "axiosClient/axiosClient";
+
+// Local action creators
+const setMessageSuccess = (message: string) => ({
+  type: "cart/setMessageSuccess",
+  payload: message,
+});
+
+const setMessageError = (message: string) => ({
+  type: "cart/setMessageError",
+  payload: message,
+});
 import { ROUTES_API_CART, ROUTES_API_CART_ITEM } from "constants/routesApiKeys";
 import {
   CartResult,
@@ -250,7 +261,7 @@ export const applyDiscountThunk = createAsyncThunk<
   CartResult,
   ApplyDiscountRequest,
   { rejectValue: string }
->("cart/applyDiscount", async (request, { rejectWithValue }) => {
+>("cart/applyDiscount", async (request, thunkAPI) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.post<ApiResponse<CartResult>>(
@@ -271,13 +282,20 @@ export const applyDiscountThunk = createAsyncThunk<
       throw new Error("No cart data received");
     }
 
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Đã áp dụng mã giảm giá!"));
+
     return response.data.data;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to apply discount"
     );
-    return rejectWithValue(errorMessage);
+
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
@@ -289,7 +307,7 @@ export const removeDiscountThunk = createAsyncThunk<
   CartResult,
   void,
   { rejectValue: string }
->("cart/removeDiscount", async (_, { rejectWithValue }) => {
+>("cart/removeDiscount", async (_, thunkAPI) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.delete<ApiResponse<CartResult>>(
@@ -309,13 +327,20 @@ export const removeDiscountThunk = createAsyncThunk<
       throw new Error("No cart data received");
     }
 
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Đã xóa mã giảm giá!"));
+
     return response.data.data;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to remove discount"
     );
-    return rejectWithValue(errorMessage);
+
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
@@ -369,7 +394,7 @@ export const addCartItemThunk = createAsyncThunk<
   CartItemResult,
   AddCartItemRequest,
   { rejectValue: string }
->("cart/addItem", async (request, { rejectWithValue }) => {
+>("cart/addItem", async (request, thunkAPI) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.post<ApiResponse<CartItemResult>>(
@@ -390,23 +415,20 @@ export const addCartItemThunk = createAsyncThunk<
       throw new Error("No cart item data received");
     }
 
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Đã thêm khóa học vào giỏ hàng!"));
+
     return response.data.data;
   } catch (error: any) {
-    console.error("[addCartItemThunk] Error caught:", error);
-    console.error("[addCartItemThunk] Error.data:", error?.data);
-    console.error("[addCartItemThunk] Error.response:", error?.response);
-    console.error(
-      "[addCartItemThunk] Error.response.data:",
-      error?.response?.data
-    );
-
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to add item to cart"
     );
 
-    console.error("[addCartItemThunk] Extracted message:", errorMessage);
-    return rejectWithValue(errorMessage);
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
@@ -418,7 +440,7 @@ export const removeCartItemThunk = createAsyncThunk<
   string,
   string,
   { rejectValue: string }
->("cart/removeItem", async (courseId, { rejectWithValue }) => {
+>("cart/removeItem", async (courseId, thunkAPI) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.delete<ApiResponse<void>>(
@@ -434,13 +456,20 @@ export const removeCartItemThunk = createAsyncThunk<
       throw new Error(errorMessage);
     }
 
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Đã xóa khóa học khỏi giỏ hàng!"));
+
     return courseId;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to remove item from cart"
     );
-    return rejectWithValue(errorMessage);
+
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 

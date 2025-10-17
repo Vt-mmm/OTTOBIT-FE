@@ -1,6 +1,17 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { axiosClient } from "axiosClient/axiosClient";
+
+// Local action creators
+const setMessageSuccess = (message: string) => ({
+  type: "student/setMessageSuccess",
+  payload: message,
+});
+
+const setMessageError = (message: string) => ({
+  type: "student/setMessageError",
+  payload: message,
+});
 import { ROUTES_API_STUDENT } from "constants/routesApiKeys";
 import {
   StudentResult,
@@ -121,7 +132,7 @@ export const createStudentThunk = createAsyncThunk<
   StudentResult,
   CreateStudentRequest,
   { rejectValue: string }
->("student/create", async (studentData, { rejectWithValue }) => {
+>("student/create", async (studentData, thunkAPI) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.post<ApiResponse<StudentResult>>(
@@ -138,12 +149,18 @@ export const createStudentThunk = createAsyncThunk<
       throw new Error("No student data received");
     }
 
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Tạo hồ sơ học viên thành công!"));
+
     return response.data.data;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to create student"
-    );
+    const errorMessage = err.response?.data?.message || "Failed to create student";
+    
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+    
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
@@ -152,7 +169,7 @@ export const updateStudentThunk = createAsyncThunk<
   StudentResult,
   { id: string; data: UpdateStudentRequest },
   { rejectValue: string }
->("student/update", async ({ id, data }, { rejectWithValue }) => {
+>("student/update", async ({ id, data }, thunkAPI) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.put<ApiResponse<StudentResult>>(
@@ -169,11 +186,17 @@ export const updateStudentThunk = createAsyncThunk<
       throw new Error("No student data received");
     }
 
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Cập nhật hồ sơ thành công!"));
+
     return response.data.data;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to update student"
-    );
+    const errorMessage = err.response?.data?.message || "Failed to update student";
+    
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+    
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });

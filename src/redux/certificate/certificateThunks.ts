@@ -1,6 +1,17 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { axiosClient } from "axiosClient/axiosClient";
+
+// Local action creators
+const setMessageSuccess = (message: string) => ({
+  type: "certificate/setMessageSuccess",
+  payload: message,
+});
+
+const setMessageError = (message: string) => ({
+  type: "certificate/setMessageError",
+  payload: message,
+});
 import { ROUTES_API_CERTIFICATE } from "constants/routesApiKeys";
 import {
   CertificateResult,
@@ -105,17 +116,27 @@ export const revokeCertificateThunk = createAsyncThunk<
   { rejectValue: string }
 >(
   "certificate/revokeCertificate",
-  async ({ id, data }, { rejectWithValue }) => {
+  async ({ id, data }, thunkAPI) => {
     try {
-      return await callApiWithRetry(async () => {
+      const result = await callApiWithRetry(async () => {
         const response = await axiosClient.post<ApiResponse<CertificateResult>>(
           ROUTES_API_CERTIFICATE.REVOKE(id),
           data
         );
         return response.data.data;
       });
+
+      // Success toast
+      thunkAPI.dispatch(setMessageSuccess("Đã thu hồi chứng chỉ!"));
+
+      return result;
     } catch (error) {
-      return rejectWithValue(extractApiErrorMessage(error));
+      const errorMessage = extractApiErrorMessage(error);
+
+      // Error toast
+      thunkAPI.dispatch(setMessageError(errorMessage));
+
+      return thunkAPI.rejectWithValue(errorMessage);
     }
   }
 );
@@ -125,12 +146,20 @@ export const deleteCertificateThunk = createAsyncThunk<
   void,
   string,
   { rejectValue: string }
->("certificate/deleteCertificate", async (id, { rejectWithValue }) => {
+>("certificate/deleteCertificate", async (id, thunkAPI) => {
   try {
-    return await callApiWithRetry(async () => {
+    await callApiWithRetry(async () => {
       await axiosClient.delete(ROUTES_API_CERTIFICATE.DELETE(id));
     });
+
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Đã xóa chứng chỉ!"));
   } catch (error) {
-    return rejectWithValue(extractApiErrorMessage(error));
+    const errorMessage = extractApiErrorMessage(error);
+
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });

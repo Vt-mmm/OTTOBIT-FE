@@ -25,6 +25,7 @@ import orderItemReducer from "./orderItem/orderItemSlice";
 import paymentReducer from "./payment/paymentSlice";
 import lessonNoteReducer from "./lessonNote/lessonNoteSlice";
 import aiReducer from "./ai/aiSlice";
+import courseRatingReducer from "./courseRating/courseRatingSlice";
 
 export const ottobit = configureStore({
   reducer: {
@@ -53,6 +54,7 @@ export const ottobit = configureStore({
     payment: paymentReducer, // ⭐️ NEW: Payment management
     lessonNote: lessonNoteReducer, // ⭐️ NEW: LessonNote management
     ai: aiReducer, // ⭐️ NEW: AI Assistant (Course recommendations & solution hints)
+    courseRating: courseRatingReducer, // ⭐️ NEW: Course Rating management
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

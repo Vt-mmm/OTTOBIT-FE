@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 import { CourseResult, CoursesResponse } from "common/@types/course";
 import {
   getCoursesThunk,
@@ -122,6 +123,14 @@ const courseSlice = createSlice({
     // Reset entire state
     resetCourseState: () => {
       return initialState;
+    },
+
+    // Toast actions
+    setMessageSuccess: (_state, action: PayloadAction<string>) => {
+      toast.success(action.payload);
+    },
+    setMessageError: (_state, action: PayloadAction<string>) => {
+      toast.error(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -294,6 +303,8 @@ export const {
   setCurrentCourse,
   clearCourseErrors,
   resetCourseState,
+  setMessageSuccess,
+  setMessageError,
 } = courseSlice.actions;
 
 // Export thunks

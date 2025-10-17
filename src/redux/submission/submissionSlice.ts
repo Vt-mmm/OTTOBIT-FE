@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 import {
   SubmissionResult,
   SubmissionsResponse,
@@ -151,6 +152,14 @@ const submissionSlice = createSlice({
     resetSubmissionState: () => {
       return initialState;
     },
+
+    // Toast actions
+    setMessageSuccess: (_state, action: PayloadAction<string>) => {
+      toast.success(action.payload);
+    },
+    setMessageError: (_state, action: PayloadAction<string>) => {
+      toast.error(action.payload);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -260,6 +269,8 @@ export const {
   clearDraft,
   clearSubmissionErrors,
   resetSubmissionState,
+  setMessageSuccess,
+  setMessageError,
 } = submissionSlice.actions;
 
 const submissionReducer = submissionSlice.reducer;

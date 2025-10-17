@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 import type { LessonNote, LessonNoteResponse } from "common/@types/lessonNote";
 import {
   createLessonNote,
@@ -42,6 +43,14 @@ const lessonNoteSlice = createSlice({
       // Clear notes immediately to prevent showing wrong data
       state.myNotes = null;
       state.error = null;
+    },
+
+    // Toast actions
+    setMessageSuccess: (_state, action: PayloadAction<string>) => {
+      toast.success(action.payload);
+    },
+    setMessageError: (_state, action: PayloadAction<string>) => {
+      toast.error(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -163,6 +172,11 @@ const lessonNoteSlice = createSlice({
   },
 });
 
-export const { clearError, clearSelectedNote, clearMyNotes } =
-  lessonNoteSlice.actions;
+export const {
+  clearError,
+  clearSelectedNote,
+  clearMyNotes,
+  setMessageSuccess,
+  setMessageError,
+} = lessonNoteSlice.actions;
 export default lessonNoteSlice.reducer;

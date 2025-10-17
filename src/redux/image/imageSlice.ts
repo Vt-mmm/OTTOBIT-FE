@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 import { ImageResult, ImagesResponse } from "common/@types/image";
 import {
   getImagesThunk,
@@ -88,6 +89,14 @@ const imageSlice = createSlice({
     setCurrentImage: (state, action: PayloadAction<ImageResult>) => {
       state.currentImage.data = action.payload;
       state.currentImage.error = null;
+    },
+
+    // Toast actions
+    setMessageSuccess: (_state, action: PayloadAction<string>) => {
+      toast.success(action.payload);
+    },
+    setMessageError: (_state, action: PayloadAction<string>) => {
+      toast.error(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -219,6 +228,8 @@ export const {
   clearSuccessFlags,
   clearCurrentImage,
   setCurrentImage,
+  setMessageSuccess,
+  setMessageError,
 } = imageSlice.actions;
 
 export default imageSlice.reducer;

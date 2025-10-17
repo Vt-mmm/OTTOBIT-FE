@@ -1,6 +1,17 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { axiosClient } from "axiosClient/axiosClient";
+
+// Local action creators
+const setMessageSuccess = (message: string) => ({
+  type: "challenge/setMessageSuccess",
+  payload: message,
+});
+
+const setMessageError = (message: string) => ({
+  type: "challenge/setMessageError",
+  payload: message,
+});
 import { ROUTES_API_CHALLENGE } from "constants/routesApiKeys";
 import {
   ChallengeResult,
@@ -230,7 +241,7 @@ export const createChallengeThunk = createAsyncThunk<
   ChallengeResult,
   CreateChallengeRequest,
   { rejectValue: string }
->("challenge/create", async (challengeData, { rejectWithValue }) => {
+>("challenge/create", async (challengeData, thunkAPI) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.post<ApiResponse<ChallengeResult>>(
@@ -251,13 +262,20 @@ export const createChallengeThunk = createAsyncThunk<
       throw new Error("No challenge data received");
     }
 
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Đã tạo thử thách thành công!"));
+
     return response.data.data;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to create challenge"
     );
-    return rejectWithValue(errorMessage);
+
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
@@ -266,7 +284,7 @@ export const updateChallengeThunk = createAsyncThunk<
   ChallengeResult,
   { id: string; data: UpdateChallengeRequest },
   { rejectValue: string }
->("challenge/update", async ({ id, data }, { rejectWithValue }) => {
+>("challenge/update", async ({ id, data }, thunkAPI) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.put<ApiResponse<ChallengeResult>>(
@@ -287,13 +305,20 @@ export const updateChallengeThunk = createAsyncThunk<
       throw new Error("No challenge data received");
     }
 
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Đã cập nhật thử thách!"));
+
     return response.data.data;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to update challenge"
     );
-    return rejectWithValue(errorMessage);
+
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
@@ -302,7 +327,7 @@ export const deleteChallengeThunk = createAsyncThunk<
   string,
   string,
   { rejectValue: string }
->("challenge/delete", async (id, { rejectWithValue }) => {
+>("challenge/delete", async (id, thunkAPI) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.delete<ApiResponse<string>>(
@@ -318,13 +343,20 @@ export const deleteChallengeThunk = createAsyncThunk<
       throw new Error(errorMessage);
     }
 
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Đã xóa thử thách!"));
+
     return id;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to delete challenge"
     );
-    return rejectWithValue(errorMessage);
+
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
@@ -333,7 +365,7 @@ export const restoreChallengeThunk = createAsyncThunk<
   ChallengeResult,
   string,
   { rejectValue: string }
->("challenge/restore", async (id, { rejectWithValue }) => {
+>("challenge/restore", async (id, thunkAPI) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.post<ApiResponse<ChallengeResult>>(
@@ -353,12 +385,19 @@ export const restoreChallengeThunk = createAsyncThunk<
       throw new Error("No challenge data received");
     }
 
+    // Success toast
+    thunkAPI.dispatch(setMessageSuccess("Đã khôi phục thử thách!"));
+
     return response.data.data;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to restore challenge"
     );
-    return rejectWithValue(errorMessage);
+
+    // Error toast
+    thunkAPI.dispatch(setMessageError(errorMessage));
+
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });

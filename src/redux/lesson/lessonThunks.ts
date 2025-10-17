@@ -7,6 +7,10 @@ import {
 } from "constants/routesApiKeys";
 import { extractApiErrorMessage } from "utils/errorHandler";
 import {
+  setMessageSuccess,
+  setMessageError,
+} from "store/lesson/lessonSlice";
+import {
   LessonResult,
   LessonsResponse,
   LessonsPreviewResponse,
@@ -228,7 +232,7 @@ export const createLessonThunk = createAsyncThunk<
   LessonResult,
   CreateLessonRequest,
   { rejectValue: string }
->("lesson/create", async (lessonData, { rejectWithValue }) => {
+>("lesson/create", async (lessonData, { rejectWithValue, dispatch }) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.post<ApiResponse<LessonResult>>(
@@ -245,12 +249,14 @@ export const createLessonThunk = createAsyncThunk<
       throw new Error("No lesson data received");
     }
 
+    dispatch(setMessageSuccess("Lesson created successfully"));
     return response.data.data;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to create lesson"
-    );
+    const errorMessage =
+      err.response?.data?.message || "Failed to create lesson";
+    dispatch(setMessageError(errorMessage));
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -259,7 +265,7 @@ export const updateLessonThunk = createAsyncThunk<
   LessonResult,
   { id: string; data: UpdateLessonRequest },
   { rejectValue: string }
->("lesson/update", async ({ id, data }, { rejectWithValue }) => {
+>("lesson/update", async ({ id, data }, { rejectWithValue, dispatch }) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.put<ApiResponse<LessonResult>>(
@@ -276,12 +282,14 @@ export const updateLessonThunk = createAsyncThunk<
       throw new Error("No lesson data received");
     }
 
+    dispatch(setMessageSuccess("Lesson updated successfully"));
     return response.data.data;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to update lesson"
-    );
+    const errorMessage =
+      err.response?.data?.message || "Failed to update lesson";
+    dispatch(setMessageError(errorMessage));
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -290,7 +298,7 @@ export const deleteLessonThunk = createAsyncThunk<
   string,
   string,
   { rejectValue: string }
->("lesson/delete", async (id, { rejectWithValue }) => {
+>("lesson/delete", async (id, { rejectWithValue, dispatch }) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.delete<ApiResponse<string>>(ROUTES_API_LESSON.DELETE(id))
@@ -300,12 +308,14 @@ export const deleteLessonThunk = createAsyncThunk<
       throw new Error(response.data.message || "Failed to delete lesson");
     }
 
+    dispatch(setMessageSuccess("Lesson deleted successfully"));
     return id;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to delete lesson"
-    );
+    const errorMessage =
+      err.response?.data?.message || "Failed to delete lesson";
+    dispatch(setMessageError(errorMessage));
+    return rejectWithValue(errorMessage);
   }
 });
 
@@ -314,12 +324,13 @@ export const restoreLessonThunk = createAsyncThunk<
   LessonResult,
   string,
   { rejectValue: string }
->("lesson/restore", async (id, { rejectWithValue }) => {
+>("lesson/restore", async (id, { rejectWithValue, dispatch }) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.post<LessonResult>(ROUTES_API_LESSON.RESTORE(id))
     );
 
+    dispatch(setMessageSuccess("Lesson restored successfully"));
     // API restore trả về trực tiếp LessonResult, không wrap trong ApiResponse
     return response.data;
   } catch (error: any) {
@@ -327,6 +338,7 @@ export const restoreLessonThunk = createAsyncThunk<
       error,
       "Failed to restore lesson"
     );
+    dispatch(setMessageError(errorMessage));
     return rejectWithValue(errorMessage);
   }
 });
@@ -371,7 +383,7 @@ export const startLessonThunk = createAsyncThunk<
   LessonProgressResult,
   StartLessonRequest,
   { rejectValue: string }
->("lesson/startLesson", async (request, { rejectWithValue }) => {
+>("lesson/startLesson", async (request, { rejectWithValue, dispatch }) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.post<ApiResponse<LessonProgressResult>>(
@@ -387,11 +399,13 @@ export const startLessonThunk = createAsyncThunk<
       throw new Error("No lesson progress data received");
     }
 
+    dispatch(setMessageSuccess("Lesson started successfully"));
     return response.data.data;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
-    return rejectWithValue(
-      err.response?.data?.message || "Failed to start lesson"
-    );
+    const errorMessage =
+      err.response?.data?.message || "Failed to start lesson";
+    dispatch(setMessageError(errorMessage));
+    return rejectWithValue(errorMessage);
   }
 });

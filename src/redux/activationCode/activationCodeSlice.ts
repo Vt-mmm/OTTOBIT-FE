@@ -1,4 +1,5 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 import { ActivationCodesResponse } from "common/@types/activationCode";
 import {
   getActivationCodesThunk,
@@ -102,6 +103,14 @@ const activationCodeSlice = createSlice({
       state.operations.redeemError = null;
       state.operations.redeemSuccess = false;
       state.operations.lastRedeemedRobot = undefined;
+    },
+
+    // Toast actions
+    setMessageSuccess: (_state, action: PayloadAction<string>) => {
+      toast.success(action.payload);
+    },
+    setMessageError: (_state, action: PayloadAction<string>) => {
+      toast.error(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -252,7 +261,12 @@ const activationCodeSlice = createSlice({
   },
 });
 
-export const { clearErrors, clearSuccessFlags, clearRedeemStatus } =
-  activationCodeSlice.actions;
+export const {
+  clearErrors,
+  clearSuccessFlags,
+  clearRedeemStatus,
+  setMessageSuccess,
+  setMessageError,
+} = activationCodeSlice.actions;
 
 export default activationCodeSlice.reducer;
