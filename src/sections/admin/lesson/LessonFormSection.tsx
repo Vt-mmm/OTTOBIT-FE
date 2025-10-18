@@ -27,6 +27,7 @@ import {
   CreateLessonRequest,
   UpdateLessonRequest,
 } from "../../../common/@types/lesson";
+import PopupSelect from "../../../components/common/PopupSelect";
 
 interface Props {
   mode: "create" | "edit";
@@ -65,6 +66,9 @@ export default function LessonFormSection({
     order: 1,
   });
 
+  const [coursePage, setCoursePage] = useState(1);
+  const [courseLoading, setCourseLoading] = useState(false);
+
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -79,9 +83,24 @@ export default function LessonFormSection({
   const error = createError || updateError;
   const courses = coursesData?.items || [];
 
+  // Fetch courses with pagination
   useEffect(() => {
-    dispatch(getCoursesForAdmin({ pageSize: 10 } as any));
-  }, [dispatch]);
+    const fetchCourses = async () => {
+      setCourseLoading(true);
+      try {
+        await dispatch(
+          getCoursesForAdmin({
+            pageNumber: coursePage,
+            pageSize: 12,
+            includeDeleted: false, // Only active courses for form
+          })
+        );
+      } finally {
+        setCourseLoading(false);
+      }
+    };
+    fetchCourses();
+  }, [dispatch, coursePage]);
 
   useEffect(() => {
     if (mode === "edit" && lesson) {
@@ -208,21 +227,24 @@ export default function LessonFormSection({
                 </Typography>
 
                 <Stack spacing={3}>
-                  <FormControl fullWidth>
-                    <InputLabel>Khóa học *</InputLabel>
-                    <Select
-                      value={formData.courseId}
-                      label="Khóa học *"
-                      onChange={handleSelectChange("courseId")}
-                      error={!!error && error.includes("courseId")}
-                    >
-                      {courses.map((course) => (
-                        <MenuItem key={course.id} value={course.id}>
-                          {course.title}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                  <PopupSelect
+                    label="Khóa học *"
+                    value={formData.courseId}
+                    onChange={(value) =>
+                      setFormData((prev) => ({ ...prev, courseId: value }))
+                    }
+                    items={courses}
+                    loading={courseLoading}
+                    currentPage={coursePage}
+                    onPageChange={setCoursePage}
+                    totalPages={coursesData?.totalPages || 1}
+                    getItemLabel={(course) => course.title}
+                    getItemValue={(course) => course.id}
+                    noDataMessage="Không có khóa học nào"
+                    pageSize={12}
+                    error={!!error && error.includes("courseId")}
+                    title="Chọn khóa học"
+                  />
 
                   <TextField
                     fullWidth

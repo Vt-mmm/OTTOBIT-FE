@@ -63,6 +63,13 @@ export default function VoucherListSection({
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [status, setStatus] = useState<"all" | "active">("all");
+
+  // Committed filter states (only sent to API when search is triggered)
+  const [committedStartDate, setCommittedStartDate] = useState("");
+  const [committedEndDate, setCommittedEndDate] = useState("");
+  const [committedStatus, setCommittedStatus] = useState<"all" | "active">(
+    "all"
+  );
   const [confirmDelete, setConfirmDelete] = useState<Voucher | null>(null);
   const [confirmRestore, setConfirmRestore] = useState<Voucher | null>(null);
 
@@ -72,19 +79,19 @@ export default function VoucherListSection({
       const params = new URLSearchParams({
         PageNumber: page.toString(),
         PageSize: pageSize.toString(),
-        IncludeDeleted: status === "all" ? "true" : "false",
+        IncludeDeleted: committedStatus === "all" ? "true" : "false",
       });
 
       if (committedSearch) {
         params.append("SearchTerm", committedSearch);
       }
 
-      if (startDate) {
-        params.append("StartDate", new Date(startDate).toISOString());
+      if (committedStartDate) {
+        params.append("StartDate", new Date(committedStartDate).toISOString());
       }
 
-      if (endDate) {
-        params.append("EndDate", new Date(endDate).toISOString());
+      if (committedEndDate) {
+        params.append("EndDate", new Date(committedEndDate).toISOString());
       }
 
       const response = await axiosClient.get(
@@ -109,7 +116,13 @@ export default function VoucherListSection({
 
   useEffect(() => {
     fetchVouchers();
-  }, [page, committedSearch, startDate, endDate, status]);
+  }, [
+    page,
+    committedSearch,
+    committedStartDate,
+    committedEndDate,
+    committedStatus,
+  ]);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -117,6 +130,9 @@ export default function VoucherListSection({
 
   const triggerSearch = () => {
     setCommittedSearch(searchTerm.trim());
+    setCommittedStartDate(startDate);
+    setCommittedEndDate(endDate);
+    setCommittedStatus(status);
     setPage(1);
   };
 

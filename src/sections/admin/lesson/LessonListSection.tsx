@@ -39,6 +39,7 @@ import {
 import { getCoursesForAdmin } from "../../../redux/course/courseSlice";
 import { LessonResult } from "../../../common/@types/lesson";
 import useLocales from "hooks/useLocales";
+import PopupSelect from "../../../components/common/PopupSelect";
 
 interface Props {
   onCreateNew: (courseId: string) => void;
@@ -62,9 +63,19 @@ export default function LessonListSection({
   const [pageSize, setPageSize] = useState(12);
   const [totalPages, setTotalPages] = useState(1);
   const [courseId, setCourseId] = useState("");
+  const [coursePage, setCoursePage] = useState(1);
+  const [courseLoading, setCourseLoading] = useState(false);
   const [sortDirection, setSortDirection] = useState(1); // 0 = asc, 1 = desc
   const [sortBy, setSortBy] = useState(3); // Default: CreatedAt (0..4)
   const [status, setStatus] = useState<"all" | "active">("all");
+
+  // Committed filter states (only sent to API when search is triggered)
+  const [committedCourseId, setCommittedCourseId] = useState("");
+  const [committedSortDirection, setCommittedSortDirection] = useState(1);
+  const [committedSortBy, setCommittedSortBy] = useState(3);
+  const [committedStatus, setCommittedStatus] = useState<"all" | "active">(
+    "all"
+  );
   const [confirmDelete, setConfirmDelete] = useState<LessonResult | null>(null);
   const [confirmRestore, setConfirmRestore] = useState<LessonResult | null>(
     null
@@ -79,28 +90,46 @@ export default function LessonListSection({
     severity: "success",
   });
 
+  // Fetch courses with pagination
+  useEffect(() => {
+    const fetchCourses = async () => {
+      setCourseLoading(true);
+      try {
+        await dispatch(
+          getCoursesForAdmin({
+            pageNumber: coursePage,
+            pageSize: 12,
+            includeDeleted: false, // Only active courses for filter
+          })
+        );
+      } finally {
+        setCourseLoading(false);
+      }
+    };
+    fetchCourses();
+  }, [dispatch, coursePage]);
+
   useEffect(() => {
     dispatch(
       getLessons({
         searchTerm: committedSearch || undefined,
         pageNumber: page,
         pageSize,
-        courseId: courseId || undefined,
-        includeDeleted: status === "all",
-        sortBy,
-        sortDirection,
+        courseId: committedCourseId || undefined,
+        includeDeleted: committedStatus === "all",
+        sortBy: committedSortBy,
+        sortDirection: committedSortDirection,
       })
     );
-    dispatch(getCoursesForAdmin({ pageSize: 10 } as any));
   }, [
     dispatch,
     committedSearch,
     page,
     pageSize,
-    courseId,
-    sortBy,
-    sortDirection,
-    status,
+    committedCourseId,
+    committedSortBy,
+    committedSortDirection,
+    committedStatus,
   ]);
 
   useEffect(() => {
@@ -113,16 +142,22 @@ export default function LessonListSection({
   const items = data?.items || [];
   const courses = coursesData?.items || [];
 
+  const handleCourseChange = (newCourseId: string) => {
+    setCourseId(newCourseId);
+    setPage(1); // Reset to first page when course changes
+    setCoursePage(1); // Reset course page when course changes
+  };
+
   const refreshList = () => {
     dispatch(
       getLessons({
         searchTerm: committedSearch || undefined,
         pageNumber: page,
         pageSize,
-        courseId: courseId || undefined,
-        includeDeleted: true,
-        sortBy,
-        sortDirection,
+        courseId: committedCourseId || undefined,
+        includeDeleted: committedStatus === "all",
+        sortBy: committedSortBy,
+        sortDirection: committedSortDirection,
       })
     );
   };
@@ -133,6 +168,10 @@ export default function LessonListSection({
 
   const triggerSearch = () => {
     setCommittedSearch(searchTerm.trim());
+    setCommittedCourseId(courseId);
+    setCommittedSortBy(sortBy);
+    setCommittedSortDirection(sortDirection);
+    setCommittedStatus(status);
     setPage(1);
   };
 
@@ -223,21 +262,20 @@ export default function LessonListSection({
                 ),
               }}
             />
-            <FormControl size="small" sx={{ minWidth: 200 }}>
-              <InputLabel>{translate("admin.course")}</InputLabel>
-              <Select
-                value={courseId}
-                label={translate("admin.course")}
-                onChange={(e) => setCourseId(e.target.value)}
-              >
-                <MenuItem value="">{translate("admin.allCourses")}</MenuItem>
-                {courses.map((course) => (
-                  <MenuItem key={course.id} value={course.id}>
-                    {course.title}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <PopupSelect
+              label={translate("admin.course")}
+              value={courseId}
+              onChange={handleCourseChange}
+              items={courses}
+              loading={courseLoading}
+              currentPage={coursePage}
+              onPageChange={setCoursePage}
+              totalPages={coursesData?.totalPages || 1}
+              getItemLabel={(course) => course.title}
+              getItemValue={(course) => course.id}
+              noDataMessage="Không có khóa học nào"
+              pageSize={12}
+            />
             <FormControl size="small" sx={{ minWidth: 150 }}>
               <InputLabel>{translate("admin.status")}</InputLabel>
               <Select

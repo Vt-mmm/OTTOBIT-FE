@@ -18,7 +18,6 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
-  FormHelperText,
   List,
   ListItem,
   ListItemText,
@@ -28,6 +27,7 @@ import { createPortal } from "react-dom";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useNotification } from "hooks/useNotification";
 import useLocales from "hooks/useLocales";
+import PopupSelect from "components/common/PopupSelect";
 import { useRef, useState, useEffect } from "react";
 import { MapCell } from "common/models";
 import { MAP_ASSETS } from "sections/admin/mapDesigner/mapAssets.config";
@@ -67,6 +67,14 @@ interface WinConditionsSectionProps {
   courses?: any[];
   lessons?: any[];
   hasTriedSave?: boolean;
+  coursePage?: number;
+  onCoursePageChange?: (page: number) => void;
+  lessonPage?: number;
+  onLessonPageChange?: (page: number) => void;
+  courseLoading?: boolean;
+  lessonLoading?: boolean;
+  courseTotalPages?: number;
+  lessonTotalPages?: number;
 }
 
 export default function WinConditionsSection({
@@ -93,6 +101,14 @@ export default function WinConditionsSection({
   courses = [],
   lessons = [],
   hasTriedSave = false,
+  coursePage = 1,
+  onCoursePageChange,
+  lessonPage = 1,
+  onLessonPageChange,
+  courseLoading = false,
+  lessonLoading = false,
+  courseTotalPages = 1,
+  lessonTotalPages = 1,
 }: WinConditionsSectionProps) {
   const { translate } = useLocales();
   const [openSolution] = useState(false);
@@ -629,65 +645,55 @@ export default function WinConditionsSection({
         </Box>
 
         {/* Course Selection */}
-        <FormControl fullWidth size="small" error={hasTriedSave && !courseId}>
-          <InputLabel>Course</InputLabel>
-          <Select
-            label="Course"
-            value={courseId}
-            onChange={(e) => onCourseIdChange(e.target.value as string)}
-          >
-            {courses.length === 0 ? (
-              <MenuItem value="" disabled>
-                No courses available
-              </MenuItem>
-            ) : (
-              courses.map((course) => (
-                <MenuItem key={course.id} value={course.id}>
-                  {course.title}
-                </MenuItem>
-              ))
-            )}
-          </Select>
-          {hasTriedSave && !courseId && (
-            <FormHelperText>Please select a course</FormHelperText>
-          )}
-        </FormControl>
+        <PopupSelect
+          label="Course"
+          value={courseId}
+          onChange={onCourseIdChange}
+          items={courses}
+          loading={courseLoading}
+          error={hasTriedSave && !courseId}
+          helperText={
+            hasTriedSave && !courseId ? "Please select a course" : undefined
+          }
+          pageSize={12}
+          getItemLabel={(course) => course.title}
+          getItemValue={(course) => course.id}
+          noDataMessage="No courses available"
+          currentPage={coursePage}
+          onPageChange={onCoursePageChange || (() => {})}
+          totalPages={courseTotalPages}
+          title="Chọn khóa học"
+        />
 
         {/* Lesson Selection */}
-        <FormControl
-          fullWidth
-          size="small"
+        <PopupSelect
+          label="Lesson"
+          value={lessonId}
+          onChange={onLessonIdChange}
+          items={lessons}
+          loading={lessonLoading}
           error={hasTriedSave && !lessonId}
           disabled={!courseId}
-        >
-          <InputLabel>Lesson</InputLabel>
-          <Select
-            label="Lesson"
-            value={lessonId}
-            onChange={(e) => onLessonIdChange(e.target.value as string)}
-          >
-            {!courseId ? (
-              <MenuItem value="" disabled>
-                Please select a course first
-              </MenuItem>
-            ) : lessons.length === 0 ? (
-              <MenuItem value="" disabled>
-                No lessons available for this course
-              </MenuItem>
-            ) : (
-              lessons.map((lesson) => (
-                <MenuItem key={lesson.id} value={lesson.id}>
-                  {lesson.title}
-                </MenuItem>
-              ))
-            )}
-          </Select>
-          {hasTriedSave && !courseId ? (
-            <FormHelperText>Please select a course first</FormHelperText>
-          ) : hasTriedSave && !lessonId ? (
-            <FormHelperText>Please select a lesson</FormHelperText>
-          ) : null}
-        </FormControl>
+          helperText={
+            hasTriedSave && !courseId
+              ? "Please select a course first"
+              : hasTriedSave && !lessonId
+              ? "Please select a lesson"
+              : undefined
+          }
+          pageSize={12}
+          getItemLabel={(lesson) => lesson.title}
+          getItemValue={(lesson) => lesson.id}
+          noDataMessage={
+            !courseId
+              ? "Please select a course first"
+              : "No lessons available for this course"
+          }
+          currentPage={lessonPage}
+          onPageChange={onLessonPageChange || (() => {})}
+          totalPages={lessonTotalPages}
+          title="Chọn bài học"
+        />
 
         <Box
           sx={{

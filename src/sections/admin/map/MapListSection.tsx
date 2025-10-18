@@ -76,13 +76,20 @@ export default function MapListSection() {
   const [pageSize, setPageSize] = useState<number>(12);
   const [status, setStatus] = useState<"all" | "active">("all");
 
+  // Committed filter states (only sent to API when search is triggered)
+  const [committedSortDirection, setCommittedSortDirection] =
+    useState<SortDirection>(SortDirection.Descending);
+  const [committedStatus, setCommittedStatus] = useState<"all" | "active">(
+    "all"
+  );
+
   useEffect(() => {
     dispatch(
       getMaps({
         searchTerm: committedSearch || undefined,
         sortBy,
-        sortDirection,
-        includeDeleted: status === "all",
+        sortDirection: committedSortDirection,
+        includeDeleted: committedStatus === "all",
         pageNumber,
         pageSize,
       })
@@ -91,10 +98,10 @@ export default function MapListSection() {
     dispatch,
     committedSearch,
     sortBy,
-    sortDirection,
+    committedSortDirection,
     pageNumber,
     pageSize,
-    status,
+    committedStatus,
   ]);
 
   const refreshList = () => {
@@ -102,8 +109,8 @@ export default function MapListSection() {
       getMaps({
         searchTerm: committedSearch || undefined,
         sortBy,
-        sortDirection,
-        includeDeleted: status === "all",
+        sortDirection: committedSortDirection,
+        includeDeleted: committedStatus === "all",
         pageNumber,
         pageSize,
       })
@@ -116,6 +123,8 @@ export default function MapListSection() {
 
   const triggerSearch = () => {
     setCommittedSearch(searchTerm.trim());
+    setCommittedSortDirection(sortDirection);
+    setCommittedStatus(status);
     setPageNumber(1);
   };
 
@@ -257,12 +266,8 @@ export default function MapListSection() {
                 label={translate("admin.map.sortBy")}
                 value={sortDirection}
                 onChange={(e: any) => {
-                  const value = Number(e.target.value);
-                  setSortDirection(
-                    value === 0
-                      ? SortDirection.Ascending
-                      : SortDirection.Descending
-                  );
+                  const value = e.target.value;
+                  setSortDirection(value);
                 }}
               >
                 <MenuItem value={SortDirection.Ascending}>

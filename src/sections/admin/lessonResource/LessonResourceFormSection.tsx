@@ -17,6 +17,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getCoursesForAdmin } from "../../../redux/course/courseSlice";
 import { getLessons } from "../../../redux/lesson/lessonSlice";
+import PopupSelect from "components/common/PopupSelect";
 import { axiosClient } from "axiosClient";
 import { ROUTES_API_LESSON_RESOURCE as LR } from "constants/routesApiKeys";
 import { extractApiErrorMessage } from "utils/errorHandler";
@@ -49,6 +50,12 @@ export default function LessonResourceFormSection({
   const [courseId, setCourseId] = useState<string>("");
   const [displayLessonTitle, setDisplayLessonTitle] = useState<string>("");
   const [displayCourseTitle, setDisplayCourseTitle] = useState<string>("");
+
+  // Pagination states
+  const [coursePage, setCoursePage] = useState(1);
+  const [lessonPage, setLessonPage] = useState(1);
+  const [courseLoading, setCourseLoading] = useState(false);
+  const [lessonLoading, setLessonLoading] = useState(false);
   const [form, setForm] = useState({
     lessonId: "",
     title: "",
@@ -58,27 +65,54 @@ export default function LessonResourceFormSection({
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
+  // Fetch courses with pagination
   useEffect(() => {
-    dispatch(
-      getCoursesForAdmin({
-        pageNumber: 1,
-        pageSize: 10,
-        includeDeleted: true,
-      }) as any
-    );
-  }, [dispatch]);
+    const fetchCourses = async () => {
+      setCourseLoading(true);
+      try {
+        await dispatch(
+          getCoursesForAdmin({
+            pageNumber: coursePage,
+            pageSize: 12,
+            includeDeleted: true,
+          }) as any
+        );
+      } finally {
+        setCourseLoading(false);
+      }
+    };
+    fetchCourses();
+  }, [dispatch, coursePage]);
 
+  // Fetch lessons when courseId changes
   useEffect(() => {
-    if (!courseId) return;
-    dispatch(
-      getLessons({
-        pageNumber: 1,
-        pageSize: 10,
-        includeDeleted: true,
-        courseId,
-      }) as any
-    );
-  }, [dispatch, courseId]);
+    if (courseId) {
+      setForm((f) => ({ ...f, lessonId: "" })); // Reset lesson selection
+      setLessonPage(1); // Reset lesson page
+    }
+  }, [courseId]);
+
+  // Fetch lessons when courseId or lessonPage changes
+  useEffect(() => {
+    if (courseId) {
+      const fetchLessons = async () => {
+        setLessonLoading(true);
+        try {
+          await dispatch(
+            getLessons({
+              pageNumber: lessonPage,
+              pageSize: 12,
+              includeDeleted: true,
+              courseId,
+            }) as any
+          );
+        } finally {
+          setLessonLoading(false);
+        }
+      };
+      fetchLessons();
+    }
+  }, [dispatch, courseId, lessonPage]);
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -218,53 +252,52 @@ export default function LessonResourceFormSection({
             </Box>
           ) : (
             <>
-              <FormControl size="small" fullWidth>
-                <InputLabel>Khóa học</InputLabel>
-                <Select
-                  label="Khóa học"
-                  value={courseId}
-                  onChange={(e) => {
-                    setCourseId(e.target.value as string);
-                    setForm((f) => ({ ...f, lessonId: "" }));
-                  }}
-                >
-                  {(adminCourses?.items || []).map((c: any) => (
-                    <MenuItem key={c.id} value={c.id}>
-                      {c.title}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <PopupSelect
+                label="Khóa học"
+                value={courseId}
+                onChange={(value) => {
+                  setCourseId(value);
+                  setForm((f) => ({ ...f, lessonId: "" }));
+                }}
+                items={adminCourses?.items || []}
+                loading={courseLoading}
+                pageSize={12}
+                getItemLabel={(course) => course.title}
+                getItemValue={(course) => course.id}
+                noDataMessage="Không có khóa học nào"
+                currentPage={coursePage}
+                onPageChange={setCoursePage}
+                totalPages={adminCourses?.totalPages || 1}
+                title="Chọn khóa học"
+              />
 
-              <FormControl
-                size="small"
-                fullWidth
+              <PopupSelect
+                label="Bài học"
+                value={form.lessonId}
+                onChange={(value) =>
+                  setForm((f) => ({
+                    ...f,
+                    lessonId: value,
+                  }))
+                }
+                items={lessonsState?.items || []}
+                loading={lessonLoading}
                 error={!!formErrors.lessonId}
+                helperText={formErrors.lessonId}
                 disabled={!courseId}
-              >
-                <InputLabel>Bài học</InputLabel>
-                <Select
-                  label="Bài học"
-                  value={form.lessonId}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      lessonId: e.target.value as string,
-                    }))
-                  }
-                >
-                  {((lessonsState?.items as any[]) || []).map((l: any) => (
-                    <MenuItem key={l.id} value={l.id}>
-                      {l.title}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {formErrors.lessonId && (
-                  <Typography variant="caption" color="error">
-                    {formErrors.lessonId}
-                  </Typography>
-                )}
-              </FormControl>
+                pageSize={12}
+                getItemLabel={(lesson) => lesson.title}
+                getItemValue={(lesson) => lesson.id}
+                noDataMessage={
+                  !courseId
+                    ? "Vui lòng chọn khóa học trước"
+                    : "Không có bài học nào cho khóa học này"
+                }
+                currentPage={lessonPage}
+                onPageChange={setLessonPage}
+                totalPages={lessonsState?.totalPages || 1}
+                title="Chọn bài học"
+              />
             </>
           )}
 

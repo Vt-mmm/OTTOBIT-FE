@@ -42,6 +42,7 @@ import { axiosClient } from "axiosClient";
 import { extractApiErrorMessage } from "utils/errorHandler";
 import { getCoursesForAdmin } from "../../../redux/course/courseSlice";
 import { getLessons } from "../../../redux/lesson/lessonSlice";
+import PopupSelect from "components/common/PopupSelect";
 import { ROUTES_API_LESSON_RESOURCE as LR } from "constants/routesApiKeys";
 import { useNavigate } from "react-router-dom";
 
@@ -64,6 +65,9 @@ export default function LessonResourceListSection({
     (s) => (s as any).course.adminCourses?.data
   );
   const lessonsState = useAppSelector((s) => (s as any).lesson.lessons?.data);
+  const formLessonsState = useAppSelector(
+    (s) => (s as any).lesson.lessons?.data
+  );
 
   const [searchTerm, setSearchTerm] = useState("");
   const [committedSearch, setCommittedSearch] = useState("");
@@ -77,6 +81,26 @@ export default function LessonResourceListSection({
   const [lessonId, setLessonId] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<string>("");
   const [status, setStatus] = useState<"all" | "active">("all");
+
+  // Committed filter states (only sent to API when search is triggered)
+  const [committedCourseId, setCommittedCourseId] = useState<string>("");
+  const [committedLessonId, setCommittedLessonId] = useState<string>("");
+  const [committedTypeFilter, setCommittedTypeFilter] = useState<string>("");
+  const [committedStatus, setCommittedStatus] = useState<"all" | "active">(
+    "all"
+  );
+
+  // Pagination states for course and lesson selection
+  const [coursePage, setCoursePage] = useState(1);
+  const [lessonPage, setLessonPage] = useState(1);
+  const [courseLoading, setCourseLoading] = useState(false);
+  const [lessonLoading, setLessonLoading] = useState(false);
+
+  // Separate states for form course and lesson selection
+  const [formCoursePage, setFormCoursePage] = useState(1);
+  const [formLessonPage, setFormLessonPage] = useState(1);
+  const [formCourseLoading, setFormCourseLoading] = useState(false);
+  const [formLessonLoading, setFormLessonLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<any | null>(null);
   const [confirmRestore, setConfirmRestore] = useState<any | null>(null);
   const [snackbar, setSnackbar] = useState<{
@@ -89,6 +113,7 @@ export default function LessonResourceListSection({
   const [createOpen, setCreateOpen] = useState(false);
   const [editItem, setEditItem] = useState<any | null>(null);
   const [form, setForm] = useState({
+    courseId: "",
     lessonId: "",
     title: "",
     description: "",
@@ -110,6 +135,7 @@ export default function LessonResourceListSection({
 
   const validateForm = () => {
     const errs: Record<string, string> = {};
+    if (!form.courseId) errs.courseId = "Vui lòng chọn khóa học";
     if (!form.lessonId) errs.lessonId = "Vui lòng chọn bài học";
     if (!form.title?.trim()) errs.title = "Tiêu đề là bắt buộc";
     if (!form.description?.trim()) errs.description = "Mô tả là bắt buộc";
@@ -121,27 +147,102 @@ export default function LessonResourceListSection({
     return Object.keys(errs).length === 0;
   };
 
+  // Fetch courses with pagination
   useEffect(() => {
-    dispatch(
-      getCoursesForAdmin({
-        pageNumber: 1,
-        pageSize: 10,
-        includeDeleted: true,
-      }) as any
-    );
-  }, [dispatch]);
+    const fetchCourses = async () => {
+      setCourseLoading(true);
+      try {
+        await dispatch(
+          getCoursesForAdmin({
+            pageNumber: coursePage,
+            pageSize: 12,
+            includeDeleted: true,
+          }) as any
+        );
+      } finally {
+        setCourseLoading(false);
+      }
+    };
+    fetchCourses();
+  }, [dispatch, coursePage]);
 
+  // Fetch lessons when courseId changes
   useEffect(() => {
-    if (!courseId) return;
-    dispatch(
-      getLessons({
-        pageNumber: 1,
-        pageSize: 10,
-        includeDeleted: true,
-        courseId,
-      }) as any
-    );
-  }, [dispatch, courseId]);
+    if (courseId) {
+      setLessonId(""); // Reset lesson selection when course changes
+      setLessonPage(1); // Reset lesson page when course changes
+    }
+  }, [courseId]);
+
+  // Fetch lessons when courseId or lessonPage changes
+  useEffect(() => {
+    if (courseId) {
+      const fetchLessons = async () => {
+        setLessonLoading(true);
+        try {
+          await dispatch(
+            getLessons({
+              pageNumber: lessonPage,
+              pageSize: 12,
+              includeDeleted: true,
+              courseId,
+            }) as any
+          );
+        } finally {
+          setLessonLoading(false);
+        }
+      };
+      fetchLessons();
+    }
+  }, [dispatch, courseId, lessonPage]);
+
+  // Fetch courses for form with pagination
+  useEffect(() => {
+    const fetchFormCourses = async () => {
+      setFormCourseLoading(true);
+      try {
+        await dispatch(
+          getCoursesForAdmin({
+            pageNumber: formCoursePage,
+            pageSize: 12,
+            includeDeleted: true,
+          }) as any
+        );
+      } finally {
+        setFormCourseLoading(false);
+      }
+    };
+    fetchFormCourses();
+  }, [dispatch, formCoursePage]);
+
+  // Fetch lessons when form.courseId changes (for create/edit form)
+  useEffect(() => {
+    if (form.courseId) {
+      setFormLessonPage(1); // Reset lesson page when course changes
+    }
+  }, [form.courseId]);
+
+  // Fetch lessons for form when form.courseId or formLessonPage changes
+  useEffect(() => {
+    if (form.courseId) {
+      const fetchFormLessons = async () => {
+        setFormLessonLoading(true);
+        try {
+          await dispatch(
+            getLessons({
+              pageNumber: formLessonPage,
+              pageSize: 12,
+              includeDeleted: true,
+              courseId: form.courseId,
+            }) as any
+          );
+        } finally {
+          setFormLessonLoading(false);
+        }
+      };
+      fetchFormLessons();
+    }
+  }, [dispatch, form.courseId, formLessonPage]);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -154,10 +255,10 @@ export default function LessonResourceListSection({
             PageNumber: page,
             PageSize: pageSize,
             SearchTerm: committedSearch || undefined,
-            IncludeDeleted: status === "all",
-            CourseId: courseId || undefined,
-            LessonId: lessonId || undefined,
-            Type: typeFilter || undefined,
+            IncludeDeleted: committedStatus === "all",
+            CourseId: committedCourseId || undefined,
+            LessonId: committedLessonId || undefined,
+            Type: committedTypeFilter || undefined,
           },
         }
       );
@@ -177,9 +278,26 @@ export default function LessonResourceListSection({
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [committedSearch, page, pageSize, courseId, lessonId, typeFilter, status]);
+  }, [
+    committedSearch,
+    page,
+    pageSize,
+    committedCourseId,
+    committedLessonId,
+    committedTypeFilter,
+    committedStatus,
+  ]);
 
   const refresh = () => fetchData();
+
+  const triggerSearch = () => {
+    setCommittedSearch(searchTerm.trim());
+    setCommittedCourseId(courseId);
+    setCommittedLessonId(lessonId);
+    setCommittedTypeFilter(typeFilter);
+    setCommittedStatus(status);
+    setPage(1);
+  };
 
   const getTypeIcon = (type: number) => {
     switch (type) {
@@ -314,65 +432,58 @@ export default function LessonResourceListSection({
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  setCommittedSearch(searchTerm.trim());
-                  setPage(1);
+                  triggerSearch();
                 }
               }}
               sx={{ gridColumn: { xs: "1 / -1", md: "auto" } }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      size="small"
-                      edge="end"
-                      onClick={() => {
-                        setCommittedSearch(searchTerm.trim());
-                        setPage(1);
-                      }}
-                    >
+                    <IconButton size="small" edge="end" onClick={triggerSearch}>
                       <SearchIcon />
                     </IconButton>
                   </InputAdornment>
                 ),
               }}
             />
-            <FormControl size="small" sx={{ minWidth: 200 }}>
-              <InputLabel>Khóa học</InputLabel>
-              <Select
-                label="Khóa học"
-                value={courseId}
-                onChange={(e) => {
-                  setCourseId(e.target.value as string);
-                  setLessonId("");
-                }}
-              >
-                <MenuItem value="">Tất cả</MenuItem>
-                {(adminCourses?.items || []).map((c: any) => (
-                  <MenuItem key={c.id} value={c.id}>
-                    {c.title}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl
-              size="small"
-              sx={{ minWidth: 200 }}
+            <PopupSelect
+              label="Khóa học"
+              value={courseId}
+              onChange={(value) => {
+                setCourseId(value);
+                setLessonId("");
+              }}
+              items={adminCourses?.items || []}
+              loading={courseLoading}
+              pageSize={12}
+              getItemLabel={(course) => course.title}
+              getItemValue={(course) => course.id}
+              noDataMessage="Không có khóa học nào"
+              currentPage={coursePage}
+              onPageChange={setCoursePage}
+              totalPages={adminCourses?.totalPages || 1}
+              title="Chọn khóa học"
+            />
+            <PopupSelect
+              label="Bài học"
+              value={lessonId}
+              onChange={setLessonId}
+              items={lessonsState?.items || []}
+              loading={lessonLoading}
               disabled={!courseId}
-            >
-              <InputLabel>Bài học</InputLabel>
-              <Select
-                label="Bài học"
-                value={lessonId}
-                onChange={(e) => setLessonId(e.target.value as string)}
-              >
-                <MenuItem value="">Tất cả</MenuItem>
-                {((lessonsState?.items as any[]) || []).map((l: any) => (
-                  <MenuItem key={l.id} value={l.id}>
-                    {l.title}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+              pageSize={12}
+              getItemLabel={(lesson) => lesson.title}
+              getItemValue={(lesson) => lesson.id}
+              noDataMessage={
+                !courseId
+                  ? "Vui lòng chọn khóa học trước"
+                  : "Không có bài học nào cho khóa học này"
+              }
+              currentPage={lessonPage}
+              onPageChange={setLessonPage}
+              totalPages={lessonsState?.totalPages || 1}
+              title="Chọn bài học"
+            />
             <FormControl size="small" sx={{ minWidth: 160 }}>
               <InputLabel>Trạng thái</InputLabel>
               <Select
@@ -667,27 +778,48 @@ export default function LessonResourceListSection({
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
           <Box sx={{ display: "grid", gap: 2, mt: 1 }}>
-            <FormControl size="small" fullWidth error={!!formErrors.lessonId}>
-              <InputLabel>Bài học</InputLabel>
-              <Select
-                label="Bài học"
-                value={form.lessonId}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, lessonId: e.target.value as string }))
-                }
-              >
-                {((lessonsState?.items as any[]) || []).map((l: any) => (
-                  <MenuItem key={l.id} value={l.id}>
-                    {l.title}
-                  </MenuItem>
-                ))}
-              </Select>
-              {formErrors.lessonId && (
-                <Typography variant="caption" color="error">
-                  {formErrors.lessonId}
-                </Typography>
-              )}
-            </FormControl>
+            <PopupSelect
+              label="Khóa học"
+              value={form.courseId}
+              onChange={(value) => {
+                setForm((f) => ({ ...f, courseId: value, lessonId: "" }));
+                setFormLessonPage(1); // Reset lesson page when course changes
+              }}
+              items={adminCourses?.items || []}
+              loading={formCourseLoading}
+              error={!!formErrors.courseId}
+              helperText={formErrors.courseId}
+              pageSize={12}
+              getItemLabel={(course) => course.title}
+              getItemValue={(course) => course.id}
+              noDataMessage="Không có khóa học nào"
+              currentPage={formCoursePage}
+              onPageChange={setFormCoursePage}
+              totalPages={adminCourses?.totalPages || 1}
+              title="Chọn khóa học"
+            />
+            <PopupSelect
+              label="Bài học"
+              value={form.lessonId}
+              onChange={(value) => setForm((f) => ({ ...f, lessonId: value }))}
+              items={formLessonsState?.items || []}
+              loading={formLessonLoading}
+              error={!!formErrors.lessonId}
+              helperText={formErrors.lessonId}
+              disabled={!form.courseId}
+              pageSize={12}
+              getItemLabel={(lesson) => lesson.title}
+              getItemValue={(lesson) => lesson.id}
+              noDataMessage={
+                !form.courseId
+                  ? "Vui lòng chọn khóa học trước"
+                  : "Không có bài học nào cho khóa học này"
+              }
+              currentPage={formLessonPage}
+              onPageChange={setFormLessonPage}
+              totalPages={formLessonsState?.totalPages || 1}
+              title="Chọn bài học"
+            />
             <TextField
               size="small"
               label="Tiêu đề"

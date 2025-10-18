@@ -68,6 +68,15 @@ export default function CourseListSection({
   const [maxPrice, setMaxPrice] = useState<string>("");
   const [type, setType] = useState<number | "">("");
   const [status, setStatus] = useState<"all" | "active">("all");
+
+  // Committed filter states (only sent to API when search is triggered)
+  const [committedMinPrice, setCommittedMinPrice] = useState<string>("");
+  const [committedMaxPrice, setCommittedMaxPrice] = useState<string>("");
+  const [committedType, setCommittedType] = useState<number | "">("");
+  const [committedStatus, setCommittedStatus] = useState<"all" | "active">(
+    "all"
+  );
+  const [committedSortDirection, setCommittedSortDirection] = useState(1);
   const [confirmDelete, setConfirmDelete] = useState<CourseResult | null>(null);
   const [confirmRestore, setConfirmRestore] = useState<CourseResult | null>(
     null
@@ -84,12 +93,14 @@ export default function CourseListSection({
         searchTerm: committedSearch || undefined,
         pageNumber: page,
         pageSize,
-        includeDeleted: status === "all", // include deleted only for All
+        includeDeleted: committedStatus === "all", // include deleted only for All
         sortBy: 1, // Mặc định sortBy = 1
-        sortDirection, // 0 = oldest first, 1 = newest first (default)
-        MinPrice: minPrice !== "" ? Number(minPrice) : undefined,
-        MaxPrice: maxPrice !== "" ? Number(maxPrice) : undefined,
-        Type: type === "" ? undefined : Number(type),
+        sortDirection: committedSortDirection, // 0 = oldest first, 1 = newest first (default)
+        MinPrice:
+          committedMinPrice !== "" ? Number(committedMinPrice) : undefined,
+        MaxPrice:
+          committedMaxPrice !== "" ? Number(committedMaxPrice) : undefined,
+        Type: committedType === "" ? undefined : Number(committedType),
       })
     );
   }, [
@@ -97,11 +108,11 @@ export default function CourseListSection({
     committedSearch,
     page,
     pageSize,
-    sortDirection,
-    minPrice,
-    maxPrice,
-    type,
-    status,
+    committedSortDirection,
+    committedMinPrice,
+    committedMaxPrice,
+    committedType,
+    committedStatus,
   ]);
 
   useEffect(() => {
@@ -119,12 +130,14 @@ export default function CourseListSection({
         searchTerm: committedSearch || undefined,
         pageNumber: page,
         pageSize,
-        includeDeleted: status === "all",
+        includeDeleted: committedStatus === "all",
         sortBy: 1,
-        sortDirection,
-        MinPrice: minPrice !== "" ? Number(minPrice) : undefined,
-        MaxPrice: maxPrice !== "" ? Number(maxPrice) : undefined,
-        Type: type === "" ? undefined : Number(type),
+        sortDirection: committedSortDirection,
+        MinPrice:
+          committedMinPrice !== "" ? Number(committedMinPrice) : undefined,
+        MaxPrice:
+          committedMaxPrice !== "" ? Number(committedMaxPrice) : undefined,
+        Type: committedType === "" ? undefined : Number(committedType),
       })
     );
   };
@@ -135,6 +148,11 @@ export default function CourseListSection({
 
   const triggerSearch = () => {
     setCommittedSearch(searchTerm.trim());
+    setCommittedMinPrice(minPrice);
+    setCommittedMaxPrice(maxPrice);
+    setCommittedType(type);
+    setCommittedStatus(status);
+    setCommittedSortDirection(sortDirection);
     setPage(1);
   };
 
@@ -276,8 +294,8 @@ export default function CourseListSection({
                 onChange={(e) => setType(e.target.value as any)}
               >
                 <MenuItem value="">{translate("common.All")}</MenuItem>
-                <MenuItem value={1}>{translate("courses.Free")}</MenuItem>
-                <MenuItem value={2}>{translate("courses.Paid")}</MenuItem>
+                <MenuItem value={1}>Miễn phí</MenuItem>
+                <MenuItem value={2}>Trả phí</MenuItem>
               </Select>
             </FormControl>
             <Button
@@ -388,8 +406,8 @@ export default function CourseListSection({
                         size="small"
                         label={
                           ((course as any)?.type ?? 1) === 2
-                            ? translate("courses.Paid")
-                            : translate("courses.Free")
+                            ? "Trả phí"
+                            : "Miễn phí"
                         }
                         color={
                           ((course as any)?.type ?? 1) === 2
