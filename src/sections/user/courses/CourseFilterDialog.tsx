@@ -10,6 +10,9 @@ import {
   Box,
   IconButton,
   Divider,
+  Select,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -45,6 +48,9 @@ export default function CourseFilterDialog({
         sortBy: 1,
         sortDirection: 1,
         ...initial,
+        // Đảm bảo sortBy và sortDirection luôn có giá trị mặc định
+        sortBy: initial?.sortBy ?? 1,
+        sortDirection: initial?.sortDirection ?? 1,
       });
     }
   }, [open, initial]);
@@ -151,26 +157,29 @@ export default function CourseFilterDialog({
               <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
                 Loại khóa học
               </Typography>
-              <TextField
-                select
-                fullWidth
-                value={values.type || ""}
-                onChange={(e) =>
-                  handleChange(
-                    "type",
-                    e.target.value === "" ? undefined : Number(e.target.value)
-                  )
-                }
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 2,
-                  },
-                }}
-              >
-                <MenuItem value="">Tất cả</MenuItem>
-                <MenuItem value={1}>Miễn phí</MenuItem>
-                <MenuItem value={2}>Trả phí</MenuItem>
-              </TextField>
+              <FormControl fullWidth>
+                <InputLabel shrink>Loại khóa học</InputLabel>
+                <Select
+                  value={values.type === undefined ? "" : values.type}
+                  onChange={(e) =>
+                    handleChange(
+                      "type",
+                      e.target.value === "" ? undefined : Number(e.target.value)
+                    )
+                  }
+                  label="Loại khóa học"
+                  displayEmpty
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                >
+                  <MenuItem value="">Tất cả</MenuItem>
+                  <MenuItem value={1}>Miễn phí</MenuItem>
+                  <MenuItem value={2}>Trả phí</MenuItem>
+                </Select>
+              </FormControl>
             </Box>
 
             <Divider />

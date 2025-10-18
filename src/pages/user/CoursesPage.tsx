@@ -53,6 +53,7 @@ export default function CoursesPage() {
           onSearchChange={handleSearchChange}
           onSearchSubmit={handleSearchSubmit}
           onFilterApply={handleFilterApply}
+          courseFilters={courseFilters}
         />
         <Box sx={{ backgroundColor: "#ffffff", minHeight: "100vh" }}>
           <CourseListingSection

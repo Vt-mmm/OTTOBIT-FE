@@ -24,6 +24,7 @@ interface CourseHeroSectionProps {
   onSearchChange: (query: string) => void;
   onSearchSubmit?: () => void; // trigger API when user hits search
   onFilterApply?: (filters: CourseFilters) => void;
+  courseFilters?: CourseFilters;
 }
 
 export default function CourseHeroSection({
@@ -31,6 +32,7 @@ export default function CourseHeroSection({
   onSearchChange,
   onSearchSubmit,
   onFilterApply,
+  courseFilters,
 }: CourseHeroSectionProps) {
   const { translate } = useLocales();
   const dispatch = useAppDispatch();
@@ -354,6 +356,7 @@ export default function CourseHeroSection({
       <CourseFilterDialog
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
+        initial={courseFilters}
         onApply={(filters) => {
           onFilterApply?.(filters);
           setFilterOpen(false);

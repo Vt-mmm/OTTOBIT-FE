@@ -150,20 +150,9 @@ export default function PaginatedSelectDialog({
             >
               <CircularProgress />
             </Box>
-          ) : items.length === 0 ? (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "200px",
-              }}
-            >
-              <Typography color="text.secondary">{noDataMessage}</Typography>
-            </Box>
           ) : (
             <List>
-              {/* All option */}
+              {/* All option - always show */}
               <ListItem disablePadding>
                 <ListItemButton
                   onClick={() => handleItemClick({ id: "", title: "Tất cả" })}
@@ -181,28 +170,44 @@ export default function PaginatedSelectDialog({
                   <ListItemText primary="Tất cả" />
                 </ListItemButton>
               </ListItem>
-              {items.map((item) => {
-                const isSelected = selectedValue === getItemValue(item);
-                return (
-                  <ListItem key={getItemValue(item)} disablePadding>
-                    <ListItemButton
-                      onClick={() => handleItemClick(item)}
-                      selected={isSelected}
-                      sx={{
-                        "&.Mui-selected": {
-                          backgroundColor: "primary.main",
-                          color: "primary.contrastText",
-                          "&:hover": {
-                            backgroundColor: "primary.dark",
+              {items.length === 0 ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: "100px",
+                    px: 2,
+                  }}
+                >
+                  <Typography color="text.secondary">
+                    {noDataMessage}
+                  </Typography>
+                </Box>
+              ) : (
+                items.map((item) => {
+                  const isSelected = selectedValue === getItemValue(item);
+                  return (
+                    <ListItem key={getItemValue(item)} disablePadding>
+                      <ListItemButton
+                        onClick={() => handleItemClick(item)}
+                        selected={isSelected}
+                        sx={{
+                          "&.Mui-selected": {
+                            backgroundColor: "primary.main",
+                            color: "primary.contrastText",
+                            "&:hover": {
+                              backgroundColor: "primary.dark",
+                            },
                           },
-                        },
-                      }}
-                    >
-                      <ListItemText primary={getItemLabel(item)} />
-                    </ListItemButton>
-                  </ListItem>
-                );
-              })}
+                        }}
+                      >
+                        <ListItemText primary={getItemLabel(item)} />
+                      </ListItemButton>
+                    </ListItem>
+                  );
+                })
+              )}
             </List>
           )}
         </Box>

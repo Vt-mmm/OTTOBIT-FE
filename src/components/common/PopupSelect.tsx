@@ -53,7 +53,12 @@ export default function PopupSelect({
   const [open, setOpen] = useState(false);
 
   const selectedItem = items.find((item) => getItemValue(item) === value);
-  const displayValue = selectedItem ? getItemLabel(selectedItem) : "";
+
+  // Nếu value rỗng hoặc không có value thì hiển thị "Tất cả"
+  // Nếu có selectedItem thì hiển thị label của item đó
+  // Nếu không có selectedItem nhưng có value thì hiển thị value
+  const displayValue =
+    value === "" ? "Tất cả" : selectedItem ? getItemLabel(selectedItem) : "";
 
   const handleOpen = () => {
     if (!disabled && !loading) {
