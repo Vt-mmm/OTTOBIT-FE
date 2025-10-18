@@ -53,7 +53,7 @@ import {
   storeStudioNavigationData,
 } from "../../utils/studioNavigation";
 import { isChallengeAccessible } from "../../utils/challengeUtils";
-import { getMySubmissionsThunk } from "../../redux/submission/submissionThunks";
+import { getBestSubmissionsThunk } from "../../redux/submission/submissionThunks";
 import SolutionHintDialog from "./SolutionHintDialog";
 
 interface TopBarSectionProps {
@@ -167,15 +167,8 @@ function TopBarContent({
   // Derive lessonId from query params or stored navigation data
   useEffect(() => {
     const idFromQuery = searchParams.get("lesson");
-    console.log("🔍 [TopBar] Derive lessonId:", {
-      idFromQuery,
-      searchParams: Object.fromEntries(searchParams.entries()),
-      currentLessonId: lessonId,
-      currentChallengeId,
-    });
     
     if (idFromQuery) {
-      console.log("✅ [TopBar] Setting lessonId from query:", idFromQuery);
       setLessonId(idFromQuery);
       
       // CRITICAL: Update sessionStorage with current challengeId and lessonId
@@ -185,19 +178,14 @@ function TopBarContent({
           lessonId: idFromQuery,
           source: 'lesson'
         });
-        console.log("💾 [TopBar] Updated sessionStorage with URL params");
       }
       return;
     }
     
     const stored = getStoredNavigationData();
-    console.log("📦 [TopBar] Stored navigation data:", stored);
     
     if (stored?.lessonId) {
-      console.log("✅ [TopBar] Setting lessonId from storage:", stored.lessonId);
       setLessonId(stored.lessonId);
-    } else {
-      console.log("⚠️ [TopBar] No lessonId found - menu will be hidden");
     }
   }, [searchParams, currentChallengeId]);
 
@@ -214,14 +202,6 @@ function TopBarContent({
   // Challenge list for lesson
   const lessonChallengeItems = (lessonChallenges as any)?.items || [];
 
-  // Index map for quick lookup
-  const challengeIndexMap = useMemo(() => {
-    const map = new Map<string, number>();
-    (lessonChallengeItems || []).forEach((c: any, i: number) =>
-      map.set(c.id, i)
-    );
-    return map;
-  }, [lessonChallengeItems]);
 
   // Submissions from Redux (progress info)
   const { mySubmissions } = useAppSelector((state) => state.submission);
@@ -231,28 +211,42 @@ function TopBarContent({
   const hasFetchedSubmissions = useRef(false);
   const [submissionsReady, setSubmissionsReady] = useState(false);
   
-  // Fetch submissions when lessonId is present (only once per lesson)
+  // ✅ FIX: Fetch BEST submissions only (highest star per challenge)
+  // This prevents challenge lock issues caused by multiple submissions with star = 0
   useEffect(() => {
     if (!lessonId) return;
     
-    // ✅ FIX: Only fetch if we haven't fetched for this lesson yet
+    // Only fetch if we haven't fetched for this lesson yet
     if (!hasFetchedSubmissions.current) {
-      console.log('📥 [TopBar] Fetching submissions for lesson:', lessonId);
-      setSubmissionsReady(false); // Mark as not ready while fetching
+      setSubmissionsReady(false);
       
-      dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 50 }))
+      // Use getBestSubmissionsThunk instead of getMySubmissionsThunk
+      // Backend groups by challengeId and returns only highest star submission
+      dispatch(getBestSubmissionsThunk({ lessonId }))
         .unwrap()
-        .then(() => {
+        .then((bestSubmissions) => {
           hasFetchedSubmissions.current = true;
-          setSubmissionsReady(true); // Mark as ready
-          console.log('✅ [TopBar] Submissions fetched and ready');
+          setSubmissionsReady(true);
+          
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ [TopBar] Best submissions fetched:', {
+              lessonId,
+              count: bestSubmissions.length,
+              submissions: bestSubmissions.map(s => ({
+                challengeId: s.challengeId,
+                star: s.star,
+                createdAt: s.createdAt
+              }))
+            });
+          }
         })
         .catch((error) => {
-          console.error('❌ [TopBar] Failed to fetch submissions:', error);
-          setSubmissionsReady(true); // Still mark as ready to show UI (with empty data)
+          if (process.env.NODE_ENV === 'development') {
+            console.error('❌ [TopBar] Failed to fetch best submissions:', error);
+          }
+          setSubmissionsReady(true);
         });
     } else {
-      // Already fetched - mark as ready immediately
       setSubmissionsReady(true);
     }
   }, [lessonId, dispatch]);
@@ -263,21 +257,26 @@ function TopBarContent({
     setSubmissionsReady(false);
   }, [lessonId]);
 
-  // Check accessibility using the same logic as LessonTabletSection
-  const isChallengeUnlocked = useCallback(
-    (id: string, index?: number) => {
-      const challenge =
-        typeof index === "number" && index >= 0
-          ? lessonChallengeItems[index]
-          : lessonChallengeItems.find((c: any) => c.id === id);
-      if (!challenge) return false;
-      return isChallengeAccessible(
+  // ✅ OPTIMIZED: Pre-compute unlock status for all challenges to avoid repeated checks
+  const challengeUnlockMap = useMemo(() => {
+    const map = new Map<string, boolean>();
+    lessonChallengeItems.forEach((challenge: any) => {
+      const isUnlocked = isChallengeAccessible(
         challenge,
         lessonChallengeItems,
         submissionsItems
       );
+      map.set(challenge.id, isUnlocked);
+    });
+    return map;
+  }, [lessonChallengeItems, submissionsItems]);
+
+  // Check accessibility using pre-computed map (no repeated calculations)
+  const isChallengeUnlocked = useCallback(
+    (id: string) => {
+      return challengeUnlockMap.get(id) ?? false;
     },
-    [lessonChallengeItems, submissionsItems]
+    [challengeUnlockMap]
   );
 
   // Function to submit solution after completing challenge - memoized to prevent recreations
@@ -330,9 +329,12 @@ function TopBarContent({
     [currentChallengeId, workspace, dispatch, showNotification]
   );
 
+  // Track submission refresh to prevent duplicate fetches
+  const submissionRefreshInProgress = useRef(false);
+
   // Create stable victory handler - memoized to prevent useEffect re-runs
   const handleVictory = useCallback(
-    (victoryData: any) => {
+    async (victoryData: any) => {
       // Use stars calculation logic from VictoryModal (same as UI)
       const score = victoryData.starScore ?? victoryData.score ?? 0;
 
@@ -349,24 +351,47 @@ function TopBarContent({
       const calculatedStars =
         victoryData.stars ?? calculateStarsFromScore(score);
 
-      // Refresh progress from server and submit solution
-      if (lessonId) {
-        dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 10 }));
+      // Submit solution first
+      await submitSolution(calculatedStars);
+      
+      // Then refresh BEST submissions ONCE after successful submission
+      // ✅ FIX: Use getBestSubmissionsThunk to only fetch highest star per challenge
+      if (lessonId && !submissionRefreshInProgress.current) {
+        submissionRefreshInProgress.current = true;
+        try {
+          await dispatch(getBestSubmissionsThunk({ lessonId })).unwrap();
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ [TopBar] Best submissions refreshed after victory');
+          }
+        } catch (error) {
+          if (process.env.NODE_ENV === 'development') {
+            console.error('❌ [TopBar] Failed to refresh best submissions:', error);
+          }
+        } finally {
+          // Reset flag after small delay
+          setTimeout(() => {
+            submissionRefreshInProgress.current = false;
+          }, 1000);
+        }
       }
-      submitSolution(calculatedStars);
     },
     [submitSolution, lessonId, dispatch]
   ); // Only depend on memoized submitSolution
 
   // Reset hasExecuted when challenge changes (fix: reset button not appearing on new map)
   useEffect(() => {
-    console.log('🔄 [TopBar] Challenge changed, resetting button state:', {
-      currentChallengeId,
-      resettingStates: { hasExecuted, isRunning }
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 [TopBar] Challenge changed, resetting button state:', {
+        currentChallengeId,
+        wasExecuted: hasExecuted
+      });
+    }
     
     setHasExecuted(false);
     setIsRunning(false);
+    
+    // Reset submission refresh flag when challenge changes
+    submissionRefreshInProgress.current = false;
   }, [currentChallengeId]);
 
   // Listen for victory events from Phaser - optimized effect with minimal dependencies
@@ -512,8 +537,7 @@ function TopBarContent({
   const handleSelectChallenge = (targetChallengeId: string) => {
     if (!targetChallengeId || targetChallengeId === currentChallengeId) return;
 
-    const idx = challengeIndexMap.get(targetChallengeId) ?? -1;
-    const unlocked = isChallengeUnlocked(targetChallengeId, idx);
+    const unlocked = isChallengeUnlocked(targetChallengeId);
     if (!unlocked) {
       showNotification(
         "Bạn cần hoàn thành map trước đó để mở khóa map này.",
@@ -524,9 +548,12 @@ function TopBarContent({
 
     // IMMEDIATE: Reset button states when changing challenge
     // This ensures button shows "Execute" for new map, not "Reset"
-    console.log('🔎 [TopBar] User selecting new challenge, resetting button states immediately');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔎 [TopBar] User selecting new challenge, resetting button states');
+    }
     setHasExecuted(false);
     setIsRunning(false);
+    submissionRefreshInProgress.current = false; // Reset refresh flag
 
     // Update navigation data BEFORE navigating to keep sessionStorage in sync
     if (lessonId) {
@@ -996,7 +1023,7 @@ function TopBarContent({
             >
               {lessonChallengeItems.map((c: any, idx: number) => {
                 const selected = c.id === currentChallengeId;
-                const unlocked = isChallengeUnlocked(c.id, idx);
+                const unlocked = isChallengeUnlocked(c.id);
 
                 const Btn = (
                   <Button
@@ -1195,19 +1222,6 @@ function TopBarContent({
 
           {/* Dynamic Execute/Reset Button - Only for Simulator maps */}
           {!isPhysicalMap && (
-            <>{/* Debug: Log button state */}
-            {console.log('🔘 [TopBar] Button state:', {
-              isRunning,
-              hasExecuted,
-              isVictoryModalOpen,
-              isDefeatModalOpen,
-              currentChallengeId,
-              buttonAction: isRunning 
-                ? 'Stop' 
-                : (hasExecuted || isVictoryModalOpen || isDefeatModalOpen) 
-                  ? 'Reset' 
-                  : 'Execute'
-            })}
             <Tooltip
               title={
                 isRunning
@@ -1277,7 +1291,6 @@ function TopBarContent({
                 </IconButton>
               </span>
             </Tooltip>
-            </>
           )}
         </Box>
       </Toolbar>

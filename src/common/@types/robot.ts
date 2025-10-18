@@ -62,10 +62,10 @@ export interface GetRobotsRequest {
   brand?: string;
   minAge?: number;
   maxAge?: number;
-  pageNumber?: number;
-  pageSize?: number;
-  sortBy?: number;
-  sortDirection?: number;
+  page?: number;              // BE uses 'page' not 'pageNumber'
+  size?: number;              // BE uses 'size' not 'pageSize'
+  orderBy?: string;           // BE uses string: "Name", "Brand", "Model", "CreatedAt", "UpdatedAt"
+  orderDirection?: "ASC" | "DESC"; // BE uses string: "ASC" or "DESC"
 }
 
 // Response types

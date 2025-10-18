@@ -45,7 +45,7 @@ export default function MyRobotsTab({
       })
     );
     // Lấy danh sách tất cả robots để có thông tin đầy đủ
-    dispatch(getRobotsThunk({ pageNumber: 1, pageSize: 10 }));
+    dispatch(getRobotsThunk({ page: 1, size: 10 }));
   }, [dispatch]);
 
   const handleActivateSuccess = () => {

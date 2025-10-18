@@ -312,6 +312,8 @@ export default function CourseListingSection({
                 onEnroll={handleEnrollCourse}
                 price={(course as any).price}
                 type={(course as any).type}
+                ratingAverage={(course as any).ratingAverage || 0}
+                ratingCount={(course as any).ratingCount || 0}
               />
             ))}
           </Box>

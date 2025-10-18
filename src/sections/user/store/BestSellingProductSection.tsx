@@ -51,10 +51,10 @@ export default function BestSellingProductSection() {
     // Fetch robots with limit for best selling (fetch 12 items for 3 pages)
     dispatch(
       getRobotsThunk({
-        pageNumber: 1,
-        pageSize: 10,
-        sortBy: 5, // CreatedAt enum value
-        sortDirection: 2, // DESC enum value
+        page: 1,
+        size: 10,
+        orderBy: "CreatedAt",
+        orderDirection: "DESC",
       })
     );
     // Fetch components with limit for best selling (fetch 12 items for 3 pages)
@@ -282,6 +282,7 @@ export default function BestSellingProductSection() {
             gap: 4,
             mb: 6,
             minHeight: 300,
+            gridAutoRows: "1fr",
           }}
         >
           {isLoading ? (
@@ -305,16 +306,20 @@ export default function BestSellingProductSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, delay: index * 0.1 }}
+                style={{ height: "100%" }}
               >
                 <Paper
                   elevation={0}
                   sx={{
                     borderRadius: 5,
-                    overflow: "visible",
+                    overflow: "hidden",
                     background: getCardGradient(index),
                     transition: "all 0.3s ease",
                     cursor: "pointer",
                     position: "relative",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
                     "&:hover": {
                       transform: "translateY(-8px)",
                       boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
@@ -326,10 +331,13 @@ export default function BestSellingProductSection() {
                     sx={{
                       position: "relative",
                       height: 200,
+                      minHeight: 200,
+                      maxHeight: 200,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       p: 3,
+                      flexShrink: 0,
                     }}
                     onClick={() => handleProductClick(product)}
                   >
@@ -373,9 +381,13 @@ export default function BestSellingProductSection() {
                   <Box
                     sx={{
                       bgcolor: "white",
-                      p: 3,
+                      p: 2.5,
                       borderBottomLeftRadius: 20,
                       borderBottomRightRadius: 20,
+                      flexGrow: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      minHeight: 0,
                     }}
                   >
                     <Typography
@@ -384,8 +396,17 @@ export default function BestSellingProductSection() {
                         fontWeight: 600,
                         color: "#2c3e50",
                         mb: 0.5,
-                        fontSize: "1.1rem",
+                        fontSize: "1rem",
+                        lineHeight: "1.4",
+                        width: "100%",
+                        height: "2.8em", // 2 lines
+                        overflow: "hidden",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        wordBreak: "break-word",
                       }}
+                      title={product.name}
                     >
                       {product.name}
                     </Typography>
@@ -394,8 +415,10 @@ export default function BestSellingProductSection() {
                       variant="body2"
                       sx={{
                         color: "#7f8c8d",
-                        mb: 2.5,
-                        fontSize: "0.9rem",
+                        mb: 2,
+                        fontSize: "0.875rem",
+                        height: "1.3em",
+                        lineHeight: "1.3em",
                       }}
                     >
                       {translate("store.bestSelling.popularItems")}
@@ -407,6 +430,7 @@ export default function BestSellingProductSection() {
                         display: "flex",
                         gap: 1.5,
                         justifyContent: "flex-start",
+                        mt: "auto",
                       }}
                     >
                       <Button
@@ -418,14 +442,17 @@ export default function BestSellingProductSection() {
                           color: "white",
                           textTransform: "none",
                           borderRadius: 2,
-                          py: 1.2,
+                          py: 1,
+                          px: 2,
                           fontWeight: 600,
+                          fontSize: "0.875rem",
+                          minHeight: 44,
                           "&:hover": {
                             bgcolor: "#34495e",
                           },
                         }}
                       >
-                        {translate("store.bestSelling.addToCart")}
+                        {translate("store.bestSelling.viewDetails")}
                       </Button>
 
                       <IconButton
@@ -434,7 +461,10 @@ export default function BestSellingProductSection() {
                           border: "1px solid #e0e0e0",
                           borderRadius: 2,
                           width: 44,
+                          minWidth: 44,
                           height: 44,
+                          minHeight: 44,
+                          flexShrink: 0,
                           "&:hover": {
                             bgcolor: "#f5f5f5",
                           },
@@ -444,7 +474,7 @@ export default function BestSellingProductSection() {
                         }}
                       >
                         <CompareArrowsIcon
-                          sx={{ color: "#7f8c8d", fontSize: 20 }}
+                          sx={{ color: "#7f8c8d", fontSize: 18 }}
                         />
                       </IconButton>
                     </Box>

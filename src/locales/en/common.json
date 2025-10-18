@@ -59,6 +59,13 @@
   "Studio": "Studio",
   "User": "User",
   "Student": "Student",
+  "Administrator": "Administrator",
+  "MyProfile": "My Profile",
+  "MyLearning": "My Learning",
+  "Dashboard": "Dashboard",
+  "AdminPanel": "Admin Panel",
+  "Login": "Login",
+  "Blog": "Blog",
   "footer": {
     "companyName": "Ottobit Frontend",
     "companyDescription": "Modern application platform built with React 18.3.1, TypeScript 5.4.x and Material UI v6.",

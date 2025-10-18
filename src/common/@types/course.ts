@@ -24,6 +24,10 @@ export interface Course {
   isEnrolled?: boolean | null;
   enrollmentDate?: string | null;
 
+  // Rating aggregates (calculated by BE)
+  ratingAverage?: number;
+  ratingCount?: number;
+
   // Robot requirements (populated by BE if requested)
   courseRobots?: CourseRobotInfo[];
 }

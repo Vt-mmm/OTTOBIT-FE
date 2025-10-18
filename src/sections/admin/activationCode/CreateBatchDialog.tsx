@@ -11,8 +11,6 @@ import {
   Alert,
   Typography,
   Autocomplete,
-  FormControlLabel,
-  Checkbox,
 } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "store/config";
 import { useLocales } from "hooks";
@@ -40,13 +38,12 @@ export default function CreateBatchDialog({
   const [selectedRobot, setSelectedRobot] = useState<any>(null);
   const [batchId, setBatchId] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(10);
-  const [hasExpiry, setHasExpiry] = useState(false);
   const [expiryDate, setExpiryDate] = useState<string>("");
 
   useEffect(() => {
     if (open) {
       // Fetch available robots
-      dispatch(getRobotsThunk({ pageSize: 10 }));
+      dispatch(getRobotsThunk({ size: 10 }));
     }
   }, [open, dispatch]);
 
@@ -61,7 +58,6 @@ export default function CreateBatchDialog({
     setSelectedRobot(null);
     setBatchId("");
     setQuantity(10);
-    setHasExpiry(false);
     setExpiryDate("");
     onSuccess?.();
     onClose();
@@ -75,7 +71,7 @@ export default function CreateBatchDialog({
         robotId: selectedRobot.id,
         batchId: batchId.trim(),
         quantity,
-        expiresAt: hasExpiry && expiryDate ? expiryDate : undefined,
+        expiresAt: expiryDate ? expiryDate : undefined,
       })
     );
   };
@@ -84,7 +80,6 @@ export default function CreateBatchDialog({
     setSelectedRobot(null);
     setBatchId("");
     setQuantity(10);
-    setHasExpiry(false);
     setExpiryDate("");
     onClose();
   };
@@ -176,31 +171,19 @@ export default function CreateBatchDialog({
                 helperText={translate("admin.quantityHelper")}
               />
 
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={hasExpiry}
-                    onChange={(e) => setHasExpiry(e.target.checked)}
-                  />
-                }
-                label={translate("admin.hasExpiry")}
+              <TextField
+                label={translate("admin.expiresAt")}
+                type="date"
+                value={expiryDate}
+                onChange={(e) => setExpiryDate(e.target.value)}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                helperText={translate("admin.expiryDateHelper")}
+                inputProps={{
+                  min: new Date().toISOString().split("T")[0],
+                }}
               />
-
-              {hasExpiry && (
-                <TextField
-                  label={translate("admin.expiresAt")}
-                  type="date"
-                  value={expiryDate}
-                  onChange={(e) => setExpiryDate(e.target.value)}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  helperText={translate("admin.expiryDateHelper")}
-                  inputProps={{
-                    min: new Date().toISOString().split("T")[0],
-                  }}
-                />
-              )}
 
               {selectedRobot && batchId && (
                 <Alert severity="info">
@@ -213,7 +196,7 @@ export default function CreateBatchDialog({
                           robotName: selectedRobot.name,
                           batchId: batchId,
                         }) +
-                        (hasExpiry && expiryDate
+                        (expiryDate
                           ? translate("admin.createBatchInfoWithExpiry", {
                               expiryDate: new Date(
                                 expiryDate

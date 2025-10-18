@@ -655,6 +655,7 @@
   "searchSubmissionPlaceholder": "Search (Student, Challenge)",
   "starFrom": "Star from",
   "starTo": "Star to",
+  "starRangeFilter": "Filter by stars",
   "noSubmissions": "No submissions found",
   "no": "No.",
   "rating": "Rating",
@@ -664,6 +665,7 @@
   "studentInfo": "Student Information",
   "codeJson": "Code JSON",
   "time": "Time",
+  "pleaseSearchToSeeResults": "Please select filters and click Search to see results",
   
   "view": "View",
   "edit": "Edit",

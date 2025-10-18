@@ -13,6 +13,7 @@ import {
   Alert,
   Pagination,
   Paper,
+  IconButton,
 } from "@mui/material";
 import { Search as SearchIcon } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "store/config";
@@ -28,6 +29,7 @@ export default function ComponentListingSection() {
   const { components } = useAppSelector((state) => state.component);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
+  const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<ComponentType | "all">("all");
   const [pageNumber, setPageNumber] = useState(1);
@@ -46,6 +48,17 @@ export default function ComponentListingSection() {
 
     dispatch(getComponentsThunk(filters));
   }, [dispatch, searchTerm, filterType, pageNumber, pageSize]);
+
+  const handleSearch = () => {
+    setSearchTerm(searchInput.trim());
+    setPageNumber(1);
+  };
+
+  const handleSearchKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
 
   const handleComponentClick = (componentId: string) => {
     const path = isAuthenticated
@@ -88,15 +101,25 @@ export default function ComponentListingSection() {
             <TextField
               fullWidth
               placeholder="Search components..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setPageNumber(1);
-              }}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyPress={handleSearchKeyPress}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
                     <SearchIcon />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={handleSearch}
+                      edge="end"
+                      sx={{ color: "primary.main" }}
+                    >
+                      <SearchIcon />
+                    </IconButton>
                   </InputAdornment>
                 ),
               }}

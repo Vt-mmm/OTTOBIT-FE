@@ -17,11 +17,8 @@ import {
   Typography,
   Alert,
   TextField,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
   Rating,
+  Slider,
 } from "@mui/material";
 import {
   Visibility as VisibilityIcon,
@@ -44,39 +41,30 @@ export default function SubmissionListSection() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchInput, setSearchInput] = useState("");
-  const [starFrom, setStarFrom] = useState<number | "">("");
-  const [starTo, setStarTo] = useState<number | "">("");
+  const [starRange, setStarRange] = useState<number[]>([0, 3]);
+  
+  // Applied filters - only update when user clicks Search
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState<string>("");
+  const [appliedStarRange, setAppliedStarRange] = useState<number[]>([0, 3]);
 
   const items = adminSubmissions.data?.items || [];
   const total = adminSubmissions.data?.total || 0;
   const isLoading = adminSubmissions.isLoading;
   const error = adminSubmissions.error;
 
-
-  // Fetch data on mount and pagination/filter changes (no search)
+  // Fetch data on mount and when pagination or applied filters change
   useEffect(() => {
-    fetchDataWithoutSearch();
-  }, [page, rowsPerPage, starFrom, starTo]);
+    fetchData();
+  }, [page, rowsPerPage, appliedSearchTerm, appliedStarRange]);
 
-  const fetchDataWithoutSearch = () => {
+  const fetchData = () => {
     dispatch(
       getSubmissionsForAdminThunk({
         pageNumber: page + 1,
         pageSize: rowsPerPage,
-        starFrom: starFrom !== "" ? starFrom : undefined,
-        starTo: starTo !== "" ? starTo : undefined,
-      })
-    );
-  };
-
-  const fetchData = (searchTerm?: string) => {
-    dispatch(
-      getSubmissionsForAdminThunk({
-        pageNumber: page + 1,
-        pageSize: rowsPerPage,
-        searchTerm: searchTerm || undefined,
-        starFrom: starFrom !== "" ? starFrom : undefined,
-        starTo: starTo !== "" ? starTo : undefined,
+        searchTerm: appliedSearchTerm || undefined,
+        starFrom: appliedStarRange[0],
+        starTo: appliedStarRange[1],
       })
     );
   };
@@ -93,9 +81,11 @@ export default function SubmissionListSection() {
   };
 
   const handleSearch = useCallback(() => {
-    setPage(0);
-    fetchData(searchInput.trim());
-  }, [searchInput, rowsPerPage, starFrom, starTo]);
+    // Apply current filter values
+    setAppliedSearchTerm(searchInput.trim());
+    setAppliedStarRange(starRange);
+    setPage(0); // Reset to first page when searching
+  }, [searchInput, starRange]);
 
   const handleViewDetails = (submissionId: string) => {
     navigate(PATH_ADMIN.submissionDetail.replace(":id", submissionId));
@@ -146,45 +136,42 @@ export default function SubmissionListSection() {
               </Button>
             </Stack>
 
-            <Stack direction="row" spacing={2}>
-              <FormControl sx={{ minWidth: 150 }}>
-                <InputLabel>{translate("admin.starFrom")}</InputLabel>
-                <Select
-                  value={starFrom}
-                  label={translate("admin.starFrom")}
-                  onChange={(e) =>
-                    setStarFrom(
-                      e.target.value === "" ? "" : Number(e.target.value)
-                    )
-                  }
-                >
-                  <MenuItem value="">{translate("admin.all")}</MenuItem>
-                  <MenuItem value={0}>0 ⭐</MenuItem>
-                  <MenuItem value={1}>1 ⭐</MenuItem>
-                  <MenuItem value={2}>2 ⭐</MenuItem>
-                  <MenuItem value={3}>3 ⭐</MenuItem>
-                </Select>
-              </FormControl>
-
-              <FormControl sx={{ minWidth: 150 }}>
-                <InputLabel>{translate("admin.starTo")}</InputLabel>
-                <Select
-                  value={starTo}
-                  label={translate("admin.starTo")}
-                  onChange={(e) =>
-                    setStarTo(
-                      e.target.value === "" ? "" : Number(e.target.value)
-                    )
-                  }
-                >
-                  <MenuItem value="">{translate("admin.all")}</MenuItem>
-                  <MenuItem value={0}>0 ⭐</MenuItem>
-                  <MenuItem value={1}>1 ⭐</MenuItem>
-                  <MenuItem value={2}>2 ⭐</MenuItem>
-                  <MenuItem value={3}>3 ⭐</MenuItem>
-                </Select>
-              </FormControl>
-            </Stack>
+            <Box sx={{ width: '100%', maxWidth: 450, mx: 'auto', py: 1.5 }}>
+              <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2, px: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  {translate("admin.starRangeFilter")}
+                </Typography>
+                <Typography variant="body2" fontWeight={600} color="primary.main">
+                  {starRange[0]} ⭐ - {starRange[1]} ⭐
+                </Typography>
+              </Stack>
+              <Box sx={{ px: 2 }}>
+                <Slider
+                  value={starRange}
+                  onChange={(_, newValue) => setStarRange(newValue as number[])}
+                  valueLabelDisplay="auto"
+                  min={0}
+                  max={3}
+                  step={1}
+                  marks={[
+                    { value: 0, label: '0⭐' },
+                    { value: 1, label: '1⭐' },
+                    { value: 2, label: '2⭐' },
+                    { value: 3, label: '3⭐' },
+                  ]}
+                  sx={{
+                    '& .MuiSlider-thumb': {
+                      width: 20,
+                      height: 20,
+                    },
+                    '& .MuiSlider-markLabel': {
+                      fontSize: 12,
+                      top: 28,
+                    },
+                  }}
+                />
+              </Box>
+            </Box>
           </Stack>
         </Card>
 

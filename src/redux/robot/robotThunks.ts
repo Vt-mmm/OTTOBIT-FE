@@ -3,6 +3,10 @@ import { AxiosError } from "axios";
 import { axiosClient } from "axiosClient/axiosClient";
 import { ROUTES_API_ROBOT } from "constants/routesApiKeys";
 import {
+  setMessageSuccess,
+  setMessageError,
+} from "./robotSlice";
+import {
   RobotResult,
   RobotsResponse,
   CreateRobotRequest,
@@ -118,7 +122,7 @@ export const createRobotThunk = createAsyncThunk<
   RobotResult,
   CreateRobotRequest,
   { rejectValue: string }
->("robot/create", async (robotData, { rejectWithValue }) => {
+>("robot/create", async (robotData, { rejectWithValue, dispatch }) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.post<ApiResponse<RobotResult>>(
@@ -139,12 +143,14 @@ export const createRobotThunk = createAsyncThunk<
       throw new Error("No robot data received");
     }
 
+    dispatch(setMessageSuccess("Robot created successfully"));
     return response.data.data;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to create robot"
     );
+    dispatch(setMessageError(errorMessage));
     return rejectWithValue(errorMessage);
   }
 });
@@ -154,7 +160,7 @@ export const updateRobotThunk = createAsyncThunk<
   RobotResult,
   { id: string; data: UpdateRobotRequest },
   { rejectValue: string }
->("robot/update", async ({ id, data }, { rejectWithValue }) => {
+>("robot/update", async ({ id, data }, { rejectWithValue, dispatch }) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.put<ApiResponse<RobotResult>>(
@@ -175,12 +181,14 @@ export const updateRobotThunk = createAsyncThunk<
       throw new Error("No robot data received");
     }
 
+    dispatch(setMessageSuccess("Robot updated successfully"));
     return response.data.data;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to update robot"
     );
+    dispatch(setMessageError(errorMessage));
     return rejectWithValue(errorMessage);
   }
 });
@@ -190,7 +198,7 @@ export const deleteRobotThunk = createAsyncThunk<
   string,
   string,
   { rejectValue: string }
->("robot/delete", async (id, { rejectWithValue }) => {
+>("robot/delete", async (id, { rejectWithValue, dispatch }) => {
   try {
     const response = await callApiWithRetry(() =>
       axiosClient.delete<ApiResponse<string>>(ROUTES_API_ROBOT.DELETE(id))
@@ -204,12 +212,14 @@ export const deleteRobotThunk = createAsyncThunk<
       throw new Error(errorMessage);
     }
 
+    dispatch(setMessageSuccess("Robot deleted successfully"));
     return id;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
       "Failed to delete robot"
     );
+    dispatch(setMessageError(errorMessage));
     return rejectWithValue(errorMessage);
   }
 });

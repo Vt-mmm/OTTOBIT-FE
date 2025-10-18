@@ -136,7 +136,19 @@ export default function ComponentDetailSection({ componentId }: ComponentDetailS
         >
           Components
         </Link>
-        <Typography color="text.primary" fontSize="0.875rem">{component.name}</Typography>
+        <Typography
+          color="text.primary"
+          fontSize="0.875rem"
+          sx={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            maxWidth: "300px",
+          }}
+          title={component.name}
+        >
+          {component.name}
+        </Typography>
       </Breadcrumbs>
 
       {/* Main Product Section */}
@@ -219,7 +231,15 @@ export default function ComponentDetailSection({ componentId }: ComponentDetailS
         <Box sx={{ flex: 1 }}>
           {/* Title & Category */}
           <Box sx={{ mb: 2 }}>
-            <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 700,
+                mb: 1,
+                wordBreak: "break-word",
+                overflowWrap: "break-word",
+              }}
+            >
               {component.name}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
@@ -302,7 +322,15 @@ export default function ComponentDetailSection({ componentId }: ComponentDetailS
             <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
               Product Description
             </Typography>
-            <Typography variant="body1" sx={{ lineHeight: 1.8, color: "text.secondary" }}>
+            <Typography
+              variant="body1"
+              sx={{
+                lineHeight: 1.8,
+                color: "text.secondary",
+                wordBreak: "break-word",
+                overflowWrap: "break-word",
+              }}
+            >
               {component.description || "No description available"}
             </Typography>
           </Box>
@@ -319,7 +347,12 @@ export default function ComponentDetailSection({ componentId }: ComponentDetailS
                     key={idx}
                     component="li"
                     variant="body2"
-                    sx={{ mb: 1, color: "text.secondary" }}
+                    sx={{
+                      mb: 1,
+                      color: "text.secondary",
+                      wordBreak: "break-word",
+                      overflowWrap: "break-word",
+                    }}
                   >
                     {spec}
                   </Typography>
@@ -348,20 +381,7 @@ export default function ComponentDetailSection({ componentId }: ComponentDetailS
                 textTransform: "none",
               }}
             >
-              Contact to Purchase
-            </Button>
-            <Button
-              variant="outlined"
-              size="large"
-              fullWidth
-              sx={{
-                py: 1.5,
-                fontSize: "1rem",
-                fontWeight: 600,
-                textTransform: "none",
-              }}
-            >
-              Buy Now
+              How to Buy
             </Button>
           </Box>
 
@@ -399,7 +419,12 @@ export default function ComponentDetailSection({ componentId }: ComponentDetailS
           >
             <Typography
               variant="body1"
-              sx={{ whiteSpace: "pre-line", lineHeight: 1.8 }}
+              sx={{
+                whiteSpace: "pre-line",
+                lineHeight: 1.8,
+                wordBreak: "break-word",
+                overflowWrap: "break-word",
+              }}
             >
               {component.specifications}
             </Typography>

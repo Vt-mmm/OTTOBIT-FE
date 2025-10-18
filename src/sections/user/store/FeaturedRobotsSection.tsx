@@ -15,8 +15,8 @@ export default function FeaturedRobotsSection() {
   useEffect(() => {
     // Fetch featured robots (limit to 4 for display)
     dispatch(getRobotsThunk({
-      pageNumber: 1,
-      pageSize: 4,
+      page: 1,
+      size: 4,
     }));
   }, [dispatch]);
 

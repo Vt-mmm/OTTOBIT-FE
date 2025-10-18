@@ -8,7 +8,7 @@ import { Box, CircularProgress } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getChallengesByLesson } from "../../../redux/challenge/challengeSlice";
-import { getMySubmissionsThunk } from "../../../redux/submission/submissionThunks";
+import { getBestSubmissionsThunk } from "../../../redux/submission/submissionThunks";
 import {
   startLesson,
   getMyLessonProgress,
@@ -80,13 +80,12 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
       hasInitialFetchRef.current = true; // Mark as fetched
       lastSubmissionsFetchRef.current = Date.now();
       
-      // Fetch fresh submissions immediately with higher pageSize to ensure we get all
-      dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 50 }))
+      // ✅ FIX: Fetch BEST submissions only (highest star per challenge)
+      dispatch(getBestSubmissionsThunk({ lessonId }))
         .unwrap()
         .then((result) => {
           console.log('✅ [LessonMapSelector] Fresh submissions fetched from Studio return:', {
-            count: result.items?.length || 0,
-            total: result.total,
+            count: result.length || 0,
           });
         })
         .catch((error) => {
@@ -135,10 +134,11 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
         mySubmissions.data.items.length === 0;
 
       if (shouldFetchSubmissions) {
-        console.log('📥 [LessonMapSelector] Fetching submissions (initial load)');
+        console.log('📥 [LessonMapSelector] Fetching best submissions (initial load)');
         hasInitialFetchRef.current = true;
         lastSubmissionsFetchRef.current = now;
-        dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 50 }));
+        // ✅ FIX: Use getBestSubmissionsThunk to only fetch highest star submissions
+        dispatch(getBestSubmissionsThunk({ lessonId }));
       }
     } else {
       console.log('✅ [LessonMapSelector] Submissions already fetched, skipping');
@@ -261,7 +261,8 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
   const handleRetry = () => {
     if (lessonId) {
       dispatch(getChallengesByLesson({ lessonId, pageSize: 10 }));
-      dispatch(getMySubmissionsThunk({ pageNumber: 1, pageSize: 10 }));
+      // ✅ FIX: Use getBestSubmissionsThunk for retry
+      dispatch(getBestSubmissionsThunk({ lessonId }));
     }
   };
 

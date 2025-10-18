@@ -1,6 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
+  Button,
   TextField,
   FormControl,
   InputLabel,
@@ -13,6 +14,7 @@ import {
   Pagination,
   Slider,
   Divider,
+  IconButton,
 } from "@mui/material";
 import { Search as SearchIcon } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "store/config";
@@ -30,57 +32,48 @@ export default function RobotListingSection() {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   const { translate } = useLocales();
 
+  const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  // Age range from 1 to 99 years old
+  // Age range - UI state (what user is selecting)
+  const [ageRangeInput, setAgeRangeInput] = useState<[number, number]>([1, 99]);
+  // Age range - Applied state (what's actually sent to API)
   const [ageRange, setAgeRange] = useState<[number, number]>([1, 99]);
-  const [applyAgeFilter, setApplyAgeFilter] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(12);
 
-  // Debounce timer ref
-  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
-
-  // Fetch robots with debounce for slider changes
+  // Fetch robots when filters change
   useEffect(() => {
     const filters: GetRobotsRequest = {
       searchTerm: searchTerm.trim() || undefined,
-      // inStock filter removed - no stock data available
-      // Only apply age filter if user has interacted with it
-      minAge: applyAgeFilter && ageRange[0] > 1 ? ageRange[0] : undefined,
-      maxAge: applyAgeFilter && ageRange[1] < 99 ? ageRange[1] : undefined,
-      pageNumber,
-      pageSize,
+      // Only apply age filter if user changed from default
+      minAge: ageRange[0] > 1 ? ageRange[0] : undefined,
+      maxAge: ageRange[1] < 99 ? ageRange[1] : undefined,
+      page: pageNumber,
+      size: pageSize,
     };
 
-    // Clear existing timer
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
+    dispatch(getRobotsThunk(filters));
+  }, [dispatch, searchTerm, ageRange, pageNumber, pageSize]);
 
-    // Use debounce for age range changes (500ms delay)
-    if (applyAgeFilter) {
-      debounceTimer.current = setTimeout(() => {
-        dispatch(getRobotsThunk(filters));
-      }, 500);
-    } else {
-      // Immediate fetch for other filters
-      dispatch(getRobotsThunk(filters));
-    }
+  const handleSearch = () => {
+    setSearchTerm(searchInput.trim());
+    setAgeRange(ageRangeInput); // Apply age filter
+    setPageNumber(1);
+  };
 
-    // Cleanup on unmount
-    return () => {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
-    };
-  }, [
-    dispatch,
-    searchTerm,
-    ageRange,
-    applyAgeFilter,
-    pageNumber,
-    pageSize,
-  ]);
+  const handleSearchKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  const handleResetFilters = () => {
+    setSearchInput("");
+    setSearchTerm("");
+    setAgeRangeInput([1, 99]);
+    setAgeRange([1, 99]);
+    setPageNumber(1);
+  };
 
   const handleRobotClick = (robotId: string) => {
     const path = isAuthenticated
@@ -144,15 +137,20 @@ export default function RobotListingSection() {
             fullWidth
             size="small"
             placeholder={translate('store.SearchRobots')}
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setPageNumber(1);
-            }}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyPress={handleSearchKeyPress}
             InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={handleSearch}
+                    edge="end"
+                    sx={{ color: "primary.main" }}
+                  >
+                    <SearchIcon fontSize="small" />
+                  </IconButton>
                 </InputAdornment>
               ),
             }}
@@ -173,11 +171,9 @@ export default function RobotListingSection() {
           </Typography>
           <Box sx={{ px: 1 }}>
             <Slider
-              value={ageRange}
+              value={ageRangeInput}
               onChange={(_, newValue) => {
-                setAgeRange(newValue as [number, number]);
-                setApplyAgeFilter(true);
-                setPageNumber(1);
+                setAgeRangeInput(newValue as [number, number]);
               }}
               valueLabelDisplay="auto"
               min={1}
@@ -207,13 +203,28 @@ export default function RobotListingSection() {
               sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}
             >
               <Typography variant="caption" color="text.secondary">
-                {ageRange[0]} {translate('store.Years')}
+                {ageRangeInput[0]} {translate('store.Years')}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {ageRange[1]} {translate('store.Years')}
+                {ageRangeInput[1]} {translate('store.Years')}
               </Typography>
             </Box>
           </Box>
+        </Box>
+
+        <Divider sx={{ my: 2 }} />
+
+        {/* Reset Button */}
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            fullWidth
+            onClick={handleResetFilters}
+            sx={{ borderRadius: 1.5 }}
+          >
+            {translate('store.ResetFilters')}
+          </Button>
         </Box>
       </Box>
 

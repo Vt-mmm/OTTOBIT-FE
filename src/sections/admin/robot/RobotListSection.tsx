@@ -66,8 +66,8 @@ export default function RobotListSection({
   // Fetch robots on component mount and pagination changes (no search)
   useEffect(() => {
     const filters = {
-      pageNumber,
-      pageSize,
+      page: pageNumber,
+      size: pageSize,
     };
 
     dispatch(getRobotsThunk(filters));
@@ -98,8 +98,8 @@ export default function RobotListSection({
   const handleSearchClick = () => {
     const filters = {
       searchTerm: searchTerm.trim() || undefined,
-      pageNumber: 1,
-      pageSize,
+      page: 1,
+      size: pageSize,
     };
     setPageNumber(1);
     dispatch(getRobotsThunk(filters));

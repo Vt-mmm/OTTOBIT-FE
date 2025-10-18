@@ -695,6 +695,7 @@
   "searchSubmissionPlaceholder": "Tìm kiếm (Sinh viên, Challenge)",
   "starFrom": "Sao từ",
   "starTo": "Sao đến",
+  "starRangeFilter": "Lọc theo số sao",
   "noSubmissions": "Không có bài nộp nào",
   "no": "STT",
   "rating": "Đánh giá",
@@ -704,6 +705,7 @@
   "studentInfo": "Thông tin Sinh viên",
   "codeJson": "Code JSON",
   "time": "Thời gian",
+  "pleaseSearchToSeeResults": "Vui lòng chọn bộ lọc và nhấn Tìm kiếm để xem kết quả",
   
   "view": "Xem",
   "edit": "Sửa",

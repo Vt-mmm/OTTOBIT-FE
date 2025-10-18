@@ -87,5 +87,9 @@
   "MockCourse4Desc": "Làm việc nhóm thực hiện các dự án STEM tích hợp, từ ý tưởng đến sản phẩm",
   "LevelBasic": "Cơ bản",
   "LevelIntermediate": "Trung cấp",
-  "LevelAdvanced": "Nâng cao"
+  "LevelAdvanced": "Nâng cao",
+  "HeroHeading": "Gặp gỡ",
+  "HeroDescription": "Người bạn đồng hành STEM độc đáo của bạn - nhanh chóng, thân thiện và hấp dẫn. Biến học tập thành trải nghiệm robotics hoàn chỉnh với giải pháp của chúng tôi.",
+  "LoginButton": "Đăng nhập ngay",
+  "ExploreProductsButton": "Khám phá sản phẩm"
 }

@@ -18,7 +18,7 @@ import { useFirebaseStorage } from "../../hooks/useFirebaseStorage";
 
 export interface SimpleImageUploaderProps {
   entityId?: string;
-  entityType: "robot" | "component" | "general";
+  entityType: "robot" | "component" | "course" | "general";
   currentImageUrl?: string;
   onImageChange?: (imageUrl: string | null) => void;
   height?: number;

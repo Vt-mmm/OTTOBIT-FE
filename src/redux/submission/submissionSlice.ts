@@ -5,6 +5,7 @@ import {
   SubmissionsResponse,
 } from "common/@types/submission";
 import {
+  getBestSubmissionsThunk,
   getMySubmissionsThunk,
   getSubmissionByIdThunk,
   createSubmissionThunk,
@@ -163,6 +164,30 @@ const submissionSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Get best submissions (highest star per challenge)
+      .addCase(getBestSubmissionsThunk.pending, (state, action) => {
+        state.mySubmissions.isLoading = true;
+        state.mySubmissions.error = null;
+        state.mySubmissions.lastQuery = action.meta.arg;
+      })
+      .addCase(getBestSubmissionsThunk.fulfilled, (state, action) => {
+        state.mySubmissions.isLoading = false;
+        state.mySubmissions.error = null;
+        // Convert array to SubmissionsResponse format for compatibility
+        state.mySubmissions.data = {
+          items: action.payload,
+          page: 1,
+          size: action.payload.length,
+          total: action.payload.length,
+          totalPages: 1,
+        };
+      })
+      .addCase(getBestSubmissionsThunk.rejected, (state, action) => {
+        state.mySubmissions.isLoading = false;
+        state.mySubmissions.error =
+          action.payload || "Failed to fetch best submissions";
+      })
+
       // Get my submissions
       .addCase(getMySubmissionsThunk.pending, (state, action) => {
         state.mySubmissions.isLoading = true;

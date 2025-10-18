@@ -145,7 +145,17 @@ export default function RobotDetailSection({
         >
           {translate("store.robotDetail.robots")}
         </Link>
-        <Typography color="text.primary" fontSize="0.875rem">
+        <Typography
+          color="text.primary"
+          fontSize="0.875rem"
+          sx={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            maxWidth: "300px",
+          }}
+          title={robotData.name}
+        >
           {robotData.name}
         </Typography>
       </Breadcrumbs>
@@ -263,11 +273,36 @@ export default function RobotDetailSection({
         <Box sx={{ flex: 1 }}>
           {/* Title & Rating */}
           <Box sx={{ mb: 2 }}>
-            <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 700,
+                mb: 1,
+                wordBreak: "break-word",
+                overflowWrap: "break-word",
+              }}
+            >
               {robotData.name}
             </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
-              <Typography variant="subtitle1" color="text.secondary">
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                mb: 1,
+                flexWrap: "wrap",
+              }}
+            >
+              <Typography
+                variant="subtitle1"
+                color="text.secondary"
+                sx={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  maxWidth: "100%",
+                }}
+              >
                 {robotData.brand} • {robotData.model}
               </Typography>
               <Chip
@@ -358,7 +393,12 @@ export default function RobotDetailSection({
             </Typography>
             <Typography
               variant="body1"
-              sx={{ lineHeight: 1.8, color: "text.secondary" }}
+              sx={{
+                lineHeight: 1.8,
+                color: "text.secondary",
+                wordBreak: "break-word",
+                overflowWrap: "break-word",
+              }}
             >
               {robotData.description || translate("store.robotDetail.noDescription")}
             </Typography>
@@ -380,7 +420,12 @@ export default function RobotDetailSection({
                       key={idx}
                       component="li"
                       variant="body2"
-                      sx={{ mb: 1, color: "text.secondary" }}
+                      sx={{
+                        mb: 1,
+                        color: "text.secondary",
+                        wordBreak: "break-word",
+                        overflowWrap: "break-word",
+                      }}
                     >
                       {spec}
                     </Typography>
@@ -402,20 +447,7 @@ export default function RobotDetailSection({
                 textTransform: "none",
               }}
             >
-              {translate("store.robotDetail.addToCart")}
-            </Button>
-            <Button
-              variant="outlined"
-              size="large"
-              fullWidth
-              sx={{
-                py: 1.5,
-                fontSize: "1rem",
-                fontWeight: 600,
-                textTransform: "none",
-              }}
-            >
-              {translate("store.robotDetail.buyNow")}
+              {translate("store.robotDetail.howToBuy")}
             </Button>
           </Box>
 
@@ -453,7 +485,12 @@ export default function RobotDetailSection({
           >
             <Typography
               variant="body1"
-              sx={{ whiteSpace: "pre-line", lineHeight: 1.8 }}
+              sx={{
+                whiteSpace: "pre-line",
+                lineHeight: 1.8,
+                wordBreak: "break-word",
+                overflowWrap: "break-word",
+              }}
             >
               {robotData.technicalSpecs}
             </Typography>
@@ -476,7 +513,12 @@ export default function RobotDetailSection({
           >
             <Typography
               variant="body1"
-              sx={{ whiteSpace: "pre-line", lineHeight: 1.8 }}
+              sx={{
+                whiteSpace: "pre-line",
+                lineHeight: 1.8,
+                wordBreak: "break-word",
+                overflowWrap: "break-word",
+              }}
             >
               {robotData.requirements}
             </Typography>

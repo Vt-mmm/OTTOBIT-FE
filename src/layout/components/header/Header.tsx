@@ -8,8 +8,6 @@ import {
   IconButton,
   Stack,
   Link,
-  useScrollTrigger,
-  Slide,
   Avatar,
   Menu,
   MenuItem,
@@ -42,24 +40,9 @@ import {
 import { alpha } from "@mui/material/styles";
 import { useLocales } from "hooks";
 
-// Component ẩn header khi scroll xuống
-function HideOnScroll(props: {
-  window?: () => Window;
-  children: React.ReactElement;
-}) {
-  const { children, window } = props;
-  const trigger = useScrollTrigger({
-    target: window ? window() : undefined,
-  });
-
-  return (
-    <Slide appear={false} direction="down" in={!trigger}>
-      {children}
-    </Slide>
-  );
-}
-
 const Header: React.FC = () => {
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -88,6 +71,27 @@ const Header: React.FC = () => {
     },
   ]);
 
+  // Handle scroll to show/hide header
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Show header when scrolling up or at top
+      if (currentScrollY < lastScrollY || currentScrollY < 50) {
+        setIsVisible(true);
+      } 
+      // Hide header when scrolling down
+      else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
+
   // Update menu items when authentication state changes
   useEffect(() => {
     if (isAuthenticated) {
@@ -114,7 +118,7 @@ const Header: React.FC = () => {
           isPage: true,
         },
         {
-          name: "Blog",
+          name: translate("common.Blog"),
           icon: <ArticleIcon sx={{ mr: 1, fontSize: "1rem" }} />,
           href: PATH_USER.blogs,
           id: "blogs",
@@ -145,7 +149,7 @@ const Header: React.FC = () => {
           isPage: true,
         },
         {
-          name: "Blog",
+          name: translate("common.Blog"),
           icon: <ArticleIcon sx={{ mr: 1, fontSize: "1rem" }} />,
           href: PATH_USER.blogs,
           id: "blogs",
@@ -284,24 +288,30 @@ const Header: React.FC = () => {
   };
 
   return (
-    <HideOnScroll>
-      <AppBar
-        position="fixed"
-        elevation={0}
-        sx={{
-          bgcolor: "rgba(255, 255, 255, 0.95)",
-          backdropFilter: "blur(15px)",
-          borderBottom: "1px solid rgba(0, 0, 0, 0.08)",
-          transition: "all 0.3s ease-in-out",
-          boxShadow: mobileMenuOpen ? "none" : "0 2px 10px rgba(0, 0, 0, 0.08)",
-        }}
-      >
+    <AppBar
+      position="fixed"
+      elevation={0}
+      sx={{
+        bgcolor: "rgba(255, 255, 255, 0.85)",
+        backdropFilter: "blur(20px)",
+        borderBottom: "none",
+        transition: "all 0.3s ease-in-out",
+        boxShadow: "none",
+        top: isVisible ? { xs: "8px", md: "16px" } : { xs: "-100px", md: "-100px" },
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: { xs: "calc(100% - 24px)", md: "calc(100% - 80px)" },
+        maxWidth: "1400px",
+        borderRadius: { xs: "16px", md: "24px" },
+        border: "1px solid rgba(0, 0, 0, 0.08)",
+        zIndex: 1100,
+        opacity: isVisible ? 1 : 0,
+      }}
+    >
         <Toolbar
           sx={{
             minHeight: { xs: "56px", md: "64px" },
             width: "100%",
-            maxWidth: "1600px",
-            margin: "0 auto",
             padding: { xs: "0 16px", sm: "0 24px", md: "0 32px" },
           }}
         >
@@ -511,10 +521,10 @@ const Header: React.FC = () => {
                     {userAuth?.email || ""}
                   </Typography>
                   {userAuth?.roles?.includes("OTTOBIT_ADMIN") && (
-                    <Chip
-                      icon={<AdminIcon />}
-                      label="Quản trị viên"
-                      size="small"
+                  <Chip
+                    icon={<AdminIcon />}
+                    label={translate("common.Administrator")}
+                    size="small"
                       sx={{
                         mt: 1,
                         fontWeight: 600,
@@ -542,7 +552,7 @@ const Header: React.FC = () => {
                   <PersonIcon
                     sx={{ mr: 1.5, color: "#2E7D32", fontSize: 20 }}
                   />
-                  Hồ sơ cá nhân
+                  {translate("common.MyProfile")}
                 </MenuItem>
 
                 <MenuItem
@@ -561,7 +571,7 @@ const Header: React.FC = () => {
                   <SchoolIcon
                     sx={{ mr: 1.5, color: "#2E7D32", fontSize: 20 }}
                   />
-                  Việc học của tôi
+                  {translate("common.MyLearning")}
                 </MenuItem>
 
                 <MenuItem
@@ -577,7 +587,7 @@ const Header: React.FC = () => {
                   <DashboardIcon
                     sx={{ mr: 1.5, color: "#2E7D32", fontSize: 20 }}
                   />
-                  Bảng điều khiển
+                  {translate("common.Dashboard")}
                 </MenuItem>
 
                 {userAuth?.roles?.includes("OTTOBIT_ADMIN") && (
@@ -594,7 +604,7 @@ const Header: React.FC = () => {
                     <AdminIcon
                       sx={{ mr: 1.5, color: "#E65100", fontSize: 20 }}
                     />
-                    Quản trị hệ thống
+                    {translate("common.AdminPanel")}
                   </MenuItem>
                 )}
 
@@ -613,7 +623,7 @@ const Header: React.FC = () => {
                   <LogoutIcon
                     sx={{ mr: 1.5, color: "#f44336", fontSize: 20 }}
                   />
-                  Đăng xuất
+                  {translate("common.Logout")}
                 </MenuItem>
               </Menu>
             </Box>
@@ -643,7 +653,7 @@ const Header: React.FC = () => {
                   },
                 }}
               >
-                Đăng nhập
+                {translate("common.Login")}
               </Button>
             </motion.div>
           )}
@@ -739,7 +749,6 @@ const Header: React.FC = () => {
           </AnimatePresence>
         </Toolbar>
       </AppBar>
-    </HideOnScroll>
   );
 };
 

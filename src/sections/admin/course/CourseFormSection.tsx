@@ -20,6 +20,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SaveIcon from "@mui/icons-material/Save";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { createCourse, updateCourse } from "../../../redux/course/courseSlice";
+import { SimpleImageUploader } from "../../../components/common/SimpleImageUploader";
 import {
   CourseResult,
   CreateCourseRequest,
@@ -71,6 +72,8 @@ export default function CourseFormSection({
     severity: "success",
   });
 
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
   const isLoading = isCreating || isUpdating;
   const error = createError || updateError;
 
@@ -92,6 +95,8 @@ export default function CourseFormSection({
     };
 
   const validate = (): boolean => {
+    const newErrors: { [key: string]: string } = {};
+
     if (!formData.title.trim()) {
       setSnackbar({
         open: true,
@@ -108,6 +113,16 @@ export default function CourseFormSection({
       });
       return false;
     }
+    if (!formData.imageUrl.trim()) {
+      newErrors.imageUrl = "Hình ảnh khóa học là bắt buộc. Vui lòng tải ảnh lên.";
+      setSnackbar({
+        open: true,
+        message: "Hình ảnh khóa học là bắt buộc",
+        severity: "error",
+      });
+      setErrors(newErrors);
+      return false;
+    }
     if (formData.price < 0) {
       setSnackbar({
         open: true,
@@ -116,6 +131,7 @@ export default function CourseFormSection({
       });
       return false;
     }
+    setErrors({});
     return true;
   };
 
@@ -209,14 +225,6 @@ export default function CourseFormSection({
                     helperText="Mô tả chi tiết về khóa học, mục tiêu học tập"
                   />
 
-                  <TextField
-                    fullWidth
-                    label="URL Hình ảnh"
-                    value={formData.imageUrl}
-                    onChange={handleInputChange("imageUrl")}
-                    placeholder="https://example.com/image.jpg"
-                    helperText="Link hình đại diện cho khóa học (tùy chọn)"
-                  />
 
                   <TextField
                     fullWidth
@@ -264,29 +272,29 @@ export default function CourseFormSection({
               </Grid>
 
               <Grid item xs={12} md={4}>
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  Xem trước
-                </Typography>
+                <SimpleImageUploader
+                  entityId={course?.id}
+                  entityType="course"
+                  currentImageUrl={formData.imageUrl}
+                  onImageChange={(url: string | null) =>
+                    setFormData((prev) => ({ ...prev, imageUrl: url || "" }))
+                  }
+                  title="Hình ảnh khóa học *"
+                  description="Tải lên hình ảnh cho khóa học (bắt buộc)"
+                  height={280}
+                  disabled={isLoading}
+                />
+                {errors.imageUrl && (
+                  <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block', px: 2 }}>
+                    {errors.imageUrl}
+                  </Typography>
+                )}
 
-                <Card variant="outlined">
+                <Card variant="outlined" sx={{ mt: 3 }}>
                   <CardContent>
-                    {formData.imageUrl && (
-                      <Box sx={{ mb: 2 }}>
-                        <img
-                          src={formData.imageUrl}
-                          alt="Preview"
-                          style={{
-                            width: "100%",
-                            height: "120px",
-                            objectFit: "cover",
-                            borderRadius: "8px",
-                          }}
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                          }}
-                        />
-                      </Box>
-                    )}
+                    <Typography variant="h6" sx={{ mb: 2 }}>
+                      Xem trước
+                    </Typography>
 
                     <Typography variant="h6" sx={{ mb: 1 }}>
                       {formData.title || "Tên khóa học"}
