@@ -385,12 +385,9 @@ function SimpleIsometricMapGrid({
                         width={w}
                         height={h}
                         preserveAspectRatio="none"
-                        onError={() =>
-                          console.log(
-                            "Terrain image failed to load:",
-                            terrainAsset.imagePath
-                          )
-                        }
+                        onError={() => {
+                          // Terrain image failed to load
+                        }}
                       />
                     )}
                     {cell.terrain && !terrainAsset?.imagePath && (

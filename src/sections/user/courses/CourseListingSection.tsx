@@ -81,10 +81,10 @@ export default function CourseListingSection({
       if (filters?.maxPrice != null)
         params.append("MaxPrice", String(filters.maxPrice));
       if (filters?.type != null) params.append("Type", String(filters.type));
-      if (filters?.sortBy != null)
-        params.append("SortBy", String(filters.sortBy));
-      if (filters?.sortDirection != null)
-        params.append("SortDirection", String(filters.sortDirection));
+
+      // Always add sortBy and sortDirection with default values
+      params.append("SortBy", String(filters?.sortBy ?? 1));
+      params.append("SortDirection", String(filters?.sortDirection ?? 1));
 
       // Call via axiosClient with baseURL from env (no hardcoded localhost)
       const { data } = await axiosClient.get("/api/v1/courses", { params });

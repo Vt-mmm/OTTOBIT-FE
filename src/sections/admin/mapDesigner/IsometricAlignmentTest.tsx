@@ -148,7 +148,6 @@ export default function IsometricAlignmentTest() {
 
   const applyToIsometricConfig = () => {
     // This would update the actual ISOMETRIC_CONFIG
-    console.log("Apply config:", config);
     alert(
       `Config applied! Check console for values to update ISOMETRIC_CONFIG.`
     );

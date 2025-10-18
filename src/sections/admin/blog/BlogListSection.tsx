@@ -61,6 +61,20 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
     sortDirection: "Desc",
     status: "all",
   });
+
+  // Committed filter states (only sent to API when search is triggered)
+  const [committedSelectedTags, setCommittedSelectedTags] = useState<string[]>(
+    []
+  );
+  const [committedStatus, setCommittedStatus] = useState<"all" | "active">(
+    "all"
+  );
+  const [committedAdvancedFilters, setCommittedAdvancedFilters] =
+    useState<AdminBlogFilters>({
+      sortBy: "CreatedAt",
+      sortDirection: "Desc",
+      status: "all",
+    });
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailItem, setDetailItem] = useState<BlogItem | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -74,30 +88,44 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
     setIsLoading(true);
     try {
       const params = new URLSearchParams({
-        IncludeDeleted: String((advancedFilters.status || "all") === "all"),
+        IncludeDeleted: String(
+          (committedAdvancedFilters.status || "all") === "all"
+        ),
         PageNumber: String(pageNumber),
         PageSize: String(pageSize),
       });
-      if (advancedFilters.dateFrom)
-        params.append("DateFrom", advancedFilters.dateFrom);
-      if (advancedFilters.dateTo)
-        params.append("DateTo", advancedFilters.dateTo);
-      if (advancedFilters.readingTimeMin != null)
-        params.append("ReadingTimeMin", String(advancedFilters.readingTimeMin));
-      if (advancedFilters.readingTimeMax != null)
-        params.append("ReadingTimeMax", String(advancedFilters.readingTimeMax));
-      if (advancedFilters.viewCountMin != null)
-        params.append("ViewCountMin", String(advancedFilters.viewCountMin));
-      if (advancedFilters.viewCountMax != null)
-        params.append("ViewCountMax", String(advancedFilters.viewCountMax));
-      if (advancedFilters.sortBy)
-        params.append("SortBy", advancedFilters.sortBy);
-      if (advancedFilters.sortDirection)
-        params.append("SortDirection", advancedFilters.sortDirection);
+      if (committedAdvancedFilters.dateFrom)
+        params.append("DateFrom", committedAdvancedFilters.dateFrom);
+      if (committedAdvancedFilters.dateTo)
+        params.append("DateTo", committedAdvancedFilters.dateTo);
+      if (committedAdvancedFilters.readingTimeMin != null)
+        params.append(
+          "ReadingTimeMin",
+          String(committedAdvancedFilters.readingTimeMin)
+        );
+      if (committedAdvancedFilters.readingTimeMax != null)
+        params.append(
+          "ReadingTimeMax",
+          String(committedAdvancedFilters.readingTimeMax)
+        );
+      if (committedAdvancedFilters.viewCountMin != null)
+        params.append(
+          "ViewCountMin",
+          String(committedAdvancedFilters.viewCountMin)
+        );
+      if (committedAdvancedFilters.viewCountMax != null)
+        params.append(
+          "ViewCountMax",
+          String(committedAdvancedFilters.viewCountMax)
+        );
+      if (committedAdvancedFilters.sortBy)
+        params.append("SortBy", committedAdvancedFilters.sortBy);
+      if (committedAdvancedFilters.sortDirection)
+        params.append("SortDirection", committedAdvancedFilters.sortDirection);
       if (committedSearch.trim()) {
         params.append("SearchTerm", committedSearch.trim());
       }
-      selectedTags.forEach((t) => params.append("TagIds", t.id));
+      committedSelectedTags.forEach((tagId) => params.append("TagIds", tagId));
       const url = `${ROUTES_API_BLOG.ADMIN_GET_ALL}?${params.toString()}`;
       const res = await axiosClient.get<BlogListResponse>(url);
       const data = res?.data?.data;
@@ -114,10 +142,20 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
   useEffect(() => {
     fetchList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageNumber, pageSize, selectedTags, status, committedSearch]);
+  }, [
+    pageNumber,
+    pageSize,
+    committedSelectedTags,
+    committedStatus,
+    committedSearch,
+    committedAdvancedFilters,
+  ]);
 
   const handleSearch = () => {
     setCommittedSearch(searchTerm);
+    setCommittedSelectedTags(selectedTags.map((t) => t.id));
+    setCommittedStatus(status as "all" | "active");
+    setCommittedAdvancedFilters(advancedFilters);
     setPageNumber(1);
   };
 
@@ -510,9 +548,10 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
         onChangeTags={(tags) => setSelectedTags(tags as any)}
         onApply={(vals) => {
           setAdvancedFilters(vals);
+          setCommittedAdvancedFilters(vals);
+          setCommittedSelectedTags(selectedTags.map((t) => t.id));
           setAdvancedFilterOpen(false);
           setPageNumber(1);
-          fetchList();
         }}
       />
       <NotificationComponent />

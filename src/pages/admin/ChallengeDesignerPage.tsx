@@ -34,6 +34,7 @@ import { useLocales } from "hooks";
 import { getCoursesForAdmin } from "../../redux/course/courseSlice";
 import {
   getLessons,
+  getLessonsByCourse,
   getLessonByIdForAdmin,
 } from "../../redux/lesson/lessonSlice";
 import MapPickerDialog from "sections/admin/map/MapPickerDialog";
@@ -44,7 +45,9 @@ const MapDesignerPage = () => {
   const dispatch = useAppDispatch();
   const { translate } = useLocales();
   const { data: coursesData } = useAppSelector((s) => s.course.adminCourses);
-  const { data: lessonsData } = useAppSelector((s) => s.lesson.lessons);
+  const { data: lessonsData } = useAppSelector((s) => s.lesson.courseLessons);
+
+  // Debug: Log data to see pagination info
 
   const [selectedAsset, setSelectedAsset] = useState<string>("robot_east");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -113,18 +116,60 @@ const MapDesignerPage = () => {
     }
   };
 
-  // Fetch courses and lessons
+  // State for pagination
+  const [coursePage, setCoursePage] = useState(1);
+  const [lessonPage, setLessonPage] = useState(1);
+  const [courseLoading, setCourseLoading] = useState(false);
+  const [lessonLoading, setLessonLoading] = useState(false);
+
+  // Debug: Log page changes
+
+  // Fetch courses with pagination
   useEffect(() => {
-    dispatch(getCoursesForAdmin({ pageSize: 10 }));
-  }, [dispatch]);
+    const fetchCourses = async () => {
+      setCourseLoading(true);
+      try {
+        await dispatch(
+          getCoursesForAdmin({
+            pageNumber: coursePage,
+            pageSize: 12,
+          })
+        );
+      } finally {
+        setCourseLoading(false);
+      }
+    };
+    fetchCourses();
+  }, [dispatch, coursePage]);
 
   // Fetch lessons when courseId changes
   useEffect(() => {
     if (courseId) {
-      dispatch(getLessons({ courseId, pageSize: 10 }));
       setLessonId(""); // Reset lesson selection when course changes
+      setLessonPage(1); // Reset lesson page when course changes
     }
-  }, [dispatch, courseId]);
+  }, [courseId]);
+
+  // Fetch lessons when courseId or lessonPage changes
+  useEffect(() => {
+    if (courseId) {
+      const fetchLessons = async () => {
+        setLessonLoading(true);
+        try {
+          await dispatch(
+            getLessonsByCourse({
+              courseId,
+              pageNumber: lessonPage,
+              pageSize: 12,
+            })
+          );
+        } finally {
+          setLessonLoading(false);
+        }
+      };
+      fetchLessons();
+    }
+  }, [dispatch, courseId, lessonPage]);
 
   // Prefill from query params when navigated from Map Management (Edit)
   useEffect(() => {
@@ -577,12 +622,6 @@ const MapDesignerPage = () => {
       if (solutionWorkspaceRef.current) {
         try {
           const ws = solutionWorkspaceRef.current;
-          const blocks = ws.getAllBlocks(false) || [];
-          console.log("[Save] workspace blocks:", blocks.length);
-          console.log(
-            "[Save] block types:",
-            blocks.map((b: any) => b.type)
-          );
           const tops = ws.getTopBlocks(true) || [];
           const start = tops.find((b: any) => b?.type === "ottobit_start");
           const first = start?.nextConnection?.targetBlock?.();
@@ -592,7 +631,6 @@ const MapDesignerPage = () => {
             seq.push(cur.type);
             cur = cur.nextConnection?.targetBlock?.() || null;
           }
-          console.log("[Save] sequence after start:", seq);
         } catch {}
         const program = BlocklyToPhaserConverter.convertWorkspace(
           solutionWorkspaceRef.current
@@ -1082,6 +1120,16 @@ const MapDesignerPage = () => {
               courses={coursesData?.items || []}
               lessons={lessonsData?.items || []}
               hasTriedSave={hasTriedSave}
+              coursePage={coursePage}
+              onCoursePageChange={setCoursePage}
+              lessonPage={lessonPage}
+              onLessonPageChange={(page) => {
+                setLessonPage(page);
+              }}
+              courseLoading={courseLoading}
+              lessonLoading={lessonLoading}
+              courseTotalPages={coursesData?.totalPages || 1}
+              lessonTotalPages={lessonsData?.totalPages || 1}
             />
             {/* Inline Solution Editor (moved from WinConditionsSection) */}
             <Box

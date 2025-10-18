@@ -40,6 +40,7 @@ import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getChallenges } from "../../../redux/challenge/challengeSlice";
 import { getCoursesForAdmin } from "../../../redux/course/courseSlice";
 import { getLessons } from "../../../redux/lesson/lessonSlice";
+import PopupSelect from "components/common/PopupSelect";
 import { ChallengeMode } from "common/@types/challenge";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
@@ -88,6 +89,19 @@ export default function ChallengeListSection({
   const [courseId, setCourseId] = useState<string>("");
   const [lessonId, setLessonId] = useState<string>("");
   const [status, setStatus] = useState<"all" | "active">("all");
+
+  // Committed filter states (only sent to API when search is triggered)
+  const [committedCourseId, setCommittedCourseId] = useState<string>("");
+  const [committedLessonId, setCommittedLessonId] = useState<string>("");
+  const [committedStatus, setCommittedStatus] = useState<"all" | "active">(
+    "all"
+  );
+
+  // Pagination states for course and lesson selection
+  const [coursePage, setCoursePage] = useState(1);
+  const [lessonPage, setLessonPage] = useState(1);
+  const [courseLoading, setCourseLoading] = useState(false);
+  const [lessonLoading, setLessonLoading] = useState(false);
   const { showNotification, NotificationComponent } = useNotification();
 
   useEffect(() => {
@@ -96,36 +110,69 @@ export default function ChallengeListSection({
         searchTerm: committedSearch || undefined,
         pageNumber: page,
         pageSize,
-        includeDeleted: status === "all",
-        courseId: courseId || undefined,
-        lessonId: lessonId || undefined,
+        includeDeleted: committedStatus === "all",
+        courseId: committedCourseId || undefined,
+        lessonId: committedLessonId || undefined,
       }) as any
     );
-  }, [dispatch, committedSearch, page, pageSize, courseId, lessonId, status]);
+  }, [
+    dispatch,
+    committedSearch,
+    page,
+    pageSize,
+    committedCourseId,
+    committedLessonId,
+    committedStatus,
+  ]);
 
-  // Load courses once
+  // Fetch courses with pagination
   useEffect(() => {
-    dispatch(
-      getCoursesForAdmin({
-        pageNumber: 1,
-        pageSize: 10,
-        includeDeleted: true,
-      }) as any
-    );
-  }, [dispatch]);
+    const fetchCourses = async () => {
+      setCourseLoading(true);
+      try {
+        await dispatch(
+          getCoursesForAdmin({
+            pageNumber: coursePage,
+            pageSize: 12,
+            includeDeleted: true,
+          }) as any
+        );
+      } finally {
+        setCourseLoading(false);
+      }
+    };
+    fetchCourses();
+  }, [dispatch, coursePage]);
 
-  // Load lessons when course changes
+  // Fetch lessons when courseId changes
   useEffect(() => {
-    if (!courseId) return;
-    dispatch(
-      getLessons({
-        pageNumber: 1,
-        pageSize: 10,
-        includeDeleted: true,
-        courseId,
-      }) as any
-    );
-  }, [dispatch, courseId]);
+    if (courseId) {
+      setLessonId(""); // Reset lesson selection when course changes
+      setLessonPage(1); // Reset lesson page when course changes
+    }
+  }, [courseId]);
+
+  // Fetch lessons when courseId or lessonPage changes
+  useEffect(() => {
+    if (courseId) {
+      const fetchLessons = async () => {
+        setLessonLoading(true);
+        try {
+          await dispatch(
+            getLessons({
+              pageNumber: lessonPage,
+              pageSize: 12,
+              includeDeleted: true,
+              courseId,
+            }) as any
+          );
+        } finally {
+          setLessonLoading(false);
+        }
+      };
+      fetchLessons();
+    }
+  }, [dispatch, courseId, lessonPage]);
 
   useEffect(() => {
     const meta = (challenges as any)?.data;
@@ -139,6 +186,9 @@ export default function ChallengeListSection({
   };
   const triggerSearch = () => {
     setCommittedSearch(searchTerm.trim());
+    setCommittedCourseId(courseId);
+    setCommittedLessonId(lessonId);
+    setCommittedStatus(status);
     setPage(1);
   };
 
@@ -150,9 +200,9 @@ export default function ChallengeListSection({
         searchTerm: committedSearch || undefined,
         pageNumber: page,
         pageSize,
-        includeDeleted: status === "all",
-        courseId: courseId || undefined,
-        lessonId: lessonId || undefined,
+        includeDeleted: committedStatus === "all",
+        courseId: committedCourseId || undefined,
+        lessonId: committedLessonId || undefined,
       }) as any
     );
   };
@@ -269,43 +319,44 @@ export default function ChallengeListSection({
                 ),
               }}
             />
-            <FormControl size="small" sx={{ minWidth: 200 }}>
-              <InputLabel>{translate("admin.course")}</InputLabel>
-              <Select
-                label={translate("admin.course")}
-                value={courseId}
-                onChange={(e) => {
-                  setCourseId(e.target.value as string);
-                  setLessonId("");
-                }}
-              >
-                <MenuItem value="">{translate("admin.allCourses")}</MenuItem>
-                {(adminCourses?.items || []).map((c: any) => (
-                  <MenuItem key={c.id} value={c.id}>
-                    {c.title}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl
-              size="small"
-              sx={{ minWidth: 200 }}
+            <PopupSelect
+              label={translate("admin.course")}
+              value={courseId}
+              onChange={(value) => {
+                setCourseId(value);
+                setLessonId("");
+              }}
+              items={adminCourses?.items || []}
+              loading={courseLoading}
+              pageSize={12}
+              getItemLabel={(course) => course.title}
+              getItemValue={(course) => course.id}
+              noDataMessage={translate("admin.allCourses")}
+              currentPage={coursePage}
+              onPageChange={setCoursePage}
+              totalPages={adminCourses?.totalPages || 1}
+              title="Chọn khóa học"
+            />
+            <PopupSelect
+              label={translate("admin.lesson")}
+              value={lessonId}
+              onChange={setLessonId}
+              items={lessonsState?.items || []}
+              loading={lessonLoading}
               disabled={!courseId}
-            >
-              <InputLabel>{translate("admin.lesson")}</InputLabel>
-              <Select
-                label={translate("admin.lesson")}
-                value={lessonId}
-                onChange={(e) => setLessonId(e.target.value as string)}
-              >
-                <MenuItem value="">{translate("admin.allLessons")}</MenuItem>
-                {((lessonsState?.items as any[]) || []).map((l: any) => (
-                  <MenuItem key={l.id} value={l.id}>
-                    {l.title}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+              pageSize={12}
+              getItemLabel={(lesson) => lesson.title}
+              getItemValue={(lesson) => lesson.id}
+              noDataMessage={
+                !courseId
+                  ? "Vui lòng chọn khóa học trước"
+                  : translate("admin.allLessons")
+              }
+              currentPage={lessonPage}
+              onPageChange={setLessonPage}
+              totalPages={lessonsState?.totalPages || 1}
+              title="Chọn bài học"
+            />
             <FormControl size="small" sx={{ minWidth: 160 }}>
               <InputLabel>{translate("admin.status")}</InputLabel>
               <Select
