@@ -45,12 +45,9 @@ export default function CourseFilterDialog({
   useEffect(() => {
     if (open) {
       setValues({
-        sortBy: 1,
-        sortDirection: 1,
-        ...initial,
-        // Đảm bảo sortBy và sortDirection luôn có giá trị mặc định
         sortBy: initial?.sortBy ?? 1,
         sortDirection: initial?.sortDirection ?? 1,
+        ...initial,
       });
     }
   }, [open, initial]);

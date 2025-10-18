@@ -11,10 +11,6 @@ import {
   Stack,
   TextField,
   Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Slider,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -118,10 +114,6 @@ export default function LessonFormSection({
     (field: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
       setFormData((prev) => ({ ...prev, [field]: e.target.value }));
     };
-
-  const handleSelectChange = (field: keyof FormData) => (e: any) => {
-    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
-  };
 
   const handleDurationChange = (_: Event, value: number | number[]) => {
     setFormData((prev) => ({ ...prev, durationInMinutes: value as number }));

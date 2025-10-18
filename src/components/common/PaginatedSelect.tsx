@@ -42,7 +42,6 @@ export default function PaginatedSelect({
   pageSize = 12,
   getItemLabel,
   getItemValue,
-  emptyMessage = "No items available",
   noDataMessage = "No data available",
   onPageChange,
   currentPage: externalCurrentPage,
@@ -66,10 +65,7 @@ export default function PaginatedSelect({
     }
   }, [items.length, externalCurrentPage]);
 
-  const handlePageChange = (
-    event: React.ChangeEvent<unknown>,
-    page: number
-  ) => {
+  const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) => {
     if (onPageChange) {
       onPageChange(page);
     } else {
