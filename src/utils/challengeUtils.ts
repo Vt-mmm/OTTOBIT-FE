@@ -66,18 +66,17 @@ export function isChallengeAccessible(
     0
   );
 
-  // 🔓 DEBUG: Log unlock logic to help diagnose issues
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`🔑 [Challenge Unlock] Checking challenge order ${order}:`, {
-      challengeId: challenge.id,
-      challengeTitle: challenge.title,
-      requiresOrder: previousOrder,
-      prevChallengeId: prev.id,
-      prevChallengeTitle: prev.title,
-      prevSubmissionsCount: prevSubmissions.length,
-      bestStarForPrev,
-      isAccessible: bestStarForPrev > 0,
-      totalSubmissions: submissions.length,
+  // 🐛 ENHANCED DEBUG: Log detailed unlock info for specific locked challenges
+  if (process.env.NODE_ENV === 'development' && bestStarForPrev === 0) {
+    console.warn(`🔒 [Challenge ${order}] LOCKED:`, {
+      current: { id: challenge.id, title: challenge.title, order },
+      requires: { id: prev.id, title: prev.title, order: previousOrder },
+      prevSubmissions: prevSubmissions.length > 0 
+        ? prevSubmissions.map(s => ({ submissionId: s.id, star: s.star, createdAt: s.createdAt }))
+        : '⚠️ NO SUBMISSIONS FOUND',
+      bestStar: bestStarForPrev,
+      totalSubmissionsInContext: submissions.length,
+      allChallengeIds: challenges.map(c => ({ id: c.id, title: c.title, order: (c as any).order }))
     });
   }
 

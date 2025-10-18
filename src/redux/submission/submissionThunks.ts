@@ -62,6 +62,39 @@ async function callApiWithRetry<T>(
   throw lastError;
 }
 
+// Get best submissions per challenge (only highest star for each challenge)
+export const getBestSubmissionsThunk = createAsyncThunk<
+  SubmissionResult[],
+  { lessonId?: string },
+  { rejectValue: string }
+>("submission/getBestSubmissions", async (request, { rejectWithValue }) => {
+  try {
+    const response = await callApiWithRetry(() =>
+      axiosClient.get<ApiResponse<SubmissionResult[]>>(
+        ROUTES_API_SUBMISSION.BEST,
+        {
+          params: request.lessonId ? { lessonId: request.lessonId } : undefined,
+        }
+      )
+    );
+
+    if (response.data.errors || response.data.errorCode) {
+      throw new Error(response.data.message || "Failed to fetch best submissions");
+    }
+
+    if (!response.data.data) {
+      throw new Error("No best submissions data received");
+    }
+
+    return response.data.data;
+  } catch (error: any) {
+    const err = error as AxiosError<ErrorResponse>;
+    return rejectWithValue(
+      err.response?.data?.message || "Failed to fetch best submissions"
+    );
+  }
+});
+
 // Get my submissions (current user's submissions)
 export const getMySubmissionsThunk = createAsyncThunk<
   SubmissionsResponse,
