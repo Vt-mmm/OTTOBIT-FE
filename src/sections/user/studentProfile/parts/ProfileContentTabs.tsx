@@ -16,6 +16,7 @@ import MyRobotsTab from "../tabs/MyRobotsTab";
 import MyCertificatesTab from "../tabs/MyCertificatesTab";
 import MyNotesTab from "../tabs/MyNotesTab";
 import MySubmissionsTab from "../tabs/MySubmissionsTab";
+import { useLocales } from "../../../../hooks";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -69,6 +70,7 @@ export default function ProfileContentTabs({
   starBuckets,
   loading,
 }: ProfileContentTabsProps) {
+  const { translate } = useLocales();
   const [value, setValue] = useState(0);
 
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -76,14 +78,14 @@ export default function ProfileContentTabs({
   };
 
   const tabs = [
-    { label: "Tổng quan", icon: <DashboardIcon /> },
-    { label: "Khóa học", icon: <SchoolIcon /> },
-    { label: "Tiến độ", icon: <TrendingUpIcon /> },
-    { label: "Thành tích", icon: <EmojiEventsIcon /> },
-    { label: "Bài nộp", icon: <AssignmentIcon /> },
-    { label: "Ghi chú", icon: <NoteAltIcon /> },
-    { label: "Robots", icon: <SmartToyIcon /> },
-    { label: "Chứng chỉ", icon: <CardMembershipIcon /> },
+    { label: translate("student.Overview"), icon: <DashboardIcon /> },
+    { label: translate("student.Courses"), icon: <SchoolIcon /> },
+    { label: translate("student.Progress"), icon: <TrendingUpIcon /> },
+    { label: translate("student.Achievements"), icon: <EmojiEventsIcon /> },
+    { label: translate("student.Submissions"), icon: <AssignmentIcon /> },
+    { label: translate("student.Notes"), icon: <NoteAltIcon /> },
+    { label: translate("student.Robots"), icon: <SmartToyIcon /> },
+    { label: translate("student.Certificates"), icon: <CardMembershipIcon /> },
   ];
 
   return (

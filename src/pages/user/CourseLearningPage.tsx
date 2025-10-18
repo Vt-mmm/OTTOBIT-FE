@@ -27,12 +27,6 @@ export default function CourseLearningPage() {
     }
   }, [dispatch, isAuthenticated, myEnrollments.data, myEnrollments.isLoading]);
 
-  // Check if user is enrolled in this course
-  const isUserEnrolled =
-    myEnrollments.data?.items?.some(
-      (enrollment) => enrollment.courseId === courseId
-    ) || false;
-
   // Redirect to course detail if not authenticated
   if (!isAuthenticated) {
     return (
@@ -43,8 +37,9 @@ export default function CourseLearningPage() {
     );
   }
 
-  // Show loading while checking enrollment
-  if (myEnrollments.isLoading || operations.isEnrolling) {
+  // ✅ FIX: Show loading while enrollments are being fetched OR during enrollment operation
+  // This prevents premature redirect when F5 resets Redux state
+  if (myEnrollments.isLoading || operations.isEnrolling || !myEnrollments.data) {
     return (
       <Box
         sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
@@ -66,6 +61,12 @@ export default function CourseLearningPage() {
       </Box>
     );
   }
+
+  // ✅ Now safe to check enrollment - data is guaranteed to be loaded
+  const isUserEnrolled =
+    myEnrollments.data?.items?.some(
+      (enrollment) => enrollment.courseId === courseId
+    ) || false;
 
   // Redirect to course detail if not enrolled
   if (!isUserEnrolled) {

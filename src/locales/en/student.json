@@ -67,5 +67,6 @@
   "NotStarted": "Not started",
   "Completed": "Completed",
   "CertificatesList": "List of certificates you earned from courses",
-  "CompleteCoursesCert": "Complete courses to get certificates"
+  "CompleteCoursesCert": "Complete courses to get certificates",
+  "Submissions": "Submissions"
 }

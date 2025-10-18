@@ -96,7 +96,9 @@ export default function ComponentFormSection({
       newErrors.description = translate("admin.component.descriptionRequired");
     }
 
-    if (formData.imageUrl && !isValidUrl(formData.imageUrl)) {
+    if (!formData.imageUrl.trim()) {
+      newErrors.imageUrl = "Component image is required. Please upload an image.";
+    } else if (!isValidUrl(formData.imageUrl)) {
       newErrors.imageUrl = translate("admin.component.invalidImageUrl");
     }
 
@@ -262,18 +264,6 @@ export default function ComponentFormSection({
                     rows={4}
                     fullWidth
                   />
-
-                  {/* Image URL */}
-                  <TextField
-                    label={translate("admin.component.imageUrlLabel")}
-                    value={formData.imageUrl}
-                    onChange={(e) =>
-                      handleInputChange("imageUrl", e.target.value)
-                    }
-                    error={!!errors.imageUrl}
-                    helperText={errors.imageUrl}
-                    fullWidth
-                  />
                 </Box>
               </CardContent>
             </Card>
@@ -315,11 +305,16 @@ export default function ComponentFormSection({
               onImageChange={(url: string | null) =>
                 handleInputChange("imageUrl", url || "")
               }
-              title={translate("admin.component.images")}
-              description={translate("admin.component.imageUrlLabel")}
+              title={`${translate("admin.component.images")} *`}
+              description="Upload component image (required)"
               height={280}
               disabled={isLoading}
             />
+            {errors.imageUrl && (
+              <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block', px: 2 }}>
+                {errors.imageUrl}
+              </Typography>
+            )}
 
             {/* Component Preview */}
             <Card sx={{ mt: 3 }}>
