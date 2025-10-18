@@ -80,6 +80,12 @@ export default function RobotFormSection({
       newErrors.brand = "Brand is required";
     }
 
+    if (!formData.imageUrl.trim()) {
+      newErrors.imageUrl = "Product image is required. Please upload an image.";
+    } else if (!isValidUrl(formData.imageUrl)) {
+      newErrors.imageUrl = "Please enter a valid image URL";
+    }
+
     if (formData.minAge < 0 || formData.minAge > 100) {
       newErrors.minAge = "Minimum age must be between 0 and 100";
     }
@@ -87,10 +93,6 @@ export default function RobotFormSection({
     if (formData.maxAge < formData.minAge || formData.maxAge > 100) {
       newErrors.maxAge =
         "Maximum age must be greater than minimum age and not exceed 100";
-    }
-
-    if (formData.imageUrl && !isValidUrl(formData.imageUrl)) {
-      newErrors.imageUrl = "Please enter a valid image URL";
     }
 
     setErrors(newErrors);
@@ -329,24 +331,6 @@ export default function RobotFormSection({
                     fullWidth
                     placeholder="System requirements, prerequisites, software needed..."
                   />
-
-                  {/* Image URL */}
-                  <TextField
-                    label="Image URL (Optional)"
-                    value={formData.imageUrl}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        imageUrl: e.target.value,
-                      }))
-                    }
-                    error={!!errors.imageUrl}
-                    helperText={
-                      errors.imageUrl || "URL to robot's product image"
-                    }
-                    fullWidth
-                    placeholder="https://example.com/robot-product.jpg"
-                  />
                 </Box>
               </CardContent>
             </Card>
@@ -385,11 +369,16 @@ export default function RobotFormSection({
               onImageChange={(url: string | null) =>
                 setFormData((prev) => ({ ...prev, imageUrl: url || "" }))
               }
-              title="Product Image"
-              description="Upload product image for the robot"
+              title="Product Image *"
+              description="Upload product image for the robot (required)"
               height={280}
               disabled={isLoading}
             />
+            {errors.imageUrl && (
+              <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block', px: 2 }}>
+                {errors.imageUrl}
+              </Typography>
+            )}
 
             {/* Product Preview */}
             <Card sx={{ mt: 3 }}>
