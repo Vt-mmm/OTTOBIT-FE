@@ -77,7 +77,7 @@ export default function ImageFormSection({
 
   // Load robots and components for assignment
   useEffect(() => {
-    dispatch(getRobotsThunk({ pageNumber: 1, pageSize: 10 }));
+    dispatch(getRobotsThunk({ page: 1, size: 10 }));
     dispatch(getComponentsThunk({ page: 1, size: 100 }));
   }, [dispatch]);
 

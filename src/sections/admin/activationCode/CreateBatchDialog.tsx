@@ -46,7 +46,7 @@ export default function CreateBatchDialog({
   useEffect(() => {
     if (open) {
       // Fetch available robots
-      dispatch(getRobotsThunk({ pageSize: 10 }));
+      dispatch(getRobotsThunk({ size: 10 }));
     }
   }, [open, dispatch]);
 

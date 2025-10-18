@@ -46,37 +46,30 @@ export default function SubmissionListSection() {
   const [searchInput, setSearchInput] = useState("");
   const [starFrom, setStarFrom] = useState<number | "">("");
   const [starTo, setStarTo] = useState<number | "">("");
+  
+  // Applied filters - only update when user clicks Search
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState<string>("");
+  const [appliedStarFrom, setAppliedStarFrom] = useState<number | "">("");
+  const [appliedStarTo, setAppliedStarTo] = useState<number | "">("");
 
   const items = adminSubmissions.data?.items || [];
   const total = adminSubmissions.data?.total || 0;
   const isLoading = adminSubmissions.isLoading;
   const error = adminSubmissions.error;
 
-
-  // Fetch data on mount and pagination/filter changes (no search)
+  // Fetch data on mount and when pagination or applied filters change
   useEffect(() => {
-    fetchDataWithoutSearch();
-  }, [page, rowsPerPage, starFrom, starTo]);
+    fetchData();
+  }, [page, rowsPerPage, appliedSearchTerm, appliedStarFrom, appliedStarTo]);
 
-  const fetchDataWithoutSearch = () => {
+  const fetchData = () => {
     dispatch(
       getSubmissionsForAdminThunk({
         pageNumber: page + 1,
         pageSize: rowsPerPage,
-        starFrom: starFrom !== "" ? starFrom : undefined,
-        starTo: starTo !== "" ? starTo : undefined,
-      })
-    );
-  };
-
-  const fetchData = (searchTerm?: string) => {
-    dispatch(
-      getSubmissionsForAdminThunk({
-        pageNumber: page + 1,
-        pageSize: rowsPerPage,
-        searchTerm: searchTerm || undefined,
-        starFrom: starFrom !== "" ? starFrom : undefined,
-        starTo: starTo !== "" ? starTo : undefined,
+        searchTerm: appliedSearchTerm || undefined,
+        starFrom: appliedStarFrom !== "" ? appliedStarFrom : undefined,
+        starTo: appliedStarTo !== "" ? appliedStarTo : undefined,
       })
     );
   };
@@ -93,9 +86,12 @@ export default function SubmissionListSection() {
   };
 
   const handleSearch = useCallback(() => {
-    setPage(0);
-    fetchData(searchInput.trim());
-  }, [searchInput, rowsPerPage, starFrom, starTo]);
+    // Apply current filter values
+    setAppliedSearchTerm(searchInput.trim());
+    setAppliedStarFrom(starFrom);
+    setAppliedStarTo(starTo);
+    setPage(0); // Reset to first page when searching
+  }, [searchInput, starFrom, starTo]);
 
   const handleViewDetails = (submissionId: string) => {
     navigate(PATH_ADMIN.submissionDetail.replace(":id", submissionId));

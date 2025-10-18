@@ -301,7 +301,14 @@ export default function ComponentDetailsSection({
                 </Box>
 
                 {/* Component Name & Details */}
-                <Typography variant="h4" gutterBottom>
+                <Typography
+                  variant="h4"
+                  gutterBottom
+                  sx={{
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word",
+                  }}
+                >
                   {component.name}
                 </Typography>
 
@@ -314,7 +321,15 @@ export default function ComponentDetailsSection({
                   />
                 </Box>
 
-                <Typography variant="body1" color="text.secondary" paragraph>
+                <Typography
+                  variant="body1"
+                  color="text.secondary"
+                  paragraph
+                  sx={{
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word",
+                  }}
+                >
                   {component.description || translate("admin.component.noDescriptionAvailable")}
                 </Typography>
 
@@ -328,6 +343,8 @@ export default function ComponentDetailsSection({
                       variant="body2"
                       sx={{
                         whiteSpace: "pre-line",
+                        wordBreak: "break-word",
+                        overflowWrap: "break-word",
                         backgroundColor: "grey.50",
                         p: 2,
                         borderRadius: 1,
@@ -357,7 +374,12 @@ export default function ComponentDetailsSection({
                     </Typography>
                     <Typography
                       variant="body1"
-                      sx={{ fontFamily: "monospace", fontSize: "0.875rem" }}
+                      sx={{
+                        fontFamily: "monospace",
+                        fontSize: "0.875rem",
+                        wordBreak: "break-all",
+                        overflowWrap: "break-word",
+                      }}
                     >
                       {component.id}
                     </Typography>
@@ -367,7 +389,13 @@ export default function ComponentDetailsSection({
                     <Typography variant="body2" color="text.secondary">
                       {translate("admin.component.type")}
                     </Typography>
-                    <Typography variant="body1">
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        wordBreak: "break-word",
+                        overflowWrap: "break-word",
+                      }}
+                    >
                       {getComponentTypeLabel(component.type)}
                     </Typography>
                   </Box>

@@ -16,6 +16,7 @@ import { useAppSelector } from "store/config";
 import { useConfigSidebar } from "./useConfigSidebar";
 import { Close, ArrowBack } from "@mui/icons-material";
 import { PATH_USER } from "routes/paths";
+import { useLocales } from "hooks";
 // Logo placeholder sẽ thay thế sau
 
 // ----------------------------------------------------------------------
@@ -38,6 +39,7 @@ const slideInLeft = {
 export function Sidebar({ openNav, onCloseNav }: SidebarProps) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const { translate } = useLocales();
   const { navAdmin, navUser } = useConfigSidebar();
   const { userAuth } = useAppSelector((state) => state.auth);
   const isDesktop = useResponsive("up", "lg");
@@ -105,7 +107,7 @@ export function Sidebar({ openNav, onCloseNav }: SidebarProps) {
             <ArrowBack />
           </IconButton>
           <Typography variant="subtitle2" sx={{ ml: 1 }}>
-            Quay lại
+            {translate("common.Back")}
           </Typography>
         </Box>
       )}

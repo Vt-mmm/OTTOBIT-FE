@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 import { RobotResult, RobotsResponse } from "common/@types/robot";
 import {
   getRobotsThunk,
@@ -88,6 +89,13 @@ const robotSlice = createSlice({
     setCurrentRobot: (state, action: PayloadAction<RobotResult>) => {
       state.currentRobot.data = action.payload;
       state.currentRobot.error = null;
+    },
+    // Toast actions
+    setMessageSuccess: (_state, action: PayloadAction<string>) => {
+      toast.success(action.payload);
+    },
+    setMessageError: (_state, action: PayloadAction<string>) => {
+      toast.error(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -223,6 +231,8 @@ export const {
   clearSuccessFlags,
   clearCurrentRobot,
   setCurrentRobot,
+  setMessageSuccess,
+  setMessageError,
 } = robotSlice.actions;
 
 export default robotSlice.reducer;

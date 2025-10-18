@@ -36,11 +36,15 @@ import { useLocales } from "../../../../hooks";
 interface CourseRatingSectionProps {
   courseId: string;
   isUserEnrolled: boolean;
+  ratingAverage?: number;
+  ratingCount?: number;
 }
 
 export default function CourseRatingSection({
   courseId,
   isUserEnrolled,
+  ratingAverage = 0,
+  ratingCount = 0,
 }: CourseRatingSectionProps) {
   const dispatch = useAppDispatch();
   const { translate } = useLocales();
@@ -51,7 +55,6 @@ export default function CourseRatingSection({
     ratings,
     page,
     size,
-    total,
     totalPages,
     // isLoadingMyRating,
     isLoadingRatings,
@@ -152,9 +155,25 @@ export default function CourseRatingSection({
         >
           {translate("courses.StudentReviews")}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {total} đánh giá
-        </Typography>
+        
+        {/* Display average rating from BE */}
+        {ratingCount > 0 && (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
+            <Rating value={ratingAverage} precision={0.1} readOnly />
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {ratingAverage.toFixed(1)}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              ({ratingCount} đánh giá)
+            </Typography>
+          </Box>
+        )}
+        
+        {ratingCount === 0 && (
+          <Typography variant="body2" color="text.secondary">
+            Chưa có đánh giá nào
+          </Typography>
+        )}
       </Box>
 
       {/* User's rating section - Only show if authenticated and enrolled */}

@@ -239,15 +239,38 @@ export default function RobotDetailsSection({
                 </Box>
 
                 {/* Product Name & Details */}
-                <Typography variant="h4" gutterBottom>
+                <Typography
+                  variant="h4"
+                  gutterBottom
+                  sx={{
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word",
+                  }}
+                >
                   {robot.name}
                 </Typography>
 
-                <Typography variant="h6" color="primary.main" gutterBottom>
+                <Typography
+                  variant="h6"
+                  color="primary.main"
+                  gutterBottom
+                  sx={{
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word",
+                  }}
+                >
                   {robot.brand} - {robot.model}
                 </Typography>
 
-                <Typography variant="body1" color="text.secondary" paragraph>
+                <Typography
+                  variant="body1"
+                  color="text.secondary"
+                  paragraph
+                  sx={{
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word",
+                  }}
+                >
                   {robot.description || translate("admin.noDescriptionAvailable")}
                 </Typography>
 
@@ -261,6 +284,8 @@ export default function RobotDetailsSection({
                       variant="body2"
                       sx={{
                         whiteSpace: "pre-line",
+                        wordBreak: "break-word",
+                        overflowWrap: "break-word",
                         backgroundColor: "grey.50",
                         p: 2,
                         borderRadius: 1,
@@ -281,6 +306,8 @@ export default function RobotDetailsSection({
                       variant="body2"
                       sx={{
                         whiteSpace: "pre-line",
+                        wordBreak: "break-word",
+                        overflowWrap: "break-word",
                         backgroundColor: "grey.50",
                         p: 2,
                         borderRadius: 1,
@@ -310,7 +337,12 @@ export default function RobotDetailsSection({
                     </Typography>
                     <Typography
                       variant="body1"
-                      sx={{ fontFamily: "monospace", fontSize: "0.875rem" }}
+                      sx={{
+                        fontFamily: "monospace",
+                        fontSize: "0.875rem",
+                        wordBreak: "break-all",
+                        overflowWrap: "break-word",
+                      }}
                     >
                       {robot.id}
                     </Typography>
@@ -320,7 +352,13 @@ export default function RobotDetailsSection({
                     <Typography variant="body2" color="text.secondary">
                       {translate("admin.brandModel")}
                     </Typography>
-                    <Typography variant="body1">
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        wordBreak: "break-word",
+                        overflowWrap: "break-word",
+                      }}
+                    >
                       {robot.brand} - {robot.model}
                     </Typography>
                   </Box>

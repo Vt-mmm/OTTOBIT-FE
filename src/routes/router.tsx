@@ -156,15 +156,15 @@ function AppRouter() {
               />
             ))}
           {/* Public Store Routes */}
-          <ReactRoute path="/store" element={<StorePage />} />
-          <ReactRoute path="/store/robots" element={<RobotListPage />} />
-          <ReactRoute path="/store/robots/:id" element={<RobotDetailPage />} />
+          <ReactRoute path="/product" element={<StorePage />} />
+          <ReactRoute path="/product/robots" element={<RobotListPage />} />
+          <ReactRoute path="/product/robots/:id" element={<RobotDetailPage />} />
           <ReactRoute
-            path="/store/components"
+            path="/product/components"
             element={<ComponentListPage />}
           />
           <ReactRoute
-            path="/store/components/:id"
+            path="/product/components/:id"
             element={<ComponentDetailPage />}
           />
         </ReactRoute>

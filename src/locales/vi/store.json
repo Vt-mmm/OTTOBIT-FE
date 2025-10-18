@@ -19,6 +19,7 @@
   "NoRobotsFound": "Không tìm thấy robot",
   "TryAdjustingFilters": "Thử điều chỉnh tìm kiếm hoặc bộ lọc",
   "NoRobotsAvailable": "Hiện tại không có robot nào",
+  "ResetFilters": "Đặt lại bộ lọc",
   "hero": {
     "titlePart1": "Khám phá tương lai của",
     "titlePart2": "Giáo dục STEM",
@@ -35,7 +36,7 @@
     "robots": "Robot",
     "components": "Linh kiện",
     "popularItems": "Sản phẩm phổ biến",
-    "addToCart": "Thêm vào giỏ",
+    "viewDetails": "Chi Tiết Sản Phẩm",
     "noProductsFound": "Không tìm thấy {{category}}",
     "checkBackLater": "Vui lòng quay lại sau để xem sản phẩm mới"
   },
@@ -62,8 +63,7 @@
     "productDescription": "Mô tả sản phẩm",
     "noDescription": "Không có mô tả",
     "keyFeatures": "Tính năng nổi bật",
-    "addToCart": "Thêm vào giỏ",
-    "buyNow": "Mua ngay",
+    "howToBuy": "Cách Mua Hàng",
     "getPriceAlert": "Nhận thông báo giảm giá",
     "technicalSpecs": "Thông số kỹ thuật",
     "robotNotFound": "Không tìm thấy robot"

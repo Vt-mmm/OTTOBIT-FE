@@ -23,8 +23,10 @@ interface CourseCardProps {
   compact?: boolean;
   isEnrolled?: boolean;
   onEnroll?: (courseId: string) => void;
-  price?: number; // NEW: Price from backend
-  type?: CourseType; // NEW: Course type from backend
+  price?: number; // Price from backend
+  type?: CourseType; // Course type from backend
+  ratingAverage?: number; // Rating average from backend
+  ratingCount?: number; // Rating count from backend
 }
 
 // Array of local images from public folder
@@ -48,17 +50,6 @@ const getPlaceholderImage = (courseId: string) => {
 // Default fallback image
 const DEFAULT_FALLBACK = "/asset/LogoOttobit.png";
 
-// Mock data generators based on course ID for consistency
-const generateMockRating = (
-  courseId: string
-): { rating: number; reviewCount: number } => {
-  const hash = courseId
-    .split("")
-    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const rating = 4.1 + (hash % 9) / 10; // 4.1 - 4.9
-  const reviewCount = 50 + (hash % 500); // 50-550 reviews
-  return { rating: Math.round(rating * 10) / 10, reviewCount };
-};
 
 export default function CourseCard({
   id,
@@ -71,14 +62,13 @@ export default function CourseCard({
   isEnrolled = false,
   price = 0, // Default to 0 if not provided
   type = CourseType.Free, // Default to Free if not provided
+  ratingAverage = 0, // Default to 0 if not provided
+  ratingCount = 0, // Default to 0 if not provided
 }: CourseCardProps) {
   const { translate } = useLocales();
   const [imgSrc, setImgSrc] = useState<string>(
     imageUrl || getPlaceholderImage(id)
   );
-
-  // Generate mock data based on course ID for consistency
-  const { rating, reviewCount } = generateMockRating(id);
 
   // Determine course pricing display based on backend data
   const isFree = type === CourseType.Free || price === 0;
@@ -238,41 +228,56 @@ export default function CourseCard({
             </Typography>
           )}
 
-          {/* Rating */}
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 0.5,
-              mb: 1.5,
-            }}
-          >
-            <Rating
-              value={rating}
-              readOnly
-              size="small"
-              precision={0.1}
+          {/* Rating - From Backend */}
+          {ratingCount > 0 ? (
+            <Box
               sx={{
-                "& .MuiRating-iconFilled": {
-                  color: "#ffc107",
-                },
-              }}
-            />
-            <Typography
-              variant="body2"
-              sx={{
-                color: "#666",
-                fontSize: "0.8rem",
-                ml: 0.5,
-                fontWeight: 500,
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+                mb: 1.5,
               }}
             >
-              {rating}{" "}
-              <Box component="span" sx={{ color: "#999" }}>
-                ({reviewCount.toLocaleString()})
-              </Box>
-            </Typography>
-          </Box>
+              <Rating
+                value={ratingAverage}
+                readOnly
+                size="small"
+                precision={0.1}
+                sx={{
+                  "& .MuiRating-iconFilled": {
+                    color: "#ffc107",
+                  },
+                }}
+              />
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "#666",
+                  fontSize: "0.8rem",
+                  ml: 0.5,
+                  fontWeight: 500,
+                }}
+              >
+                {ratingAverage.toFixed(1)}{" "}
+                <Box component="span" sx={{ color: "#999" }}>
+                  ({ratingCount.toLocaleString()})
+                </Box>
+              </Typography>
+            </Box>
+          ) : (
+            <Box sx={{ mb: 1.5, height: 24 }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "#999",
+                  fontSize: "0.75rem",
+                  fontStyle: "italic",
+                }}
+              >
+                Chưa có đánh giá
+              </Typography>
+            </Box>
+          )}
         </Box>
 
         {/* Bottom Section */}

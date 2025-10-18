@@ -194,7 +194,14 @@ export default function RobotComponentsTab({
               size="small"
               color="primary"
               variant="outlined"
-              sx={{ fontWeight: 500 }}
+              sx={{
+                fontWeight: 500,
+                maxWidth: "100%",
+                "& .MuiChip-label": {
+                  whiteSpace: "normal",
+                  wordBreak: "break-word",
+                },
+              }}
             />
           </Stack>
           <Typography variant="body2" color="text.secondary">
@@ -283,9 +290,19 @@ export default function RobotComponentsTab({
                 >
                   <TableCell>
                     <Stack direction="row" spacing={1.5} alignItems="center">
-                      <ComponentIcon color="primary" sx={{ fontSize: 20 }} />
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      <ComponentIcon
+                        color="primary"
+                        sx={{ fontSize: 20, flexShrink: 0 }}
+                      />
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 500,
+                            wordBreak: "break-word",
+                            overflowWrap: "break-word",
+                          }}
+                        >
                           {rc.componentName}
                         </Typography>
                         {rc.isDeleted && (
