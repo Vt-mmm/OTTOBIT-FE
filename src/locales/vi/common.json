@@ -58,6 +58,13 @@
   "Studio": "Studio",
   "User": "Người dùng",
   "Student": "Học viên",
+  "Administrator": "Quản trị viên",
+  "MyProfile": "Hồ sơ cá nhân",
+  "MyLearning": "Việc học của tôi",
+  "Dashboard": "Bảng điều khiển",
+  "AdminPanel": "Quản trị hệ thống",
+  "Login": "Đăng nhập",
+  "Blog": "Blog",
   "footer": {
     "companyName": "Ottobit Frontend",
     "companyDescription": "Nền tảng ứng dụng hiện đại được xây dựng với React 18.3.1, TypeScript 5.4.x và Material UI v6.",

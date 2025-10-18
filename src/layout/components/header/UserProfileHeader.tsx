@@ -17,6 +17,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { useAppDispatch, useAppSelector } from "store/config";
 import { logout } from "store/auth/authSlice";
 import { useNavigate } from "react-router-dom";
+import { useLocales } from "hooks";
 
 interface UserProfileHeaderProps {
   title?: string;
@@ -26,6 +27,7 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ title }) => {
   const theme = useTheme();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { translate } = useLocales();
   const { userAuth } = useAppSelector((s) => s.auth);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -86,7 +88,7 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ title }) => {
             </Avatar>
             <Box sx={{ ml: 1.25, display: { xs: "none", sm: "block" } }}>
               <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
-                {userAuth?.username || "Người dùng"}
+                {userAuth?.username || translate("common.User")}
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 {userAuth?.email}
@@ -110,7 +112,7 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ title }) => {
               <ListItemIcon>
                 <LogoutIcon fontSize="small" />
               </ListItemIcon>
-              Đăng xuất
+              {translate("common.Logout")}
             </MenuItem>
           </Menu>
         </Box>

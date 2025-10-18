@@ -111,7 +111,7 @@ const UserProfilePage: React.FC = () => {
         <Box
           sx={{
             position: "absolute",
-            top: { xs: 16, md: 24 },
+            top: { xs: 80, md: 90 },
             right: { xs: 16, md: 32 },
             zIndex: 999,
           }}

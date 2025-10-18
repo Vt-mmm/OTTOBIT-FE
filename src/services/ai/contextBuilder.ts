@@ -92,7 +92,7 @@ class ContextBuilder {
         // Don't use c.difficultyLevel - BE doesn't have this field
         // AI will auto-detect difficulty from title/description
         price: c.price || 0,
-        rating: c.averageRating || 0,
+        rating: c.ratingAverage || 0, // Fixed: BE returns 'ratingAverage' not 'averageRating'
         tags: c.tags || [],
         requiredRobots: c.requiredRobots || [],
       }));

@@ -174,10 +174,15 @@ export default function ProductCard({
           sx={{
             fontWeight: 600,
             mb: 1,
+            lineHeight: 1.4,
+            height: "2.8em",
             overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            wordBreak: "break-word",
           }}
+          title={name}
         >
           {name}
         </Typography>
@@ -187,7 +192,13 @@ export default function ProductCard({
           <Typography
             variant="body2"
             color="primary.main"
-            sx={{ mb: 1, fontWeight: 500 }}
+            sx={{
+              mb: 1,
+              fontWeight: 500,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
           >
             {brand} - {model}
           </Typography>

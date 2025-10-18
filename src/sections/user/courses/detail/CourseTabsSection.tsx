@@ -178,6 +178,8 @@ export default function CourseTabsSection({
         <CourseRatingSection
           courseId={course.id}
           isUserEnrolled={isUserEnrolled}
+          ratingAverage={course.ratingAverage}
+          ratingCount={course.ratingCount}
         />
       </TabPanel>
     </Box>

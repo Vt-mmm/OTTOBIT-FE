@@ -81,10 +81,7 @@ export interface GetComponentsRequest {
   size?: number;
   searchTerm?: string;
   type?: ComponentType;
-  minPrice?: number;
-  maxPrice?: number;
-  inStock?: boolean;
-  orderBy?: string; // Name, Price, Type, StockQuantity, CreatedAt, UpdatedAt
+  orderBy?: string;           // BE supports: "Name", "Type", "CreatedAt", "UpdatedAt"
   orderDirection?: "ASC" | "DESC";
 }
 

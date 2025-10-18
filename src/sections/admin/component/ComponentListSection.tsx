@@ -411,7 +411,18 @@ export default function ComponentListSection({
 
                 {/* Component Info */}
                 <CardContent sx={{ flexGrow: 1, pt: 2 }}>
-                  <Typography variant="h6" noWrap sx={{ mb: 1 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      mb: 1,
+                      wordBreak: "break-word",
+                      overflowWrap: "break-word",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}
+                  >
                     {component.name}
                   </Typography>
 

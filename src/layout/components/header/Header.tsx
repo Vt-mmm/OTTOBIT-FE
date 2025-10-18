@@ -118,7 +118,7 @@ const Header: React.FC = () => {
           isPage: true,
         },
         {
-          name: "Blog",
+          name: translate("common.Blog"),
           icon: <ArticleIcon sx={{ mr: 1, fontSize: "1rem" }} />,
           href: PATH_USER.blogs,
           id: "blogs",
@@ -149,7 +149,7 @@ const Header: React.FC = () => {
           isPage: true,
         },
         {
-          name: "Blog",
+          name: translate("common.Blog"),
           icon: <ArticleIcon sx={{ mr: 1, fontSize: "1rem" }} />,
           href: PATH_USER.blogs,
           id: "blogs",
@@ -521,10 +521,10 @@ const Header: React.FC = () => {
                     {userAuth?.email || ""}
                   </Typography>
                   {userAuth?.roles?.includes("OTTOBIT_ADMIN") && (
-                    <Chip
-                      icon={<AdminIcon />}
-                      label="Quản trị viên"
-                      size="small"
+                  <Chip
+                    icon={<AdminIcon />}
+                    label={translate("common.Administrator")}
+                    size="small"
                       sx={{
                         mt: 1,
                         fontWeight: 600,
@@ -552,7 +552,7 @@ const Header: React.FC = () => {
                   <PersonIcon
                     sx={{ mr: 1.5, color: "#2E7D32", fontSize: 20 }}
                   />
-                  Hồ sơ cá nhân
+                  {translate("common.MyProfile")}
                 </MenuItem>
 
                 <MenuItem
@@ -571,7 +571,7 @@ const Header: React.FC = () => {
                   <SchoolIcon
                     sx={{ mr: 1.5, color: "#2E7D32", fontSize: 20 }}
                   />
-                  Việc học của tôi
+                  {translate("common.MyLearning")}
                 </MenuItem>
 
                 <MenuItem
@@ -587,7 +587,7 @@ const Header: React.FC = () => {
                   <DashboardIcon
                     sx={{ mr: 1.5, color: "#2E7D32", fontSize: 20 }}
                   />
-                  Bảng điều khiển
+                  {translate("common.Dashboard")}
                 </MenuItem>
 
                 {userAuth?.roles?.includes("OTTOBIT_ADMIN") && (
@@ -604,7 +604,7 @@ const Header: React.FC = () => {
                     <AdminIcon
                       sx={{ mr: 1.5, color: "#E65100", fontSize: 20 }}
                     />
-                    Quản trị hệ thống
+                    {translate("common.AdminPanel")}
                   </MenuItem>
                 )}
 
@@ -623,7 +623,7 @@ const Header: React.FC = () => {
                   <LogoutIcon
                     sx={{ mr: 1.5, color: "#f44336", fontSize: 20 }}
                   />
-                  Đăng xuất
+                  {translate("common.Logout")}
                 </MenuItem>
               </Menu>
             </Box>
@@ -653,7 +653,7 @@ const Header: React.FC = () => {
                   },
                 }}
               >
-                Đăng nhập
+                {translate("common.Login")}
               </Button>
             </motion.div>
           )}
