@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Box,
@@ -11,6 +11,7 @@ import {
   Divider,
   CircularProgress,
   Alert,
+  Pagination,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -30,14 +31,21 @@ const OrdersPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { orders } = useAppSelector((state) => state.order);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
 
   useEffect(() => {
-    // Fetch orders on mount
-    dispatch(getOrdersThunk({ page: 1, size: 20 }));
-  }, [dispatch]);
+    // Fetch orders on mount and when page changes
+    dispatch(getOrdersThunk({ page: currentPage, size: pageSize }));
+  }, [dispatch, currentPage, pageSize]);
 
   const handleViewOrderDetail = (orderId: string) => {
     navigate(PATH_USER.orderDetail.replace(":id", orderId));
+  };
+
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const getStatusColor = (status: OrderStatus) => {
@@ -250,11 +258,12 @@ const OrdersPage: React.FC = () => {
 
                 {/* Orders List */}
                 {!isEmpty && !isLoading && (
-                  <Box
-                    sx={{ display: "flex", flexDirection: "column", gap: 3 }}
-                  >
-                    {orders.data?.items.map(
-                      (order: import("common/@types").OrderResult) => {
+                  <>
+                    <Box
+                      sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+                    >
+                      {orders.data?.items.map(
+                        (order: import("common/@types").OrderResult) => {
                         // Compute paymentStatus from paymentTransactions
                         const paymentStatus =
                           order.paymentTransactions?.[0]?.status ??
@@ -292,8 +301,7 @@ const OrdersPage: React.FC = () => {
                                     sx={{ mb: 0.5 }}
                                   >
                                     {translate("orders.OrderPrefix")}
-                                    {order.orderCode ||
-                                      order.id.substring(0, 8)}
+                                    {order.id.substring(0, 8)}
                                   </Typography>
                                   <Typography
                                     variant="body2"
@@ -373,7 +381,29 @@ const OrdersPage: React.FC = () => {
                         );
                       }
                     )}
-                  </Box>
+                    </Box>
+
+                    {/* Pagination */}
+                    {orders.data && orders.data.totalPages > 1 && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          mt: 4,
+                        }}
+                      >
+                        <Pagination
+                          count={orders.data.totalPages}
+                          page={currentPage}
+                          onChange={handlePageChange}
+                          color="primary"
+                          size="large"
+                          showFirstButton
+                          showLastButton
+                        />
+                      </Box>
+                    )}
+                  </>
                 )}
               </Box>
             </motion.div>

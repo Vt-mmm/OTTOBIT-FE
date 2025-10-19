@@ -14,11 +14,11 @@ import {
   Lock as LockIcon,
 } from "@mui/icons-material";
 import { useLocales } from "../../../../hooks";
-import { LessonResult } from "common/@types/lesson";
+import { LessonResult, LessonPreview } from "common/@types/lesson";
 import { LessonProgressResult, LessonStatus } from "common/@types/lessonProgress";
 
 interface CourseModulesSectionProps {
-  lessons: LessonResult[];
+  lessons: (LessonResult | LessonPreview)[];
   lessonProgresses?: LessonProgressResult[];
   isUserEnrolled: boolean;
 }
@@ -41,8 +41,8 @@ export default function CourseModulesSection({
   };
 
   // Calculate module stats from BE data
-  const getModuleStats = (lesson: LessonResult) => {
-    const challengesCount = lesson.challengesCount || 0;
+  const getModuleStats = (lesson: LessonResult | LessonPreview) => {
+    const challengesCount = ('challengesCount' in lesson) ? (lesson.challengesCount || 0) : 0;
     const durationMinutes = lesson.durationInMinutes || 0;
     
     return {
@@ -50,6 +50,19 @@ export default function CourseModulesSection({
       durationMinutes,
     };
   };
+
+  // Calculate actual progress percentage based on completed challenges
+  // Note: Unused - keeping for reference. BE uses currentChallengeOrder / totalChallenges
+  // const calculateProgressPercentage = (lesson: LessonResult, progress?: LessonProgressResult) => {
+  //   if (!progress) return 0;
+  //   if (progress.status === LessonStatus.Completed) return 100;
+  //   
+  //   const totalChallenges = lesson.challengesCount || 0;
+  //   const completedChallenges = progress.completedChallengesCount || 0;
+  //   
+  //   if (totalChallenges === 0) return 0;
+  //   return Math.round((completedChallenges / totalChallenges) * 100);
+  // };
 
   return (
     <Box>
@@ -97,8 +110,8 @@ export default function CourseModulesSection({
           return (
             <Accordion
               key={lesson.id}
-              expanded={expanded === panelId}
-              onChange={handleChange(panelId)}
+              expanded={('content' in lesson && lesson.content) ? expanded === panelId : false}
+              onChange={('content' in lesson && lesson.content) ? handleChange(panelId) : undefined}
               sx={{
                 border: "1px solid #eeeeee",
                 borderRadius: "16px !important",
@@ -114,7 +127,7 @@ export default function CourseModulesSection({
               }}
             >
               <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
+                expandIcon={('content' in lesson && lesson.content) ? <ExpandMoreIcon /> : null}
                 sx={{
                   "& .MuiAccordionSummary-content": {
                     my: 3,
@@ -193,8 +206,8 @@ export default function CourseModulesSection({
                         value={
                           progress.status === LessonStatus.Completed
                             ? 100
-                            : progress.status === LessonStatus.InProgress
-                            ? 50
+                            : progress.totalChallenges > 0
+                            ? Math.round((progress.currentChallengeOrder / progress.totalChallenges) * 100)
                             : 0
                         }
                         sx={{
@@ -210,8 +223,8 @@ export default function CourseModulesSection({
                         {
                           progress.status === LessonStatus.Completed
                             ? 100
-                            : progress.status === LessonStatus.InProgress
-                            ? 50
+                            : progress.totalChallenges > 0
+                            ? Math.round((progress.currentChallengeOrder / progress.totalChallenges) * 100)
                             : 0
                         }
                         % {translate("courses.Complete")}
@@ -223,7 +236,7 @@ export default function CourseModulesSection({
 
               <AccordionDetails sx={{ pt: 0, pb: 4, px: 3.5 }}>
                 <Box>
-                  {lesson.content && (
+                  {('content' in lesson && lesson.content) && (
                     <Typography variant="body2" sx={{ mb: 3, color: "#616161", fontSize: "0.9375rem", lineHeight: 1.7 }}>
                       {lesson.content}
                     </Typography>

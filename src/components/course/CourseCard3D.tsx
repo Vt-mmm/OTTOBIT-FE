@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { Box, Typography, Chip } from "@mui/material";
 import { motion } from "framer-motion";
 import { Course, CourseType } from "../../common/@types/course";
@@ -11,12 +12,12 @@ interface CourseCard3DProps {
   onClick?: () => void;
 }
 
-export default function CourseCard3D({
+const CourseCard3D = forwardRef<HTMLDivElement, CourseCard3DProps>(({
   course,
   index,
   activeIndex,
   onClick,
-}: CourseCard3DProps) {
+}, ref) => {
   const offset = index - activeIndex;
   const isActive = offset === 0;
 
@@ -58,6 +59,7 @@ export default function CourseCard3D({
 
   return (
     <Box
+      ref={ref}
       component={motion.div}
       animate={style}
       transition={{
@@ -241,4 +243,8 @@ export default function CourseCard3D({
       </Box>
     </Box>
   );
-}
+});
+
+CourseCard3D.displayName = 'CourseCard3D';
+
+export default CourseCard3D;

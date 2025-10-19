@@ -13,12 +13,9 @@ export interface Enrollment {
   progress: number; // 0 to 100 (percentage from backend)
   enrollmentDate: string;
   isCompleted: boolean;
-  status: EnrollmentStatus;
-  completedLessonsCount: number;
-  totalLessonsCount: number;
-  lastAccessedAt?: string;
   createdAt: string;
   updatedAt: string;
+  isDeleted?: boolean;
   studentName?: string;
   courseTitle?: string;
   courseDescription?: string;

@@ -1,5 +1,6 @@
 import {
   LessonResult,
+  LessonPreview,
   LessonProgressResult,
   LessonStatus,
 } from "common/@types/lesson";
@@ -38,7 +39,7 @@ function isInProgressStatus(status: number | string | undefined): boolean {
  * @returns boolean - true if lesson is accessible, false otherwise
  */
 export function isLessonAccessible(
-  lesson: LessonResult,
+  lesson: LessonResult | LessonPreview,
   lessonProgresses: LessonProgressResult[] = []
 ): boolean {
   // First lesson (order 1) is always accessible
@@ -176,7 +177,7 @@ export function isCourseCompleted(
  * @returns translation key for lesson status
  */
 export function getLessonStatusKey(
-  lesson: LessonResult,
+  lesson: LessonResult | LessonPreview,
   lessonProgresses: LessonProgressResult[] = []
 ): string {
   const progress = getLessonProgress(lesson.id, lessonProgresses);
@@ -212,7 +213,7 @@ export function getLessonStatusText(
  * @returns translation key for button text
  */
 export function getLessonButtonKey(
-  lesson: LessonResult,
+  lesson: LessonResult | LessonPreview,
   lessonProgresses: LessonProgressResult[] = []
 ): string {
   const progress = getLessonProgress(lesson.id, lessonProgresses);

@@ -30,6 +30,7 @@ import {
   getLessonsPreview,
   getLessonProgress,
 } from "../../../redux/lesson/lessonSlice";
+// import { getMyEnrollmentsThunk } from "../../../redux/enrollment/enrollmentThunks";
 import { isLessonAccessible } from "../../../utils/lessonUtils";
 import { PATH_USER } from "../../../routes/paths";
 import { useLocales } from "../../../hooks";
@@ -69,10 +70,22 @@ export default function CourseLearningSection({
     (state) => state.lesson.lessonProgress
   );
 
+  const { 
+    data: myEnrollmentsData,
+    // isLoading: enrollmentLoading 
+  } = useAppSelector((state) => state.enrollment.myEnrollments);
+
   // Fetch course details
   useEffect(() => {
     dispatch(getCourseById(courseId));
   }, [dispatch, courseId]);
+
+  // Fetch my enrollments - TEMPORARILY DISABLED to fix infinite loop
+  // TODO: Fix enrollment Redux slice to prevent re-render loop
+  // useEffect(() => {
+  //   console.log('Fetching enrollment for courseId:', courseId);
+  //   dispatch(getMyEnrollmentsThunk({ courseId, pageNumber: 1, pageSize: 1 }));
+  // }, [dispatch, courseId]);
 
   // Fetch lessons preview with pagination
   useEffect(() => {
@@ -142,6 +155,15 @@ export default function CourseLearningSection({
   const isLoading = courseLoading || lessonsPreviewLoading;
   const error = courseError || lessonsPreviewError;
 
+  // Debug loading states - DISABLED after fixing
+  // console.log('Loading states:', {
+  //   courseLoading,
+  //   lessonsPreviewLoading,
+  //   isLoading,
+  //   hasCourse: !!course,
+  //   hasLessons: !!lessonsPreviewData
+  // });
+
   if (isLoading) {
     return (
       <Container>
@@ -154,6 +176,7 @@ export default function CourseLearningSection({
           }}
         >
           <CircularProgress size={60} />
+          <Typography sx={{ ml: 2 }}>Loading course...</Typography>
         </Box>
       </Container>
     );
@@ -186,14 +209,20 @@ export default function CourseLearningSection({
 
   const lessons = lessonsPreviewData?.items || [];
   const lessonProgresses = lessonProgressData?.items || [];
+  const currentEnrollment = myEnrollmentsData?.items?.[0];
 
-  // Calculate progress
+  // Calculate progress - Use BE data first, fallback to FE calculation
   const totalLessons = lessons.length;
   const completedLessons = lessonProgresses.filter(
     (lp) => (lp.status as any) === 3 || lp.status === "Completed" // 3 = Completed from backend
   ).length;
-  const progressPercent =
-    totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  
+  // Use progress from BE enrollment if available, otherwise calculate from lesson progress
+  const progressPercent = currentEnrollment?.progress 
+    ? Math.round(currentEnrollment.progress)
+    : totalLessons > 0 
+    ? Math.round((completedLessons / totalLessons) * 100) 
+    : 0;
 
   // Find next lesson to continue
   const nextLesson = lessons.find((lesson) => {
@@ -337,12 +366,14 @@ export default function CourseLearningSection({
                   >
                     {nextLesson.title}
                   </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: "text.secondary", mb: 2.5 }}
-                  >
-                    {nextLesson.content}
-                  </Typography>
+                  {('content' in nextLesson && typeof nextLesson.content === 'string') && (
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "text.secondary", mb: 2.5 }}
+                    >
+                      {nextLesson.content}
+                    </Typography>
+                  )}
                   <Button
                     variant="contained"
                     size="large"

@@ -17,15 +17,9 @@ import {
   TableRow,
   Typography,
   Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
 } from "@mui/material";
 import {
   Add as AddIcon,
-  Delete as DeleteIcon,
   ContentCopy as CopyIcon,
   Edit as EditIcon,
   FileDownload as FileDownloadIcon,
@@ -34,7 +28,6 @@ import { useAppDispatch, useAppSelector } from "store/config";
 import { useLocales } from "hooks";
 import {
   getActivationCodesThunk,
-  deleteActivationCodeThunk,
   updateActivationCodeStatusThunk,
   exportActivationCodesCsvThunk,
 } from "store/activationCode/activationCodeThunks";
@@ -56,15 +49,6 @@ export default function ActivationCodeListSection() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [exportCsvDialogOpen, setExportCsvDialogOpen] = useState(false);
-  const [deleteDialog, setDeleteDialog] = useState<{
-    open: boolean;
-    id: string | null;
-    code: string;
-  }>({
-    open: false,
-    id: null,
-    code: "",
-  });
   const [updateStatusDialog, setUpdateStatusDialog] = useState<{
     open: boolean;
     id: string | null;
@@ -104,13 +88,7 @@ export default function ActivationCodeListSection() {
     }
   }, [operations.createSuccess]);
 
-  useEffect(() => {
-    if (operations.deleteSuccess) {
-      setDeleteDialog({ open: false, id: null, code: "" });
-      dispatch(clearSuccessFlags());
-      fetchData();
-    }
-  }, [operations.deleteSuccess]);
+
 
   useEffect(() => {
     if (operations.updateSuccess) {
@@ -145,20 +123,6 @@ export default function ActivationCodeListSection() {
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
     // You can add a snackbar notification here
-  };
-
-  const handleDeleteClick = (id: string, code: string) => {
-    setDeleteDialog({ open: true, id, code });
-  };
-
-  const handleDeleteConfirm = () => {
-    if (deleteDialog.id) {
-      dispatch(deleteActivationCodeThunk(deleteDialog.id));
-    }
-  };
-
-  const handleDeleteCancel = () => {
-    setDeleteDialog({ open: false, id: null, code: "" });
   };
 
   const handleUpdateStatusClick = (
@@ -263,12 +227,6 @@ export default function ActivationCodeListSection() {
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
-        </Alert>
-      )}
-
-      {operations.deleteError && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {operations.deleteError}
         </Alert>
       )}
 
@@ -412,22 +370,6 @@ export default function ActivationCodeListSection() {
                         >
                           <EditIcon fontSize="small" />
                         </IconButton>
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleDeleteClick(item.id, item.code)}
-                          disabled={
-                            operations.isDeleting ||
-                            item.status === CodeStatus.Used
-                          }
-                          title={
-                            item.status === CodeStatus.Used
-                              ? translate("admin.cannotDeleteUsedCode")
-                              : translate("admin.delete")
-                          }
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
                       </Box>
                     </TableCell>
                   </TableRow>
@@ -483,34 +425,6 @@ export default function ActivationCodeListSection() {
         isLoading={operations.isExporting}
         error={operations.exportError}
       />
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialog.open} onClose={handleDeleteCancel}>
-        <DialogTitle>{translate("admin.confirmDeleteCode")}</DialogTitle>
-        <DialogContent>
-          <DialogContentText
-            dangerouslySetInnerHTML={{
-              __html: translate("admin.confirmDeleteCodeMessage", {
-                code: deleteDialog.code,
-              }),
-            }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDeleteCancel} disabled={operations.isDeleting}>
-            {translate("admin.cancel")}
-          </Button>
-          <Button
-            onClick={handleDeleteConfirm}
-            color="error"
-            variant="contained"
-            disabled={operations.isDeleting}
-            startIcon={operations.isDeleting && <CircularProgress size={16} />}
-          >
-            {translate("admin.delete")}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 }

@@ -33,14 +33,11 @@ export interface OrderResult {
   discountAmount: number;
   total: number;
   status: OrderStatus;
-  orderCode?: string; // Added for user-facing order reference
+  voucherId?: string;
   createdAt: string;
   updatedAt: string;
   items: OrderItemResult[];
   paymentTransactions: PaymentTransactionResult[];
-  // Admin fields
-  userFullName?: string;
-  userEmail?: string;
 }
 
 // Pagination Response

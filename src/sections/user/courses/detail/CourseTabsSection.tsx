@@ -7,12 +7,12 @@ import CourseAboutSection from "./CourseAboutSection";
 import CourseCertificatePreviewSection from "./CourseCertificatePreviewSection";
 import CourseRatingSection from "./CourseRatingSection";
 import { CourseResult } from "common/@types/course";
-import { LessonResult } from "common/@types/lesson";
+import { LessonResult, LessonPreview } from "common/@types/lesson";
 import { LessonProgressResult } from "common/@types/lessonProgress";
 
 interface CourseTabsSectionProps {
   course: CourseResult;
-  lessons: LessonResult[];
+  lessons: (LessonResult | LessonPreview)[];
   lessonProgresses?: LessonProgressResult[];
   isUserEnrolled: boolean;
 }

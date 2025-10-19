@@ -17,6 +17,17 @@ export interface Lesson {
   isDeleted?: boolean;
 }
 
+// LessonPreview interface matching BE LessonPreviewResult
+export interface LessonPreview {
+  id: string;
+  courseId: string;
+  title: string;
+  durationInMinutes: number;
+  order: number;
+  courseTitle?: string;
+  // Note: BE LessonPreviewResult does NOT include challengesCount or content
+}
+
 // Request types
 export interface CreateLessonRequest {
   courseId: string;
@@ -71,7 +82,7 @@ export interface LessonsResponse {
 }
 
 export interface LessonsPreviewResponse {
-  items: LessonResult[]; // Preview lessons for non-enrolled users
+  items: LessonPreview[]; // Preview lessons - BE returns LessonPreviewResult (no challengesCount)
   page: number;
   size: number;
   total: number;
