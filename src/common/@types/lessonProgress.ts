@@ -40,6 +40,24 @@ export interface LessonProgress {
   enrollment?: Enrollment;
 }
 
+// LessonProgressResult from BE
+export interface LessonProgressResultFromBE {
+  id: string;
+  enrollmentId: string;
+  lessonId: string;
+  lessonTitle: string;
+  lessonOrder: number;
+  status: LessonStatus;
+  startedAt?: string;
+  completedAt?: string;
+  currentChallengeOrder: number;
+  totalChallenges: number;
+  studentName: string;
+  courseTitle: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Request types
 export interface GetLessonProgressRequest {
   courseId?: string;
@@ -60,7 +78,7 @@ export interface GetMyLessonProgressParams extends GetLessonProgressRequest {}
 export interface StartLessonParams extends StartLessonRequest {}
 
 // Response types
-export interface LessonProgressResult extends LessonProgress {}
+export interface LessonProgressResult extends LessonProgressResultFromBE {}
 
 export interface LessonProgressResponse {
   items: LessonProgressResult[];  // Backend returns 'items'

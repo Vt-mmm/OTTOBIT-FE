@@ -194,42 +194,7 @@ export default function EnrollmentDetailsDialog({
                 mb: 2,
               }}
             />
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr 1fr", sm: "1fr 1fr 1fr" },
-                gap: 2,
-                textAlign: "center",
-              }}
-            >
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  {translate("admin.completedLessons")}
-                </Typography>
-                <Typography variant="h6" color="success.main">
-                  {safeNumber(enrollment.completedLessonsCount, 0)}
-                </Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  {translate("admin.totalLessons")}
-                </Typography>
-                <Typography variant="h6">
-                  {safeNumber(enrollment.totalLessonsCount, 0)}
-                </Typography>
-              </Box>
-              <Box sx={{ gridColumn: { xs: "1 / -1", sm: "auto" } }}>
-                <Typography variant="caption" color="text.secondary">
-                  {translate("admin.remaining")}
-                </Typography>
-                <Typography variant="h6" color="warning.main">
-                  {Math.max(0, 
-                    safeNumber(enrollment.totalLessonsCount, 0) - 
-                    safeNumber(enrollment.completedLessonsCount, 0)
-                  )}
-                </Typography>
-              </Box>
-            </Box>
+
           </Box>
         </Box>
 
@@ -301,15 +266,13 @@ export default function EnrollmentDetailsDialog({
                 "MMM DD, YYYY HH:mm"
               )}
             />
-            {enrollment.lastAccessedAt && (
-              <DetailRow
-                icon={<DateIcon fontSize="small" />}
-                label={translate("admin.lastAccessed")}
-                value={dayjs(enrollment.lastAccessedAt).format(
-                  "MMM DD, YYYY HH:mm"
-                )}
-              />
-            )}
+            <DetailRow
+              icon={<DateIcon fontSize="small" />}
+              label={translate("admin.lastActivity")}
+              value={dayjs(enrollment.updatedAt).format(
+                "MMM DD, YYYY HH:mm"
+              )}
+            />
             <DetailRow
               icon={<DateIcon fontSize="small" />}
               label={translate("admin.createdAt")}

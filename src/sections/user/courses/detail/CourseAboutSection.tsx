@@ -9,11 +9,11 @@ import { useLocales } from "../../../../hooks";
 import CourseRobotRequirementsSection from "./CourseRobotRequirementsSection";
 
 import { CourseResult } from "common/@types/course";
-import { LessonResult } from "common/@types/lesson";
+import { LessonResult, LessonPreview } from "common/@types/lesson";
 
 interface CourseAboutSectionProps {
   course: CourseResult;
-  lessons: LessonResult[];
+  lessons: (LessonResult | LessonPreview)[];
 }
 
 export default function CourseAboutSection({ course, lessons }: CourseAboutSectionProps) {

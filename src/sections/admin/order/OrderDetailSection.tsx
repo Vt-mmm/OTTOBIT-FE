@@ -306,36 +306,6 @@ export default function OrderDetailSection() {
                           {order.userId}
                         </Typography>
                       </Box>
-                      {order.userFullName && (
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <Typography variant="body2" color="text.secondary">
-                            Name:
-                          </Typography>
-                          <Typography variant="body2">
-                            {order.userFullName}
-                          </Typography>
-                        </Box>
-                      )}
-                      {order.userEmail && (
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <Typography variant="body2" color="text.secondary">
-                            Email:
-                          </Typography>
-                          <Typography variant="body2">
-                            {order.userEmail}
-                          </Typography>
-                        </Box>
-                      )}
                     </Stack>
                   </Box>
 

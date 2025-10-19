@@ -18,7 +18,7 @@ import {
   AccessTime as AccessTimeIcon,
   Lock as LockIcon,
 } from "@mui/icons-material";
-import { Lesson, LessonProgressResult } from "common/@types/lesson";
+import { Lesson, LessonPreview, LessonProgressResult } from "common/@types/lesson";
 import {
   isLessonAccessible,
   getLessonProgress,
@@ -28,7 +28,7 @@ import {
 import { useLocales } from "../../../../hooks";
 
 interface CourseLessonsSectionProps {
-  lessons: Lesson[];
+  lessons: (Lesson | LessonPreview)[]; // Accept both full Lesson and LessonPreview from BE
   lessonProgresses?: LessonProgressResult[];
   isUserEnrolled: boolean;
   onLessonClick: (lessonId: string) => void;
@@ -188,14 +188,16 @@ export default function CourseLessonsSection({
                       }
                       secondary={
                         <Box>
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ mb: 1 }}
-                            component="span"
-                          >
-                            {lesson.content}
-                          </Typography>
+                          {'content' in lesson && lesson.content && (
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ mb: 1 }}
+                              component="span"
+                            >
+                              {lesson.content}
+                            </Typography>
+                          )}
 
                           <Box
                             sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}

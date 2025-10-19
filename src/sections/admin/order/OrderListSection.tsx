@@ -262,7 +262,6 @@ export default function OrderListSection() {
               <TableHead>
                 <TableRow>
                   <TableCell>{translate("admin.orderID")}</TableCell>
-                  <TableCell>{translate("admin.user")}</TableCell>
                   <TableCell align="right">
                     {translate("admin.subtotal")}
                   </TableCell>
@@ -282,13 +281,13 @@ export default function OrderListSection() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
+                    <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
                       <CircularProgress />
                     </TableCell>
                   </TableRow>
                 ) : items.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
+                    <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
                       <Typography variant="body2" color="text.secondary">
                         {translate("admin.noOrdersFound")}
                       </Typography>
@@ -303,11 +302,6 @@ export default function OrderListSection() {
                           sx={{ fontFamily: "monospace" }}
                         >
                           {order.id.substring(0, 8)}...
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          {order.userEmail || order.userFullName || "N/A"}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">

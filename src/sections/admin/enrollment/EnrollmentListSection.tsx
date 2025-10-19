@@ -292,19 +292,14 @@ export default function EnrollmentListSection({}: EnrollmentListSectionProps) {
                     <Typography variant="body2" fontWeight="medium">
                       {`${Math.round(safeNumber(enrollment.progress, 0))}%`}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {safeNumber(enrollment.completedLessonsCount, 0)}/
-                      {safeNumber(enrollment.totalLessonsCount, 0)}{" "}
-                      {translate("admin.lessons")}
-                    </Typography>
                   </Box>
                 </TableCell>
                 <TableCell>
                   {dayjs(enrollment.enrollmentDate).format("DD/MM/YYYY")}
                 </TableCell>
                 <TableCell>
-                  {enrollment.lastAccessedAt
-                    ? dayjs(enrollment.lastAccessedAt).format("DD/MM/YYYY")
+                  {enrollment.updatedAt
+                    ? dayjs(enrollment.updatedAt).format("DD/MM/YYYY")
                     : translate("admin.never")}
                 </TableCell>
                 <TableCell align="right">
