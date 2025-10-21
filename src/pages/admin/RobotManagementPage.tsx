@@ -6,33 +6,32 @@ import RobotFormSection from "../../sections/admin/robot/RobotFormSection";
 import RobotDetailsSection from "../../sections/admin/robot/RobotDetailsSection";
 import { RobotResult } from "../../common/@types/robot";
 import useLocales from "../../hooks/useLocales";
-import { axiosClient } from "../../axiosClient";
-import { extractApiErrorMessage } from "../../utils/errorHandler";
+import { useAppDispatch } from "../../redux/config";
+import { getRobotByIdThunk } from "../../redux/robot/robotThunks";
 
 type ViewMode = "list" | "create" | "edit" | "details";
 
 export default function RobotManagementPage() {
   const { translate } = useLocales();
+  const dispatch = useAppDispatch();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [selectedRobot, setSelectedRobot] = useState<RobotResult | null>(null);
 
-  const handleViewModeChange = (mode: ViewMode, robot?: RobotResult) => {
+  const handleViewModeChange = async (mode: ViewMode, robot?: RobotResult) => {
     setViewMode(mode);
-    setSelectedRobot(robot || null);
-  };
 
-  const handleViewDetails = async (robotId: string) => {
-    try {
-      const res = await axiosClient.get(`/api/v1/robots/${robotId}`);
-      const robotData = res?.data?.data || res?.data;
-      setSelectedRobot(robotData);
-      setViewMode("details");
-    } catch (error: any) {
-      const errorMessage = extractApiErrorMessage(
-        error,
-        "Failed to load robot details"
-      );
-      console.error("Load robot error:", errorMessage);
+    // If viewing details and we have a robot object, fetch fresh data via Redux thunk
+    if (mode === "details" && robot?.id) {
+      try {
+        const robotData = await dispatch(getRobotByIdThunk(robot.id)).unwrap();
+        setSelectedRobot(robotData);
+      } catch (error: any) {
+        console.error("Load robot error:", error);
+        // Fallback to using the robot object from list
+        setSelectedRobot(robot);
+      }
+    } else {
+      setSelectedRobot(robot || null);
     }
   };
 
@@ -70,12 +69,7 @@ export default function RobotManagementPage() {
           />
         );
       default:
-        return (
-          <RobotListSection
-            onViewModeChange={handleViewModeChange}
-            onViewDetails={handleViewDetails}
-          />
-        );
+        return <RobotListSection onViewModeChange={handleViewModeChange} />;
     }
   };
 

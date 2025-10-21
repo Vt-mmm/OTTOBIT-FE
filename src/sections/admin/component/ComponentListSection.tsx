@@ -44,7 +44,7 @@ interface ComponentListSectionProps {
   onViewModeChange: (
     mode: "create" | "edit" | "details",
     component?: ComponentResult
-  ) => void;
+  ) => void | Promise<void>;
 }
 
 export default function ComponentListSection({
