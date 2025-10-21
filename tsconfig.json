@@ -38,7 +38,8 @@
       "routes/*": ["routes/*"],
       "theme/*": ["theme/*"],
       "axiosClient/*": ["axiosClient/*"],
-      "locales/*": ["locales/*"]
+      "locales/*": ["locales/*"],
+      "services/*": ["services/*"]
     }
   },
   "include": ["src"],

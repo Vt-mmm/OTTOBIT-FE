@@ -35,6 +35,7 @@ const ROOTS_BLOG = "/api/v1/Blog";
 const ROOTS_TAG = "/api/v1/Tag";
 const ROOTS_BLOG_COMMENT = "/api/v1/blog-comments";
 const ROOTS_COURSE_RATING = "/api/v1/courses";
+const ROOTS_CHATBOT = "/api/v1/chatbot";
 
 export const ROUTES_API_AUTH = {
   // Authentication endpoints
@@ -418,4 +419,9 @@ export const ROUTES_API_COURSE_RATING = {
   // Public endpoint - BE chỉ hỗ trợ page và size
   GET_BY_COURSE: (courseId: string, page: number = 1, size: number = 10) => 
     `${ROOTS_COURSE_RATING}/${courseId}/ratings?page=${page}&size=${size}`, // GET /api/v1/courses/{courseId}/ratings (Public)
+};
+
+// ChatBot endpoints
+export const ROUTES_API_CHATBOT = {
+  CHAT: path(ROOTS_CHATBOT, `/chat`), // POST /api/v1/chatbot/chat (User)
 };

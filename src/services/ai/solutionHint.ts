@@ -40,23 +40,19 @@ class SolutionHintService {
    */
   async generateHint(context: SolutionHintContext): Promise<SolutionHint> {
     try {
-      // Debug: Log solution JSON to verify it's parsed correctly
-      console.log("🔍 AI Hint - Solution JSON:", context.challenge.solutionJson);
+      // Debug: Log challenge info
+      console.log("🔍 AI Hint - Challenge:", context.challenge.title);
       console.log("🔍 AI Hint - Attempt Count:", context.attemptCount);
-      
-      // Build system prompt
-      const systemPrompt = this.buildSystemPrompt(context.attemptCount);
 
-      // Build user prompt
-      const userPrompt = this.buildUserPrompt(context);
+      // Send simple user message - backend handles all logic
+      const userMessage = `Tôi đang gặp khó khăn với thử thách "${context.challenge.title}". Đây là lần thử thứ ${context.attemptCount}. Bạn có thể cho tôi gợi ý không?`;
       
-      // Debug: Log prompt preview
-      console.log("📝 AI Hint - Prompt preview:", userPrompt.substring(0, 500) + "...");
+      console.log("📝 AI Hint - User message:", userMessage);
 
-      // Call AI service (Gemini)
+      // Call AI service - backend Otto prompt will handle hint logic
       const response = await aiService.sendMessage(
-        systemPrompt,
-        userPrompt,
+        "", // No system prompt - backend handles it
+        userMessage, // Send only simple user message
         context,
         "solution-hint"
       );
@@ -92,7 +88,8 @@ class SolutionHintService {
   }
 
   /**
-   * Build system prompt based on attempt count (progressive hints)
+   * Build system prompt based on attempt count (DEPRECATED - backend handles system prompt)
+   * Kept for reference only
    */
   private buildSystemPrompt(attemptCount: number): string {
     const hintLevel = this.determineHintLevel(attemptCount);

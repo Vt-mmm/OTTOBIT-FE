@@ -55,112 +55,19 @@ class CourseRecommendationService {
     context: CourseRecommendationContext
   ): Promise<CourseRecommendationResult> {
     try {
-      // Build system prompt for AI
-      const systemPrompt = this.buildSystemPrompt();
-
-      // Pre-analyze courses with difficulty detection
-      const coursesWithDifficulty = this.analyzeCourseDifficulty(
-        context.availableCourses
-      );
-
-      // Build user prompt with context
-      const userPrompt = this.buildUserPromptWithDifficulty(
-        userQuery,
-        context,
-        coursesWithDifficulty
-      );
-
-      // Call AI service (Gemini)
+      // Send only user query - backend handles all logic
       const response = await aiService.sendMessage(
-        systemPrompt,
-        userPrompt,
+        "", // No system prompt - backend handles it
+        userQuery, // Send only user message
         context,
         "course-recommendation"
       );
 
-      // Parse AI response and enrich with actual course data
-      let recommendations: CourseRecommendation[] = [];
-      let explanation = response.content;
-
-      // Try to parse JSON from response
-      let parsedResponse: any = null;
-      try {
-        // Remove markdown code blocks if present
-        let cleanText = response.content
-          .replace(/```json\n?/g, "")
-          .replace(/```\n?/g, "")
-          .trim();
-
-        // Try to find JSON object in text
-        const jsonMatch = cleanText.match(
-          /\{[\s\S]*"recommendations"[\s\S]*\}/
-        );
-        if (jsonMatch) {
-          parsedResponse = JSON.parse(jsonMatch[0]);
-        }
-      } catch (e) {
-        console.warn("Failed to parse AI response as JSON:", e);
-      }
-
-      // Extract recommendations
-      let jsonParsedSuccessfully = false;
-      if (
-        parsedResponse?.recommendations &&
-        Array.isArray(parsedResponse.recommendations)
-      ) {
-        jsonParsedSuccessfully = true; // Mark as successfully parsed
-
-        // Enrich with actual course data from context
-        recommendations = parsedResponse.recommendations
-          .map((rec: any) => {
-            // Find matching course from analyzed courses
-            const course = coursesWithDifficulty.find(
-              (c) =>
-                c.id === rec.courseId ||
-                c.title.toLowerCase().includes(rec.courseName?.toLowerCase())
-            );
-
-            if (course) {
-              return {
-                courseId: course.id,
-                courseName: course.title,
-                matchScore: rec.matchScore || 80,
-                reason: rec.reason || "Được AI đề xuất",
-                learningPath: rec.learningPath,
-                // Add actual course data with analyzedDifficulty
-                price: course.price,
-                rating: course.rating,
-                level: course.analyzedDifficulty, // Use analyzedDifficulty instead
-              };
-            }
-            return null;
-          })
-          .filter(
-            (rec: CourseRecommendation | null): rec is CourseRecommendation =>
-              rec !== null
-          )
-          .slice(0, 5); // Limit to 5 recommendations
-
-        explanation = parsedResponse.explanation || explanation;
-      }
-
-      // Fallback ONLY if JSON parsing failed completely
-      // Don't fallback if AI intentionally returned empty array (for greetings)
-      if (!jsonParsedSuccessfully && recommendations.length === 0) {
-        console.log("⚠️ JSON parsing failed, using text extraction fallback");
-        recommendations = this.extractRecommendationsFromText(
-          response.content,
-          coursesWithDifficulty
-        );
-      } else if (jsonParsedSuccessfully && recommendations.length === 0) {
-        console.log(
-          "✅ AI intentionally returned empty recommendations (greeting/chat)"
-        );
-      }
-
+      // Backend Otto returns simple text response
+      // For now, return empty recommendations with Otto's response
       return {
-        recommendations,
-        explanation,
+        recommendations: [],
+        explanation: response.content,
       };
     } catch (error) {
       console.error("Course Recommendation Error:", error);
@@ -169,7 +76,8 @@ class CourseRecommendationService {
   }
 
   /**
-   * Build system prompt for AI
+   * Build system prompt for AI (DEPRECATED - backend handles system prompt)
+   * Kept for reference only
    */
   private buildSystemPrompt(): string {
     return `You are an intelligent course recommendation assistant for an educational robotics platform called Ottobit.

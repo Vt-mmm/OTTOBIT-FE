@@ -5,6 +5,7 @@
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { CourseRecommendationResult, SolutionHint } from "services/ai";
+import { sendChatMessageThunk } from "./aiThunks";
 
 interface AIState {
   // Course Recommendations
@@ -17,6 +18,10 @@ interface AIState {
   currentHint: SolutionHint | null;
   hintLoading: boolean;
   hintError: string | null;
+
+  // ChatBot
+  chatLoading: boolean;
+  chatError: string | null;
 
   // Conversation history (optional, for chat-like experience)
   conversationHistory: Array<{
@@ -35,6 +40,9 @@ const initialState: AIState = {
   currentHint: null,
   hintLoading: false,
   hintError: null,
+
+  chatLoading: false,
+  chatError: null,
 
   conversationHistory: [],
 };
@@ -98,6 +106,26 @@ const aiSlice = createSlice({
     // Reset all
     resetAIState: () => initialState,
   },
+  extraReducers: (builder) => {
+    // Handle sendChatMessageThunk
+    builder
+      .addCase(sendChatMessageThunk.pending, (state) => {
+        state.chatLoading = true;
+        state.chatError = null;
+      })
+      .addCase(sendChatMessageThunk.fulfilled, (state, action) => {
+        state.chatLoading = false;
+        state.conversationHistory.push({
+          role: "assistant",
+          content: action.payload,
+          timestamp: new Date().toISOString(),
+        });
+      })
+      .addCase(sendChatMessageThunk.rejected, (state, action) => {
+        state.chatLoading = false;
+        state.chatError = action.payload || "Failed to send chat message";
+      });
+  },
 });
 
 export const {
@@ -115,5 +143,4 @@ export const {
 } = aiSlice.actions;
 
 export default aiSlice.reducer;
-
 
