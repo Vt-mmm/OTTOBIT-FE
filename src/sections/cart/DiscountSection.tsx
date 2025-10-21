@@ -38,7 +38,7 @@ export default function DiscountSection() {
     try {
       setError(null);
       const code = discountCode.trim().toUpperCase();
-      const response = await axiosClient.post(ROUTES_API_CART.APPLY_DISCOUNT, {
+      await axiosClient.post(ROUTES_API_CART.APPLY_DISCOUNT, {
         discountCode: code,
       });
       // Refetch cart from server so totals persist to checkout
