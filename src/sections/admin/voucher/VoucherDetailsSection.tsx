@@ -65,10 +65,6 @@ export default function VoucherDetailsSection({
     return type === 1 ? "Giảm giá cố định (VNĐ)" : "Giảm giá phần trăm";
   };
 
-  const getTargetText = (target: number) => {
-    return target === 1 ? "Tất cả người dùng" : "Người dùng cụ thể";
-  };
-
   return (
     <Box>
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
