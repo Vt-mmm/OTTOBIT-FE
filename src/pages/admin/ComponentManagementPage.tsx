@@ -6,45 +6,32 @@ import ComponentFormSection from "sections/admin/component/ComponentFormSection"
 import ComponentDetailsSection from "sections/admin/component/ComponentDetailsSection";
 import { ComponentResult } from "common/@types/component";
 import { useLocales } from "hooks";
-import { useAppDispatch } from "../../redux/config";
-import { getComponentByIdThunk } from "../../redux/component/componentThunks";
+
 
 export type ComponentViewMode = "list" | "create" | "edit" | "details";
 
+
 export default function ComponentManagementPage() {
   const { translate } = useLocales();
-  const dispatch = useAppDispatch();
   const [viewMode, setViewMode] = useState<ComponentViewMode>("list");
   const [selectedComponent, setSelectedComponent] =
     useState<ComponentResult | null>(null);
 
-  const handleViewModeChange = async (
+
+  const handleViewModeChange = (
     mode: ComponentViewMode,
     component?: ComponentResult
   ) => {
     setViewMode(mode);
-
-    // If viewing details and we have a component object, fetch fresh data via Redux thunk
-    if (mode === "details" && component?.id) {
-      try {
-        const componentData = await dispatch(
-          getComponentByIdThunk(component.id)
-        ).unwrap();
-        setSelectedComponent(componentData);
-      } catch (error: any) {
-        console.error("Load component error:", error);
-        // Fallback to using the component object from list
-        setSelectedComponent(component);
-      }
-    } else {
-      setSelectedComponent(component || null);
-    }
+    setSelectedComponent(component || null);
   };
+
 
   const handleBackToList = () => {
     setViewMode("list");
     setSelectedComponent(null);
   };
+
 
   const renderContent = () => {
     switch (viewMode) {
@@ -56,6 +43,7 @@ export default function ComponentManagementPage() {
             onSuccess={handleBackToList}
           />
         );
+
 
       case "edit":
         return selectedComponent ? (
@@ -69,6 +57,7 @@ export default function ComponentManagementPage() {
           <ComponentListSection onViewModeChange={handleViewModeChange} />
         );
 
+
       case "details":
         return selectedComponent ? (
           <ComponentDetailsSection
@@ -81,10 +70,12 @@ export default function ComponentManagementPage() {
           <ComponentListSection onViewModeChange={handleViewModeChange} />
         );
 
+
       default:
         return <ComponentListSection onViewModeChange={handleViewModeChange} />;
     }
   };
+
 
   const getPageTitle = () => {
     switch (viewMode) {
@@ -99,6 +90,7 @@ export default function ComponentManagementPage() {
     }
   };
 
+
   const getPageDescription = () => {
     switch (viewMode) {
       case "create":
@@ -111,6 +103,7 @@ export default function ComponentManagementPage() {
         return translate("admin.componentManagementSubtitle");
     }
   };
+
 
   return (
     <AdminLayout>
@@ -140,8 +133,12 @@ export default function ComponentManagementPage() {
           </Typography>
         </Box>
 
+
         {renderContent()}
       </Container>
     </AdminLayout>
   );
 }
+
+
+ 
