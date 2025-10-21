@@ -174,15 +174,6 @@ export default function VoucherDetailsSection({
                     {formatCurrency(voucher.minOrderAmount)}
                   </Typography>
                 </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    Đối tượng áp dụng
-                  </Typography>
-                  <Typography variant="body1">
-                    {getTargetText(voucher.target)}
-                  </Typography>
-                </Grid>
               </Grid>
             </CardContent>
           </Card>
@@ -212,15 +203,6 @@ export default function VoucherDetailsSection({
                   </Typography>
                   <Typography variant="body1">
                     {voucher.usageCount} / {voucher.usageLimit}
-                  </Typography>
-                </Box>
-
-                <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Giới hạn per user
-                  </Typography>
-                  <Typography variant="body1">
-                    {voucher.usageLimitPerUser} lần
                   </Typography>
                 </Box>
 

@@ -209,7 +209,7 @@ export default function VoucherListSection({
     if (voucher.isAvailable) {
       return <Chip label="Có sẵn" color="success" size="small" />;
     }
-    return <Chip label="Không có sẵn" color="error" size="small" />;
+    return <Chip label="Không có sẵn" color="default" size="small" />;
   };
 
   const getTypeText = (type: number) => {

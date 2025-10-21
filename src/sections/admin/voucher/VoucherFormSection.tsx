@@ -40,10 +40,8 @@ interface FormData {
   discountValue: number;
   minOrderAmount: number;
   usageLimit: number;
-  usageLimitPerUser: number;
   startDate: string;
   endDate: string;
-  target: number;
   note: string;
 }
 
@@ -63,10 +61,8 @@ export default function VoucherFormSection({
     discountValue: 0,
     minOrderAmount: 0,
     usageLimit: 0,
-    usageLimitPerUser: 0,
     startDate: "",
     endDate: "",
-    target: 1, // All users
     note: "",
   });
 
@@ -85,10 +81,8 @@ export default function VoucherFormSection({
         discountValue: voucher.discountValue,
         minOrderAmount: voucher.minOrderAmount,
         usageLimit: voucher.usageLimit,
-        usageLimitPerUser: voucher.usageLimitPerUser,
         startDate: voucher.startDate.split("T")[0], // Convert to YYYY-MM-DD
         endDate: voucher.endDate.split("T")[0], // Convert to YYYY-MM-DD
-        target: voucher.target,
         note: voucher.note || "",
       });
     }
@@ -173,13 +167,6 @@ export default function VoucherFormSection({
       isValid = false;
     }
 
-    // 11. UsageLimitPerUser (Optional) - > 0 và ≤ 1,000
-    if (formData.usageLimitPerUser > 0 && formData.usageLimitPerUser > 1000) {
-      errors.usageLimitPerUser =
-        "Giới hạn sử dụng per user không được quá 1,000";
-      isValid = false;
-    }
-
     // 5. StartDate (Required) - Không được quá 1 ngày trong quá khứ
     if (!formData.startDate) {
       errors.startDate = "Ngày bắt đầu không được để trống";
@@ -232,10 +219,8 @@ export default function VoucherFormSection({
         discountValue: formData.discountValue,
         minOrderAmount: formData.minOrderAmount,
         usageLimit: formData.usageLimit,
-        usageLimitPerUser: formData.usageLimitPerUser,
         startDate: new Date(formData.startDate).toISOString(),
         endDate: new Date(formData.endDate).toISOString(),
-        target: formData.target,
         note: formData.note.trim(),
       };
 
@@ -354,32 +339,16 @@ export default function VoucherFormSection({
                     helperText={validationErrors.minOrderAmount}
                   />
 
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="Giới hạn sử dụng"
-                        type="number"
-                        value={formData.usageLimit}
-                        onChange={handleInputChange("usageLimit")}
-                        inputProps={{ min: 1 }}
-                        error={!!validationErrors.usageLimit}
-                        helperText={validationErrors.usageLimit}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="Giới hạn per user"
-                        type="number"
-                        value={formData.usageLimitPerUser}
-                        onChange={handleInputChange("usageLimitPerUser")}
-                        inputProps={{ min: 1 }}
-                        error={!!validationErrors.usageLimitPerUser}
-                        helperText={validationErrors.usageLimitPerUser}
-                      />
-                    </Grid>
-                  </Grid>
+                  <TextField
+                    fullWidth
+                    label="Giới hạn sử dụng"
+                    type="number"
+                    value={formData.usageLimit}
+                    onChange={handleInputChange("usageLimit")}
+                    inputProps={{ min: 1 }}
+                    error={!!validationErrors.usageLimit}
+                    helperText={validationErrors.usageLimit}
+                  />
 
                   <Grid container spacing={2}>
                     <Grid item xs={12} sm={6}>
@@ -419,26 +388,6 @@ export default function VoucherFormSection({
                     error={!!validationErrors.note}
                     helperText={validationErrors.note}
                   />
-                </Stack>
-              </Grid>
-
-              {/* Settings */}
-              <Grid item xs={12} md={4}>
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  Cài đặt
-                </Typography>
-
-                <Stack spacing={3}>
-                  <FormControl fullWidth>
-                    <InputLabel>Đối tượng áp dụng</InputLabel>
-                    <Select
-                      value={1}
-                      label="Đối tượng áp dụng"
-                      onChange={handleSelectChange("target")}
-                    >
-                      <MenuItem value={1}>Tất cả người dùng</MenuItem>
-                    </Select>
-                  </FormControl>
                 </Stack>
               </Grid>
             </Grid>

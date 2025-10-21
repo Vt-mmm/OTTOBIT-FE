@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   CardContent,
-  Chip,
   CircularProgress,
   Grid,
   Stack,
@@ -61,19 +60,6 @@ export default function VoucherUsageDetailSection({ usageId, onBack }: Props) {
       style: "currency",
       currency: "VND",
     }).format(amount);
-  };
-
-  const getStatusChip = (status: number) => {
-    switch (status) {
-      case 1:
-        return <Chip label="Đang xử lý" color="warning" />;
-      case 2:
-        return <Chip label="Thành công" color="success" />;
-      case 3:
-        return <Chip label="Thất bại" color="error" />;
-      default:
-        return <Chip label="Không xác định" color="default" />;
-    }
   };
 
   if (isLoading) {
@@ -159,13 +145,6 @@ export default function VoucherUsageDetailSection({ usageId, onBack }: Props) {
               </Typography>
 
               <Stack spacing={2}>
-                <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Trạng thái
-                  </Typography>
-                  <Box sx={{ mt: 1 }}>{getStatusChip(usage.status)}</Box>
-                </Box>
-
                 <Box>
                   <Typography variant="body2" color="text.secondary">
                     Thời gian sử dụng
