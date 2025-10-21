@@ -27,7 +27,6 @@ import {
   VisibilityOff,
   Lock as LockIcon,
   Shield as ShieldIcon,
-  History as HistoryIcon,
   Close as CloseIcon,
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
@@ -38,12 +37,10 @@ import { useAppDispatch, useAppSelector } from "store/config";
 import {
   changePasswordThunk,
   forgotPasswordThunk,
-  resetPasswordThunk,
 } from "store/account/accountSlice";
 import {
   AccountChangePasswordForm,
   ForgotPasswordForm,
-  ResetPasswordForm,
 } from "common/@types";
 import { alpha } from "@mui/material/styles";
 import { useLocales } from "../../../hooks";
@@ -80,28 +77,8 @@ const SecuritySettings: React.FC = () => {
       .required(translate("profile.EmailRequired")),
   });
 
-  const resetPasswordSchema = yup.object().shape({
-    email: yup
-      .string()
-      .email(translate("profile.InvalidEmail"))
-      .required(translate("profile.EmailRequired")),
-    resetToken: yup.string().required(translate("profile.TokenRequired")),
-    newPassword: yup
-      .string()
-      .min(6, translate("profile.NewPasswordMinLength"))
-      .required(translate("profile.NewPasswordRequired")),
-    confirmNewPassword: yup
-      .string()
-      .oneOf(
-        [yup.ref("newPassword")],
-        translate("profile.PasswordMismatch")
-      )
-      .required(translate("profile.ConfirmPasswordRequired")),
-  });
-
   const [openChangePassword, setOpenChangePassword] = useState(false);
   const [openForgotPassword, setOpenForgotPassword] = useState(false);
-  const [openResetPassword, setOpenResetPassword] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -132,20 +109,7 @@ const SecuritySettings: React.FC = () => {
     },
   });
 
-  const {
-    control: resetControl,
-    handleSubmit: handleResetSubmit,
-    reset: resetReset,
-    formState: { errors: resetErrors },
-  } = useForm<ResetPasswordForm>({
-    resolver: yupResolver(resetPasswordSchema),
-    defaultValues: {
-      email: "",
-      resetToken: "",
-      newPassword: "",
-      confirmNewPassword: "",
-    },
-  });
+
 
   const handleChangePassword = async (data: AccountChangePasswordForm) => {
     try {
@@ -167,16 +131,6 @@ const SecuritySettings: React.FC = () => {
     }
   };
 
-  const handleResetPassword = async (data: ResetPasswordForm) => {
-    try {
-      await dispatch(resetPasswordThunk({ data })).unwrap();
-      setOpenResetPassword(false);
-      resetReset();
-    } catch (error) {
-      // Error đã được handle trong slice
-    }
-  };
-
   const handleCloseDialog = () => {
     setOpenChangePassword(false);
     reset();
@@ -185,11 +139,6 @@ const SecuritySettings: React.FC = () => {
   const handleCloseForgotDialog = () => {
     setOpenForgotPassword(false);
     resetForgot();
-  };
-
-  const handleCloseResetDialog = () => {
-    setOpenResetPassword(false);
-    resetReset();
   };
 
   const securityFeatures = [
@@ -206,13 +155,6 @@ const SecuritySettings: React.FC = () => {
       description: translate("profile.ForgotPasswordDesc"),
       action: translate("profile.SendEmail"),
       onClick: () => setOpenForgotPassword(true),
-    },
-    {
-      icon: <HistoryIcon />,
-      title: translate("profile.ResetPassword"),
-      description: translate("profile.ResetPasswordDesc"),
-      action: translate("profile.Reset"),
-      onClick: () => setOpenResetPassword(true),
     },
   ];
 
@@ -604,155 +546,6 @@ const SecuritySettings: React.FC = () => {
               }}
             >
               {isLoading ? <CircularProgress size={20} /> : translate("profile.SendEmail")}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
-
-      {/* Reset Password Dialog */}
-      <Dialog
-        open={openResetPassword}
-        onClose={handleCloseResetDialog}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            border: `1px solid ${alpha("#22c55e", 0.2)}`,
-          },
-        }}
-      >
-        <DialogTitle>
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: "#22c55e" }}>
-              {translate("profile.ResetPassword")}
-            </Typography>
-            <Box sx={{ flexGrow: 1 }} />
-            <IconButton onClick={handleCloseResetDialog}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-
-        <form onSubmit={handleResetSubmit(handleResetPassword)}>
-          <DialogContent>
-            {isError && errorMessage && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {errorMessage}
-              </Alert>
-            )}
-
-            <Stack spacing={3}>
-              <Controller
-                name="email"
-                control={resetControl}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    label="Email"
-                    type="email"
-                    error={!!resetErrors.email}
-                    helperText={resetErrors.email?.message}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        "&.Mui-focused fieldset": {
-                          borderColor: "#22c55e",
-                        },
-                      },
-                    }}
-                  />
-                )}
-              />
-
-              <Controller
-                name="resetToken"
-                control={resetControl}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    label={translate("profile.ResetToken")}
-                    error={!!resetErrors.resetToken}
-                    helperText={resetErrors.resetToken?.message}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        "&.Mui-focused fieldset": {
-                          borderColor: "#22c55e",
-                        },
-                      },
-                    }}
-                  />
-                )}
-              />
-
-              <Controller
-                name="newPassword"
-                control={resetControl}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    label="Mật khẩu mới"
-                    type="password"
-                    error={!!resetErrors.newPassword}
-                    helperText={resetErrors.newPassword?.message}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        "&.Mui-focused fieldset": {
-                          borderColor: "#22c55e",
-                        },
-                      },
-                    }}
-                  />
-                )}
-              />
-
-              <Controller
-                name="confirmNewPassword"
-                control={resetControl}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    label="Xác nhận mật khẩu mới"
-                    type="password"
-                    error={!!resetErrors.confirmNewPassword}
-                    helperText={resetErrors.confirmNewPassword?.message}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        "&.Mui-focused fieldset": {
-                          borderColor: "#22c55e",
-                        },
-                      },
-                    }}
-                  />
-                )}
-              />
-            </Stack>
-          </DialogContent>
-
-          <DialogActions sx={{ p: 3, pt: 1 }}>
-            <Button onClick={handleCloseResetDialog} sx={{ color: "#666" }}>
-              {translate("profile.Cancel")}
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={isLoading}
-              sx={{
-                background: "linear-gradient(45deg, #22c55e, #16a34a)",
-                fontWeight: 600,
-                "&:hover": {
-                  background: "linear-gradient(45deg, #16a34a, #558B2F)",
-                },
-              }}
-            >
-              {isLoading ? (
-                <CircularProgress size={20} />
-              ) : (
-                translate("profile.ResetPasswordBtn")
-              )}
             </Button>
           </DialogActions>
         </form>

@@ -37,12 +37,14 @@ import { RobotResult } from "../../../common/@types/robot";
 import ConfirmDialog from "components/common/ConfirmDialog";
 import useLocales from "../../../hooks/useLocales";
 
+
 interface RobotListSectionProps {
   onViewModeChange: (
     mode: "create" | "edit" | "details",
     robot?: RobotResult
-  ) => void | Promise<void>;
+  ) => void;
 }
+
 
 export default function RobotListSection({
   onViewModeChange,
@@ -51,9 +53,11 @@ export default function RobotListSection({
   const { robots, operations } = useAppSelector((state) => state.robot);
   const { translate } = useLocales();
 
+
   const [searchTerm, setSearchTerm] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(12);
+
 
   // Dialog state
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -62,6 +66,9 @@ export default function RobotListSection({
     robotName?: string;
   }>({ open: false });
 
+
+
+
   // Fetch robots on component mount and pagination changes (no search)
   useEffect(() => {
     const filters = {
@@ -69,8 +76,10 @@ export default function RobotListSection({
       size: pageSize,
     };
 
+
     dispatch(getRobotsThunk(filters));
   }, [dispatch, pageNumber, pageSize]);
+
 
   // Clear success flags after operations
   useEffect(() => {
@@ -78,6 +87,7 @@ export default function RobotListSection({
       dispatch(clearSuccessFlags());
     }
   }, [operations.deleteSuccess, dispatch]);
+
 
   const handleDeleteClick = (robot: RobotResult) => {
     setDeleteDialog({
@@ -87,12 +97,14 @@ export default function RobotListSection({
     });
   };
 
+
   const handleDeleteConfirm = async () => {
     if (deleteDialog.robotId) {
       await dispatch(deleteRobotThunk(deleteDialog.robotId));
       setDeleteDialog({ open: false });
     }
   };
+
 
   const handleSearchClick = () => {
     const filters = {
@@ -104,7 +116,9 @@ export default function RobotListSection({
     dispatch(getRobotsThunk(filters));
   };
 
+
   const robotList = robots.data?.items || [];
+
 
   if (robots.isLoading && !robots.data) {
     return (
@@ -113,6 +127,7 @@ export default function RobotListSection({
       </Box>
     );
   }
+
 
   return (
     <Box>
@@ -135,6 +150,7 @@ export default function RobotListSection({
           sx={{ flexGrow: 1, minWidth: 300 }}
         />
 
+
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -145,6 +161,7 @@ export default function RobotListSection({
         </Button>
       </Box>
 
+
       {/* Success/Error Messages */}
       {operations.deleteSuccess && (
         <Alert severity="success" sx={{ mb: 2 }}>
@@ -152,11 +169,13 @@ export default function RobotListSection({
         </Alert>
       )}
 
+
       {robots.error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {robots.error}
         </Alert>
       )}
+
 
       {/* Results Summary */}
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -166,6 +185,7 @@ export default function RobotListSection({
             total: robots.data.total,
           })}
       </Typography>
+
 
       {/* Robots Grid */}
       {robotList.length === 0 ? (
@@ -242,6 +262,7 @@ export default function RobotListSection({
                     />
                   )}
 
+
                   {/* Action Buttons */}
                   <Box
                     sx={{
@@ -298,6 +319,7 @@ export default function RobotListSection({
                     </IconButton>
                   </Box>
 
+
                   {/* Default Robot Icon if no image */}
                   {!robot.imageUrl && (
                     <Box
@@ -321,11 +343,13 @@ export default function RobotListSection({
                   )}
                 </Box>
 
+
                 {/* Product Info */}
                 <CardContent sx={{ flexGrow: 1, pt: 2 }}>
                   <Typography variant="h6" noWrap sx={{ mb: 1 }}>
                     {robot.name}
                   </Typography>
+
 
                   <Typography
                     variant="body2"
@@ -335,6 +359,7 @@ export default function RobotListSection({
                   >
                     {robot.brand} - {robot.model}
                   </Typography>
+
 
                   <Typography
                     variant="body2"
@@ -348,18 +373,18 @@ export default function RobotListSection({
                       minHeight: "2.5em",
                     }}
                   >
-                    {robot.description ||
-                      translate("admin.noDescriptionAvailable")}
+                    {robot.description || translate("admin.noDescriptionAvailable")}
                   </Typography>
+
 
                   {/* Product Details */}
                   <Box
                     sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}
                   >
                     <Typography variant="caption" color="text.secondary">
-                      <strong>{translate("admin.age")}:</strong> {robot.minAge}-
-                      {robot.maxAge} tuổi
+                      <strong>{translate("admin.age")}:</strong> {robot.minAge}-{robot.maxAge} tuổi
                     </Typography>
+
 
                     <Typography variant="caption" color="text.secondary">
                       <strong>{translate("admin.status")}:</strong>
@@ -370,6 +395,7 @@ export default function RobotListSection({
                         sx={{ ml: 0.5, height: 16, fontSize: "0.7rem" }}
                       />
                     </Typography>
+
 
                     <Typography variant="caption" color="text.secondary">
                       <strong>{translate("admin.createdAt")}:</strong>{" "}
@@ -382,6 +408,7 @@ export default function RobotListSection({
           ))}
         </Grid>
       )}
+
 
       {/* Pagination */}
       {robots.data?.totalPages ? (
@@ -422,6 +449,7 @@ export default function RobotListSection({
         </Box>
       ) : null}
 
+
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         open={deleteDialog.open}
@@ -439,3 +467,6 @@ export default function RobotListSection({
     </Box>
   );
 }
+
+
+

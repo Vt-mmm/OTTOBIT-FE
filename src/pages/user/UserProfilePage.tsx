@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Container, Box, Typography, Paper } from "@mui/material";
-
 import { motion } from "framer-motion";
 
 import { Sidebar } from "layout/sidebar";
@@ -54,6 +53,7 @@ const UserProfilePage: React.FC = () => {
     "overview"
   );
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [openNav, setOpenNav] = useState(false);
 
   useEffect(() => {
     // Fetch account profile on mount
@@ -129,10 +129,11 @@ const UserProfilePage: React.FC = () => {
               ? translate("profile.MyLessons")
               : translate("profile.AccountSecurity")
           }
+          onOpenNav={() => setOpenNav(true)}
         />
         <Box sx={{ display: "flex", minHeight: "calc(100vh - 64px)" }}>
           {/* Shared Sidebar */}
-          <Sidebar openNav={false} onCloseNav={() => {}} />
+          <Sidebar openNav={openNav} onCloseNav={() => setOpenNav(false)} />
 
           {/* Main content area */}
           <Box
