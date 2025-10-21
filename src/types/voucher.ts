@@ -11,7 +11,6 @@ export interface Voucher {
   usageLimitPerUser: number;
   startDate: string;
   endDate: string;
-  applicableCourseIds: string[] | null;
   target: number; // 1: All courses, 2: Specific courses
   createdById: string;
   note: string;
@@ -50,7 +49,6 @@ export interface VoucherUpdateRequest {
   usageLimitPerUser?: number;
   startDate?: string;
   endDate?: string;
-  applicableCourseIds?: string[];
   target?: number;
   note?: string;
 }
