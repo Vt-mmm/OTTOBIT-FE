@@ -15,7 +15,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Chip,
   Button,
   IconButton,
   Tooltip,
@@ -111,19 +110,6 @@ export default function VoucherUsageSection({ onViewDetails }: Props) {
     return new Date(dateString).toLocaleString("vi-VN");
   };
 
-  const getStatusChip = (status: number) => {
-    switch (status) {
-      case 1:
-        return <Chip label="Đang xử lý" color="warning" size="small" />;
-      case 2:
-        return <Chip label="Thành công" color="success" size="small" />;
-      case 3:
-        return <Chip label="Thất bại" color="error" size="small" />;
-      default:
-        return <Chip label="Không xác định" color="default" size="small" />;
-    }
-  };
-
   return (
     <Box>
       <NotificationComponent />
@@ -202,7 +188,6 @@ export default function VoucherUsageSection({ onViewDetails }: Props) {
                     <TableCell sx={{ fontWeight: 600 }}>
                       Thời gian sử dụng
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Trạng thái</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Ngày tạo</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Thao tác</TableCell>
                   </TableRow>
@@ -211,7 +196,7 @@ export default function VoucherUsageSection({ onViewDetails }: Props) {
                   {usages.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={8}
+                        colSpan={7}
                         sx={{ textAlign: "center", py: 4 }}
                       >
                         <Typography color="text.secondary">
@@ -253,7 +238,6 @@ export default function VoucherUsageSection({ onViewDetails }: Props) {
                             {formatDate(usage.usedAt)}
                           </Typography>
                         </TableCell>
-                        <TableCell>{getStatusChip(usage.status)}</TableCell>
                         <TableCell>
                           <Typography variant="body2">
                             {formatDate(usage.createdAt)}

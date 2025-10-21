@@ -8,10 +8,8 @@ export interface Voucher {
   minOrderAmount: number;
   usageLimit: number;
   usageCount: number;
-  usageLimitPerUser: number;
   startDate: string;
   endDate: string;
-  target: number; // 1: All courses, 2: Specific courses
   createdById: string;
   note: string;
   createdAt: string;
@@ -27,14 +25,12 @@ export interface VoucherCreateRequest {
   code: string;
   name: string;
   description: string;
-  type: number; // 1: Fixed amount only
+  type: number; // 1: Fixed amount, 2: Percentage
   discountValue: number;
   minOrderAmount: number;
   usageLimit: number;
-  usageLimitPerUser: number;
   startDate: string;
   endDate: string;
-  target: number; // 1: All users only
   note?: string;
 }
 
@@ -46,10 +42,8 @@ export interface VoucherUpdateRequest {
   discountValue?: number;
   minOrderAmount?: number;
   usageLimit?: number;
-  usageLimitPerUser?: number;
   startDate?: string;
   endDate?: string;
-  target?: number;
   note?: string;
 }
 
@@ -83,7 +77,6 @@ export interface VoucherUsage {
   userName: string;
   orderId: string;
   usedAt: string;
-  status: number;
   createdAt: string;
   updatedAt: string;
   isDeleted: boolean;
