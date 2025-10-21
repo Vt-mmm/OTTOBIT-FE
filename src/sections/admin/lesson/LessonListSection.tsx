@@ -44,7 +44,7 @@ import PopupSelect from "../../../components/common/PopupSelect";
 interface Props {
   onCreateNew: (courseId: string) => void;
   onEditLesson: (lesson: LessonResult) => void;
-  onViewDetails: (lesson: LessonResult) => void;
+  onViewDetails: (lessonId: string) => void;
 }
 
 export default function LessonListSection({
@@ -68,6 +68,8 @@ export default function LessonListSection({
   const [sortDirection, setSortDirection] = useState(1); // 0 = asc, 1 = desc
   const [sortBy, setSortBy] = useState(3); // Default: CreatedAt (0..4)
   const [status, setStatus] = useState<"all" | "active">("all");
+  const [durationFrom, setDurationFrom] = useState<string>("");
+  const [durationTo, setDurationTo] = useState<string>("");
 
   // Committed filter states (only sent to API when search is triggered)
   const [committedCourseId, setCommittedCourseId] = useState("");
@@ -76,6 +78,9 @@ export default function LessonListSection({
   const [committedStatus, setCommittedStatus] = useState<"all" | "active">(
     "all"
   );
+  const [committedDurationFrom, setCommittedDurationFrom] =
+    useState<string>("");
+  const [committedDurationTo, setCommittedDurationTo] = useState<string>("");
   const [confirmDelete, setConfirmDelete] = useState<LessonResult | null>(null);
   const [confirmRestore, setConfirmRestore] = useState<LessonResult | null>(
     null
@@ -119,6 +124,12 @@ export default function LessonListSection({
         includeDeleted: committedStatus === "all",
         sortBy: committedSortBy,
         sortDirection: committedSortDirection,
+        durationFrom:
+          committedDurationFrom !== ""
+            ? Number(committedDurationFrom)
+            : undefined,
+        durationTo:
+          committedDurationTo !== "" ? Number(committedDurationTo) : undefined,
       })
     );
   }, [
@@ -130,6 +141,8 @@ export default function LessonListSection({
     committedSortBy,
     committedSortDirection,
     committedStatus,
+    committedDurationFrom,
+    committedDurationTo,
   ]);
 
   useEffect(() => {
@@ -158,6 +171,12 @@ export default function LessonListSection({
         includeDeleted: committedStatus === "all",
         sortBy: committedSortBy,
         sortDirection: committedSortDirection,
+        durationFrom:
+          committedDurationFrom !== ""
+            ? Number(committedDurationFrom)
+            : undefined,
+        durationTo:
+          committedDurationTo !== "" ? Number(committedDurationTo) : undefined,
       })
     );
   };
@@ -172,6 +191,8 @@ export default function LessonListSection({
     setCommittedSortBy(sortBy);
     setCommittedSortDirection(sortDirection);
     setCommittedStatus(status);
+    setCommittedDurationFrom(durationFrom);
+    setCommittedDurationTo(durationTo);
     setPage(1);
   };
 
@@ -311,16 +332,36 @@ export default function LessonListSection({
               </Select>
             </FormControl>
             <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>{translate("admin.direction")}</InputLabel>
+              <InputLabel>Thứ tự</InputLabel>
               <Select
-                label={translate("admin.direction")}
+                label="Thứ tự"
                 value={sortDirection}
                 onChange={(e) => setSortDirection(Number(e.target.value))}
               >
-                <MenuItem value={0}>{translate("admin.asc")}</MenuItem>
-                <MenuItem value={1}>{translate("admin.desc")}</MenuItem>
+                <MenuItem value={0}>{translate("admin.oldestFirst")}</MenuItem>
+                <MenuItem value={1}>{translate("admin.newestFirst")}</MenuItem>
               </Select>
             </FormControl>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <TextField
+                size="small"
+                label="Từ (phút)"
+                type="number"
+                value={durationFrom}
+                onChange={(e) => setDurationFrom(e.target.value)}
+                sx={{ width: 130 }}
+                inputProps={{ min: 0 }}
+              />
+              <TextField
+                size="small"
+                label="Đến (phút)"
+                type="number"
+                value={durationTo}
+                onChange={(e) => setDurationTo(e.target.value)}
+                sx={{ width: 130 }}
+                inputProps={{ min: 0 }}
+              />
+            </Box>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -463,7 +504,7 @@ export default function LessonListSection({
                 >
                   <IconButton
                     size="small"
-                    onClick={() => onViewDetails(lesson)}
+                    onClick={() => onViewDetails(lesson.id)}
                     title="Xem chi tiết"
                   >
                     <VisibilityIcon />

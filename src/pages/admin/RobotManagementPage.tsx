@@ -6,17 +6,33 @@ import RobotFormSection from "../../sections/admin/robot/RobotFormSection";
 import RobotDetailsSection from "../../sections/admin/robot/RobotDetailsSection";
 import { RobotResult } from "../../common/@types/robot";
 import useLocales from "../../hooks/useLocales";
+import { useAppDispatch } from "../../redux/config";
+import { getRobotByIdThunk } from "../../redux/robot/robotThunks";
 
 type ViewMode = "list" | "create" | "edit" | "details";
 
 export default function RobotManagementPage() {
   const { translate } = useLocales();
+  const dispatch = useAppDispatch();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [selectedRobot, setSelectedRobot] = useState<RobotResult | null>(null);
 
-  const handleViewModeChange = (mode: ViewMode, robot?: RobotResult) => {
+  const handleViewModeChange = async (mode: ViewMode, robot?: RobotResult) => {
     setViewMode(mode);
-    setSelectedRobot(robot || null);
+
+    // If viewing details and we have a robot object, fetch fresh data via Redux thunk
+    if (mode === "details" && robot?.id) {
+      try {
+        const robotData = await dispatch(getRobotByIdThunk(robot.id)).unwrap();
+        setSelectedRobot(robotData);
+      } catch (error: any) {
+        console.error("Load robot error:", error);
+        // Fallback to using the robot object from list
+        setSelectedRobot(robot);
+      }
+    } else {
+      setSelectedRobot(robot || null);
+    }
   };
 
   const handleBackToList = () => {

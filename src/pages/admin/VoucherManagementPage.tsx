@@ -8,6 +8,8 @@ import VoucherDetailsSection from "../../sections/admin/voucher/VoucherDetailsSe
 import VoucherUsageSection from "../../sections/admin/voucher/VoucherUsageSection";
 import VoucherUsageDetailSection from "../../sections/admin/voucher/VoucherUsageDetailSection";
 import { Voucher } from "../../types/voucher";
+import { axiosClient } from "axiosClient";
+import { extractApiErrorMessage } from "utils/errorHandler";
 
 type ViewMode = "list" | "create" | "edit" | "details" | "usage-details";
 type TabValue = "vouchers" | "usage";
@@ -28,6 +30,21 @@ export default function VoucherManagementPage() {
     setViewMode("list");
     setSelectedVoucher(null);
     setSelectedUsageId(null);
+  };
+
+  const handleViewDetails = async (voucherId: string) => {
+    try {
+      const res = await axiosClient.get(`/api/v1/vouchers/${voucherId}`);
+      const voucherData = res?.data?.data || res?.data;
+      setSelectedVoucher(voucherData);
+      setViewMode("details");
+    } catch (error: any) {
+      const errorMessage = extractApiErrorMessage(
+        error,
+        "Failed to load voucher details"
+      );
+      console.error("Load voucher error:", errorMessage);
+    }
   };
 
   const handleViewUsageDetails = (usageId: string) => {
@@ -100,9 +117,7 @@ export default function VoucherManagementPage() {
           <VoucherListSection
             onCreateNew={() => handleViewModeChange("create")}
             onEditVoucher={(voucher) => handleViewModeChange("edit", voucher)}
-            onViewDetails={(voucher) =>
-              handleViewModeChange("details", voucher)
-            }
+            onViewDetails={handleViewDetails}
           />
         );
     }

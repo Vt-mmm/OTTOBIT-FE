@@ -38,13 +38,13 @@ import {
   deleteCourse,
   restoreCourse,
 } from "store/course/courseSlice";
-import { CourseResult } from "common/@types/course";
+import { CourseResult, CourseSortBy } from "common/@types/course";
 import { useLocales } from "hooks";
 
 interface Props {
   onCreateNew: () => void;
   onEditCourse: (course: CourseResult) => void;
-  onViewDetails: (course: CourseResult) => void;
+  onViewDetails: (courseId: string) => void;
 }
 
 export default function CourseListSection({
@@ -63,6 +63,7 @@ export default function CourseListSection({
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
   const [totalPages, setTotalPages] = useState(1);
+  const [sortBy, setSortBy] = useState<CourseSortBy>(CourseSortBy.CreatedAt); // Default to CreatedAt
   const [sortDirection, setSortDirection] = useState(1); // 0 = oldest first, 1 = newest first
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
@@ -75,6 +76,9 @@ export default function CourseListSection({
   const [committedType, setCommittedType] = useState<number | "">("");
   const [committedStatus, setCommittedStatus] = useState<"all" | "active">(
     "all"
+  );
+  const [committedSortBy, setCommittedSortBy] = useState<CourseSortBy>(
+    CourseSortBy.CreatedAt
   );
   const [committedSortDirection, setCommittedSortDirection] = useState(1);
   const [confirmDelete, setConfirmDelete] = useState<CourseResult | null>(null);
@@ -94,7 +98,7 @@ export default function CourseListSection({
         pageNumber: page,
         pageSize,
         includeDeleted: committedStatus === "all", // include deleted only for All
-        sortBy: 1, // Mặc định sortBy = 1
+        sortBy: committedSortBy,
         sortDirection: committedSortDirection, // 0 = oldest first, 1 = newest first (default)
         MinPrice:
           committedMinPrice !== "" ? Number(committedMinPrice) : undefined,
@@ -108,6 +112,7 @@ export default function CourseListSection({
     committedSearch,
     page,
     pageSize,
+    committedSortBy,
     committedSortDirection,
     committedMinPrice,
     committedMaxPrice,
@@ -131,7 +136,7 @@ export default function CourseListSection({
         pageNumber: page,
         pageSize,
         includeDeleted: committedStatus === "all",
-        sortBy: 1,
+        sortBy: committedSortBy,
         sortDirection: committedSortDirection,
         MinPrice:
           committedMinPrice !== "" ? Number(committedMinPrice) : undefined,
@@ -152,6 +157,7 @@ export default function CourseListSection({
     setCommittedMaxPrice(maxPrice);
     setCommittedType(type);
     setCommittedStatus(status);
+    setCommittedSortBy(sortBy);
     setCommittedSortDirection(sortDirection);
     setPage(1);
   };
@@ -256,14 +262,27 @@ export default function CourseListSection({
               </Select>
             </FormControl>
             <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>{translate("admin.sortBy")}</InputLabel>
+              <InputLabel>Sắp xếp theo</InputLabel>
               <Select
-                label={translate("admin.sortBy")}
+                label="Sắp xếp theo"
+                value={sortBy}
+                onChange={(e) =>
+                  setSortBy(Number(e.target.value) as CourseSortBy)
+                }
+              >
+                <MenuItem value={CourseSortBy.Title}>Tên khóa học</MenuItem>
+                <MenuItem value={CourseSortBy.CreatedAt}>Ngày tạo</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel>Thứ tự</InputLabel>
+              <Select
+                label="Thứ tự"
                 value={sortDirection}
                 onChange={(e) => setSortDirection(Number(e.target.value))}
               >
-                <MenuItem value={0}>{translate("admin.oldestFirst")}</MenuItem>
-                <MenuItem value={1}>{translate("admin.newestFirst")}</MenuItem>
+                <MenuItem value={0}>{translate("admin.asc")}</MenuItem>
+                <MenuItem value={1}>{translate("admin.desc")}</MenuItem>
               </Select>
             </FormControl>
 
@@ -482,7 +501,7 @@ export default function CourseListSection({
                 >
                   <IconButton
                     size="small"
-                    onClick={() => onViewDetails(course)}
+                    onClick={() => onViewDetails(course.id)}
                     title={translate("admin.view")}
                   >
                     <VisibilityIcon />

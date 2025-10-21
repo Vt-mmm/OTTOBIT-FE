@@ -6,6 +6,8 @@ import CourseFormSection from "../../sections/admin/course/CourseFormSection";
 import CourseDetailsSection from "../../sections/admin/course/CourseDetailsSection";
 import { CourseResult } from "../../common/@types/course";
 import { useLocales } from "hooks";
+import { axiosClient } from "axiosClient";
+import { extractApiErrorMessage } from "utils/errorHandler";
 
 type ViewMode = "list" | "create" | "edit" | "details";
 
@@ -19,6 +21,21 @@ export default function CourseManagementPage() {
   const handleViewModeChange = (mode: ViewMode, course?: CourseResult) => {
     setViewMode(mode);
     setSelectedCourse(course || null);
+  };
+
+  const handleViewDetails = async (courseId: string) => {
+    try {
+      const res = await axiosClient.get(`/api/v1/courses/admin/${courseId}`);
+      const courseData = res?.data?.data;
+      setSelectedCourse(courseData);
+      setViewMode("details");
+    } catch (error: any) {
+      const errorMessage = extractApiErrorMessage(
+        error,
+        "Failed to load course details"
+      );
+      console.error("Load course error:", errorMessage);
+    }
   };
 
   const handleBackToList = () => {
@@ -61,7 +78,7 @@ export default function CourseManagementPage() {
           <CourseListSection
             onCreateNew={() => handleViewModeChange("create")}
             onEditCourse={(course) => handleViewModeChange("edit", course)}
-            onViewDetails={(course) => handleViewModeChange("details", course)}
+            onViewDetails={handleViewDetails}
           />
         );
     }
@@ -99,7 +116,9 @@ export default function CourseManagementPage() {
             {viewMode === "edit" &&
               `${translate("admin.editCourseTitle")}: ${selectedCourse?.title}`}
             {viewMode === "details" &&
-              `${translate("admin.courseDetailsTitle")}: ${selectedCourse?.title}`}
+              `${translate("admin.courseDetailsTitle")}: ${
+                selectedCourse?.title
+              }`}
           </Typography>
         </Box>
 

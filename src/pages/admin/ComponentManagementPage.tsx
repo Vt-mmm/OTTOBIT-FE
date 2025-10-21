@@ -6,21 +6,39 @@ import ComponentFormSection from "sections/admin/component/ComponentFormSection"
 import ComponentDetailsSection from "sections/admin/component/ComponentDetailsSection";
 import { ComponentResult } from "common/@types/component";
 import { useLocales } from "hooks";
+import { useAppDispatch } from "../../redux/config";
+import { getComponentByIdThunk } from "../../redux/component/componentThunks";
 
 export type ComponentViewMode = "list" | "create" | "edit" | "details";
 
 export default function ComponentManagementPage() {
   const { translate } = useLocales();
+  const dispatch = useAppDispatch();
   const [viewMode, setViewMode] = useState<ComponentViewMode>("list");
   const [selectedComponent, setSelectedComponent] =
     useState<ComponentResult | null>(null);
 
-  const handleViewModeChange = (
+  const handleViewModeChange = async (
     mode: ComponentViewMode,
     component?: ComponentResult
   ) => {
     setViewMode(mode);
-    setSelectedComponent(component || null);
+
+    // If viewing details and we have a component object, fetch fresh data via Redux thunk
+    if (mode === "details" && component?.id) {
+      try {
+        const componentData = await dispatch(
+          getComponentByIdThunk(component.id)
+        ).unwrap();
+        setSelectedComponent(componentData);
+      } catch (error: any) {
+        console.error("Load component error:", error);
+        // Fallback to using the component object from list
+        setSelectedComponent(component);
+      }
+    } else {
+      setSelectedComponent(component || null);
+    }
   };
 
   const handleBackToList = () => {

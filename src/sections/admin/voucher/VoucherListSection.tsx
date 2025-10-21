@@ -42,7 +42,7 @@ import { ROUTES_API_VOUCHER } from "../../../constants/routesApiKeys";
 interface Props {
   onCreateNew: () => void;
   onEditVoucher: (voucher: Voucher) => void;
-  onViewDetails: (voucher: Voucher) => void;
+  onViewDetails: (voucherId: string) => void;
 }
 
 export default function VoucherListSection({
@@ -380,7 +380,7 @@ export default function VoucherListSection({
                         >
                           <IconButton
                             size="small"
-                            onClick={() => onViewDetails(voucher)}
+                            onClick={() => onViewDetails(voucher.id)}
                             title="Xem chi tiết"
                           >
                             <VisibilityIcon fontSize="small" />

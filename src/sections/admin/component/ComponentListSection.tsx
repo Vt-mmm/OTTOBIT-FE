@@ -44,7 +44,7 @@ interface ComponentListSectionProps {
   onViewModeChange: (
     mode: "create" | "edit" | "details",
     component?: ComponentResult
-  ) => void;
+  ) => void | Promise<void>;
 }
 
 export default function ComponentListSection({
@@ -65,7 +65,6 @@ export default function ComponentListSection({
     componentId?: string;
     componentName?: string;
   }>({ open: false });
-
 
   // Fetch components on component mount and filter/pagination changes (no search)
   useEffect(() => {
@@ -127,8 +126,12 @@ export default function ComponentListSection({
       [ComponentType.SENSOR]: translate("admin.component.typeSensor"),
       [ComponentType.ACTUATOR]: translate("admin.component.typeActuator"),
       [ComponentType.CONTROLLER]: translate("admin.component.typeController"),
-      [ComponentType.POWER_SUPPLY]: translate("admin.component.typePowerSupply"),
-      [ComponentType.CONNECTIVITY]: translate("admin.component.typeConnectivity"),
+      [ComponentType.POWER_SUPPLY]: translate(
+        "admin.component.typePowerSupply"
+      ),
+      [ComponentType.CONNECTIVITY]: translate(
+        "admin.component.typeConnectivity"
+      ),
       [ComponentType.MECHANICAL]: translate("admin.component.typeMechanical"),
       [ComponentType.DISPLAY]: translate("admin.component.typeDisplay"),
       [ComponentType.AUDIO]: translate("admin.component.typeAudio"),
@@ -208,7 +211,9 @@ export default function ComponentListSection({
               handleTypeFilterChange(e.target.value as ComponentType | "all")
             }
           >
-            <MenuItem value="all">{translate("admin.component.allTypes")}</MenuItem>
+            <MenuItem value="all">
+              {translate("admin.component.allTypes")}
+            </MenuItem>
             {Object.values(ComponentType)
               .filter((v) => typeof v === "number")
               .map((type) => (

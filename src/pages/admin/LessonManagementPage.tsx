@@ -6,6 +6,8 @@ import LessonFormSection from "../../sections/admin/lesson/LessonFormSection";
 import LessonDetailsSection from "../../sections/admin/lesson/LessonDetailsSection";
 import { LessonResult } from "../../common/@types/lesson";
 import useLocales from "../../hooks/useLocales";
+import { axiosClient } from "axiosClient";
+import { extractApiErrorMessage } from "utils/errorHandler";
 
 type ViewMode = "list" | "create" | "edit" | "details";
 
@@ -25,6 +27,21 @@ export default function LessonManagementPage() {
     setViewMode(mode);
     setSelectedLesson(lesson || null);
     if (courseId) setSelectedCourseId(courseId);
+  };
+
+  const handleViewDetails = async (lessonId: string) => {
+    try {
+      const res = await axiosClient.get(`/api/v1/lessons/admin/${lessonId}`);
+      const lessonData = res?.data?.data;
+      setSelectedLesson(lessonData);
+      setViewMode("details");
+    } catch (error: any) {
+      const errorMessage = extractApiErrorMessage(
+        error,
+        "Failed to load lesson details"
+      );
+      console.error("Load lesson error:", errorMessage);
+    }
   };
 
   const handleBackToList = () => {
@@ -71,7 +88,7 @@ export default function LessonManagementPage() {
               handleViewModeChange("create", undefined, courseId)
             }
             onEditLesson={(lesson) => handleViewModeChange("edit", lesson)}
-            onViewDetails={(lesson) => handleViewModeChange("details", lesson)}
+            onViewDetails={handleViewDetails}
           />
         );
     }
@@ -109,7 +126,9 @@ export default function LessonManagementPage() {
             {viewMode === "edit" &&
               `${translate("admin.editLessonTitle")}: ${selectedLesson?.title}`}
             {viewMode === "details" &&
-              `${translate("admin.lessonDetailsTitle")}: ${selectedLesson?.title}`}
+              `${translate("admin.lessonDetailsTitle")}: ${
+                selectedLesson?.title
+              }`}
           </Typography>
         </Box>
 

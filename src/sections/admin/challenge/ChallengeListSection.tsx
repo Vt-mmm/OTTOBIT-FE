@@ -89,6 +89,8 @@ export default function ChallengeListSection({
   const [courseId, setCourseId] = useState<string>("");
   const [lessonId, setLessonId] = useState<string>("");
   const [status, setStatus] = useState<"all" | "active">("all");
+  const [difficultyFrom, setDifficultyFrom] = useState<string>("");
+  const [difficultyTo, setDifficultyTo] = useState<string>("");
 
   // Committed filter states (only sent to API when search is triggered)
   const [committedCourseId, setCommittedCourseId] = useState<string>("");
@@ -96,6 +98,10 @@ export default function ChallengeListSection({
   const [committedStatus, setCommittedStatus] = useState<"all" | "active">(
     "all"
   );
+  const [committedDifficultyFrom, setCommittedDifficultyFrom] =
+    useState<string>("");
+  const [committedDifficultyTo, setCommittedDifficultyTo] =
+    useState<string>("");
 
   // Pagination states for course and lesson selection
   const [coursePage, setCoursePage] = useState(1);
@@ -113,6 +119,14 @@ export default function ChallengeListSection({
         includeDeleted: committedStatus === "all",
         courseId: committedCourseId || undefined,
         lessonId: committedLessonId || undefined,
+        difficultyFrom:
+          committedDifficultyFrom !== ""
+            ? Number(committedDifficultyFrom)
+            : undefined,
+        difficultyTo:
+          committedDifficultyTo !== ""
+            ? Number(committedDifficultyTo)
+            : undefined,
       }) as any
     );
   }, [
@@ -123,6 +137,8 @@ export default function ChallengeListSection({
     committedCourseId,
     committedLessonId,
     committedStatus,
+    committedDifficultyFrom,
+    committedDifficultyTo,
   ]);
 
   // Fetch courses with pagination
@@ -189,6 +205,8 @@ export default function ChallengeListSection({
     setCommittedCourseId(courseId);
     setCommittedLessonId(lessonId);
     setCommittedStatus(status);
+    setCommittedDifficultyFrom(difficultyFrom);
+    setCommittedDifficultyTo(difficultyTo);
     setPage(1);
   };
 
@@ -203,6 +221,14 @@ export default function ChallengeListSection({
         includeDeleted: committedStatus === "all",
         courseId: committedCourseId || undefined,
         lessonId: committedLessonId || undefined,
+        difficultyFrom:
+          committedDifficultyFrom !== ""
+            ? Number(committedDifficultyFrom)
+            : undefined,
+        difficultyTo:
+          committedDifficultyTo !== ""
+            ? Number(committedDifficultyTo)
+            : undefined,
       }) as any
     );
   };
@@ -248,9 +274,24 @@ export default function ChallengeListSection({
     setRestoreConfirmOpen(true);
   };
 
-  const handleViewChallenge = (challenge: any) => {
-    setSelectedChallenge(challenge);
-    setViewDialogOpen(true);
+  const handleViewChallenge = async (challenge: any) => {
+    try {
+      const res = await axiosClient.get(
+        `/api/v1/challenges/admin/${challenge.id}`
+      );
+      const challengeData = res?.data?.data || challenge;
+      setSelectedChallenge(challengeData);
+      setViewDialogOpen(true);
+    } catch (error: any) {
+      const errorMessage = extractApiErrorMessage(
+        error,
+        "Failed to load challenge details"
+      );
+      console.error("Load challenge error:", errorMessage);
+      // Fallback to original challenge data
+      setSelectedChallenge(challenge);
+      setViewDialogOpen(true);
+    }
   };
 
   const getModeColor = (mode: ChallengeMode) => {
@@ -371,6 +412,36 @@ export default function ChallengeListSection({
                 <MenuItem value="active">{translate("admin.active")}</MenuItem>
               </Select>
             </FormControl>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <TextField
+                size="small"
+                label="Từ (độ khó)"
+                type="number"
+                value={difficultyFrom}
+                onChange={(e) => setDifficultyFrom(e.target.value)}
+                sx={{
+                  width: 250,
+                  "& .MuiInputLabel-root": {
+                    whiteSpace: "nowrap",
+                  },
+                }}
+                inputProps={{ min: 1, max: 5 }}
+              />
+              <TextField
+                size="small"
+                label="Đến (độ khó)"
+                type="number"
+                value={difficultyTo}
+                onChange={(e) => setDifficultyTo(e.target.value)}
+                sx={{
+                  width: 250,
+                  "& .MuiInputLabel-root": {
+                    whiteSpace: "nowrap",
+                  },
+                }}
+                inputProps={{ min: 1, max: 5 }}
+              />
+            </Box>
             <Button
               variant="contained"
               startIcon={<AddIcon />}

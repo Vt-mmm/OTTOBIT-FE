@@ -41,7 +41,7 @@ interface RobotListSectionProps {
   onViewModeChange: (
     mode: "create" | "edit" | "details",
     robot?: RobotResult
-  ) => void;
+  ) => void | Promise<void>;
 }
 
 export default function RobotListSection({
@@ -61,7 +61,6 @@ export default function RobotListSection({
     robotId?: string;
     robotName?: string;
   }>({ open: false });
-
 
   // Fetch robots on component mount and pagination changes (no search)
   useEffect(() => {
@@ -349,7 +348,8 @@ export default function RobotListSection({
                       minHeight: "2.5em",
                     }}
                   >
-                    {robot.description || translate("admin.noDescriptionAvailable")}
+                    {robot.description ||
+                      translate("admin.noDescriptionAvailable")}
                   </Typography>
 
                   {/* Product Details */}
@@ -357,7 +357,8 @@ export default function RobotListSection({
                     sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}
                   >
                     <Typography variant="caption" color="text.secondary">
-                      <strong>{translate("admin.age")}:</strong> {robot.minAge}-{robot.maxAge} tuổi
+                      <strong>{translate("admin.age")}:</strong> {robot.minAge}-
+                      {robot.maxAge} tuổi
                     </Typography>
 
                     <Typography variant="caption" color="text.secondary">

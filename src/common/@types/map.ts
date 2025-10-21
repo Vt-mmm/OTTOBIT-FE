@@ -36,11 +36,11 @@ export interface GetMapsRequest {
 
 // Enums for sorting
 export enum MapSortBy {
-  Title = "Title",
-  CreatedAt = "CreatedAt",
-  UpdatedAt = "UpdatedAt",
-  ChallengesCount = "ChallengesCount",
-  CoursesCount = "CoursesCount",
+  Title = 0, // Sắp xếp theo tên map
+  CreatedAt = 1, // Sắp xếp theo ngày tạo
+  UpdatedAt = 2, // Sắp xếp theo ngày cập nhật
+  ChallengesCount = 3, // Sắp xếp theo số lượng challenges
+  CoursesCount = 4, // Sắp xếp theo số lượng courses
 }
 
 export enum SortDirection {
