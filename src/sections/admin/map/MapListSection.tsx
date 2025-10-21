@@ -68,7 +68,7 @@ export default function MapListSection() {
   const [mapToRestore, setMapToRestore] = useState<BackendMapResult | null>(
     null
   );
-  const [sortBy] = useState<MapSortBy>(MapSortBy.CreatedAt);
+  const [sortBy, setSortBy] = useState<MapSortBy>(MapSortBy.CreatedAt);
   const [sortDirection, setSortDirection] = useState<SortDirection>(
     SortDirection.Descending
   );
@@ -77,6 +77,9 @@ export default function MapListSection() {
   const [status, setStatus] = useState<"all" | "active">("all");
 
   // Committed filter states (only sent to API when search is triggered)
+  const [committedSortBy, setCommittedSortBy] = useState<MapSortBy>(
+    MapSortBy.CreatedAt
+  );
   const [committedSortDirection, setCommittedSortDirection] =
     useState<SortDirection>(SortDirection.Descending);
   const [committedStatus, setCommittedStatus] = useState<"all" | "active">(
@@ -87,7 +90,7 @@ export default function MapListSection() {
     dispatch(
       getMaps({
         searchTerm: committedSearch || undefined,
-        sortBy,
+        sortBy: committedSortBy,
         sortDirection: committedSortDirection,
         includeDeleted: committedStatus === "all",
         pageNumber,
@@ -97,7 +100,7 @@ export default function MapListSection() {
   }, [
     dispatch,
     committedSearch,
-    sortBy,
+    committedSortBy,
     committedSortDirection,
     pageNumber,
     pageSize,
@@ -108,7 +111,7 @@ export default function MapListSection() {
     dispatch(
       getMaps({
         searchTerm: committedSearch || undefined,
-        sortBy,
+        sortBy: committedSortBy,
         sortDirection: committedSortDirection,
         includeDeleted: committedStatus === "all",
         pageNumber,
@@ -123,6 +126,7 @@ export default function MapListSection() {
 
   const triggerSearch = () => {
     setCommittedSearch(searchTerm.trim());
+    setCommittedSortBy(sortBy);
     setCommittedSortDirection(sortDirection);
     setCommittedStatus(status);
     setPageNumber(1);
@@ -261,9 +265,27 @@ export default function MapListSection() {
               }}
             />
             <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>{translate("admin.map.sortBy")}</InputLabel>
+              <InputLabel>Sắp xếp theo</InputLabel>
               <Select
-                label={translate("admin.map.sortBy")}
+                label="Sắp xếp theo"
+                value={sortBy}
+                onChange={(e) => setSortBy(Number(e.target.value) as MapSortBy)}
+              >
+                <MenuItem value={MapSortBy.Title}>Tên map</MenuItem>
+                <MenuItem value={MapSortBy.CreatedAt}>Ngày tạo</MenuItem>
+                <MenuItem value={MapSortBy.UpdatedAt}>Ngày cập nhật</MenuItem>
+                <MenuItem value={MapSortBy.ChallengesCount}>
+                  Số lượng challenges
+                </MenuItem>
+                <MenuItem value={MapSortBy.CoursesCount}>
+                  Số lượng courses
+                </MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel>Thứ tự</InputLabel>
+              <Select
+                label="Thứ tự"
                 value={sortDirection}
                 onChange={(e: any) => {
                   const value = e.target.value;

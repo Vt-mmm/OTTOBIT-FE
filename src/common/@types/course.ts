@@ -4,6 +4,12 @@ export enum CourseType {
   Premium = 2,
 }
 
+// CourseSortBy enum from backend
+export enum CourseSortBy {
+  Title = 0, // Sắp xếp theo tên khóa học
+  CreatedAt = 1, // Sắp xếp theo ngày tạo
+}
+
 // Course entity interfaces based on BE models
 export interface Course {
   id: string;

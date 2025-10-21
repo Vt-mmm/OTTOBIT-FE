@@ -6,6 +6,8 @@ import ComponentFormSection from "sections/admin/component/ComponentFormSection"
 import ComponentDetailsSection from "sections/admin/component/ComponentDetailsSection";
 import { ComponentResult } from "common/@types/component";
 import { useLocales } from "hooks";
+import { axiosClient } from "../../axiosClient";
+import { extractApiErrorMessage } from "../../utils/errorHandler";
 
 export type ComponentViewMode = "list" | "create" | "edit" | "details";
 
@@ -21,6 +23,21 @@ export default function ComponentManagementPage() {
   ) => {
     setViewMode(mode);
     setSelectedComponent(component || null);
+  };
+
+  const handleViewDetails = async (componentId: string) => {
+    try {
+      const res = await axiosClient.get(`/api/v1/components/${componentId}`);
+      const componentData = res?.data?.data || res?.data;
+      setSelectedComponent(componentData);
+      setViewMode("details");
+    } catch (error: any) {
+      const errorMessage = extractApiErrorMessage(
+        error,
+        "Failed to load component details"
+      );
+      console.error("Load component error:", errorMessage);
+    }
   };
 
   const handleBackToList = () => {
@@ -48,7 +65,10 @@ export default function ComponentManagementPage() {
             onSuccess={handleBackToList}
           />
         ) : (
-          <ComponentListSection onViewModeChange={handleViewModeChange} />
+          <ComponentListSection
+            onViewModeChange={handleViewModeChange}
+            onViewDetails={handleViewDetails}
+          />
         );
 
       case "details":
@@ -60,11 +80,19 @@ export default function ComponentManagementPage() {
             onDelete={handleBackToList}
           />
         ) : (
-          <ComponentListSection onViewModeChange={handleViewModeChange} />
+          <ComponentListSection
+            onViewModeChange={handleViewModeChange}
+            onViewDetails={handleViewDetails}
+          />
         );
 
       default:
-        return <ComponentListSection onViewModeChange={handleViewModeChange} />;
+        return (
+          <ComponentListSection
+            onViewModeChange={handleViewModeChange}
+            onViewDetails={handleViewDetails}
+          />
+        );
     }
   };
 

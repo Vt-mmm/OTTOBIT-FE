@@ -6,6 +6,8 @@ import RobotFormSection from "../../sections/admin/robot/RobotFormSection";
 import RobotDetailsSection from "../../sections/admin/robot/RobotDetailsSection";
 import { RobotResult } from "../../common/@types/robot";
 import useLocales from "../../hooks/useLocales";
+import { axiosClient } from "../../axiosClient";
+import { extractApiErrorMessage } from "../../utils/errorHandler";
 
 type ViewMode = "list" | "create" | "edit" | "details";
 
@@ -17,6 +19,21 @@ export default function RobotManagementPage() {
   const handleViewModeChange = (mode: ViewMode, robot?: RobotResult) => {
     setViewMode(mode);
     setSelectedRobot(robot || null);
+  };
+
+  const handleViewDetails = async (robotId: string) => {
+    try {
+      const res = await axiosClient.get(`/api/v1/robots/${robotId}`);
+      const robotData = res?.data?.data || res?.data;
+      setSelectedRobot(robotData);
+      setViewMode("details");
+    } catch (error: any) {
+      const errorMessage = extractApiErrorMessage(
+        error,
+        "Failed to load robot details"
+      );
+      console.error("Load robot error:", errorMessage);
+    }
   };
 
   const handleBackToList = () => {
@@ -53,7 +70,12 @@ export default function RobotManagementPage() {
           />
         );
       default:
-        return <RobotListSection onViewModeChange={handleViewModeChange} />;
+        return (
+          <RobotListSection
+            onViewModeChange={handleViewModeChange}
+            onViewDetails={handleViewDetails}
+          />
+        );
     }
   };
 

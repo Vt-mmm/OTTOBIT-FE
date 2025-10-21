@@ -78,7 +78,7 @@ export default function PopupSelect({
     <Box>
       <FormControl fullWidth size="small" error={error}>
         <TextField
-          label={displayValue ? undefined : label}
+          label={label}
           value={displayValue}
           onMouseDown={(e) => {
             e.preventDefault();
