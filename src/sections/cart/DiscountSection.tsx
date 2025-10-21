@@ -38,22 +38,27 @@ export default function DiscountSection() {
     try {
       setError(null);
       const code = discountCode.trim().toUpperCase();
-      const response = await axiosClient.post(ROUTES_API_CART.APPLY_DISCOUNT, {
+      await axiosClient.post(ROUTES_API_CART.APPLY_DISCOUNT, {
         discountCode: code,
       });
-      // eslint-disable-next-line no-console
-      console.log("🧾 /cart/discount response:", response.data);
       // Refetch cart from server so totals persist to checkout
       // We keep local UI code in input to show applied code
       await dispatch(getCartThunk()).unwrap();
       setDiscountCode(code);
       showSuccessToast(`${translate("cart.DiscountAppliedSuccess")} - ${code}`);
     } catch (err: any) {
-      const errorMessage =
-        err?.response?.data?.message ||
-        err?.message ||
-        err ||
-        translate("cart.CannotApplyDiscount");
+      let errorMessage = translate("cart.CannotApplyDiscount");
+
+      if (err?.data?.message) {
+        errorMessage = err.data.message;
+      } else if (err?.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err?.message && typeof err.message === "string") {
+        errorMessage = err.message;
+      } else if (typeof err === "string") {
+        errorMessage = err;
+      }
+
       setError(errorMessage);
       showErrorToast(errorMessage);
     }
@@ -63,16 +68,21 @@ export default function DiscountSection() {
     try {
       setError(null);
       await axiosClient.delete(ROUTES_API_CART.REMOVE_DISCOUNT);
-      // eslint-disable-next-line no-console
-      console.log("🗑️ Removed cart discount");
       await dispatch(getCartThunk()).unwrap();
       showSuccessToast("Đã xóa mã giảm giá!");
     } catch (err: any) {
-      const errorMessage =
-        err?.response?.data?.message ||
-        err?.message ||
-        err ||
-        translate("cart.CannotRemoveDiscount");
+      let errorMessage = translate("cart.CannotRemoveDiscount");
+
+      if (err?.data?.message) {
+        errorMessage = err.data.message;
+      } else if (err?.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err?.message && typeof err.message === "string") {
+        errorMessage = err.message;
+      } else if (typeof err === "string") {
+        errorMessage = err;
+      }
+
       setError(errorMessage);
       showErrorToast(errorMessage);
     }
