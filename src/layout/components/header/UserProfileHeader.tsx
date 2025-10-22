@@ -14,20 +14,24 @@ import {
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import LogoutIcon from "@mui/icons-material/Logout";
+import MenuIcon from "@mui/icons-material/Menu";
 import { useAppDispatch, useAppSelector } from "store/config";
 import { logout } from "store/auth/authSlice";
 import { useNavigate } from "react-router-dom";
 import { useLocales } from "hooks";
+import useResponsive from "hooks/useResponsive";
 
 interface UserProfileHeaderProps {
   title?: string;
+  onOpenNav?: () => void;
 }
 
-const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ title }) => {
+const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ title, onOpenNav }) => {
   const theme = useTheme();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { translate } = useLocales();
+  const isDesktop = useResponsive("up", "lg");
   const { userAuth } = useAppSelector((s) => s.auth);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -60,7 +64,18 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ title }) => {
         ml: { lg: `${NAV_WIDTH}px` },
       }}
     >
-      <Toolbar sx={{ justifyContent: "space-between" }}>
+      <Toolbar sx={{ justifyContent: "space-between", px: { xs: 2, sm: 3 } }}>
+        {/* Mobile menu button */}
+        {!isDesktop && (
+          <IconButton
+            onClick={onOpenNav}
+            sx={{ mr: 1, color: "text.primary" }}
+            aria-label="open menu"
+          >
+            <MenuIcon />
+          </IconButton>
+        )}
+
         <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}>
           {title && (
             <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary" }}>

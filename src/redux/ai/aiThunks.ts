@@ -8,6 +8,8 @@ import { courseRecommendationService } from "services/ai/courseRecommendation";
 import { solutionHintService } from "services/ai/solutionHint";
 import { contextBuilder } from "services/ai/contextBuilder";
 import type { CourseRecommendationResult, SolutionHint } from "services/ai";
+import { axiosClient } from "axiosClient/axiosClient";
+import { ROUTES_API_CHATBOT } from "constants/routesApiKeys";
 
 /**
  * Get course recommendations from AI
@@ -66,4 +68,30 @@ export const getSolutionHintThunk = createAsyncThunk<
   }
 );
 
+/**
+ * Send chat message to ChatBot API
+ */
+export const sendChatMessageThunk = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: string }
+>("ai/sendChatMessage", async (message, { rejectWithValue }) => {
+  try {
+    console.log("🤖 Sending to ChatBot API:", { message });
+
+    const response = await axiosClient.post(ROUTES_API_CHATBOT.CHAT, {
+      message,
+    });
+
+    const responseText = response.data.data?.message || "";
+    console.log("✅ ChatBot Response:", responseText);
+
+    return responseText;
+  } catch (error: any) {
+    console.error("ChatBot Error:", error);
+    return rejectWithValue(
+      error?.message || "Failed to communicate with ChatBot"
+    );
+  }
+});
 

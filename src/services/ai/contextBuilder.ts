@@ -234,20 +234,12 @@ class ContextBuilder {
         id: challengeId,
         title: currentChallenge?.title || "",
         description: currentChallenge?.description || "",
-        objectives: "", // Challenge model doesn't have objectives field
         difficulty: currentChallenge?.difficulty
           ? this.mapDifficultyToLevel(currentChallenge.difficulty)
           : "Medium",
         solutionJson: parsedSolution, // Add solution for AI reference
       },
-      submission: {
-        id: currentSubmission?.id || "",
-        blocklyWorkspace: parsedCode.workspace || parsedCode,
-        generatedCode: parsedCode.generatedCode || parsedCode.code || "",
-        testResults: parsedCode.testResults || [],
-        errorMessage: parsedCode.error || parsedCode.errorMessage || "",
-        status: currentSubmission ? "Submitted" : "Unknown",
-      },
+      studentCode: parsedCode.generatedCode || parsedCode.code || "",
       attemptCount: challengeSubmissions.length,
       previousHints,
     };

@@ -1,9 +1,10 @@
 /**
  * AI Service - Main service for AI operations
- * Uses Google Gemini API for AI-powered features
+ * Uses Backend ChatBot API (which internally uses Google Gemini)
  */
 
-import { GoogleGenAI } from "@google/genai";
+import { axiosClient } from "axiosClient/axiosClient";
+import { ROUTES_API_CHATBOT } from "constants/routesApiKeys";
 
 interface AIResponse {
   content: string;
@@ -17,55 +18,34 @@ interface GeminiMessage {
 }
 
 class AIService {
-  private ai: GoogleGenAI | null = null;
-
   constructor() {
-    // Initialize Gemini API
-    // Uses GOOGLE_API_KEY environment variable or explicit apiKey
-    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
-    if (apiKey) {
-      this.ai = new GoogleGenAI({ apiKey });
-    } else {
-      // Try without explicit key (will use GOOGLE_API_KEY env var if available)
-      this.ai = new GoogleGenAI({});
-    }
+    // No initialization needed - using backend API
   }
 
   /**
-   * Send message to Gemini AI and get response
+   * Send message to Backend ChatBot API
+   * Backend handles all prompt logic (Otto system prompt)
    */
   async sendMessage(
-    systemPrompt: string,
+    _systemPrompt: string, // Ignored - backend handles prompts
     userMessage: string,
     _context: any,
     type: "course-recommendation" | "solution-hint"
   ): Promise<AIResponse> {
     try {
-      if (!this.ai) {
-        throw new Error(
-          "Gemini API not configured. Please set VITE_GOOGLE_API_KEY in .env file"
-        );
-      }
-
-      // Build prompt with system instructions + user message
-      const fullPrompt = `${systemPrompt}\n\n---\n\n${userMessage}`;
-
-      console.log("🤖 Sending to Gemini:", {
+      console.log("🤖 Sending to ChatBot API:", {
         type,
-        promptLength: fullPrompt.length,
+        messageLength: userMessage.length,
       });
 
-      // Generate content using gemini-2.5-flash model
-      // Switched from gemini-2.0-flash-exp due to rate limits (50 RPD)
-      // gemini-2.5-flash has 250 RPD and better quality
-      const response = await this.ai.models.generateContent({
-        model: "gemini-2.5-flash", // Better limits: 250 RPD, 10 RPM
-        contents: fullPrompt,
+      // Send only user message - backend handles Otto prompt
+      const response = await axiosClient.post(ROUTES_API_CHATBOT.CHAT, {
+        message: userMessage,
       });
 
-      const text = response.text || "";
+      const text = response.data.data?.message || "";
 
-      console.log("✅ Gemini Response:", text);
+      console.log("✅ ChatBot Response:", text);
 
       // Try to parse JSON if response looks like JSON
       let parsedContent: any = null;
@@ -97,16 +77,13 @@ class AIService {
 
   /**
    * Send message with chat history (for multi-turn conversations)
+   * This method is deprecated - use sendChatMessageThunk from redux/ai/aiThunks instead
    */
   async sendChatMessage(
     history: GeminiMessage[],
     newMessage: string
   ): Promise<string> {
     try {
-      if (!this.ai) {
-        throw new Error("Gemini API not configured");
-      }
-
       // Convert history to proper format
       const formattedHistory = history.map((msg) => ({
         role: msg.role === "model" ? "model" : "user",
@@ -121,13 +98,12 @@ class AIService {
         `User: ${newMessage}`,
       ].join("\n\n");
 
-      // Generate response
-      const response = await this.ai.models.generateContent({
-        model: "gemini-2.5-flash", // Consistent with main model
-        contents: conversationPrompt,
+      // Call backend ChatBot API with conversation context
+      const response = await axiosClient.post(ROUTES_API_CHATBOT.CHAT, {
+        message: conversationPrompt,
       });
 
-      return response.text || "";
+      return response.data.data?.message || "";
     } catch (error: any) {
       console.error("Chat Error:", error);
       throw new Error(error?.message || "Failed to send chat message");
@@ -135,10 +111,10 @@ class AIService {
   }
 
   /**
-   * Check if API is configured
+   * Check if API is configured (always true for backend API)
    */
   isConfigured(): boolean {
-    return this.ai !== null;
+    return true;
   }
 }
 

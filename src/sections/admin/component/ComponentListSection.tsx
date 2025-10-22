@@ -40,12 +40,14 @@ import {
 import PaginationFooter from "components/common/PaginationFooter";
 import ConfirmDialog from "components/common/ConfirmDialog";
 
+
 interface ComponentListSectionProps {
   onViewModeChange: (
     mode: "create" | "edit" | "details",
     component?: ComponentResult
-  ) => void | Promise<void>;
+  ) => void;
 }
+
 
 export default function ComponentListSection({
   onViewModeChange,
@@ -54,10 +56,12 @@ export default function ComponentListSection({
   const { translate } = useLocales();
   const { components, operations } = useAppSelector((state) => state.component);
 
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<ComponentType | "all">("all");
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(12);
+
 
   // Dialog state
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -65,6 +69,9 @@ export default function ComponentListSection({
     componentId?: string;
     componentName?: string;
   }>({ open: false });
+
+
+
 
   // Fetch components on component mount and filter/pagination changes (no search)
   useEffect(() => {
@@ -76,8 +83,10 @@ export default function ComponentListSection({
       orderDirection: "DESC" as const,
     };
 
+
     dispatch(getComponentsThunk(filters));
   }, [dispatch, filterType, pageNumber, pageSize]);
+
 
   // Clear success flags after operations
   useEffect(() => {
@@ -85,6 +94,7 @@ export default function ComponentListSection({
       dispatch(clearSuccessFlags());
     }
   }, [operations.deleteSuccess, dispatch]);
+
 
   const handleDeleteClick = (component: ComponentResult) => {
     setDeleteDialog({
@@ -94,12 +104,14 @@ export default function ComponentListSection({
     });
   };
 
+
   const handleDeleteConfirm = async () => {
     if (deleteDialog.componentId) {
       await dispatch(deleteComponentThunk(deleteDialog.componentId));
       setDeleteDialog({ open: false });
     }
   };
+
 
   const handleSearchClick = () => {
     const filters = {
@@ -114,24 +126,23 @@ export default function ComponentListSection({
     dispatch(getComponentsThunk(filters));
   };
 
+
   const handleTypeFilterChange = (type: ComponentType | "all") => {
     setFilterType(type);
     setPageNumber(1); // Reset to first page when filtering
   };
 
+
   const componentList = components.data?.items || [];
+
 
   const getComponentTypeLabel = (type: ComponentType) => {
     const typeLabels = {
       [ComponentType.SENSOR]: translate("admin.component.typeSensor"),
       [ComponentType.ACTUATOR]: translate("admin.component.typeActuator"),
       [ComponentType.CONTROLLER]: translate("admin.component.typeController"),
-      [ComponentType.POWER_SUPPLY]: translate(
-        "admin.component.typePowerSupply"
-      ),
-      [ComponentType.CONNECTIVITY]: translate(
-        "admin.component.typeConnectivity"
-      ),
+      [ComponentType.POWER_SUPPLY]: translate("admin.component.typePowerSupply"),
+      [ComponentType.CONNECTIVITY]: translate("admin.component.typeConnectivity"),
       [ComponentType.MECHANICAL]: translate("admin.component.typeMechanical"),
       [ComponentType.DISPLAY]: translate("admin.component.typeDisplay"),
       [ComponentType.AUDIO]: translate("admin.component.typeAudio"),
@@ -139,6 +150,7 @@ export default function ComponentListSection({
     };
     return typeLabels[type] || translate("admin.component.typeUnknown");
   };
+
 
   const getComponentTypeColor = (
     type: ComponentType
@@ -173,6 +185,7 @@ export default function ComponentListSection({
     return typeColors[type] || "default";
   };
 
+
   if (components.isLoading && !components.data) {
     return (
       <Box display="flex" justifyContent="center" py={4}>
@@ -180,6 +193,7 @@ export default function ComponentListSection({
       </Box>
     );
   }
+
 
   return (
     <Box>
@@ -202,6 +216,7 @@ export default function ComponentListSection({
           sx={{ minWidth: 300 }}
         />
 
+
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel>{translate("admin.component.type")}</InputLabel>
           <Select
@@ -211,9 +226,7 @@ export default function ComponentListSection({
               handleTypeFilterChange(e.target.value as ComponentType | "all")
             }
           >
-            <MenuItem value="all">
-              {translate("admin.component.allTypes")}
-            </MenuItem>
+            <MenuItem value="all">{translate("admin.component.allTypes")}</MenuItem>
             {Object.values(ComponentType)
               .filter((v) => typeof v === "number")
               .map((type) => (
@@ -223,6 +236,7 @@ export default function ComponentListSection({
               ))}
           </Select>
         </FormControl>
+
 
         <Button
           variant="contained"
@@ -234,6 +248,7 @@ export default function ComponentListSection({
         </Button>
       </Box>
 
+
       {/* Success/Error Messages */}
       {operations.deleteSuccess && (
         <Alert severity="success" sx={{ mb: 2 }}>
@@ -241,11 +256,13 @@ export default function ComponentListSection({
         </Alert>
       )}
 
+
       {components.error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {components.error}
         </Alert>
       )}
+
 
       {/* Results Summary */}
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -255,6 +272,7 @@ export default function ComponentListSection({
             total: components.data.total,
           })}
       </Typography>
+
 
       {/* Components Grid */}
       {componentList.length === 0 ? (
@@ -335,6 +353,7 @@ export default function ComponentListSection({
                     />
                   )}
 
+
                   {/* Action Buttons */}
                   <Box
                     sx={{
@@ -391,6 +410,7 @@ export default function ComponentListSection({
                     </IconButton>
                   </Box>
 
+
                   {/* Default Component Icon if no image */}
                   {!component.imageUrl && (
                     <Box
@@ -414,6 +434,7 @@ export default function ComponentListSection({
                   )}
                 </Box>
 
+
                 {/* Component Info */}
                 <CardContent sx={{ flexGrow: 1, pt: 2 }}>
                   <Typography
@@ -431,12 +452,14 @@ export default function ComponentListSection({
                     {component.name}
                   </Typography>
 
+
                   <Chip
                     label={getComponentTypeLabel(component.type)}
                     color={getComponentTypeColor(component.type)}
                     size="small"
                     sx={{ mb: 1 }}
                   />
+
 
                   <Typography
                     variant="body2"
@@ -454,6 +477,7 @@ export default function ComponentListSection({
                       translate("admin.component.noDescription")}
                   </Typography>
 
+
                   {/* Component Details */}
                   <Box
                     sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}
@@ -462,6 +486,7 @@ export default function ComponentListSection({
                       <strong>{translate("admin.component.added")}:</strong>{" "}
                       {new Date(component.createdAt).toLocaleDateString()}
                     </Typography>
+
 
                     {component.imagesCount > 0 && (
                       <Typography variant="caption" color="primary.main">
@@ -477,6 +502,7 @@ export default function ComponentListSection({
         </Grid>
       )}
 
+
       {/* Pagination */}
       <PaginationFooter
         totalPages={components.data?.totalPages || 0}
@@ -490,6 +516,7 @@ export default function ComponentListSection({
         }}
         showTotalInfo={true}
       />
+
 
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
@@ -508,3 +535,6 @@ export default function ComponentListSection({
     </Box>
   );
 }
+
+
+

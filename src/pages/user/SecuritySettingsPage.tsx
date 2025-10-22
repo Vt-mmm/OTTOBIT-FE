@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Container, Box } from "@mui/material";
 import { motion } from "framer-motion";
 import { Sidebar } from "layout/sidebar";
@@ -9,11 +9,15 @@ import { useLocales } from "hooks";
 
 const SecuritySettingsPage: React.FC = () => {
   const { translate } = useLocales();
+  const [openNav, setOpenNav] = useState(false);
 
   return (
     <>
-      <Box sx={{ minHeight: "100vh", bgcolor: "common.white" }}>
-        <UserProfileHeader title={translate("profile.SecuritySettingsTitle")} />
+      <Box sx={{ minHeight: "100vh", bgcolor: "common.white", position: "relative" }}>
+        <UserProfileHeader 
+          title={translate("profile.SecuritySettingsTitle")} 
+          onOpenNav={() => setOpenNav(true)}
+        />
 
         {/* Language Switcher */}
         <Box
@@ -28,7 +32,7 @@ const SecuritySettingsPage: React.FC = () => {
         </Box>
         <Box sx={{ display: "flex", minHeight: "calc(100vh - 64px)" }}>
           {/* Shared Sidebar */}
-          <Sidebar openNav={false} onCloseNav={() => {}} />
+          <Sidebar openNav={openNav} onCloseNav={() => setOpenNav(false)} />
 
           {/* Main content area */}
           <Box
