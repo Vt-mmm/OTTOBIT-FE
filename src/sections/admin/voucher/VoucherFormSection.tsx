@@ -155,9 +155,16 @@ export default function VoucherFormSection({
       isValid = false;
     }
 
-    // 9. MinOrderAmount (Optional) - ≥ 0
+    // 9. MinOrderAmount (Optional) - ≥ 0 và ≥ discountValue
     if (formData.minOrderAmount < 0) {
       errors.minOrderAmount = "Đơn hàng tối thiểu không được âm";
+      isValid = false;
+    } else if (
+      formData.minOrderAmount >= 0 &&
+      formData.minOrderAmount < formData.discountValue
+    ) {
+      errors.minOrderAmount =
+        "Đơn hàng tối thiểu phải lớn hơn hoặc bằng giá trị giảm giá";
       isValid = false;
     }
 

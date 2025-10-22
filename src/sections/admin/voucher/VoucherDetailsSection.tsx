@@ -207,7 +207,7 @@ export default function VoucherDetailsSection({
                     Số lần đã sử dụng
                   </Typography>
                   <Typography variant="body1">
-                    {voucher.voucherUsagesCount} lần
+                    {voucher.usageCount} lần
                   </Typography>
                 </Box>
 
