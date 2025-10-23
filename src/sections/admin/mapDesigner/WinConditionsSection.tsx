@@ -75,6 +75,7 @@ interface WinConditionsSectionProps {
   lessonLoading?: boolean;
   courseTotalPages?: number;
   lessonTotalPages?: number;
+  isEditMode?: boolean;
 }
 
 export default function WinConditionsSection({
@@ -109,6 +110,7 @@ export default function WinConditionsSection({
   lessonLoading = false,
   courseTotalPages = 1,
   lessonTotalPages = 1,
+  isEditMode = false,
 }: WinConditionsSectionProps) {
   const { translate } = useLocales();
   const [openSolution] = useState(false);
@@ -138,7 +140,9 @@ export default function WinConditionsSection({
   // Challenge basic fields
   const [robotX, setRobotX] = useState<number>(0);
   const [robotY, setRobotY] = useState<number>(0);
-  const [robotDir] = useState<"north" | "east" | "south" | "west">("east");
+  const [robotDir, setRobotDir] = useState<"north" | "east" | "south" | "west">(
+    "east"
+  );
   const [minCards, setMinCards] = useState<number>(1);
   const [maxCards, setMaxCards] = useState<number>(12);
   const [selectedStatements, setSelectedStatements] = useState<string[]>([]);
@@ -219,8 +223,21 @@ export default function WinConditionsSection({
             typeof t?.count === "number"
           ) {
             const type = String(t?.type || "yellow").toLowerCase();
-            const spread = typeof t?.spread === "number" ? t.spread : 1;
-            const allowedCollect = Boolean(t?.allowedCollect);
+            // Parse spread - handle both number and string
+            const spread =
+              typeof t?.spread === "number"
+                ? t.spread
+                : typeof t?.spread === "string"
+                ? parseFloat(t.spread) || 1
+                : 1;
+            // Parse allowedCollect - handle both boolean and string
+            const allowedCollect =
+              typeof t?.allowedCollect === "boolean"
+                ? t.allowedCollect
+                : typeof t?.allowedCollect === "string"
+                ? t.allowedCollect === "true"
+                : Boolean(t?.allowedCollect);
+
             const typ: "yellow" | "red" | "green" =
               type === "red" ? "red" : type === "green" ? "green" : "yellow";
             tilesAccum.push({
@@ -314,8 +331,88 @@ export default function WinConditionsSection({
       if (typeof parsed?.victory?.description === "string") {
         setBoxVictoryDescription(parsed.victory.description);
       }
+
+      // Load box tiles from challengeJson
+      const boxes = Array.isArray(parsed?.boxes) ? parsed.boxes : [];
+      const boxTilesAccum: {
+        x: number;
+        y: number;
+        count: number;
+        spread: number;
+      }[] = [];
+      boxes.forEach((b: any) => {
+        const tiles = Array.isArray(b?.tiles) ? b.tiles : [];
+        // Parse spread from box level, not tile level
+        const spread =
+          typeof b?.spread === "number"
+            ? b.spread
+            : typeof b?.spread === "string"
+            ? parseFloat(b.spread) || 1.2
+            : 1.2;
+
+        tiles.forEach((t: any) => {
+          if (
+            typeof t?.x === "number" &&
+            typeof t?.y === "number" &&
+            typeof t?.count === "number"
+          ) {
+            boxTilesAccum.push({
+              x: t.x,
+              y: t.y,
+              count: t.count,
+              spread: spread, // Use spread from box level
+            });
+          }
+        });
+      });
+      if (boxTilesAccum.length) {
+        setBoxTiles(boxTilesAccum);
+        // Set global spread from first box
+        if (boxTilesAccum[0]?.spread) {
+          setBoxGlobalSpread(boxTilesAccum[0].spread);
+        }
+      }
     } catch {}
   }, [challengeJson]);
+
+  // Update robot direction when mapGrid changes (not just when dialog opens)
+  useEffect(() => {
+    let found = false;
+    outer: for (const row of mapGrid) {
+      for (const cell of row) {
+        if (cell.object) {
+          const asset = MAP_ASSETS.find((a) => a.id === cell.object);
+          if (asset && (asset as any).category === "robot") {
+            // Extract direction from asset ID (e.g., "robot_east" -> "east")
+            const assetId = asset.id || "";
+            if (assetId.startsWith("robot_")) {
+              const direction = assetId.replace("robot_", "") as
+                | "north"
+                | "east"
+                | "south"
+                | "west";
+              if (["north", "east", "south", "west"].includes(direction)) {
+                setRobotDir(direction);
+                console.log(
+                  "🤖 [WinConditions] Updated robot direction to:",
+                  direction,
+                  "from asset:",
+                  assetId
+                );
+              }
+            }
+            found = true;
+            break outer;
+          }
+        }
+      }
+    }
+    if (!found) {
+      // Reset to default if no robot found
+      setRobotDir("east");
+    }
+  }, [mapGrid]); // Watch mapGrid changes
+
   useEffect(() => {
     if (!openChallenge) return;
     let found = false;
@@ -327,6 +424,20 @@ export default function WinConditionsSection({
             setRobotX(cell.col);
             setRobotY(cell.row);
             setRobotImagePath((asset as any).imagePath || null);
+
+            // Extract direction from asset ID (e.g., "robot_east" -> "east")
+            const assetId = asset.id || "";
+            if (assetId.startsWith("robot_")) {
+              const direction = assetId.replace("robot_", "") as
+                | "north"
+                | "east"
+                | "south"
+                | "west";
+              if (["north", "east", "south", "west"].includes(direction)) {
+                setRobotDir(direction);
+              }
+            }
+
             found = true;
             break outer;
           }
@@ -341,49 +452,52 @@ export default function WinConditionsSection({
 
     // Only two choices required: Map Box and Map Battery
     const twoChoices = [
-      { key: "box", label: "Map Box", type: "box" as const },
-      { key: "battery", label: "Map Battery", type: "battery" as const },
+      { key: "box", label: "Bản đồ Box", type: "box" as const },
+      { key: "battery", label: "Bản đồ Pin", type: "battery" as const },
     ];
     setTargetOptions(twoChoices);
     setSelectedTargetKey((prev) =>
       prev === "box" || prev === "battery" ? prev : ""
     );
 
-    // Build battery tiles snapshot from current map when opening
-    const batteries: {
-      x: number;
-      y: number;
-      count: number;
-      type: "yellow" | "red" | "green";
-      spread: number;
-      allowedCollect: boolean;
-    }[] = [];
-    for (const row of mapGrid) {
-      for (const cell of row) {
-        if (!cell.object) continue;
-        const asset = MAP_ASSETS.find((a) => a.id === cell.object) as any;
-        if (!asset) continue;
-        const idLower = (asset.id || "").toLowerCase();
-        // Detect batteries by pin_* ids
-        if (idLower.startsWith("pin_")) {
-          const type: "yellow" | "red" | "green" = idLower.includes("yellow")
-            ? "yellow"
-            : idLower.includes("red")
-            ? "red"
-            : "green";
-          const count = Math.max(1, (cell as any).itemCount ?? 1);
-          batteries.push({
-            x: cell.col,
-            y: cell.row,
-            count,
-            type,
-            spread: 1,
-            allowedCollect: true,
-          });
+    // Only build battery tiles from mapGrid if no data from challengeJson
+    // This prevents overriding data loaded from API
+    if (batteryTiles.length === 0) {
+      const batteries: {
+        x: number;
+        y: number;
+        count: number;
+        type: "yellow" | "red" | "green";
+        spread: number;
+        allowedCollect: boolean;
+      }[] = [];
+      for (const row of mapGrid) {
+        for (const cell of row) {
+          if (!cell.object) continue;
+          const asset = MAP_ASSETS.find((a) => a.id === cell.object) as any;
+          if (!asset) continue;
+          const idLower = (asset.id || "").toLowerCase();
+          // Detect batteries by pin_* ids
+          if (idLower.startsWith("pin_")) {
+            const type: "yellow" | "red" | "green" = idLower.includes("yellow")
+              ? "yellow"
+              : idLower.includes("red")
+              ? "red"
+              : "green";
+            const count = Math.max(1, (cell as any).itemCount ?? 1);
+            batteries.push({
+              x: cell.col,
+              y: cell.row,
+              count,
+              type,
+              spread: 1,
+              allowedCollect: true,
+            });
+          }
         }
       }
+      setBatteryTiles(batteries);
     }
-    setBatteryTiles(batteries);
 
     // Build box tiles snapshot from current map when opening
     const boxes: { x: number; y: number; count: number; spread: number }[] = [];
@@ -587,24 +701,24 @@ export default function WinConditionsSection({
       <Box sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 1.5 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
           <Typography variant="body2" sx={{ fontWeight: 500 }}>
-            Note
+            Lưu ý
           </Typography>
           <Tooltip
             title={
               <Box sx={{ p: 1, maxWidth: 300 }}>
                 <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
-                  Order Rules in Lesson:
+                  Quy tắc thứ tự trong bài học:
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 0.5 }}>
-                  • Each challenge can only be assigned to one lesson
+                  • Mỗi thử thách chỉ có thể được gán cho một bài học
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 0.5 }}>
-                  • Example: If there's already a challenge for order 1 in
-                  "String" lesson, you cannot add another challenge for order 1
-                  in "String"
+                  • Ví dụ: Nếu đã có thử thách cho thứ tự 1 trong bài học
+                  "String", bạn không thể thêm thử thách khác cho thứ tự 1 trong
+                  "String"
                 </Typography>
                 <Typography variant="body2">
-                  • Must use different order (2, 3, 4...)
+                  • Phải sử dụng thứ tự khác (2, 3, 4...)
                 </Typography>
               </Box>
             }
@@ -646,39 +760,40 @@ export default function WinConditionsSection({
 
         {/* Course Selection */}
         <PopupSelect
-          label="Course"
+          label="Khóa học"
           value={courseId}
           onChange={onCourseIdChange}
           items={courses}
           loading={courseLoading}
           error={hasTriedSave && !courseId}
           helperText={
-            hasTriedSave && !courseId ? "Please select a course" : undefined
+            hasTriedSave && !courseId ? "Vui lòng chọn khóa học" : undefined
           }
           pageSize={12}
           getItemLabel={(course) => course.title}
           getItemValue={(course) => course.id}
-          noDataMessage="No courses available"
+          noDataMessage="Không có khóa học nào"
           currentPage={coursePage}
           onPageChange={onCoursePageChange || (() => {})}
           totalPages={courseTotalPages}
           title="Chọn khóa học"
+          disabled={isEditMode}
         />
 
         {/* Lesson Selection */}
         <PopupSelect
-          label="Lesson"
+          label="Bài học"
           value={lessonId}
           onChange={onLessonIdChange}
           items={lessons}
           loading={lessonLoading}
           error={hasTriedSave && !lessonId}
-          disabled={!courseId}
+          disabled={!courseId || isEditMode}
           helperText={
             hasTriedSave && !courseId
-              ? "Please select a course first"
+              ? "Vui lòng chọn khóa học trước"
               : hasTriedSave && !lessonId
-              ? "Please select a lesson"
+              ? "Vui lòng chọn bài học"
               : undefined
           }
           pageSize={12}
@@ -686,8 +801,8 @@ export default function WinConditionsSection({
           getItemValue={(lesson) => lesson.id}
           noDataMessage={
             !courseId
-              ? "Please select a course first"
-              : "No lessons available for this course"
+              ? "Vui lòng chọn khóa học trước"
+              : "Không có bài học nào cho khóa học này"
           }
           currentPage={lessonPage}
           onPageChange={onLessonPageChange || (() => {})}
@@ -706,7 +821,7 @@ export default function WinConditionsSection({
             fullWidth
             size="small"
             type="number"
-            label="Order"
+            label="Thứ tự"
             value={order}
             onChange={(e) => onOrderChange(Number(e.target.value))}
             inputProps={{ min: 1, step: 1 }}
@@ -726,9 +841,9 @@ export default function WinConditionsSection({
         </Box>
 
         <FormControl fullWidth size="small">
-          <InputLabel>Difficulty (1-5)</InputLabel>
+          <InputLabel>Độ khó (1-5)</InputLabel>
           <Select
-            label="Difficulty (1-5)"
+            label="Độ khó (1-5)"
             value={difficulty}
             onChange={(e) => onDifficultyChange(Number(e.target.value))}
           >
@@ -741,14 +856,14 @@ export default function WinConditionsSection({
         </FormControl>
 
         <FormControl fullWidth size="small" sx={{ mb: 0 }}>
-          <InputLabel>Challenge Mode</InputLabel>
+          <InputLabel>Chế độ thử thách</InputLabel>
           <Select
-            label="Challenge Mode"
+            label="Chế độ thử thách"
             value={challengeMode}
             onChange={(e) => onChallengeModeChange(Number(e.target.value))}
           >
-            <MenuItem value={0}>Simulation</MenuItem>
-            <MenuItem value={1}>PhysicalFirst</MenuItem>
+            <MenuItem value={0}>Mô phỏng</MenuItem>
+            <MenuItem value={1}>Vật lý</MenuItem>
           </Select>
         </FormControl>
       </Box>
@@ -757,11 +872,11 @@ export default function WinConditionsSection({
       <Box sx={{ display: "none" }}>
         <Button onClick={() => setOpenChallenge(true)}>
           {challengeJson
-            ? "Challenge (configured)"
-            : "Challenge (not configured)"}
+            ? "Thử thách (đã cấu hình)"
+            : "Thử thách (chưa cấu hình)"}
         </Button>
         <Button onClick={onSaveMap} disabled={!onSaveMap}>
-          Save Challenge
+          Lưu Thử Thách
         </Button>
       </Box>
 
@@ -784,14 +899,14 @@ export default function WinConditionsSection({
             alignItems: "center",
           }}
         >
-          Challenge Editor
+          Trình chỉnh sửa thử thách
           <IconButton
             size="small"
             aria-label="spread-help"
             sx={{ color: THEME_COLORS.text.secondary }}
             onMouseEnter={(e) =>
               handleTooltipOpen(
-                "Spread Guide:\n• Distance between items in the same tile\n• 1 item: spread = 1\n• More than 2: spread = 1.2",
+                "Hướng dẫn Phân cách:\n• Khoảng cách giữa các vật phẩm trong cùng một ô\n• 1 vật phẩm: phân cách = 1\n• Nhiều hơn 2: phân cách = 1.2",
                 e
               )
             }
@@ -841,7 +956,7 @@ export default function WinConditionsSection({
                     variant="caption"
                     sx={{ color: THEME_COLORS.text.secondary }}
                   >
-                    Direction
+                    Hướng
                   </Typography>
                   <Chip
                     size="small"
@@ -863,19 +978,19 @@ export default function WinConditionsSection({
             {/* Map target (Box or Battery) */}
             <Box>
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                Map
+                Bản đồ
               </Typography>
               <FormControl size="small" sx={{ minWidth: 240 }}>
-                <InputLabel>Map</InputLabel>
+                <InputLabel>Bản đồ</InputLabel>
                 <Select
-                  label="Map"
+                  label="Bản đồ"
                   value={selectedTargetKey}
                   onChange={(e) => {
                     const next = e.target.value as string;
                     if (next === "battery") {
                       const hasAnyBattery = batteryTiles.length > 0;
                       if (!hasAnyBattery) {
-                        const msg = "Map Battery: no batteries on the map";
+                        const msg = "Bản đồ Pin: không có pin nào trên bản đồ";
                         try {
                           if ((window as any).Snackbar?.enqueueSnackbar) {
                             (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -896,7 +1011,7 @@ export default function WinConditionsSection({
                     } else if (next === "box") {
                       const hasAnyBox = boxTiles.length > 0;
                       if (!hasAnyBox) {
-                        const msg = "Map Box: no boxes on the map";
+                        const msg = "Bản đồ Box: không có hộp nào trên bản đồ";
                         try {
                           if ((window as any).Snackbar?.enqueueSnackbar) {
                             (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -940,7 +1055,7 @@ export default function WinConditionsSection({
                     variant="subtitle2"
                     sx={{ mb: 1, fontWeight: 600 }}
                   >
-                    Batteries on Map
+                    Pin trên bản đồ
                   </Typography>
                   <Box
                     sx={{ display: "flex", flexDirection: "column", gap: 1 }}
@@ -950,7 +1065,7 @@ export default function WinConditionsSection({
                         variant="body2"
                         sx={{ color: THEME_COLORS.text.secondary }}
                       >
-                        No batteries found on map.
+                        Không tìm thấy pin nào trên bản đồ.
                       </Typography>
                     )}
                     {batteryTiles.map((bt, idx) => (
@@ -986,9 +1101,9 @@ export default function WinConditionsSection({
                         <Typography
                           variant="body2"
                           sx={{ minWidth: 110 }}
-                        >{`Cell [${bt.y}, ${bt.x}]`}</Typography>
+                        >{`Ô [${bt.y}, ${bt.x}]`}</Typography>
                         <TextField
-                          label="Count"
+                          label="Số lượng"
                           type="number"
                           size="small"
                           value={bt.count}
@@ -1006,14 +1121,14 @@ export default function WinConditionsSection({
                           sx={{ width: 100 }}
                         />
                         <TextField
-                          label="Type"
+                          label="Loại"
                           size="small"
                           value={bt.type}
                           InputProps={{ readOnly: true }}
                           sx={{ width: 120 }}
                         />
                         <TextField
-                          label="Spread"
+                          label="Phân cách"
                           type="number"
                           size="small"
                           value={bt.spread}
@@ -1040,7 +1155,7 @@ export default function WinConditionsSection({
                           }}
                         >
                           <Typography variant="caption">
-                            Allowed Collect
+                            Cho phép thu thập
                           </Typography>
                           <input
                             type="checkbox"
@@ -1049,7 +1164,10 @@ export default function WinConditionsSection({
                               setBatteryTiles((prev) =>
                                 prev.map((b, i) =>
                                   i === idx
-                                    ? { ...b, allowedCollect: e.target.checked }
+                                    ? {
+                                        ...b,
+                                        allowedCollect: e.target.checked,
+                                      }
                                     : b
                                 )
                               )
@@ -1070,7 +1188,7 @@ export default function WinConditionsSection({
                     }}
                   >
                     <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                      Victory
+                      Chiến thắng
                     </Typography>
                     <IconButton
                       size="small"
@@ -1078,7 +1196,7 @@ export default function WinConditionsSection({
                       sx={{ color: THEME_COLORS.text.secondary }}
                       onMouseEnter={(e) =>
                         handleTooltipOpen(
-                          "Enter the number of batteries to collect for victory.\nNote: total required must be less than or equal to the number of batteries available on the map.",
+                          "Nhập số lượng pin cần thu thập để chiến thắng.\nLưu ý: tổng số yêu cầu phải nhỏ hơn hoặc bằng số lượng pin có sẵn trên bản đồ.",
                           e
                         )
                       }
@@ -1120,7 +1238,7 @@ export default function WinConditionsSection({
                             />
                           )}
                           <TextField
-                            label="Yellow"
+                            label="Vàng"
                             type="number"
                             size="small"
                             value={victoryYellow}
@@ -1145,7 +1263,7 @@ export default function WinConditionsSection({
                             />
                           )}
                           <TextField
-                            label="Red"
+                            label="Đỏ"
                             type="number"
                             size="small"
                             value={victoryRed}
@@ -1168,7 +1286,7 @@ export default function WinConditionsSection({
                             />
                           )}
                           <TextField
-                            label="Green"
+                            label="Xanh lá"
                             type="number"
                             size="small"
                             value={victoryGreen}
@@ -1186,8 +1304,8 @@ export default function WinConditionsSection({
                   </Box>
                   <TextField
                     fullWidth
-                    label="Hint"
-                    placeholder="Describe the victory condition. Example: Collect all yellow batteries using if statements."
+                    label="Gợi ý"
+                    placeholder="Mô tả điều kiện chiến thắng. Ví dụ: Thu thập tất cả pin vàng bằng câu lệnh if."
                     size="small"
                     value={victoryDescription}
                     error={hasTriedSave && !victoryDescription.trim()}
@@ -1208,7 +1326,7 @@ export default function WinConditionsSection({
                     variant="subtitle2"
                     sx={{ mb: 1, fontWeight: 600 }}
                   >
-                    Boxes on Map
+                    Hộp trên bản đồ
                   </Typography>
                   <Box
                     sx={{ display: "flex", flexDirection: "column", gap: 1 }}
@@ -1218,7 +1336,7 @@ export default function WinConditionsSection({
                         variant="body2"
                         sx={{ color: THEME_COLORS.text.secondary }}
                       >
-                        No boxes found on map.
+                        Không tìm thấy hộp nào trên bản đồ.
                       </Typography>
                     )}
                     {boxTiles.map((bx, idx) => (
@@ -1252,9 +1370,9 @@ export default function WinConditionsSection({
                         <Typography
                           variant="body2"
                           sx={{ minWidth: 110 }}
-                        >{`Cell [${bx.y}, ${bx.x}]`}</Typography>
+                        >{`Ô [${bx.y}, ${bx.x}]`}</Typography>
                         <TextField
-                          label="Count"
+                          label="Số lượng"
                           type="number"
                           size="small"
                           value={bx.count}
@@ -1272,7 +1390,7 @@ export default function WinConditionsSection({
                           sx={{ width: 110 }}
                         />
                         <TextField
-                          label="Spread"
+                          label="Phân cách"
                           type="number"
                           size="small"
                           value={boxGlobalSpread}
@@ -1293,7 +1411,7 @@ export default function WinConditionsSection({
                     }}
                   >
                     <TextField
-                      label="Spread"
+                      label="Phân cách"
                       type="number"
                       size="small"
                       value={boxGlobalSpread}
@@ -1319,7 +1437,7 @@ export default function WinConditionsSection({
                     }}
                   >
                     <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                      Victory
+                      Chiến thắng
                     </Typography>
                     <IconButton
                       size="small"
@@ -1327,7 +1445,7 @@ export default function WinConditionsSection({
                       sx={{ color: THEME_COLORS.text.secondary }}
                       onMouseEnter={(e) =>
                         handleTooltipOpen(
-                          "Add position and number of boxes to place for victory.\nNote: total number of boxes to place must be less than or equal to the available quantity.",
+                          "Thêm vị trí và số lượng hộp cần đặt để chiến thắng.\nLưu ý: tổng số hộp cần đặt phải nhỏ hơn hoặc bằng số lượng có sẵn.",
                           e
                         )
                       }
@@ -1382,7 +1500,7 @@ export default function WinConditionsSection({
                           sx={{ width: 100 }}
                         />
                         <TextField
-                          label="Count"
+                          label="Số lượng"
                           type="number"
                           size="small"
                           value={t.count}
@@ -1420,12 +1538,12 @@ export default function WinConditionsSection({
                       variant="outlined"
                       onClick={() => setOpenTargetPicker(true)}
                     >
-                      + Add target
+                      + Thêm mục tiêu
                     </Button>
                     <TextField
                       fullWidth
-                      label="Hint"
-                      placeholder="Describe the victory condition. Example: Take 2 from the warehouse and place 2 at target locations."
+                      label="Gợi ý"
+                      placeholder="Mô tả điều kiện chiến thắng. Ví dụ: Lấy 2 từ kho và đặt 2 tại vị trí mục tiêu."
                       size="small"
                       value={boxVictoryDescription}
                       error={hasTriedSave && !boxVictoryDescription.trim()}
@@ -1441,7 +1559,7 @@ export default function WinConditionsSection({
                 sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1 }}
               >
                 <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                  Constraints
+                  Ràng buộc
                 </Typography>
                 <IconButton
                   size="small"
@@ -1449,7 +1567,7 @@ export default function WinConditionsSection({
                   sx={{ color: THEME_COLORS.text.secondary }}
                   onMouseEnter={(e) =>
                     handleTooltipOpen(
-                      "Constraints Guide:\n• Select the cards that players must use to complete the level\n• And the minimum number of cards players must use",
+                      "Hướng dẫn Ràng buộc:\n• Chọn các thẻ mà người chơi phải sử dụng để hoàn thành cấp độ\n• Và số lượng thẻ tối thiểu người chơi phải sử dụng",
                       e
                     )
                   }
@@ -1463,7 +1581,7 @@ export default function WinConditionsSection({
                   variant="body2"
                   sx={{ mb: 1, color: THEME_COLORS.text.secondary }}
                 >
-                  Required blocks that players must use:
+                  Các khối bắt buộc mà người chơi phải sử dụng:
                 </Typography>
                 <FormGroup>
                   <Box
@@ -1517,7 +1635,7 @@ export default function WinConditionsSection({
               </Box>
               <Box sx={{ display: "flex", gap: 2 }}>
                 <TextField
-                  label="Min cards"
+                  label="Số lượng thẻ tối thiểu"
                   type="number"
                   size="small"
                   value={minCards}
@@ -1525,7 +1643,7 @@ export default function WinConditionsSection({
                   inputProps={{ min: 0 }}
                 />
                 <TextField
-                  label="Max cards"
+                  label="Số lượng thẻ tối đa"
                   type="number"
                   size="small"
                   value={maxCards}
@@ -1545,7 +1663,8 @@ export default function WinConditionsSection({
                 selectedTargetKey !== "box" &&
                 selectedTargetKey !== "battery"
               ) {
-                const msg = "Please select Map (Box or Battery) before saving";
+                const msg =
+                  "Vui lòng chọn Map (Box hoặc Battery) trước khi lưu";
                 try {
                   if ((window as any).Snackbar?.enqueueSnackbar) {
                     (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1575,10 +1694,10 @@ export default function WinConditionsSection({
                 if (invalidTile || invalidSpread) {
                   const msg =
                     invalidTile && invalidSpread
-                      ? "Box count and spread values must be 1 or higher"
+                      ? "Giá trị số lượng và phân cách của Box phải từ 1 trở lên"
                       : invalidTile
-                      ? "Each box must have Count of at least 1"
-                      : "Spread must be 1 or higher";
+                      ? "Mỗi box phải có số lượng ít nhất là 1"
+                      : "Phân cách phải từ 1 trở lên";
                   try {
                     if ((window as any).Snackbar?.enqueueSnackbar) {
                       (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1839,6 +1958,10 @@ export default function WinConditionsSection({
                   }
                 } catch {}
               }
+              console.log(
+                "🤖 [WinConditions] Building payload with robot direction:",
+                robotDir
+              );
               const payload = {
                 robot: {
                   tile: placedRobot ?? { x: robotX, y: robotY },
@@ -1910,16 +2033,16 @@ export default function WinConditionsSection({
               try {
                 (window as any).Snackbar?.enqueueSnackbar &&
                   (window as any).Snackbar.enqueueSnackbar(
-                    "Challenge saved successfully",
+                    "Lưu thử thách thành công",
                     { variant: "success" }
                   );
               } catch {}
               setOpenChallenge(false);
             }}
           >
-            Save
+            Lưu
           </Button>
-          <Button onClick={() => setOpenChallenge(false)}>Close</Button>
+          <Button onClick={() => setOpenChallenge(false)}>Đóng</Button>
         </DialogActions>
       </Dialog>
       {/* Target Picker Mini Map */}
@@ -2229,7 +2352,7 @@ export default function WinConditionsSection({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenTargetPicker(false)}>Close</Button>
+          <Button onClick={() => setOpenTargetPicker(false)}>Đóng</Button>
         </DialogActions>
       </Dialog>
       {/* Local notification container for this section */}

@@ -34,7 +34,7 @@
   },
   "title": "Admin Panel",
   "dashboard": "Dashboard",
-  
+
   "courseManagement": "Course Management",
   "courseManagementTitle": "Course Management",
   "courseManagementSubtitle": "List of all courses in the system",
@@ -64,7 +64,7 @@
   "coursePrice": "Course Price",
   "courseDuration": "Duration",
   "courseLevel": "Level",
-  
+
   "lessonManagement": "Lesson Management",
   "lessonManagementTitle": "Lesson Management",
   "lessonManagementSubtitle": "List of all lessons in the system",
@@ -100,7 +100,7 @@
   "basicBlockProgramming": "Basic block programming",
   "mediumBlockProgramming": "Medium block programming",
   "advancedBlockProgramming": "Advanced block programming",
-  
+
   "lessonResourceManagement": "Learning Resource Management",
   "addResource": "Add resource",
   "resourceDetailTitle": "Resource details",
@@ -128,7 +128,7 @@
   "resourceCreatedSuccess": "Resource created successfully",
   "resourceUpdatedSuccess": "Resource updated successfully",
   "loading": "Loading...",
-  
+
   "mapManagement": "Map Management",
   "mapManagementTitle": "Map Management",
   "mapManagementSubtitle": "Manage maps and areas in the system",
@@ -177,7 +177,7 @@
   "mapFetchFailed": "Failed to fetch map",
   "mapUpdatedSuccess": "Map updated successfully",
   "mapUpdateFailed": "Failed to update map",
-  
+
   "robotManagement": "Robot Management",
   "robotManagementTitle": "Robot Management",
   "robotManagementSubtitle": "Manage robot templates, specifications, and configurations",
@@ -212,7 +212,7 @@
   "noDescriptionAvailable": "No description available",
   "deleteRobotProduct": "Delete Robot Product",
   "confirmDeleteRobotProduct": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
-  
+
   "componentManagement": "Component Management",
   "componentManagementTitle": "Component Management",
   "componentManagementSubtitle": "Manage components, specifications, and configurations",
@@ -234,7 +234,7 @@
   "componentDescription": "Component Description",
   "componentPrice": "Component Price",
   "componentQuantity": "Quantity",
-  
+
   "studentManagement": "Student Management",
   "studentManagementTitle": "Student Management",
   "studentManagementSubtitle": "List of all students in the system",
@@ -281,7 +281,7 @@
   "studentName": "Student Name",
   "studentEmail": "Email",
   "studentPhone": "Phone Number",
-  
+
   "enrollmentManagement": "Enrollment Management",
   "enrollmentManagementTitle": "📚 Enrollments Management",
   "enrollmentManagementSubtitle": "View and manage student course enrollments",
@@ -327,7 +327,7 @@
   "pleaseSelectCourse": "Please select a course",
   "selectCourseRequired": "Select Course *",
   "creating": "Creating...",
-  
+
   "orderManagement": "Order Management",
   "orderDetails": "Order Details",
   "orderStatus": "Order Status",
@@ -358,7 +358,7 @@
   "confirmStatusChangeMessage": "Are you sure you want to change the order status from <strong>{{currentStatus}}</strong> to <strong>{{newStatus}}</strong>?",
   "statusChangeWarning": "This action will update the order status and may trigger automated processes (e.g., enrollment creation for Paid orders).",
   "updating": "Updating...",
-  
+
   "activationCodeManagement": "Activation Code Management",
   "activationCodeManagementTitle": "Activation Code Management",
   "activationCodeManagementSubtitle": "Manage robot and system activation codes",
@@ -422,7 +422,7 @@
   "noLimit": "No limit",
   "rowsPerPage": "Rows per page:",
   "displayedRows": "{{from}}–{{to}} of {{count}}",
-  
+
   "certificateManagement": "Certificate Management",
   "certificateManagementTitle": "Certificate Management",
   "certificateManagementSubtitle": "View and manage certificates issued to students",
@@ -448,7 +448,7 @@
   "confirmDeleteCertificate": "Are you sure you want to delete certificate \"{{certificateNo}}\"?",
   "deleteCertificateSuccess": "Certificate deleted successfully!",
   "deleteCertificateError": "Error occurred while deleting certificate!",
-  
+
   "map": {
     "mapsManagement": "Maps Management",
     "searchPlaceholder": "Search maps by title or description...",
@@ -475,7 +475,7 @@
     "confirmDeleteMessage": "Are you sure you want to delete the map \"{{title}}\"? This action can be undone by restoring it later.",
     "mapPreview": "Map Preview"
   },
-  
+
   "component": {
     "searchPlaceholder": "Search components...",
     "type": "Type",
@@ -502,7 +502,7 @@
     "typeOther": "Other",
     "typeUnknown": "Unknown"
   },
-  
+
   "certificateTemplate": {
     "createNew": "Create New Template",
     "searchPlaceholder": "Search by template name...",
@@ -556,7 +556,7 @@
     "previewWarning": "This is a preview with sample data",
     "placeholdersReplaced": "Placeholders replaced:"
   },
-  
+
   "imageManagement": "Image Management",
   "uploadImage": "Upload Image",
   "imageList": "Image List",
@@ -566,7 +566,7 @@
   "imageUrl": "Image URL",
   "imageSize": "File Size",
   "deleteImage": "Delete Image",
-  
+
   "challengeManagement": "Challenge Management",
   "challengeManagementTitle": "Challenge Management",
   "challengeManagementSubtitle": "List of all challenges in the system",
@@ -618,12 +618,12 @@
   "lessonsInCourse": "Lessons in Course",
   "mapLabel": "Map",
   "noMap": "No map",
-  
+
   "dashboardWelcome": "Hello, {{username}}! 👋",
   "dashboardSubtitle": "Welcome back to the Ottobit admin dashboard",
   "dashboardContentDeveloping": "Dashboard content is being developed...",
   "admin": "Admin",
-  
+
   "submissionManagement": "Submission Management",
   "submissionDetails": "Submission Details",
   "saveChallenge": "Save Challenge",
@@ -643,7 +643,7 @@
   "pleaseConfigureSolution": "Please configure Solution before saving",
   "pleaseConfigureChallenge": "Please configure Challenge before saving",
   "pleaseConfigureSolutionAndChallenge": "Please configure Solution and Challenge before saving",
-  
+
   "submissionManagement": "Submission Management",
   "submissionList": "Submission List",
   "submissionDetails": "Submission Details",
@@ -666,7 +666,7 @@
   "codeJson": "Code JSON",
   "time": "Time",
   "pleaseSearchToSeeResults": "Please select filters and click Search to see results",
-  
+
   "view": "View",
   "edit": "Edit",
   "delete": "Delete",
@@ -694,12 +694,12 @@
   "results": "results",
   "noData": "No data available",
   "loading": "Loading...",
-  
+
   "confirmDeleteTitle": "Confirm Delete",
   "confirmDeleteMessage": "Are you sure you want to delete this {{item}}?",
   "confirmRestoreTitle": "Confirm Restore",
   "confirmRestoreMessage": "Are you sure you want to restore this {{item}}?",
-  
+
   "active": "Active",
   "inactive": "Inactive",
   "deleted": "Deleted",
@@ -708,7 +708,7 @@
   "inProgress": "In Progress",
   "approved": "Approved",
   "rejected": "Rejected",
-  
+
   "cannotDelete": "Cannot delete {{item}}",
   "cannotRestore": "Cannot restore {{item}}",
   "cannotUpdate": "Cannot update {{item}}",
@@ -717,7 +717,7 @@
   "requiredField": "This field is required",
   "operationFailed": "Operation failed",
   "operationSuccess": "Operation completed successfully",
-  
+
   "name": "Name",
   "description": "Description",
   "price": "Price",

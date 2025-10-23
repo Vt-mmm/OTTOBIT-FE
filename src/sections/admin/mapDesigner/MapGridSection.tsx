@@ -470,7 +470,7 @@ export default function MapGridSection({
           }}
         >
           <Typography variant="caption" sx={{ color: "white" }}>
-            Cell [{hoveredCell?.row ?? "-"}, {hoveredCell?.col ?? "-"}]
+            Ô [{hoveredCell?.row ?? "-"}, {hoveredCell?.col ?? "-"}]
           </Typography>
         </Box>
 

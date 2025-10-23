@@ -123,13 +123,13 @@ export default function MapPickerDialog({
       disableAutoFocus
     >
       <DialogTitle>
-        {courseId ? "Select a Map from Course" : "Select a Map"}
+        {courseId ? "Chọn bản đồ từ khóa học" : "Chọn bản đồ"}
       </DialogTitle>
       <DialogContent dividers>
         {!courseId && (
           <TextField
             fullWidth
-            placeholder="Search maps..."
+            placeholder="Tìm kiếm bản đồ..."
             size="small"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -155,15 +155,15 @@ export default function MapPickerDialog({
         >
           {loading && (
             <Box sx={{ p: 2 }}>
-              <Typography variant="body2">Loading...</Typography>
+              <Typography variant="body2">Đang tải...</Typography>
             </Box>
           )}
           {!loading && items.length === 0 && (
             <Box sx={{ p: 2 }}>
               <Typography variant="body2">
                 {courseId
-                  ? "No maps found"
-                  : "Vui lòng chọn khóa học trước khi chọn map"}
+                  ? "Không tìm thấy bản đồ nào"
+                  : "Vui lòng chọn khóa học trước khi chọn bản đồ"}
               </Typography>
             </Box>
           )}
@@ -174,7 +174,7 @@ export default function MapPickerDialog({
                 secondary={
                   m.description && m.description.length > 0
                     ? m.description
-                    : "(No description)"
+                    : "(Không có mô tả)"
                 }
               />
             </ListItemButton>
@@ -189,10 +189,10 @@ export default function MapPickerDialog({
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1 || loading}
           >
-            Prev
+            Trước
           </Button>
           <Typography variant="body2" sx={{ mx: 1 }}>
-            Page {page} / {totalPages}
+            Trang {page} / {totalPages}
           </Typography>
           <Button
             variant="outlined"
@@ -200,10 +200,10 @@ export default function MapPickerDialog({
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages || loading}
           >
-            Next
+            Tiếp
           </Button>
         </Box>
-        <Button onClick={onClose}>Close</Button>
+        <Button onClick={onClose}>Đóng</Button>
       </DialogActions>
     </Dialog>
   );

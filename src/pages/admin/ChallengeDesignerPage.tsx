@@ -50,8 +50,16 @@ const MapDesignerPage = () => {
   // Debug: Log data to see pagination info
 
   const [selectedAsset, setSelectedAsset] = useState<string>("robot_east");
+
+  // Debug log when selectedAsset changes
+  useEffect(() => {
+    console.log(
+      "🤖 [ChallengeDesigner] selectedAsset changed to:",
+      selectedAsset
+    );
+  }, [selectedAsset]);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [mapName, setMapName] = useState<string>("New Challenge");
+  const [mapName, setMapName] = useState<string>("Thử thách mới");
   const [mapDescription, setMapDescription] = useState<string>("");
   // Keep original solution JSON only for save conversion; render uses dedicated state to avoid side effects
   const initialSolutionJsonRef = useRef<string | null>(null);
@@ -69,7 +77,7 @@ const MapDesignerPage = () => {
   const [solutionDialogOpen] = useState(false);
   const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
   const [selectedMapTitle, setSelectedMapTitle] =
-    useState<string>("No map selected");
+    useState<string>("Chưa chọn bản đồ");
   const [viewMode, setViewMode] = useState<"orthogonal" | "isometric">(
     "isometric"
   );
@@ -200,6 +208,15 @@ const MapDesignerPage = () => {
             initialSolutionJsonRef.current = item.solutionJson;
           }
           if (item?.challengeJson) setChallengeJson(item.challengeJson);
+
+          // Set challenge fields from API response
+          if (item?.title) setMapName(item.title);
+          if (item?.description) setMapDescription(item.description);
+          if (typeof item?.order === "number") setOrder(item.order);
+          if (typeof item?.difficulty === "number")
+            setDifficulty(item.difficulty);
+          if (typeof item?.challengeMode === "number")
+            setChallengeMode(item.challengeMode);
 
           // Find courseId from lessonId for edit mode
           if (item?.lessonId) {
@@ -652,7 +669,7 @@ const MapDesignerPage = () => {
     } catch {}
     // Validate required fields
     if (!courseId || courseId.trim().length === 0) {
-      const msg = "Please select a Course before saving";
+      const msg = "Vui lòng chọn Khóa học trước khi lưu";
       try {
         if ((window as any).Snackbar?.enqueueSnackbar) {
           (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -669,7 +686,7 @@ const MapDesignerPage = () => {
     }
 
     if (!lessonId || lessonId.trim().length === 0) {
-      const msg = "Please select a Lesson before saving";
+      const msg = "Vui lòng chọn Bài học trước khi lưu";
       try {
         if ((window as any).Snackbar?.enqueueSnackbar) {
           (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -693,13 +710,13 @@ const MapDesignerPage = () => {
     if (missingName || missingDescription || tooShortDescription) {
       let msg = "";
       if (missingName && missingDescription) {
-        msg = "Please enter map name and description";
+        msg = "Vui lòng nhập tên và mô tả bản đồ";
       } else if (missingName) {
-        msg = "Please enter map name";
+        msg = "Vui lòng nhập tên bản đồ";
       } else if (missingDescription) {
-        msg = "Please enter map description";
+        msg = "Vui lòng nhập mô tả bản đồ";
       } else if (tooShortDescription) {
-        msg = "Map description must be at least 10 characters";
+        msg = "Mô tả bản đồ phải có ít nhất 10 ký tự";
       }
       const variant: "error" | "warning" =
         missingName || missingDescription ? "error" : "warning";
@@ -733,7 +750,7 @@ const MapDesignerPage = () => {
 
     // Continue to build payload first; for editing, we'll open confirm right before API call
     if (!hasRobot) {
-      const msg = "Please place a robot on the map before saving";
+      const msg = "Vui lòng đặt robot trên bản đồ trước khi lưu";
       try {
         if ((window as any).Snackbar?.enqueueSnackbar) {
           (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -756,10 +773,10 @@ const MapDesignerPage = () => {
     if (missingSolution || missingChallenge) {
       const msg =
         missingSolution && missingChallenge
-          ? "Please configure Solution and Challenge before saving"
+          ? "Vui lòng cấu hình Giải pháp và Thử thách trước khi lưu"
           : missingSolution
-          ? "Please configure Solution before saving"
-          : "Please configure Challenge before saving";
+          ? "Vui lòng cấu hình Giải pháp trước khi lưu"
+          : "Vui lòng cấu hình Thử thách trước khi lưu";
       try {
         if ((window as any).Snackbar?.enqueueSnackbar) {
           (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -829,6 +846,10 @@ const MapDesignerPage = () => {
     // Selected map is referenced via selectedMapId; we no longer build mapJson here
 
     // Create lesson form data
+    // Use challengeJson as-is from WinConditionsSection
+    // WinConditionsSection already handles building complete payload including robot, batteries, etc.
+    let currentChallengeJson = challengeJson;
+
     const lessonData = {
       lessonId,
       title: mapName,
@@ -836,7 +857,7 @@ const MapDesignerPage = () => {
       order,
       difficulty,
       mapId: selectedMapId,
-      challengeJson: challengeJson,
+      challengeJson: currentChallengeJson,
       solutionJson: solutionJsonToSave,
       challengeMode,
     } as any;
@@ -852,9 +873,7 @@ const MapDesignerPage = () => {
         res = await axiosClient.post(ROUTES_API_CHALLENGE.CREATE, lessonData);
       }
       const ok = res && (res.status === 200 || res.status === 201);
-      const msg = ok
-        ? "Challenge saved successfully"
-        : "Failed to save challenge";
+      const msg = ok ? "Lưu thử thách thành công" : "Lưu thử thách thất bại";
       const variant = ok ? "success" : "error";
       if ((window as any).Snackbar?.enqueueSnackbar) {
         (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -865,10 +884,7 @@ const MapDesignerPage = () => {
         showToast(msg, variant as any);
       }
     } catch (e: any) {
-      const errorMessage = extractApiErrorMessage(
-        e,
-        "Failed to save challenge"
-      );
+      const errorMessage = extractApiErrorMessage(e, "Lưu thử thách thất bại");
       showToast(errorMessage, "error");
     }
   };
@@ -890,49 +906,78 @@ const MapDesignerPage = () => {
     );
   };
 
-  // Sync boxes from challengeJson into mapGrid when Challenge modal saves
+  // Sync boxes/pins from challengeJson into mapGrid when Challenge modal saves
   const handleChallengeJsonChange = (newJson: string) => {
     setChallengeJson(newJson);
     try {
       const ch = JSON.parse(newJson || "{}");
+
+      // Handle box mode
       const boxes = Array.isArray(ch?.boxes) ? ch.boxes : [];
-      const tiles =
+      const boxTiles =
         boxes.length > 0 && Array.isArray(boxes[0]?.tiles)
           ? boxes[0].tiles
           : [];
-      if (!Array.isArray(tiles)) return;
-      setMapGrid((prev) => {
-        const next = prev.map((row) => row.map((cell) => ({ ...cell })));
-        // Clear existing boxes
-        for (const row of next) {
-          for (const cell of row) {
-            if (cell.object === "box") {
-              cell.object = null;
-              (cell as any).itemCount = 0;
+
+      // Handle battery mode
+      const batteries = Array.isArray(ch?.batteries) ? ch.batteries : [];
+      const batteryTiles =
+        batteries.length > 0 && Array.isArray(batteries[0]?.tiles)
+          ? batteries[0].tiles
+          : [];
+
+      if (boxTiles.length > 0) {
+        // Box mode: keep boxes, clear pins
+        setMapGrid((prev) => {
+          const next = prev.map((row) => row.map((cell) => ({ ...cell })));
+          // Clear existing pins only (keep boxes)
+          for (const row of next) {
+            for (const cell of row) {
+              if (cell.object && cell.object.startsWith("pin_")) {
+                cell.object = null;
+                (cell as any).itemCount = 0;
+              }
             }
           }
-        }
-        // Apply tiles from challengeJson
-        tiles.forEach((t: any) => {
-          const x = Number(t?.x);
-          const y = Number(t?.y);
-          const count = Math.max(1, Number(t?.count) || 0);
-          if (
-            Number.isFinite(x) &&
-            Number.isFinite(y) &&
-            y >= 0 &&
-            y < mapGrid.length &&
-            x >= 0 &&
-            x < mapGrid[0].length
-          ) {
-            next[y][x].object = "box";
-            (next[y][x] as any).itemCount = count;
-          }
+          // Apply tiles from challengeJson
+          boxTiles.forEach((t: any) => {
+            const x = Number(t?.x);
+            const y = Number(t?.y);
+            const count = Math.max(1, Number(t?.count) || 0);
+            if (
+              Number.isFinite(x) &&
+              Number.isFinite(y) &&
+              y >= 0 &&
+              y < mapGrid.length &&
+              x >= 0 &&
+              x < mapGrid[0].length
+            ) {
+              next[y][x].object = "box";
+              (next[y][x] as any).itemCount = count;
+            }
+          });
+          // Update terrain snapshot alongside changes
+          terrainSnapshotRef.current = next.map((r) =>
+            r.map((c) => ({ ...c }))
+          );
+          return next;
         });
-        // Update terrain snapshot alongside changes
-        terrainSnapshotRef.current = next.map((r) => r.map((c) => ({ ...c })));
-        return next;
-      });
+      } else if (batteryTiles.length > 0) {
+        // Battery mode: keep pins, clear boxes
+        setMapGrid((prev) => {
+          const next = prev.map((row) => row.map((cell) => ({ ...cell })));
+          // Clear existing boxes only (keep pins)
+          for (const row of next) {
+            for (const cell of row) {
+              if (cell.object === "box") {
+                cell.object = null;
+                (cell as any).itemCount = 0;
+              }
+            }
+          }
+          return next;
+        });
+      }
     } catch {}
   };
 
@@ -1130,6 +1175,7 @@ const MapDesignerPage = () => {
               lessonLoading={lessonLoading}
               courseTotalPages={coursesData?.totalPages || 1}
               lessonTotalPages={lessonsData?.totalPages || 1}
+              isEditMode={!!editingId}
             />
             {/* Inline Solution Editor (moved from WinConditionsSection) */}
             <Box
@@ -1404,13 +1450,17 @@ const MapDesignerPage = () => {
                   }
                   return;
                 }
+                // Use challengeJson as-is from WinConditionsSection for update
+                // WinConditionsSection already handles building complete payload including robot, batteries, etc.
+                let currentChallengeJson = challengeJson;
+
                 const updateBody = {
                   title: mapName,
                   description: mapDescription,
                   order,
                   difficulty,
                   mapId: selectedMapId,
-                  challengeJson: challengeJson,
+                  challengeJson: currentChallengeJson,
                   solutionJson: solutionJsonToSave,
                   challengeMode,
                 } as any;
@@ -1420,8 +1470,8 @@ const MapDesignerPage = () => {
                 );
                 const ok = res && (res.status === 200 || res.status === 201);
                 const msg = ok
-                  ? "Challenge saved successfully"
-                  : "Failed to save challenge";
+                  ? "Lưu thử thách thành công"
+                  : "Lưu thử thách thất bại";
                 const variant = ok ? "success" : "error";
                 if ((window as any).Snackbar?.enqueueSnackbar) {
                   (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1434,7 +1484,7 @@ const MapDesignerPage = () => {
               } catch (e: any) {
                 const errorMessage = extractApiErrorMessage(
                   e,
-                  "Failed to save challenge"
+                  "Lưu thử thách thất bại"
                 );
                 showToast(errorMessage, "error");
               }
