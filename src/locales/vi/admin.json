@@ -35,7 +35,7 @@
   },
   "title": "Bảng Quản Trị",
   "dashboard": "Trang Tổng Quan",
-  
+
   "courseManagement": "Quản Lý Khóa Học",
   "courseManagementTitle": "Quản lý Khóa học",
   "courseManagementSubtitle": "Danh sách tất cả khóa học trong hệ thống",
@@ -65,7 +65,7 @@
   "coursePrice": "Giá Khóa Học",
   "courseDuration": "Thời Lượng",
   "courseLevel": "Cấp Độ",
-  
+
   "lessonManagement": "Quản Lý Bài Học",
   "lessonManagementTitle": "Quản lý Bài học",
   "lessonManagementSubtitle": "Danh sách tất cả bài học trong hệ thống",
@@ -101,7 +101,7 @@
   "basicBlockProgramming": "Lập trình khối cơ bản",
   "mediumBlockProgramming": "Lập trình khối trung bình",
   "advancedBlockProgramming": "Lập trình khối nâng cao",
-  
+
   "lessonResourceManagement": "Quản lý Tài nguyên Học Tập",
   "addResource": "Thêm tài nguyên",
   "resourceDetailTitle": "Chi tiết tài nguyên",
@@ -129,7 +129,7 @@
   "resourceCreatedSuccess": "Tạo tài nguyên thành công",
   "resourceUpdatedSuccess": "Cập nhật tài nguyên thành công",
   "loading": "Đang tải...",
-  
+
   "mapManagement": "Quản Lý Bản Đồ",
   "mapManagementTitle": "Quản lý Bản đồ",
   "mapManagementSubtitle": "Quản lý bản đồ và khu vực trong hệ thống",
@@ -178,7 +178,7 @@
   "mapFetchFailed": "Lấy bản đồ thất bại",
   "mapUpdatedSuccess": "Cập nhật bản đồ thành công",
   "mapUpdateFailed": "Cập nhật bản đồ thất bại",
-  
+
   "robotManagement": "Quản Lý Robot",
   "robotManagementTitle": "Quản lý Robot",
   "robotManagementSubtitle": "Quản lý mẫu robot, thông số kỹ thuật và cấu hình",
@@ -225,7 +225,7 @@
   "bom": "Danh sách linh kiện (BOM)",
   "noRobotImage": "Không có hình ảnh robot",
   "noRobotData": "Không tìm thấy sản phẩm robot",
-  
+
   "componentManagement": "Quản Lý Linh Kiện",
   "componentManagementTitle": "Quản lý Linh kiện",
   "componentManagementSubtitle": "Quản lý linh kiện, thông số kỹ thuật và cấu hình",
@@ -247,7 +247,7 @@
   "componentDescription": "Mô Tả Linh Kiện",
   "componentPrice": "Giá Linh Kiện",
   "componentQuantity": "Số Lượng",
-  
+
   "studentManagement": "Quản lý Học sinh",
   "studentManagementTitle": "Quản lý Học sinh",
   "studentManagementSubtitle": "Danh sách tất cả học sinh trong hệ thống",
@@ -296,7 +296,7 @@
   "student": "học sinh",
   "studentEmail": "Email",
   "studentPhone": "Số điện thoại",
-  
+
   "enrollmentManagement": "Quản lý Đăng ký",
   "enrollmentManagementTitle": "📚 Quản lý Ghi danh",
   "enrollmentManagementSubtitle": "Xem và quản lý ghi danh khóa học của học sinh",
@@ -343,7 +343,7 @@
   "pleaseSelectCourse": "Vui lòng chọn khóa học",
   "selectCourseRequired": "Chọn Khóa học *",
   "creating": "Đang tạo...",
-  
+
   "orderManagement": "Quản Lý Đơn Hàng",
   "orderDetails": "Chi Tiết Đơn Hàng",
   "orderStatus": "Trạng Thái Đơn Hàng",
@@ -374,7 +374,7 @@
   "confirmStatusChangeMessage": "Bạn có chắc chắn muốn thay đổi trạng thái đơn hàng từ <strong>{{currentStatus}}</strong> sang <strong>{{newStatus}}</strong>?",
   "statusChangeWarning": "Hành động này sẽ cập nhật trạng thái đơn hàng và có thể kích hoạt các quy trình tự động (ví dụ: tạo đăng ký khóa học cho đơn hàng Đã thanh toán).",
   "updating": "Đang cập nhật...",
-  
+
   "activationCodeManagement": "Quản Lý Mã Kích Hoạt",
   "activationCodeManagementTitle": "Quản lý Mã kích hoạt",
   "activationCodeManagementSubtitle": "Quản lý mã kích hoạt robot và hệ thống",
@@ -438,7 +438,7 @@
   "noLimit": "Không giới hạn",
   "rowsPerPage": "Số dòng mỗi trang:",
   "displayedRows": "{{from}}–{{to}} của {{count}}",
-  
+
   "certificateManagement": "Quản Lý Chứng Chỉ",
   "certificateManagementTitle": "Quản lý chứng chỉ",
   "certificateManagementSubtitle": "Xem và quản lý các chứng chỉ đã cấp cho học viên",
@@ -464,7 +464,7 @@
   "confirmDeleteCertificate": "Bạn có chắc muốn xóa chứng chỉ \"{{certificateNo}}\"?",
   "deleteCertificateSuccess": "Đã xóa chứng chỉ thành công!",
   "deleteCertificateError": "Có lỗi xảy ra khi xóa chứng chỉ!",
-  
+
   "map": {
     "mapsManagement": "Quản lý Bản đồ",
     "searchPlaceholder": "Tìm kiếm bản đồ theo tiêu đề hoặc mô tả...",
@@ -491,7 +491,7 @@
     "confirmDeleteMessage": "Bạn có chắc muốn xóa bản đồ \"{{title}}\"? Hành động này có thể hoàn tác bằng cách khôi phục sau.",
     "mapPreview": "Xem trước bản đồ"
   },
-  
+
   "component": {
     "searchPlaceholder": "Tìm kiếm linh kiện...",
     "type": "Loại",
@@ -542,7 +542,7 @@
     "creating": "Đang tạo...",
     "updating": "Đang cập nhật..."
   },
-  
+
   "certificateTemplate": {
     "createNew": "Tạo mẫu mới",
     "searchPlaceholder": "Tìm kiếm theo tên template...",
@@ -596,7 +596,7 @@
     "previewWarning": "Đây là bản xem trước với dữ liệu mẫu",
     "placeholdersReplaced": "Placeholders đã được thay thế:"
   },
-  
+
   "imageManagement": "Quản Lý Hình Ảnh",
   "uploadImage": "Tải Lên Hình Ảnh",
   "imageList": "Danh Sách Hình Ảnh",
@@ -606,7 +606,7 @@
   "imageUrl": "Đường Dẫn",
   "imageSize": "Kích Thước",
   "deleteImage": "Xóa Hình Ảnh",
-  
+
   "challengeManagement": "Quản Lý Thử Thách",
   "challengeManagementTitle": "Quản lý Thử thách",
   "challengeManagementSubtitle": "Danh sách tất cả thử thách trong hệ thống",
@@ -621,7 +621,7 @@
   "challengeName": "Tên Thử Thách",
   "challengeDescription": "Mô Tả Thử Thách",
   "challengeDifficulty": "Độ Khó",
-  "selectChangeMap": "Chọn / Thay đổi Map",
+  "selectChangeMap": "Chọn / Thay đổi Bản đồ",
   "viewMode2D": "Hiển thị 2D",
   "viewMode25D": "Hiển thị 2.5D",
   "robot": "Robot",
@@ -630,10 +630,10 @@
   "clickToPlaceRobots": "Nhấp để đặt robot và vật phẩm. Kéo-thả để vẽ nhanh",
   "useToolsDelete": "Sử dụng Công cụ → Xóa để xóa vật phẩm",
   "onlyOneRobotAllowed": "Chỉ cho phép 1 robot trên mỗi bản đồ",
-  "terrainIsFixed": "Địa hình đã cố định trong Challenge Designer; không thể đặt ở đây",
+  "terrainIsFixed": "Địa hình đã cố định trong Trình thiết kế thử thách; không thể đặt ở đây",
   "solution": "Giải pháp",
-  "challengeConfigured": "Đã cấu hình Challenge",
-  "configureChallenge": "Cấu hình Challenge",
+  "challengeConfigured": "Đã cấu hình thử thách",
+  "configureChallenge": "Cấu hình thử thách",
   "searchChallengePlaceholder": "Tìm kiếm thử thách theo tiêu đề hoặc mô tả...",
   "allCourses": "Tất cả khóa học",
   "allLessons": "Tất cả bài học",
@@ -658,15 +658,15 @@
   "lessonsInCourse": "Bài học trong khóa học",
   "mapLabel": "Bản đồ",
   "noMap": "Chưa có bản đồ",
-  
+
   "dashboardWelcome": "Xin chào, {{username}}! 👋",
   "dashboardSubtitle": "Chào mừng bạn trở lại bảng điều khiển quản trị Ottobit",
   "dashboardContentDeveloping": "Nội dung trang chủ đang được phát triển...",
   "admin": "Quản trị viên",
-  
+
   "submissionManagement": "Quản lý Bài nộp",
   "submissionDetails": "Chi tiết Bài nộp",
-  "saveChallenge": "Lưu Challenge",
+  "saveChallenge": "Lưu thử thách",
   "confirmUpdate": "Xác nhận cập nhật",
   "confirmUpdateMessage": "Bạn đang cập nhật một map hiện tại. Tiếp tục?",
   "noMapSelected": "Chưa chọn map",
@@ -683,7 +683,7 @@
   "pleaseConfigureSolution": "Vui lòng cấu hình Solution trước khi lưu",
   "pleaseConfigureChallenge": "Vui lòng cấu hình Challenge trước khi lưu",
   "pleaseConfigureSolutionAndChallenge": "Vui lòng cấu hình Solution và Challenge trước khi lưu",
-  
+
   "submissionManagement": "Quản lý Bài nộp",
   "submissionList": "Danh sách Bài nộp",
   "submissionDetails": "Chi tiết Bài nộp",
@@ -706,7 +706,7 @@
   "codeJson": "Code JSON",
   "time": "Thời gian",
   "pleaseSearchToSeeResults": "Vui lòng chọn bộ lọc và nhấn Tìm kiếm để xem kết quả",
-  
+
   "view": "Xem",
   "edit": "Sửa",
   "delete": "Xóa",
@@ -734,12 +734,12 @@
   "results": "kết quả",
   "noData": "Không có dữ liệu",
   "loading": "Đang tải...",
-  
+
   "confirmDeleteTitle": "Xác Nhận Xóa",
   "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa {{item}} này?",
   "confirmRestoreTitle": "Xác Nhận Khôi Phục",
   "confirmRestoreMessage": "Bạn có chắc chắn muốn khôi phục {{item}} này?",
-  
+
   "active": "Hoạt Động",
   "inactive": "Không Hoạt Động",
   "deleted": "Đã Xóa",
@@ -748,7 +748,7 @@
   "inProgress": "Đang Thực Hiện",
   "approved": "Đã Duyệt",
   "rejected": "Từ Chối",
-  
+
   "cannotDelete": "Không thể xóa {{item}}",
   "cannotRestore": "Không thể khôi phục {{item}}",
   "cannotUpdate": "Không thể cập nhật {{item}}",
@@ -757,7 +757,7 @@
   "requiredField": "Trường này là bắt buộc",
   "operationFailed": "Thao tác thất bại",
   "operationSuccess": "Thao tác thành công",
-  
+
   "name": "Tên",
   "description": "Mô Tả",
   "price": "Giá",
