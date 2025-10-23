@@ -31,8 +31,8 @@ const ROOTS_PAYMENT_TRANSACTION = "/api/v1/payment-transactions";
 const ROOTS_PAYOS = "/api/v1/payos";
 const ROOTS_VOUCHER = "/api/v1/vouchers";
 const ROOTS_VOUCHER_USAGE = "/api/v1/voucher-usages";
-const ROOTS_BLOG = "/api/v1/Blog";
-const ROOTS_TAG = "/api/v1/Tag";
+const ROOTS_BLOG = "/api/v1/blogs";
+const ROOTS_TAG = "/api/v1/tags";
 const ROOTS_BLOG_COMMENT = "/api/v1/blog-comments";
 const ROOTS_COURSE_RATING = "/api/v1/courses";
 const ROOTS_CHATBOT = "/api/v1/chatbot";
@@ -378,25 +378,25 @@ export const ROUTES_API_VOUCHER_USAGE = {
 
 // Blog endpoints (Admin)
 export const ROUTES_API_BLOG = {
-  ADMIN_GET_ALL: path(ROOTS_BLOG, `/admin`), // GET /api/v1/Blog/admin
-  ADMIN_GET_BY_ID: (id: string) => path(ROOTS_BLOG, `/admin/${id}`), // GET /api/v1/Blog/admin/{id}
-  CREATE: ROOTS_BLOG, // POST /api/v1/Blog
-  UPDATE: (id: string) => path(ROOTS_BLOG, `/${id}`), // PUT /api/v1/Blog/{id}
-  DELETE: (id: string) => path(ROOTS_BLOG, `/${id}`), // DELETE /api/v1/Blog/{id}
-  RESTORE: (id: string) => path(ROOTS_BLOG, `/${id}/restore`), // POST /api/v1/Blog/{id}/restore
+  ADMIN_GET_ALL: path(ROOTS_BLOG, `/admin`), // GET /api/v1/blogs/admin
+  ADMIN_GET_BY_ID: (id: string) => path(ROOTS_BLOG, `/admin/${id}`), // GET /api/v1/blogs/admin/{id}
+  CREATE: ROOTS_BLOG, // POST /api/v1/blogs
+  UPDATE: (id: string) => path(ROOTS_BLOG, `/${id}`), // PUT /api/v1/blogs/{id}
+  DELETE: (id: string) => path(ROOTS_BLOG, `/${id}`), // DELETE /api/v1/blogs/{id}
+  RESTORE: (id: string) => path(ROOTS_BLOG, `/${id}/restore`), // POST /api/v1/blogs/{id}/restore
   // Public endpoints
-  GET_ALL: ROOTS_BLOG, // GET /api/v1/Blog?SearchTerm=&PageNumber=&PageSize=
-  GET_BY_ID: (id: string) => path(ROOTS_BLOG, `/${id}`), // GET /api/v1/Blog/{id}
+  GET_ALL: ROOTS_BLOG, // GET /api/v1/blogs?SearchTerm=&PageNumber=&PageSize=
+  GET_BY_ID: (id: string) => path(ROOTS_BLOG, `/${id}`), // GET /api/v1/blogs/{id}
   GET_BY_SLUG: (slug: string) =>
-    path(ROOTS_BLOG, `/slug/${encodeURIComponent(slug)}`), // GET /api/v1/Blog/slug/{slug}
-  VIEW_COUNT: (id: string) => path(ROOTS_BLOG, `/${id}/view-count`), // PUT /api/v1/Blog/{id}/view-count
+    path(ROOTS_BLOG, `/slug/${encodeURIComponent(slug)}`), // GET /api/v1/blogs/slug/{slug}
+  VIEW_COUNT: (id: string) => path(ROOTS_BLOG, `/${id}/view-count`), // PUT /api/v1/blogs/{id}/view-count
 };
 
 // Tag endpoints
 export const ROUTES_API_TAG = {
-  GET_ALL: ROOTS_TAG, // GET /api/v1/Tag
-  CREATE: ROOTS_TAG, // POST /api/v1/Tag
-  DELETE: (id: string) => path(ROOTS_TAG, `/${id}`), // DELETE /api/v1/Tag/{id}
+  GET_ALL: ROOTS_TAG, // GET /api/v1/tags
+  CREATE: ROOTS_TAG, // POST /api/v1/tags
+  DELETE: (id: string) => path(ROOTS_TAG, `/${id}`), // DELETE /api/v1/tags/{id}
 };
 
 // Blog Comment endpoints
@@ -411,13 +411,17 @@ export const ROUTES_API_BLOG_COMMENT = {
 // Course Rating endpoints
 export const ROUTES_API_COURSE_RATING = {
   // User endpoints
-  CREATE: (courseId: string) => path(ROOTS_COURSE_RATING, `/${courseId}/ratings`), // POST /api/v1/courses/{courseId}/ratings (User)
-  UPDATE: (courseId: string) => path(ROOTS_COURSE_RATING, `/${courseId}/ratings`), // PUT /api/v1/courses/{courseId}/ratings (User)
-  DELETE: (courseId: string) => path(ROOTS_COURSE_RATING, `/${courseId}/ratings`), // DELETE /api/v1/courses/{courseId}/ratings (User)
-  GET_MINE: (courseId: string) => path(ROOTS_COURSE_RATING, `/${courseId}/ratings/mine`), // GET /api/v1/courses/{courseId}/ratings/mine (User)
-  
+  CREATE: (courseId: string) =>
+    path(ROOTS_COURSE_RATING, `/${courseId}/ratings`), // POST /api/v1/courses/{courseId}/ratings (User)
+  UPDATE: (courseId: string) =>
+    path(ROOTS_COURSE_RATING, `/${courseId}/ratings`), // PUT /api/v1/courses/{courseId}/ratings (User)
+  DELETE: (courseId: string) =>
+    path(ROOTS_COURSE_RATING, `/${courseId}/ratings`), // DELETE /api/v1/courses/{courseId}/ratings (User)
+  GET_MINE: (courseId: string) =>
+    path(ROOTS_COURSE_RATING, `/${courseId}/ratings/mine`), // GET /api/v1/courses/{courseId}/ratings/mine (User)
+
   // Public endpoint - BE chỉ hỗ trợ page và size
-  GET_BY_COURSE: (courseId: string, page: number = 1, size: number = 10) => 
+  GET_BY_COURSE: (courseId: string, page: number = 1, size: number = 10) =>
     `${ROOTS_COURSE_RATING}/${courseId}/ratings?page=${page}&size=${size}`, // GET /api/v1/courses/{courseId}/ratings (Public)
 };
 

@@ -292,17 +292,6 @@ export default function BlogDetailPage() {
               sx={{
                 lineHeight: 1.8,
                 whiteSpace: "pre-wrap",
-                height: { xs: 520, md: 720 },
-                overflowY: "auto",
-                WebkitOverflowScrolling: "touch",
-                overscrollBehavior: "contain",
-                pr: 1,
-                borderRadius: 1,
-                border: "1px solid",
-                borderColor: "divider",
-                p: { xs: 2, md: 3 },
-                bgcolor: "background.paper",
-                flex: "0 0 auto",
                 display: "block",
               }}
             >
