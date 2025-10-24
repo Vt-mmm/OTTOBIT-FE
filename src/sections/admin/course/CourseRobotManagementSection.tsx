@@ -98,7 +98,7 @@ export default function CourseRobotManagementSection({
         size: 12,
         page: page,
         includeDelete: showDeleted, // Matches BE field name: IncludeDelete
-      })
+      } as any)
     );
   };
 
