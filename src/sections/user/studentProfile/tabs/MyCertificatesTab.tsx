@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Box, Grid, Paper, Skeleton, Typography } from "@mui/material";
+import { Box, Grid, Paper, Skeleton, Typography, Pagination } from "@mui/material";
 import { EmojiEvents as TrophyIcon } from "@mui/icons-material";
 import { AppDispatch } from "store/config";
 import { useLocales } from "hooks";
@@ -20,13 +20,23 @@ export default function MyCertificatesTab({
   // Redux state
   const { myCertificates } = useSelector((state: any) => state.certificate);
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const pageSize = 9; // 3x3 grid
+
   // Load data
   useEffect(() => {
-    dispatch(getMyCertificatesThunk({ page: 1, size: 100 }));
-  }, [dispatch]);
+    dispatch(getMyCertificatesThunk({ page, size: pageSize }));
+  }, [dispatch, page]);
 
   const certificatesData = myCertificates.data?.items || [];
+  const totalPages = myCertificates.data?.totalPages || 0;
   const isLoading = myCertificates.isLoading || externalLoading;
+
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   if (isLoading) {
     return (
@@ -83,13 +93,40 @@ export default function MyCertificatesTab({
           </Typography>
         </Paper>
       ) : (
-        <Grid container spacing={3}>
-          {certificatesData.map((cert: any) => (
-            <Grid item xs={12} sm={6} md={4} key={cert.id}>
-              <CertificateCard certificate={cert} />
-            </Grid>
-          ))}
-        </Grid>
+        <>
+          <Grid container spacing={3}>
+            {certificatesData.map((cert: any) => (
+              <Grid item xs={12} sm={6} md={4} key={cert.id}>
+                <CertificateCard certificate={cert} />
+              </Grid>
+            ))}
+          </Grid>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                mt: 4,
+                mb: 2,
+                pt: 3,
+                borderTop: "1px solid",
+                borderColor: "divider",
+              }}
+            >
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={handlePageChange}
+                color="primary"
+                size="large"
+                showFirstButton
+                showLastButton
+              />
+            </Box>
+          )}
+        </>
       )}
     </Box>
   );

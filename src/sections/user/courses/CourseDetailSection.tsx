@@ -5,7 +5,6 @@ import {
   Container,
   CircularProgress,
   Alert,
-  Snackbar,
   Typography,
 } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
@@ -17,6 +16,8 @@ import {
 import {
   createEnrollment,
   getMyEnrollments,
+  setEnrollmentFieldError,
+  clearEnrollmentFieldError,
 } from "../../../redux/enrollment/enrollmentSlice";
 import { getStudentByUserThunk } from "../../../redux/student/studentThunks";
 import { PATH_USER } from "../../../routes/paths";
@@ -46,11 +47,7 @@ export default function CourseDetailSection({
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { translate } = useLocales();
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success" as "success" | "error" | "warning",
-  });
+
   const [profileDialog, setProfileDialog] = useState({
     open: false,
     courseName: "",
@@ -167,6 +164,13 @@ export default function CourseDetailSection({
     }
   }, [dispatch, courseId, isUserEnrolled]);
 
+  // Cleanup: Clear enrollment error on unmount
+  useEffect(() => {
+    return () => {
+      dispatch(clearEnrollmentFieldError("enrollmentError"));
+    };
+  }, [dispatch]);
+
   // Check if user has student profile - with cache
   const checkStudentProfile = useCallback(async (): Promise<boolean> => {
     try {
@@ -194,6 +198,7 @@ export default function CourseDetailSection({
 
   const handleEnrollCourse = async () => {
     const courseName = course?.title || translate("courses.ThisCourse");
+    dispatch(clearEnrollmentFieldError("enrollmentError"));
 
     try {
       // First check if user has student profile
@@ -212,13 +217,7 @@ export default function CourseDetailSection({
       // If has profile, proceed with enrollment
       await dispatch(createEnrollment({ courseId })).unwrap();
 
-      setSnackbar({
-        open: true,
-        message: translate("courses.EnrollSuccess"),
-        severity: "success",
-      });
-
-      // Refresh enrollments to update UI immediately
+      // Success - navigate to course or show success state
       dispatch(getMyEnrollments({ pageSize: 10 }));
     } catch (error: any) {
       // Parse error to extract error code and message
@@ -246,11 +245,13 @@ export default function CourseDetailSection({
           message || translate("courses.EnrollError")
         );
 
-        setSnackbar({
-          open: true,
-          message: displayMessage,
-          severity: "error",
-        });
+        // Set error via Redux for Yup-compatible field error handling
+        dispatch(
+          setEnrollmentFieldError({
+            field: "enrollmentError",
+            message: displayMessage,
+          })
+        );
       }
     }
   };
@@ -258,10 +259,6 @@ export default function CourseDetailSection({
   // Navigate to course learning page for enrolled users
   const handleGoToCourse = () => {
     navigate(PATH_USER.courseLearn.replace(":courseId", courseId));
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
   const handleCloseProfileDialog = () => {
@@ -343,6 +340,8 @@ export default function CourseDetailSection({
             isEnrolling={isEnrolling}
             onEnrollCourse={handleEnrollCourse}
             onGoToCourse={isUserEnrolled ? handleGoToCourse : undefined}
+            enrollmentError={operations.enrollmentFieldErrors.enrollmentError}
+            onClearEnrollmentError={() => dispatch(clearEnrollmentFieldError("enrollmentError"))}
           />
         </Box>
 
@@ -396,21 +395,7 @@ export default function CourseDetailSection({
         )}
       </Box>
 
-      {/* Snackbar for notifications */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      {/* Snackbar for notifications - removed, using Yup resolver instead */}
 
       {/* Student Profile Required Dialog */}
       <StudentProfileRequiredDialog
