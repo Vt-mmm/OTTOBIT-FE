@@ -25,6 +25,10 @@ import { useLocales } from "../../../hooks";
 import { CourseType, CourseRobotInfo } from "common/@types/course";
 import { axiosClient } from "../../../axiosClient/axiosClient";
 import { ROUTES_API_COURSE_ROBOT } from "../../../constants/routesApiKeys";
+import {
+  parseEnrollmentError,
+  getEnrollmentErrorMessage,
+} from "../../../common/utils/enrollmentErrorParser";
 
 // Import detail sections
 import CourseHeroSection from "./detail/CourseHeroSection";
@@ -217,14 +221,17 @@ export default function CourseDetailSection({
       // Refresh enrollments to update UI immediately
       dispatch(getMyEnrollments({ pageSize: 10 }));
     } catch (error: any) {
+      // Parse error to extract error code and message
+      const errorString = typeof error === "string" ? error : error?.message || "";
+      const { errorCode, message } = parseEnrollmentError(errorString);
+
       // Check if error indicates missing student profile
       const requiresProfile =
-        typeof error === "string" &&
-        (error.toLowerCase().includes("student not found") ||
-          error.toLowerCase().includes("student profile required") ||
-          error.toLowerCase().includes("no student profile") ||
-          error.toLowerCase().includes("create student profile") ||
-          error.toLowerCase().includes("missing student profile"));
+        message.toLowerCase().includes("student not found") ||
+        message.toLowerCase().includes("student profile required") ||
+        message.toLowerCase().includes("no student profile") ||
+        message.toLowerCase().includes("create student profile") ||
+        message.toLowerCase().includes("missing student profile");
 
       if (requiresProfile) {
         setProfileDialog({
@@ -233,12 +240,15 @@ export default function CourseDetailSection({
           courseId,
         });
       } else {
+        // Use error code-specific message if available
+        const displayMessage = getEnrollmentErrorMessage(
+          errorCode,
+          message || translate("courses.EnrollError")
+        );
+
         setSnackbar({
           open: true,
-          message:
-            typeof error === "string"
-              ? error
-              : translate("courses.EnrollError"),
+          message: displayMessage,
           severity: "error",
         });
       }

@@ -51,6 +51,13 @@ export default function ChallengeDetailSection({
   }, [dispatch, challengeId]);
 
   const handleStartChallenge = () => {
+    // Clear page state when navigating from Challenge Detail
+    // (Challenge Detail doesn't have lesson context, so reset to page 1)
+    if (challenge?.lessonId) {
+      // If we have lesson context, clear saved page state
+      sessionStorage.removeItem(`lesson-page-${challenge.lessonId}`);
+    }
+    
     // Navigate to studio with this challenge
     navigate(`/studio?challenge=${challengeId}`);
   };

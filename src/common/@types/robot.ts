@@ -78,3 +78,12 @@ export interface RobotsResponse {
   total: number; // Backend trả về 'total' thay vì 'totalCount'
   totalPages: number;
 }
+
+// Course-Robot relationship types (imported from courseRobot.ts)
+export type { CourseRobotResult, CourseRobotsResponse as CoursesForRobotResponse } from "./courseRobot";
+
+export interface GetCoursesForRobotRequest {
+  robotId: string;
+  page?: number;
+  size?: number;
+}

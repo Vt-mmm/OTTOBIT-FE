@@ -12,6 +12,8 @@ import {
   CreateRobotRequest,
   UpdateRobotRequest,
   GetRobotsRequest,
+  CoursesForRobotResponse,
+  GetCoursesForRobotRequest,
 } from "common/@types/robot";
 import { extractApiErrorMessage } from "utils/errorHandler";
 
@@ -224,3 +226,48 @@ export const deleteRobotThunk = createAsyncThunk<
   }
 });
 
+// Get courses for specific robot
+export const getCoursesForRobotThunk = createAsyncThunk<
+  CoursesForRobotResponse,
+  GetCoursesForRobotRequest,
+  { rejectValue: string }
+>("robot/getCoursesForRobot", async (request, { rejectWithValue }) => {
+  try {
+    const { ROUTES_API_COURSE_ROBOT } = await import(
+      "constants/routesApiKeys"
+    );
+
+    const response = await callApiWithRetry(() =>
+      axiosClient.get<ApiResponse<CoursesForRobotResponse>>(
+        ROUTES_API_COURSE_ROBOT.GET_ALL,
+        {
+          params: {
+            robotId: request.robotId,
+            page: request.page || 1,
+            size: request.size || 8,
+          },
+        }
+      )
+    );
+
+    if (response.data.errors || response.data.errorCode) {
+      const errorMessage = extractApiErrorMessage(
+        { response: { data: response.data } },
+        "Failed to fetch courses for robot"
+      );
+      throw new Error(errorMessage);
+    }
+
+    if (!response.data.data) {
+      throw new Error("No courses data received");
+    }
+
+    return response.data.data;
+  } catch (error: any) {
+    const errorMessage = extractApiErrorMessage(
+      error,
+      "Failed to fetch courses for robot"
+    );
+    return rejectWithValue(errorMessage);
+  }
+});
