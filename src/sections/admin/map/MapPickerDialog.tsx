@@ -68,7 +68,7 @@ export default function MapPickerDialog({
           // Transform course-maps to MapSummary format
           const list = courseMaps.map((cm: any) => ({
             id: cm.mapId,
-            title: cm.mapTitle || "Unknown Map",
+            title: cm.mapTitle || "Bản đồ không xác định",
             description: cm.mapDescription || "",
             mapJson: cm.mapJson,
             createdAt: cm.createdAt,

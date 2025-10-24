@@ -254,7 +254,7 @@ const MapDesignerPage = () => {
               const map = (mapRes as any)?.data?.data || (mapRes as any)?.data;
               if (map?.id) {
                 setSelectedMapId(map.id);
-                setSelectedMapTitle(map.title || "Unknown Map");
+                setSelectedMapTitle(map.title || "Bản đồ không xác định");
               }
               const mapJsonStr = map?.mapJson as string | undefined;
               if (mapJsonStr) {
@@ -1339,7 +1339,7 @@ const MapDesignerPage = () => {
             // do not copy title/description from selected map; only apply mapJson to preview
             // Persist selected map id into local state used for saving challenge
             setSelectedMapId(map.id);
-            setSelectedMapTitle(map.title || "Unknown Map");
+            setSelectedMapTitle(map.title || "Bản đồ không xác định");
             // parse mapJson to apply into grid preview
             if (map?.mapJson) {
               try {
@@ -1435,7 +1435,7 @@ const MapDesignerPage = () => {
                   !solutionJsonToSave ||
                   solutionJsonToSave.trim().length === 0
                 ) {
-                  const msg = "Please configure Solution before saving";
+                  const msg = "Vui lòng cấu hình Giải pháp trước khi lưu";
                   try {
                     if ((window as any).Snackbar?.enqueueSnackbar) {
                       (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1490,7 +1490,7 @@ const MapDesignerPage = () => {
               }
             }}
           >
-            Update
+            {translate("admin.update")}
           </Button>
         </DialogActions>
       </Dialog>
