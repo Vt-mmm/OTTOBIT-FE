@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Box } from "@mui/material";
+import { Box, Paper, Typography, IconButton, Chip } from "@mui/material";
 import { MapCell } from "common/models";
 import { MAP_ASSETS } from "./mapAssets.config";
 import {
@@ -7,6 +7,10 @@ import {
   getIsometricGridDimensions,
   ISOMETRIC_CONFIG,
 } from "./isometricHelpers";
+import useLocales from "hooks/useLocales";
+import { THEME_COLORS, GRID_CONFIG } from "./theme.config";
+import ZoomInIcon from "@mui/icons-material/ZoomIn";
+import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 
 interface IsometricMapGridV2Props {
   mapGrid: MapCell[][];
@@ -35,8 +39,10 @@ export default function IsometricMapGridV2({
   itemLift = 12,
   itemStackStep = 6,
 }: IsometricMapGridV2Props) {
+  const { translate } = useLocales();
   // One-frame deferral to stabilize size before painting children
   const [gridReady, setGridReady] = useState(false);
+  const [zoom, setZoom] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -79,183 +85,256 @@ export default function IsometricMapGridV2({
   const padX = ISOMETRIC_CONFIG.tileWidth / 2;
   const padY = ISOMETRIC_CONFIG.tileHeight / 2;
 
+  const handleZoomIn = () => {
+    setZoom((prev) => Math.min(prev + 0.1, 2));
+  };
+
+  const handleZoomOut = () => {
+    setZoom((prev) => Math.max(prev - 0.1, 0.5));
+  };
+
   return (
-    <Box
-      ref={containerRef}
+    <Paper
       sx={{
-        position: "relative",
-        width: "100%",
-        height: "100%",
-        overflow: "hidden",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        bgcolor: "#9E9E9E",
         p: 2,
-        flexShrink: 0,
-        contain: "layout paint size",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: THEME_COLORS.surface,
+        borderRadius: 2,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       }}
     >
+      {/* Header with title and controls */}
+      <Box sx={{ mb: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 1,
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 600, color: THEME_COLORS.text.primary }}
+          >
+            {translate("admin.isometricMap")} ({GRID_CONFIG.rows}x
+            {GRID_CONFIG.cols})
+          </Typography>
+
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            {/* Zoom controls */}
+            <IconButton
+              size="small"
+              onClick={handleZoomOut}
+              sx={{ color: THEME_COLORS.primary }}
+            >
+              <ZoomOutIcon />
+            </IconButton>
+            <Chip
+              label={`${Math.round(zoom * 100)}%`}
+              size="small"
+              sx={{ minWidth: 60 }}
+            />
+            <IconButton
+              size="small"
+              onClick={handleZoomIn}
+              sx={{ color: THEME_COLORS.primary }}
+            >
+              <ZoomInIcon />
+            </IconButton>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Map container */}
       <Box
-        ref={gridRef}
+        ref={containerRef}
         sx={{
           position: "relative",
-          width: safeWidth + padX * 2,
-          height: safeHeight + padY * 2,
-          transform: `translate(${Number(offsetX) || 0}px, ${
-            Number(offsetY) || 0
-          }px) scale(${Number.isFinite(scale) ? scale : 1})`,
-          transformOrigin: "center center",
-          userSelect: "none",
+          width: "100%",
+          height: "100%",
+          overflow: "hidden",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          bgcolor: "#9E9E9E",
+          p: 2,
+          flexShrink: 0,
           contain: "layout paint size",
+          borderRadius: 1,
         }}
       >
-        {gridReady &&
-          mapGrid.map((rowArr) =>
-            rowArr.map((cell) => {
-              const terrainAsset = cell.terrain
-                ? MAP_ASSETS.find((a) => a.id === cell.terrain)
-                : null;
-              const objectAsset = cell.object
-                ? MAP_ASSETS.find((a) => a.id === cell.object)
-                : null;
+        <Box
+          ref={gridRef}
+          sx={{
+            position: "relative",
+            width: safeWidth + padX * 2,
+            height: safeHeight + padY * 2,
+            transform: `translate(${Number(offsetX) || 0}px, ${
+              Number(offsetY) || 0
+            }px) scale(${Number.isFinite(scale) ? scale : 1} * ${zoom})`,
+            transformOrigin: "center center",
+            userSelect: "none",
+            contain: "layout paint size",
+          }}
+        >
+          {gridReady &&
+            mapGrid.map((rowArr) =>
+              rowArr.map((cell) => {
+                const terrainAsset = cell.terrain
+                  ? MAP_ASSETS.find((a) => a.id === cell.terrain)
+                  : null;
+                const objectAsset = cell.object
+                  ? MAP_ASSETS.find((a) => a.id === cell.object)
+                  : null;
 
-              const pos = gridToIsometric(cell.row, cell.col, ISOMETRIC_CONFIG);
-              const left = Math.round(pos.x + gridDimensions.offsetX);
-              const diagonalIndex = cell.row + cell.col;
-              const adjustedY =
-                pos.y +
-                gridDimensions.offsetY -
-                diagonalIndex * (Number(diagonalLift) || 0) +
-                diagonalIndex * (Number(diagonalSpacing) || 0);
-              const top = Math.round(adjustedY);
+                const pos = gridToIsometric(
+                  cell.row,
+                  cell.col,
+                  ISOMETRIC_CONFIG
+                );
+                const left = Math.round(pos.x + gridDimensions.offsetX);
+                const diagonalIndex = cell.row + cell.col;
+                const adjustedY =
+                  pos.y +
+                  gridDimensions.offsetY -
+                  diagonalIndex * (Number(diagonalLift) || 0) +
+                  diagonalIndex * (Number(diagonalSpacing) || 0);
+                const top = Math.round(adjustedY);
 
-              const w = ISOMETRIC_CONFIG.tileWidth;
-              const h = ISOMETRIC_CONFIG.tileHeight;
-              const halfW = w / 2;
-              const halfH = h / 2;
+                const w = ISOMETRIC_CONFIG.tileWidth;
+                const h = ISOMETRIC_CONFIG.tileHeight;
+                const halfW = w / 2;
+                const halfH = h / 2;
 
-              return (
-                <Box
-                  key={`${cell.row}-${cell.col}`}
-                  sx={{
-                    position: "absolute",
-                    left: left - halfW + padX,
-                    top: top - halfH + padY,
-                    width: w,
-                    height: h,
-                    cursor: onCellClick ? "pointer" : "default",
-                    zIndex: 1000 + (cell.row + cell.col),
-                  }}
-                  onClick={() => {
-                    // Prevent placing robot/items on cells without a terrain tile
-                    if (!terrainAsset) {
-                      if (onInvalidPlacement) {
-                        onInvalidPlacement(cell.row, cell.col);
-                      } else {
-                        try {
-                          (window as any).Snackbar?.enqueueSnackbar?.(
-                            "Place on a terrain tile first.",
-                            {
-                              variant: "warning",
-                              anchorOrigin: {
-                                vertical: "top",
-                                horizontal: "right",
-                              },
-                            }
-                          );
-                        } catch {}
+                return (
+                  <Box
+                    key={`${cell.row}-${cell.col}`}
+                    sx={{
+                      position: "absolute",
+                      left: left - halfW + padX,
+                      top: top - halfH + padY,
+                      width: w,
+                      height: h,
+                      cursor: onCellClick ? "pointer" : "default",
+                      zIndex: 1000 + (cell.row + cell.col),
+                    }}
+                    onClick={() => {
+                      // Prevent placing robot/items on cells without a terrain tile
+                      if (!terrainAsset) {
+                        if (onInvalidPlacement) {
+                          onInvalidPlacement(cell.row, cell.col);
+                        } else {
+                          try {
+                            (window as any).Snackbar?.enqueueSnackbar?.(
+                              "Place on a terrain tile first.",
+                              {
+                                variant: "warning",
+                                anchorOrigin: {
+                                  vertical: "top",
+                                  horizontal: "right",
+                                },
+                              }
+                            );
+                          } catch {}
+                        }
+                        return;
                       }
-                      return;
-                    }
-                    onCellClick?.(cell.row, cell.col);
-                  }}
-                >
-                  {terrainAsset && (
-                    <Box
-                      component="img"
-                      src={terrainAsset.imagePath}
-                      alt={terrainAsset.name}
-                      sx={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "contain",
-                        filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.3))",
-                      }}
-                    />
-                  )}
+                      onCellClick?.(cell.row, cell.col);
+                    }}
+                  >
+                    {terrainAsset && (
+                      <Box
+                        component="img"
+                        src={terrainAsset.imagePath}
+                        alt={terrainAsset.name}
+                        sx={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                          filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.3))",
+                        }}
+                      />
+                    )}
 
-                  {objectAsset &&
-                    (() => {
-                      const isRobot =
-                        (objectAsset as any)?.category === "robot" ||
-                        (objectAsset?.id as any)?.startsWith?.("robot_");
-                      const count = Math.max(
-                        0,
-                        Number((cell as any)?.itemCount) || 0
-                      );
-                      const extra =
-                        !isRobot && count > 1 ? (count - 1) * itemStackStep : 0;
+                    {objectAsset &&
+                      (() => {
+                        const isRobot =
+                          (objectAsset as any)?.category === "robot" ||
+                          (objectAsset?.id as any)?.startsWith?.("robot_");
+                        const count = Math.max(
+                          0,
+                          Number((cell as any)?.itemCount) || 0
+                        );
+                        const extra =
+                          !isRobot && count > 1
+                            ? (count - 1) * itemStackStep
+                            : 0;
 
-                      return (
+                        return (
+                          <Box
+                            component="img"
+                            src={objectAsset.imagePath}
+                            alt={objectAsset.name}
+                            sx={{
+                              position: "absolute",
+                              top:
+                                -12 - (isRobot ? robotLift : itemLift + extra),
+                              left: 0,
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "contain",
+                              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.4))",
+                              zIndex: 1,
+                              transform: "scale(0.7)",
+                            }}
+                          />
+                        );
+                      })()}
+
+                    {/* Item count badge when stacking (>1) - only show for items, not robots */}
+                    {objectAsset &&
+                      ((objectAsset as any).category === "item" ||
+                        (objectAsset as any).id === "box") &&
+                      Math.max(0, Number((cell as any)?.itemCount) || 0) >
+                        1 && (
                         <Box
-                          component="img"
-                          src={objectAsset.imagePath}
-                          alt={objectAsset.name}
                           sx={{
                             position: "absolute",
-                            top: -12 - (isRobot ? robotLift : itemLift + extra),
-                            left: 0,
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "contain",
-                            filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.4))",
-                            zIndex: 1,
-                            transform: "scale(0.7)",
+                            top: (() => {
+                              const count = Math.max(
+                                0,
+                                Number((cell as any)?.itemCount) || 0
+                              );
+                              const extra =
+                                count > 1 ? (count - 1) * itemStackStep : 0;
+                              // Align closely to the object's top-right corner
+                              return -12 - (Number(itemLift) || 0) - extra + 2;
+                            })(),
+                            right: 2,
+                            bgcolor: "rgba(0,0,0,0.78)",
+                            color: "#fff",
+                            px: 0.5,
+                            py: 0.15,
+                            fontSize: 10.5,
+                            fontWeight: 700,
+                            lineHeight: 1.1,
+                            borderRadius: 0.75,
+                            zIndex: 2,
+                            pointerEvents: "none",
                           }}
-                        />
-                      );
-                    })()}
-
-                  {/* Item count badge when stacking (>1) - only show for items, not robots */}
-                  {objectAsset &&
-                    ((objectAsset as any).category === "item" ||
-                      (objectAsset as any).id === "box") &&
-                    Math.max(0, Number((cell as any)?.itemCount) || 0) > 1 && (
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          top: (() => {
-                            const count = Math.max(
-                              0,
-                              Number((cell as any)?.itemCount) || 0
-                            );
-                            const extra =
-                              count > 1 ? (count - 1) * itemStackStep : 0;
-                            // Align closely to the object's top-right corner
-                            return -12 - (Number(itemLift) || 0) - extra + 2;
-                          })(),
-                          right: 2,
-                          bgcolor: "rgba(0,0,0,0.78)",
-                          color: "#fff",
-                          px: 0.5,
-                          py: 0.15,
-                          fontSize: 10.5,
-                          fontWeight: 700,
-                          lineHeight: 1.1,
-                          borderRadius: 0.75,
-                          zIndex: 2,
-                          pointerEvents: "none",
-                        }}
-                      >
-                        ×{Math.max(0, Number((cell as any)?.itemCount) || 0)}
-                      </Box>
-                    )}
-                </Box>
-              );
-            })
-          )}
+                        >
+                          ×{Math.max(0, Number((cell as any)?.itemCount) || 0)}
+                        </Box>
+                      )}
+                  </Box>
+                );
+              })
+            )}
+        </Box>
       </Box>
-    </Box>
+    </Paper>
   );
 }

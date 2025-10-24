@@ -140,7 +140,7 @@ BlocksWorkspaceProps) {
       const screenWidth = window.innerWidth;
       const isMobile = screenWidth < 600;
       const isTablet = screenWidth >= 600 && screenWidth < 900;
-
+      
       // Initialize Blockly workspace with responsive configuration
       const workspace = Blockly.inject(workspaceRef.current, {
         toolbox: {
@@ -285,7 +285,7 @@ BlocksWorkspaceProps) {
             if (flyout) flyout.setVisible(false);
           }
         } catch {}
-
+        
         // Update flyout width on resize
         const flyoutBg = document.querySelector(
           ".blocklyFlyoutBackground"
@@ -299,7 +299,7 @@ BlocksWorkspaceProps) {
             flyoutBg.style.maxWidth = "250px";
           }
         }
-
+        
         // Update block sizes
         const blocks = document.querySelectorAll(
           ".blocklyFlyout .blocklyDraggable"
@@ -318,7 +318,7 @@ BlocksWorkspaceProps) {
           }
         });
       };
-
+      
       window.addEventListener("resize", handleResize);
       // Also react to orientation changes (mobile/tablet)
       window.addEventListener("orientationchange", handleResize as any);

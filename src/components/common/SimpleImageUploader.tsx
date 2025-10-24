@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -9,11 +9,7 @@ import {
   Tooltip,
   CircularProgress,
 } from "@mui/material";
-import { 
-  PhotoCamera, 
-  Delete, 
-  CloudUpload,
-} from "@mui/icons-material";
+import { PhotoCamera, Delete, CloudUpload } from "@mui/icons-material";
 import { useFirebaseStorage } from "../../hooks/useFirebaseStorage";
 
 export interface SimpleImageUploaderProps {
@@ -38,10 +34,18 @@ export const SimpleImageUploader: React.FC<SimpleImageUploaderProps> = ({
   description,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    currentImageUrl || null
+  );
   const [currentFileName, setCurrentFileName] = useState<string | null>(null);
 
-  const { uploading, uploadProgress, uploadAvatar, deleteAvatar } = useFirebaseStorage();
+  const { uploading, uploadProgress, uploadAvatar, deleteAvatar } =
+    useFirebaseStorage();
+
+  // Update previewUrl when currentImageUrl changes
+  useEffect(() => {
+    setPreviewUrl(currentImageUrl || null);
+  }, [currentImageUrl]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -70,7 +74,7 @@ export const SimpleImageUploader: React.FC<SimpleImageUploaderProps> = ({
     try {
       // Generate folder path based on entity type
       const folder = `${entityType}s`; // "robots", "components", or "generals"
-      
+
       // Use entityId if available, otherwise use timestamp for general images
       const uploadId = entityId || `general_${Date.now()}`;
 
@@ -121,7 +125,7 @@ export const SimpleImageUploader: React.FC<SimpleImageUploaderProps> = ({
           {title}
         </Typography>
       )}
-      
+
       {/* Description */}
       {description && (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -130,8 +134,8 @@ export const SimpleImageUploader: React.FC<SimpleImageUploaderProps> = ({
       )}
 
       {/* Image Display Card */}
-      <Card 
-        sx={{ 
+      <Card
+        sx={{
           border: "2px dashed",
           borderColor: previewUrl ? "primary.main" : "grey.300",
           backgroundColor: previewUrl ? "background.paper" : "grey.50",
@@ -174,7 +178,7 @@ export const SimpleImageUploader: React.FC<SimpleImageUploaderProps> = ({
                 }}
                 onError={(e) => {
                   // Hide broken image
-                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.style.display = "none";
                 }}
               />
             )}
@@ -182,9 +186,7 @@ export const SimpleImageUploader: React.FC<SimpleImageUploaderProps> = ({
             {!previewUrl && !uploading && (
               <Box sx={{ textAlign: "center", color: "text.secondary" }}>
                 <CloudUpload sx={{ fontSize: 48, mb: 1 }} />
-                <Typography variant="body2">
-                  Click to upload image
-                </Typography>
+                <Typography variant="body2">Click to upload image</Typography>
                 <Typography variant="caption">
                   JPEG, PNG, GIF, WebP (max 5MB)
                 </Typography>
@@ -193,13 +195,15 @@ export const SimpleImageUploader: React.FC<SimpleImageUploaderProps> = ({
 
             {/* Upload Progress */}
             {uploading && (
-              <Box sx={{ 
-                textAlign: "center", 
-                color: "text.secondary",
-                backgroundColor: "rgba(255, 255, 255, 0.9)",
-                borderRadius: 1,
-                p: 2
-              }}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  color: "text.secondary",
+                  backgroundColor: "rgba(255, 255, 255, 0.9)",
+                  borderRadius: 1,
+                  p: 2,
+                }}
+              >
                 <CircularProgress size={40} sx={{ mb: 2 }} />
                 <Typography variant="body2">
                   Uploading... {uploadProgress}%
@@ -229,10 +233,10 @@ export const SimpleImageUploader: React.FC<SimpleImageUploaderProps> = ({
                 <Tooltip title="Change image">
                   <IconButton
                     size="small"
-                    sx={{ 
-                      backgroundColor: "primary.main", 
+                    sx={{
+                      backgroundColor: "primary.main",
                       color: "white",
-                      "&:hover": { backgroundColor: "primary.dark" }
+                      "&:hover": { backgroundColor: "primary.dark" },
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -243,14 +247,14 @@ export const SimpleImageUploader: React.FC<SimpleImageUploaderProps> = ({
                     <PhotoCamera fontSize="small" />
                   </IconButton>
                 </Tooltip>
-                
+
                 <Tooltip title="Remove image">
                   <IconButton
                     size="small"
-                    sx={{ 
-                      backgroundColor: "error.main", 
+                    sx={{
+                      backgroundColor: "error.main",
                       color: "white",
-                      "&:hover": { backgroundColor: "error.dark" }
+                      "&:hover": { backgroundColor: "error.dark" },
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -279,13 +283,21 @@ export const SimpleImageUploader: React.FC<SimpleImageUploaderProps> = ({
           {/* Image Info */}
           {previewUrl && !uploading && (
             <Box sx={{ mt: 2 }}>
-              <Typography variant="caption" color="text.secondary" display="block">
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                display="block"
+              >
                 {entityType === "robot" && "Robot Image"}
-                {entityType === "component" && "Component Image"} 
+                {entityType === "component" && "Component Image"}
                 {entityType === "general" && "General Image"}
                 {entityId && ` (${entityId.slice(0, 8)}...)`}
               </Typography>
-              <Typography variant="caption" color="success.main" display="block">
+              <Typography
+                variant="caption"
+                color="success.main"
+                display="block"
+              >
                 ✅ Upload successful
               </Typography>
             </Box>

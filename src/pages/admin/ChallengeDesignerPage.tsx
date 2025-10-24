@@ -710,13 +710,13 @@ const MapDesignerPage = () => {
     if (missingName || missingDescription || tooShortDescription) {
       let msg = "";
       if (missingName && missingDescription) {
-        msg = "Vui lòng nhập tên và mô tả bản đồ";
+        msg = "Vui lòng nhập tên và mô tả thử thách";
       } else if (missingName) {
-        msg = "Vui lòng nhập tên bản đồ";
+        msg = "Vui lòng nhập tên thử thách";
       } else if (missingDescription) {
-        msg = "Vui lòng nhập mô tả bản đồ";
+        msg = "Vui lòng nhập mô tả thử thách";
       } else if (tooShortDescription) {
-        msg = "Mô tả bản đồ phải có ít nhất 10 ký tự";
+        msg = "Mô tả thử thách phải có ít nhất 10 ký tự";
       }
       const variant: "error" | "warning" =
         missingName || missingDescription ? "error" : "warning";

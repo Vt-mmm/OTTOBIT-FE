@@ -6,8 +6,6 @@ import {
   CardContent,
   CircularProgress,
   Grid,
-  Snackbar,
-  Alert,
   Stack,
   TextField,
   Typography,
@@ -21,6 +19,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { createCourse, updateCourse } from "../../../redux/course/courseSlice";
 import { SimpleImageUploader } from "../../../components/common/SimpleImageUploader";
+import { useLocales } from "hooks";
 import {
   CourseResult,
   CreateCourseRequest,
@@ -49,6 +48,7 @@ export default function CourseFormSection({
   onBack,
   onSuccess,
 }: Props) {
+  const { translate } = useLocales();
   const dispatch = useAppDispatch();
   const { isCreating, isUpdating, createError, updateError } = useAppSelector(
     (s) => s.course.operations
@@ -60,16 +60,6 @@ export default function CourseFormSection({
     imageUrl: "",
     price: 0,
     type: CourseType.Free,
-  });
-
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity: "success" | "error";
-  }>({
-    open: false,
-    message: "",
-    severity: "success",
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -98,37 +88,23 @@ export default function CourseFormSection({
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.title.trim()) {
-      setSnackbar({
-        open: true,
-        message: "Tên khóa học không được để trống",
-        severity: "error",
-      });
+      newErrors.title = translate("admin.courseNameRequired");
+      setErrors(newErrors);
       return false;
     }
     if (!formData.description.trim()) {
-      setSnackbar({
-        open: true,
-        message: "Mô tả khóa học không được để trống",
-        severity: "error",
-      });
+      newErrors.description = translate("admin.courseDescriptionRequired");
+      setErrors(newErrors);
       return false;
     }
     if (!formData.imageUrl.trim()) {
-      newErrors.imageUrl = "Hình ảnh khóa học là bắt buộc. Vui lòng tải ảnh lên.";
-      setSnackbar({
-        open: true,
-        message: "Hình ảnh khóa học là bắt buộc",
-        severity: "error",
-      });
+      newErrors.imageUrl = translate("admin.courseImageRequired");
       setErrors(newErrors);
       return false;
     }
     if (formData.price < 0) {
-      setSnackbar({
-        open: true,
-        message: "Giá không hợp lệ",
-        severity: "error",
-      });
+      newErrors.price = translate("admin.invalidPrice");
+      setErrors(newErrors);
       return false;
     }
     setErrors({});
@@ -149,11 +125,6 @@ export default function CourseFormSection({
           type: formData.type,
         };
         await dispatch(createCourse(createData)).unwrap();
-        setSnackbar({
-          open: true,
-          message: "Tạo khóa học thành công",
-          severity: "success",
-        });
       } else if (course) {
         const updateData: UpdateCourseRequest = {
           title: formData.title.trim(),
@@ -165,22 +136,13 @@ export default function CourseFormSection({
         await dispatch(
           updateCourse({ id: course.id, data: updateData })
         ).unwrap();
-        setSnackbar({
-          open: true,
-          message: "Cập nhật khóa học thành công",
-          severity: "success",
-        });
       }
 
       setTimeout(() => {
         onSuccess();
       }, 1000);
     } catch (err: any) {
-      setSnackbar({
-        open: true,
-        message: err?.message || "Có lỗi xảy ra",
-        severity: "error",
-      });
+      console.error("Course operation error:", err);
     }
   };
 
@@ -188,10 +150,12 @@ export default function CourseFormSection({
     <Box>
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
         <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
-          Quay lại
+          {translate("admin.back")}
         </Button>
         <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          {mode === "create" ? "Tạo khóa học mới" : "Chỉnh sửa khóa học"}
+          {mode === "create"
+            ? translate("admin.createNewCourse")
+            : translate("admin.editCourseTitle")}
         </Typography>
       </Stack>
 
@@ -224,7 +188,6 @@ export default function CourseFormSection({
                     error={!!error && error.includes("description")}
                     helperText="Mô tả chi tiết về khóa học, mục tiêu học tập"
                   />
-
 
                   <TextField
                     fullWidth
@@ -275,7 +238,7 @@ export default function CourseFormSection({
                 <SimpleImageUploader
                   entityId={course?.id}
                   entityType="course"
-                  currentImageUrl={formData.imageUrl}
+                  currentImageUrl={formData.imageUrl || undefined}
                   onImageChange={(url: string | null) =>
                     setFormData((prev) => ({ ...prev, imageUrl: url || "" }))
                   }
@@ -285,7 +248,11 @@ export default function CourseFormSection({
                   disabled={isLoading}
                 />
                 {errors.imageUrl && (
-                  <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block', px: 2 }}>
+                  <Typography
+                    variant="caption"
+                    color="error"
+                    sx={{ mt: 1, display: "block", px: 2 }}
+                  >
                     {errors.imageUrl}
                   </Typography>
                 )}
@@ -334,16 +301,6 @@ export default function CourseFormSection({
           </Box>
         </CardContent>
       </Card>
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
-      >
-        <Alert severity={snackbar.severity} sx={{ width: "100%" }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }

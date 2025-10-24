@@ -7,14 +7,14 @@ import {
   Typography,
   Button,
   Chip,
-  Snackbar,
-  Alert,
   Grid,
   Divider,
   Link,
   Stack,
   CircularProgress,
 } from "@mui/material";
+import { useAppDispatch } from "../../redux/config";
+import { setMessageSuccess } from "../../redux/course/courseSlice";
 // unused import removed
 import LessonResourceListSection from "sections/admin/lessonResource/LessonResourceListSection";
 import LessonResourceFormSection from "sections/admin/lessonResource/LessonResourceFormSection";
@@ -33,6 +33,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 export default function LessonResourceManagementPage() {
   const { translate } = useLocales();
+  const dispatch = useAppDispatch();
   const [ready, setReady] = useState(false);
   const [mode, setMode] = useState<"list" | "detail" | "create" | "edit">(
     "list"
@@ -41,17 +42,14 @@ export default function LessonResourceManagementPage() {
   const [headerSubtitle, setHeaderSubtitle] = useState(
     translate("admin.resourceListSubtitle")
   );
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity: "success" | "error";
-  }>({ open: false, message: "", severity: "success" });
   useEffect(() => setReady(true), []);
 
   // Update header subtitle based on mode
   useEffect(() => {
     if (selectedId) {
-      setHeaderSubtitle(`${translate("admin.resourceDetailTitle")} #${selectedId}`);
+      setHeaderSubtitle(
+        `${translate("admin.resourceDetailTitle")} #${selectedId}`
+      );
     } else {
       setHeaderSubtitle(translate("admin.resourceListSubtitle"));
     }
@@ -131,7 +129,9 @@ export default function LessonResourceManagementPage() {
                       onEditItem={(id: string) => {
                         setSelectedId(id);
                         setMode("edit");
-                        setHeaderSubtitle(`${translate("admin.editResourceTitle")} #${id}`);
+                        setHeaderSubtitle(
+                          `${translate("admin.editResourceTitle")} #${id}`
+                        );
                       }}
                       // @ts-ignore
                       onViewDetail={(id: string) => {
@@ -142,13 +142,9 @@ export default function LessonResourceManagementPage() {
                       selectedId={selectedId}
                       // show parent toast for delete/restore
                       // @ts-ignore
-                      onNotify={(message: string) =>
-                        setSnackbar({
-                          open: true,
-                          message,
-                          severity: "success",
-                        })
-                      }
+                      onNotify={(message: string) => {
+                        dispatch(setMessageSuccess(message));
+                      }}
                     />
                   )}
                   {mode === "create" && (
@@ -161,14 +157,15 @@ export default function LessonResourceManagementPage() {
                       }}
                       onSuccess={() => {
                         setMode("list");
+                        setSelectedId(null);
                         setHeaderSubtitle(
                           translate("admin.resourceListSubtitle")
                         );
-                        setSnackbar({
-                          open: true,
-                          message: translate("admin.resourceCreatedSuccess"),
-                          severity: "success",
-                        });
+                        dispatch(
+                          setMessageSuccess(
+                            translate("admin.resourceCreatedSuccess")
+                          )
+                        );
                       }}
                     />
                   )}
@@ -183,14 +180,15 @@ export default function LessonResourceManagementPage() {
                       }}
                       onSuccess={() => {
                         setMode("list");
+                        setSelectedId(null);
                         setHeaderSubtitle(
                           translate("admin.resourceListSubtitle")
                         );
-                        setSnackbar({
-                          open: true,
-                          message: translate("admin.resourceUpdatedSuccess"),
-                          severity: "success",
-                        });
+                        dispatch(
+                          setMessageSuccess(
+                            translate("admin.resourceUpdatedSuccess")
+                          )
+                        );
                       }}
                     />
                   )}
@@ -203,15 +201,6 @@ export default function LessonResourceManagementPage() {
           </CardContent>
         </Card>
       </Container>
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
-      >
-        <Alert severity={snackbar.severity} sx={{ width: "100%" }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </AdminLayout>
   );
 }
@@ -264,7 +253,8 @@ function InlineLessonResourceDetailCard({ id }: { id: string }) {
   };
 
   const getTypeName = (type: any) => {
-    if (type === null || type === undefined) return translate("admin.undefined");
+    if (type === null || type === undefined)
+      return translate("admin.undefined");
     const typeStr = String(type).toLowerCase();
     switch (typeStr) {
       case "video":
@@ -378,7 +368,9 @@ function InlineLessonResourceDetailCard({ id }: { id: string }) {
                           {translate("admin.lesson")}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {data.lessonTitle || data.lessonId || translate("admin.undefined")}
+                          {data.lessonTitle ||
+                            data.lessonId ||
+                            translate("admin.undefined")}
                         </Typography>
                       </Box>
                       <Box>

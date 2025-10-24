@@ -6,18 +6,25 @@ import {
   CardContent,
   CircularProgress,
   Grid,
-  Snackbar,
-  Alert,
   Stack,
   TextField,
   Typography,
   Slider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  List,
+  ListItem,
+  ListItemText,
+  Pagination,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SaveIcon from "@mui/icons-material/Save";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { createLesson, updateLesson } from "../../../redux/lesson/lessonSlice";
 import { getCoursesForAdmin } from "../../../redux/course/courseSlice";
+import { getLessonsByCourseThunk } from "../../../redux/lesson/lessonThunks";
 import {
   LessonResult,
   CreateLessonRequest,
@@ -65,15 +72,14 @@ export default function LessonFormSection({
   const [coursePage, setCoursePage] = useState(1);
   const [courseLoading, setCourseLoading] = useState(false);
 
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity: "success" | "error";
-  }>({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  // State for lessons in selected course
+  const [courseLessons, setCourseLessons] = useState<LessonResult[]>([]);
+  const [lessonsLoading, setLessonsLoading] = useState(false);
+  const [showLessonsDialog, setShowLessonsDialog] = useState(false);
+  const [lessonsPage, setLessonsPage] = useState(1);
+  const [lessonsTotalPages, setLessonsTotalPages] = useState(1);
+  const [lessonsTotalItems, setLessonsTotalItems] = useState(0);
+  const [lessonsPageSize] = useState(12);
 
   const isLoading = isCreating || isUpdating;
   const error = createError || updateError;
@@ -119,29 +125,64 @@ export default function LessonFormSection({
     setFormData((prev) => ({ ...prev, durationInMinutes: value as number }));
   };
 
+  const handleViewLessons = async () => {
+    if (!formData.courseId) return;
+
+    setLessonsPage(1);
+    setLessonsLoading(true);
+    try {
+      const result = await dispatch(
+        getLessonsByCourseThunk({
+          courseId: formData.courseId,
+          pageNumber: 1,
+          pageSize: lessonsPageSize,
+        })
+      ).unwrap();
+      setCourseLessons(result.items || []);
+      setLessonsTotalPages(result.totalPages || 1);
+      setLessonsTotalItems(result.total || 0);
+      setShowLessonsDialog(true);
+    } catch (error) {
+      console.error("Error fetching lessons:", error);
+      setCourseLessons([]);
+      setLessonsTotalPages(1);
+    } finally {
+      setLessonsLoading(false);
+    }
+  };
+
+  const handleLessonsPageChange = async (page: number) => {
+    if (!formData.courseId) return;
+
+    setLessonsPage(page);
+    setLessonsLoading(true);
+    try {
+      const result = await dispatch(
+        getLessonsByCourseThunk({
+          courseId: formData.courseId,
+          pageNumber: page,
+          pageSize: lessonsPageSize,
+        })
+      ).unwrap();
+      setCourseLessons(result.items || []);
+      setLessonsTotalPages(result.totalPages || 1);
+      setLessonsTotalItems(result.total || 0);
+    } catch (error) {
+      console.error("Error fetching lessons:", error);
+      setCourseLessons([]);
+    } finally {
+      setLessonsLoading(false);
+    }
+  };
+
   const validate = (): boolean => {
     if (!formData.courseId) {
-      setSnackbar({
-        open: true,
-        message: "Vui lòng chọn khóa học",
-        severity: "error",
-      });
       return false;
     }
     if (!formData.title.trim()) {
-      setSnackbar({
-        open: true,
-        message: "Tên bài học không được để trống",
-        severity: "error",
-      });
       return false;
     }
     if (!formData.content.trim()) {
-      setSnackbar({
-        open: true,
-        message: "Nội dung bài học không được để trống",
-        severity: "error",
-      });
       return false;
     }
     return true;
@@ -161,11 +202,6 @@ export default function LessonFormSection({
           order: formData.order,
         };
         await dispatch(createLesson(createData)).unwrap();
-        setSnackbar({
-          open: true,
-          message: "Tạo bài học thành công",
-          severity: "success",
-        });
       } else if (lesson) {
         const updateData: UpdateLessonRequest = {
           courseId: formData.courseId,
@@ -177,22 +213,13 @@ export default function LessonFormSection({
         await dispatch(
           updateLesson({ id: lesson.id, data: updateData })
         ).unwrap();
-        setSnackbar({
-          open: true,
-          message: "Cập nhật bài học thành công",
-          severity: "success",
-        });
       }
 
       setTimeout(() => {
         onSuccess();
       }, 1000);
     } catch (err: any) {
-      setSnackbar({
-        open: true,
-        message: err?.message || "Có lỗi xảy ra",
-        severity: "error",
-      });
+      // Error handling is done by Redux thunks
     }
   };
 
@@ -279,32 +306,63 @@ export default function LessonFormSection({
                     />
                   </Box>
 
-                  <TextField
-                    fullWidth
-                    type="number"
-                    label="Thứ tự trong khóa học *"
-                    value={formData.order || ""}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setFormData((prev) => ({
-                        ...prev,
-                        order: value === "" ? 0 : parseInt(value, 10),
-                      }));
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 1,
                     }}
-                    onFocus={(e) => {
-                      // Auto-select for easy replacement
-                      setTimeout(() => e.target.select(), 0);
-                    }}
-                    onBlur={(e) => {
-                      // Set to 1 if empty or less than 1 on blur
-                      const value = parseInt(e.target.value, 10);
-                      if (e.target.value === "" || isNaN(value) || value < 1) {
-                        setFormData((prev) => ({ ...prev, order: 1 }));
-                      }
-                    }}
-                    inputProps={{ min: 1, step: 1 }}
-                    helperText="Vị trí của bài học trong khóa học"
-                  />
+                  >
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Thứ tự trong khóa học *"
+                      value={formData.order || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          order: value === "" ? 0 : parseInt(value, 10),
+                        }));
+                      }}
+                      onFocus={(e) => {
+                        // Auto-select for easy replacement
+                        setTimeout(() => e.target.select(), 0);
+                      }}
+                      onBlur={(e) => {
+                        // Set to 1 if empty or less than 1 on blur
+                        const value = parseInt(e.target.value, 10);
+                        if (
+                          e.target.value === "" ||
+                          isNaN(value) ||
+                          value < 1
+                        ) {
+                          setFormData((prev) => ({ ...prev, order: 1 }));
+                        }
+                      }}
+                      inputProps={{ min: 1, step: 1 }}
+                      helperText="Vị trí của bài học trong khóa học"
+                    />
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={handleViewLessons}
+                      disabled={!formData.courseId || lessonsLoading}
+                      sx={{
+                        whiteSpace: "nowrap",
+                        minWidth: 120,
+                        height: 40,
+                        fontSize: "0.875rem",
+                        mt: 0.5, // Căn với phần input của TextField
+                      }}
+                    >
+                      {lessonsLoading ? (
+                        <CircularProgress size={16} />
+                      ) : (
+                        "Xem danh sách"
+                      )}
+                    </Button>
+                  </Box>
                 </Stack>
               </Grid>
 
@@ -401,15 +459,98 @@ export default function LessonFormSection({
         </CardContent>
       </Card>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+      {/* Dialog hiển thị danh sách lesson */}
+      <Dialog
+        open={showLessonsDialog}
+        onClose={() => setShowLessonsDialog(false)}
+        maxWidth="md"
+        fullWidth
       >
-        <Alert severity={snackbar.severity} sx={{ width: "100%" }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+        <DialogTitle>
+          Danh sách bài học hiện có trong khóa học
+          {courseLessons.length > 0 && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              {lessonsTotalItems} bài học
+            </Typography>
+          )}
+        </DialogTitle>
+        <DialogContent sx={{ pb: 1 }}>
+          {lessonsLoading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : courseLessons.length > 0 ? (
+            <List>
+              {courseLessons
+                .filter((lesson) => !lesson.isDeleted)
+                .sort((a, b) => a.order - b.order)
+                .map((lesson) => (
+                  <ListItem key={lesson.id} divider>
+                    <ListItemText
+                      primary={
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          {lesson.order}. {lesson.title}
+                        </Typography>
+                      }
+                      secondary={
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">
+                            Thời lượng: {lesson.durationInMinutes} phút
+                          </Typography>
+                          {lesson.content && (
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ mt: 0.5 }}
+                            >
+                              {lesson.content.length > 100
+                                ? `${lesson.content.substring(0, 100)}...`
+                                : lesson.content}
+                            </Typography>
+                          )}
+                        </Box>
+                      }
+                    />
+                  </ListItem>
+                ))}
+            </List>
+          ) : (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ textAlign: "center", py: 4 }}
+            >
+              Khóa học này chưa có bài học nào
+            </Typography>
+          )}
+        </DialogContent>
+
+        {/* Pagination cố định ở dưới */}
+        {courseLessons.length > 0 && lessonsTotalPages > 1 && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              py: 2,
+              borderTop: "1px solid",
+              borderColor: "divider",
+              bgcolor: "background.paper",
+            }}
+          >
+            <Pagination
+              count={lessonsTotalPages}
+              page={lessonsPage}
+              onChange={(_, page) => handleLessonsPageChange(page)}
+              size="small"
+              showFirstButton
+              showLastButton
+            />
+          </Box>
+        )}
+        <DialogActions>
+          <Button onClick={() => setShowLessonsDialog(false)}>Đóng</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

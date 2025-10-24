@@ -277,9 +277,9 @@ export default function VoucherUsageSection({ onViewDetails }: Props) {
           }}
         >
           <FormControl size="small">
-            <InputLabel>Page size</InputLabel>
+            <InputLabel>Số mục mỗi trang</InputLabel>
             <Select
-              label="Page size"
+              label="Số mục mỗi trang"
               value={pageSize}
               onChange={handlePageSizeChange}
               sx={{ minWidth: 120 }}

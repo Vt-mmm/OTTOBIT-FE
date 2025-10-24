@@ -2463,6 +2463,8 @@ export default function WinConditionsSection({
                     page={orderPage}
                     onChange={(_, page: number) => setOrderPage(page)}
                     size="small"
+                    showFirstButton
+                    showLastButton
                   />
                 </Box>
               )}

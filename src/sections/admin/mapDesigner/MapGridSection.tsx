@@ -405,7 +405,7 @@ export default function MapGridSection({
             variant="h6"
             sx={{ fontWeight: 600, color: THEME_COLORS.text.primary }}
           >
-            Map Grid ({GRID_CONFIG.rows}x{GRID_CONFIG.cols})
+            Bản đồ Grid ({GRID_CONFIG.rows}x{GRID_CONFIG.cols})
           </Typography>
 
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
@@ -470,7 +470,7 @@ export default function MapGridSection({
           }}
         >
           <Typography variant="caption" sx={{ color: "white" }}>
-            Ô [{hoveredCell?.row ?? "-"}, {hoveredCell?.col ?? "-"}]
+            Ô[{hoveredCell?.row ?? "-"},{hoveredCell?.col ?? "-"}]
           </Typography>
         </Box>
 

@@ -6,10 +6,7 @@ import {
   ROUTES_API_LESSON_PROGRESS,
 } from "constants/routesApiKeys";
 import { extractApiErrorMessage } from "utils/errorHandler";
-import {
-  setMessageSuccess,
-  setMessageError,
-} from "store/lesson/lessonSlice";
+import { setMessageSuccess, setMessageError } from "store/lesson/lessonSlice";
 import {
   LessonResult,
   LessonsResponse,
@@ -75,7 +72,9 @@ export const getLessonsThunk = createAsyncThunk<
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to fetch lessons");
+      throw new Error(
+        response.data.message || "Không thể tải danh sách bài học"
+      );
     }
 
     if (!response.data.data) {
@@ -86,7 +85,7 @@ export const getLessonsThunk = createAsyncThunk<
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
     return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch lessons"
+      err.response?.data?.message || "Không thể tải danh sách bài học"
     );
   }
 });
@@ -105,7 +104,9 @@ export const getLessonByIdThunk = createAsyncThunk<
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to fetch lesson");
+      throw new Error(
+        response.data.message || "Không thể tải thông tin bài học"
+      );
     }
 
     if (!response.data.data) {
@@ -116,7 +117,7 @@ export const getLessonByIdThunk = createAsyncThunk<
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
     return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch lesson"
+      err.response?.data?.message || "Không thể tải thông tin bài học"
     );
   }
 });
@@ -135,7 +136,9 @@ export const getLessonByIdForAdminThunk = createAsyncThunk<
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to fetch lesson");
+      throw new Error(
+        response.data.message || "Không thể tải thông tin bài học"
+      );
     }
 
     if (!response.data.data) {
@@ -146,7 +149,7 @@ export const getLessonByIdForAdminThunk = createAsyncThunk<
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
     return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch lesson"
+      err.response?.data?.message || "Không thể tải thông tin bài học"
     );
   }
 });
@@ -174,7 +177,7 @@ export const getLessonsByCourseThunk = createAsyncThunk<
 
       if (response.data.errors || response.data.errorCode) {
         throw new Error(
-          response.data.message || "Failed to fetch course lessons"
+          response.data.message || "Không thể tải danh sách bài học khóa học"
         );
       }
 
@@ -186,7 +189,8 @@ export const getLessonsByCourseThunk = createAsyncThunk<
     } catch (error: any) {
       const err = error as AxiosError<ErrorResponse>;
       return rejectWithValue(
-        err.response?.data?.message || "Failed to fetch course lessons"
+        err.response?.data?.message ||
+          "Không thể tải danh sách bài học khóa học"
       );
     }
   }
@@ -210,7 +214,7 @@ export const getLessonsPreviewThunk = createAsyncThunk<
 
     if (response.data.errors || response.data.errorCode) {
       throw new Error(
-        response.data.message || "Failed to fetch lesson preview"
+        response.data.message || "Không thể tải xem trước bài học"
       );
     }
 
@@ -222,7 +226,7 @@ export const getLessonsPreviewThunk = createAsyncThunk<
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
     return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch lesson preview"
+      err.response?.data?.message || "Không thể tải xem trước bài học"
     );
   }
 });
@@ -249,12 +253,11 @@ export const createLessonThunk = createAsyncThunk<
       throw new Error("No lesson data received");
     }
 
-    dispatch(setMessageSuccess("Lesson created successfully"));
+    dispatch(setMessageSuccess("Tạo bài học thành công"));
     return response.data.data;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
-    const errorMessage =
-      err.response?.data?.message || "Failed to create lesson";
+    const errorMessage = err.response?.data?.message || "Không thể tạo bài học";
     dispatch(setMessageError(errorMessage));
     return rejectWithValue(errorMessage);
   }
@@ -282,12 +285,12 @@ export const updateLessonThunk = createAsyncThunk<
       throw new Error("No lesson data received");
     }
 
-    dispatch(setMessageSuccess("Lesson updated successfully"));
+    dispatch(setMessageSuccess("Cập nhật bài học thành công"));
     return response.data.data;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
     const errorMessage =
-      err.response?.data?.message || "Failed to update lesson";
+      err.response?.data?.message || "Không thể cập nhật bài học";
     dispatch(setMessageError(errorMessage));
     return rejectWithValue(errorMessage);
   }
@@ -308,12 +311,11 @@ export const deleteLessonThunk = createAsyncThunk<
       throw new Error(response.data.message || "Failed to delete lesson");
     }
 
-    dispatch(setMessageSuccess("Lesson deleted successfully"));
+    dispatch(setMessageSuccess("Xóa bài học thành công"));
     return id;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
-    const errorMessage =
-      err.response?.data?.message || "Failed to delete lesson";
+    const errorMessage = err.response?.data?.message || "Không thể xóa bài học";
     dispatch(setMessageError(errorMessage));
     return rejectWithValue(errorMessage);
   }
@@ -330,13 +332,13 @@ export const restoreLessonThunk = createAsyncThunk<
       axiosClient.post<LessonResult>(ROUTES_API_LESSON.RESTORE(id))
     );
 
-    dispatch(setMessageSuccess("Lesson restored successfully"));
+    dispatch(setMessageSuccess("Khôi phục bài học thành công"));
     // API restore trả về trực tiếp LessonResult, không wrap trong ApiResponse
     return response.data;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
-      "Failed to restore lesson"
+      "Không thể khôi phục bài học"
     );
     dispatch(setMessageError(errorMessage));
     return rejectWithValue(errorMessage);
@@ -360,9 +362,7 @@ export const getLessonProgressThunk = createAsyncThunk<
     );
 
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(
-        response.data.message || "Failed to fetch lesson progress"
-      );
+      throw new Error(response.data.message || "Không thể tải tiến độ bài học");
     }
 
     if (!response.data.data) {
@@ -373,7 +373,7 @@ export const getLessonProgressThunk = createAsyncThunk<
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
     return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch lesson progress"
+      err.response?.data?.message || "Không thể tải tiến độ bài học"
     );
   }
 });
@@ -399,12 +399,12 @@ export const startLessonThunk = createAsyncThunk<
       throw new Error("No lesson progress data received");
     }
 
-    dispatch(setMessageSuccess("Lesson started successfully"));
+    dispatch(setMessageSuccess("Bắt đầu bài học thành công"));
     return response.data.data;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
     const errorMessage =
-      err.response?.data?.message || "Failed to start lesson";
+      err.response?.data?.message || "Không thể bắt đầu bài học";
     dispatch(setMessageError(errorMessage));
     return rejectWithValue(errorMessage);
   }

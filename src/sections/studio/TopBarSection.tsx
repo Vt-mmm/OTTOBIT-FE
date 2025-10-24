@@ -70,12 +70,12 @@ export default function TopBarSection({
   roomId,
 }: TopBarSectionProps) {
   return (
-    <TopBarContent
-      activeTab={activeTab}
-      onTabChange={onTabChange}
-      workspace={workspace}
+      <TopBarContent
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        workspace={workspace}
       roomId={roomId}
-    />
+      />
   );
 }
 
@@ -181,7 +181,7 @@ function TopBarContent({
       }
       return;
     }
-    
+
     const stored = getStoredNavigationData();
     
     if (stored?.lessonId) {
@@ -388,7 +388,7 @@ function TopBarContent({
     }
     
     setHasExecuted(false);
-    setIsRunning(false);
+          setIsRunning(false);
     
     // Reset submission refresh flag when challenge changes
     submissionRefreshInProgress.current = false;
@@ -448,8 +448,8 @@ function TopBarContent({
         "Map vật lý không hỗ trợ chạy trên simulator. Vui lòng sử dụng nút 'Send to micro:bit' để nạp code lên thiết bị.",
         "warning"
       );
-      return;
-    }
+          return;
+        }
 
     // Prevent double execution
     if (isRunning) {
@@ -528,7 +528,7 @@ function TopBarContent({
   const handleBackToLesson = () => {
     if (lessonId) {
       navigate(PATH_USER.lessonDetail.replace(":id", lessonId));
-    } else {
+      } else {
       navigate(-1);
     }
   };
@@ -552,7 +552,7 @@ function TopBarContent({
       console.log('🔎 [TopBar] User selecting new challenge, resetting button states');
     }
     setHasExecuted(false);
-    setIsRunning(false);
+        setIsRunning(false);
     submissionRefreshInProgress.current = false; // Reset refresh flag
 
     // Update navigation data BEFORE navigating to keep sessionStorage in sync
@@ -873,20 +873,20 @@ function TopBarContent({
             </IconButton>
           </Tooltip>
 
-          {/* Ottobit Logo */}
-          <Box
+        {/* Ottobit Logo */}
+        <Box
             id="tour-logo-home"
             onClick={() => navigate("/")}
-            sx={{
+          sx={{
               width: { xs: 40, sm: 45, md: 50 },
               height: { xs: 40, sm: 45, md: 50 },
-              bgcolor: "#ffffff",
+            bgcolor: "#ffffff",
               borderRadius: { xs: "8px", md: "12px" },
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              p: 0.5,
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            p: 0.5,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
               cursor: "pointer",
               transition: "all 0.2s ease-in-out",
               "&:hover": {
@@ -897,17 +897,17 @@ function TopBarContent({
               "&:active": {
                 transform: "translateY(0)",
               },
-            }}
-          >
-            <img
+          }}
+        >
+          <img
               src="/asset/OttobitLogoText.png"
               alt="Ottobit Logo - Click to go home"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "contain",
-              }}
-            />
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+            }}
+          />
           </Box>
         </Box>
 
@@ -920,74 +920,74 @@ function TopBarContent({
             ml: 2,
           }}
         >
-          <Box
-            sx={{
-              bgcolor: "#ffffff",
-              borderRadius: "20px",
-              p: 0.5,
-              border: "1px solid rgba(255,255,255,0.2)",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        <Box
+          sx={{
+            bgcolor: "#ffffff",
+            borderRadius: "20px",
+            p: 0.5,
+            border: "1px solid rgba(255,255,255,0.2)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
               display: "flex",
+          }}
+        >
+          <Tabs
+            value={activeTab}
+            onChange={(_, newValue) => onTabChange?.(newValue)}
+            sx={{
+              minHeight: 48,
+              "& .MuiTab-root": {
+                minHeight: 48,
+                minWidth: 60,
+                color: "#64748b",
+                "&.Mui-selected": {
+                  color: "#10b981",
+                  bgcolor: "#f0fdf4",
+                  borderRadius: "16px",
+                },
+                "&:hover": {
+                  bgcolor: "#f8fafc",
+                  borderRadius: "16px",
+                },
+              },
+              "& .MuiTabs-indicator": {
+                display: "none",
+              },
             }}
           >
-            <Tabs
-              value={activeTab}
-              onChange={(_, newValue) => onTabChange?.(newValue)}
-              sx={{
-                minHeight: 48,
-                "& .MuiTab-root": {
-                  minHeight: 48,
-                  minWidth: 60,
-                  color: "#64748b",
-                  "&.Mui-selected": {
-                    color: "#10b981",
-                    bgcolor: "#f0fdf4",
-                    borderRadius: "16px",
-                  },
-                  "&:hover": {
-                    bgcolor: "#f8fafc",
-                    borderRadius: "16px",
-                  },
-                },
-                "& .MuiTabs-indicator": {
-                  display: "none",
-                },
-              }}
-            >
-              <Tab
-                icon={
-                  <WorkspaceIcon
-                    sx={{
-                      fontSize: 32,
-                      color: activeTab === 0 ? "#10b981" : "#64748b",
-                    }}
-                  />
-                }
-                title="Workspace"
-              />
-              <Tab
-                icon={
-                  <PythonIcon
-                    sx={{
-                      fontSize: 32,
-                      color: activeTab === 1 ? "#306998" : "#64748b",
-                    }}
-                  />
-                }
-                title="Python"
-              />
-              <Tab
-                icon={
-                  <JavascriptIcon
-                    sx={{
-                      fontSize: 32,
-                      color: activeTab === 2 ? "#f7df1e" : "#64748b",
-                    }}
-                  />
-                }
-                title="JavaScript"
-              />
-            </Tabs>
+            <Tab
+              icon={
+                <WorkspaceIcon
+                  sx={{
+                    fontSize: 32,
+                    color: activeTab === 0 ? "#10b981" : "#64748b",
+                  }}
+                />
+              }
+              title="Workspace"
+            />
+            <Tab
+              icon={
+                <PythonIcon
+                  sx={{
+                    fontSize: 32,
+                    color: activeTab === 1 ? "#306998" : "#64748b",
+                  }}
+                />
+              }
+              title="Python"
+            />
+            <Tab
+              icon={
+                <JavascriptIcon
+                  sx={{
+                    fontSize: 32,
+                    color: activeTab === 2 ? "#f7df1e" : "#64748b",
+                  }}
+                />
+              }
+              title="JavaScript"
+            />
+          </Tabs>
           </Box>
         </Box>
 
@@ -1097,45 +1097,45 @@ function TopBarContent({
           {/* Show Send to micro:bit ONLY for Physical maps */}
           {isPhysicalMap && (
             <Tooltip title="Send to micro:bit">
-              <IconButton
+            <IconButton
                 id="tour-btn-microbit"
                 onClick={handleSendToMicrobit}
-                sx={{
+              sx={{
                   bgcolor: "#eef2ff",
                   color: "#4338ca",
                   width: { xs: 36, sm: 42, md: 48 },
                   height: { xs: 36, sm: 42, md: 48 },
-                  "&:hover": {
-                    bgcolor: "#e0e7ff",
-                    transform: "translateY(-1px)",
-                    boxShadow: "0 4px 12px rgba(67, 56, 202, 0.25)",
-                  },
-                }}
-              >
-                <UsbIcon sx={{ fontSize: 22 }} />
-              </IconButton>
-            </Tooltip>
-          )}
-
-          <Tooltip title="Open Camera">
-            <IconButton
-              id="tour-btn-camera"
-              onClick={handleCamera}
-              sx={{
-                bgcolor: "#fff3e0",
-                color: "#f57c00",
-                width: 48,
-                height: 48,
                 "&:hover": {
-                  bgcolor: "#ffe0b2",
+                    bgcolor: "#e0e7ff",
                   transform: "translateY(-1px)",
-                  boxShadow: "0 4px 12px rgba(245, 124, 0, 0.3)",
+                    boxShadow: "0 4px 12px rgba(67, 56, 202, 0.25)",
                 },
               }}
             >
-              <CameraIcon sx={{ fontSize: 24 }} />
+                <UsbIcon sx={{ fontSize: 22 }} />
             </IconButton>
           </Tooltip>
+          )}
+
+          <Tooltip title="Open Camera">
+                <IconButton
+              id="tour-btn-camera"
+              onClick={handleCamera}
+                  sx={{
+                bgcolor: "#fff3e0",
+                color: "#f57c00",
+                    width: 48,
+                    height: 48,
+                    "&:hover": {
+                  bgcolor: "#ffe0b2",
+                      transform: "translateY(-1px)",
+                  boxShadow: "0 4px 12px rgba(245, 124, 0, 0.3)",
+                    },
+                  }}
+                >
+              <CameraIcon sx={{ fontSize: 24 }} />
+                </IconButton>
+              </Tooltip>
 
           <Tooltip title="Gợi ý lời giải">
             <IconButton
@@ -1190,8 +1190,8 @@ function TopBarContent({
           {/* For Physical Map: Show dedicated Reset Map button */}
           {isPhysicalMap && (
             <Tooltip title="Reset Map">
-              <span>
-                <IconButton
+            <span>
+              <IconButton
                   onClick={handleRestart}
                   disabled={!phaserConnected || !phaserReady}
                   sx={{
@@ -1248,49 +1248,49 @@ function TopBarContent({
                       ? handleRestart
                       : handleRun
                   }
-                  disabled={!workspace}
-                  sx={{
+                disabled={!workspace}
+                sx={{
                     bgcolor: isRunning
                       ? "#ef4444" // Red for Stop
                       : hasExecuted || isVictoryModalOpen || isDefeatModalOpen
                       ? "#ff9800" // Orange for Reset
                       : "#10b981", // Green for Execute
-                    color: "white",
+                  color: "white",
                     width: { xs: 36, sm: 42, md: 48 },
                     height: { xs: 36, sm: 42, md: 48 },
-                    "&:hover": {
+                  "&:hover": {
                       bgcolor: isRunning
                         ? "#dc2626" // Darker red
                         : hasExecuted || isVictoryModalOpen || isDefeatModalOpen
                         ? "#f57c00" // Darker orange
                         : "#059669", // Darker green
-                      transform: "translateY(-1px)",
-                      boxShadow: isRunning
-                        ? "0 4px 12px rgba(239, 68, 68, 0.4)"
+                    transform: "translateY(-1px)",
+                    boxShadow: isRunning
+                      ? "0 4px 12px rgba(239, 68, 68, 0.4)"
                         : hasExecuted || isVictoryModalOpen || isDefeatModalOpen
                         ? "0 4px 12px rgba(255, 152, 0, 0.4)"
-                        : "0 4px 12px rgba(16, 185, 129, 0.4)",
+                      : "0 4px 12px rgba(16, 185, 129, 0.4)",
+                  },
+                  "&:disabled": {
+                    bgcolor: "#9ca3af",
+                    color: "#6b7280",
+                    "&:hover": {
+                      transform: "none",
+                      boxShadow: "none",
                     },
-                    "&:disabled": {
-                      bgcolor: "#9ca3af",
-                      color: "#6b7280",
-                      "&:hover": {
-                        transform: "none",
-                        boxShadow: "none",
-                      },
-                    },
-                  }}
-                >
-                  {isRunning ? (
-                    <StopIcon sx={{ fontSize: 24 }} />
+                  },
+                }}
+              >
+                {isRunning ? (
+                  <StopIcon sx={{ fontSize: 24 }} />
                   ) : hasExecuted || isVictoryModalOpen || isDefeatModalOpen ? (
                     <RestartIcon sx={{ fontSize: 24 }} />
-                  ) : (
-                    <RunIcon sx={{ fontSize: 24 }} />
-                  )}
-                </IconButton>
-              </span>
-            </Tooltip>
+                ) : (
+                  <RunIcon sx={{ fontSize: 24 }} />
+                )}
+              </IconButton>
+            </span>
+          </Tooltip>
           )}
         </Box>
       </Toolbar>
@@ -1411,15 +1411,15 @@ function TopBarContent({
                   sx={{
                     borderColor: "#1976d2",
                     color: "#1976d2",
-                    "&:hover": {
+                "&:hover": {
                       borderColor: "#1565c0",
                       backgroundColor: "rgba(25, 118, 210, 0.04)",
-                    },
-                  }}
-                >
+                },
+              }}
+            >
                   Select Image
                 </Button>
-              </Box>
+        </Box>
             </Box>
           )}
 

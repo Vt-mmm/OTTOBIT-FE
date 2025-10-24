@@ -50,7 +50,7 @@ export const getCourseRobotsThunk = createAsyncThunk<
   } catch (error) {
     const err = error as AxiosError<ErrorResponse>;
     return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch course robots"
+      err.response?.data?.message || "Không thể tải danh sách robot"
     );
   }
 });
@@ -79,7 +79,7 @@ export const getCourseRobotsForAdminThunk = createAsyncThunk<
         err.response?.data
       );
       return rejectWithValue(
-        err.response?.data?.message || "Failed to fetch course robots for admin"
+        err.response?.data?.message || "Không thể tải danh sách robot"
       );
     }
   }
@@ -98,7 +98,7 @@ export const getCourseRobotByIdForAdminThunk = createAsyncThunk<
   } catch (error) {
     const err = error as AxiosError<ErrorResponse>;
     return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch course robot for admin"
+      err.response?.data?.message || "Không thể tải thông tin robot"
     );
   }
 });
@@ -157,7 +157,7 @@ export const getCourseRobotByIdThunk = createAsyncThunk<
   } catch (error) {
     const err = error as AxiosError<ErrorResponse>;
     return rejectWithValue(
-      err.response?.data?.message || "Failed to fetch course robot"
+      err.response?.data?.message || "Không thể tải thông tin robot"
     );
   }
 });
@@ -189,7 +189,7 @@ export const createCourseRobotThunk = createAsyncThunk<
       err.response?.data?.message ||
       err.response?.data?.errorCode ||
       err.message ||
-      "Failed to create course robot";
+      "Không thể tạo robot cho khóa học";
 
     return rejectWithValue(errorMessage);
   }
@@ -211,7 +211,7 @@ export const updateCourseRobotThunk = createAsyncThunk<
     } catch (error) {
       const err = error as AxiosError<ErrorResponse>;
       return rejectWithValue(
-        err.response?.data?.message || "Failed to update course robot"
+        err.response?.data?.message || "Không thể cập nhật robot"
       );
     }
   }
@@ -227,7 +227,7 @@ export const deleteCourseRobotThunk = createAsyncThunk<string, string>(
     } catch (error) {
       const err = error as AxiosError<ErrorResponse>;
       return rejectWithValue(
-        err.response?.data?.message || "Failed to delete course robot"
+        err.response?.data?.message || "Không thể xóa robot"
       );
     }
   }
@@ -254,7 +254,7 @@ export const restoreCourseRobotThunk = createAsyncThunk<
       message: err.message,
     });
     return rejectWithValue(
-      err.response?.data?.message || "Failed to restore course robot"
+      err.response?.data?.message || "Không thể khôi phục robot"
     );
   }
 });

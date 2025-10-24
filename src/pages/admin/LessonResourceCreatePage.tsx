@@ -23,7 +23,9 @@ export default function LessonResourceCreatePage() {
           </Typography>
         </Box>
       </Box>
-      <LessonResourceFormSection />
+      <LessonResourceFormSection
+        onSuccess={() => navigate("/admin/lesson-resource-management")}
+      />
     </AdminLayout>
   );
 }

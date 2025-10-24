@@ -38,7 +38,7 @@ export default function LessonManagementPage() {
     } catch (error: any) {
       const errorMessage = extractApiErrorMessage(
         error,
-        "Failed to load lesson details"
+        "Không thể tải chi tiết bài học"
       );
       console.error("Load lesson error:", errorMessage);
     }

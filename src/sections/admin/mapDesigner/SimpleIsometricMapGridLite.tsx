@@ -48,7 +48,8 @@ export default function SimpleIsometricMapGridLite({
 
   const FRAME_OFFSET_DEFAULT = { top: 10, right: 0, bottom: -10, left: 0 };
 
-  const handleMouseDown = (row: number, col: number) => {
+  const handleMouseDown = (row: number, col: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation(); // Prevent panning when clicking on cells
     const selected = MAP_ASSETS.find((a) => a.id === selectedAsset);
     const targetCell = mapGrid[row]?.[col];
     if (selected && selected.category !== "terrain") {
@@ -136,7 +137,8 @@ export default function SimpleIsometricMapGridLite({
             variant="h6"
             sx={{ fontWeight: 600, color: THEME_COLORS.text.primary }}
           >
-            {translate("admin.isometricMap")} ({GRID_CONFIG.rows}x{GRID_CONFIG.cols})
+            {translate("admin.isometricMap")} ({GRID_CONFIG.rows}x
+            {GRID_CONFIG.cols})
           </Typography>
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
             <IconButton
@@ -189,7 +191,7 @@ export default function SimpleIsometricMapGridLite({
             backdropFilter: "blur(4px)",
           }}
         >
-          Cell [{hoveredCell?.row ?? "-"}, {hoveredCell?.col ?? "-"}]
+          Ô[{hoveredCell?.row ?? "-"},{hoveredCell?.col ?? "-"}]
         </Box>
         <Box
           ref={containerRef}
@@ -208,6 +210,8 @@ export default function SimpleIsometricMapGridLite({
           onMouseDown={(e) => {
             if (!ENABLE_PAN) return;
             if (e.button !== 0) return;
+            // Only start panning when clicking background (not on SVG cells)
+            if ((e.target as Element).tagName === "svg") return;
             e.preventDefault();
             setIsPanning(true);
             panStartRef.current = { x: e.clientX, y: e.clientY };
@@ -279,7 +283,7 @@ export default function SimpleIsometricMapGridLite({
                       cursor: "pointer",
                       zIndex: 2,
                     }}
-                    onMouseDown={() => handleMouseDown(cell.row, cell.col)}
+                    onMouseDown={(e) => handleMouseDown(cell.row, cell.col, e)}
                     onMouseEnter={() => {
                       setHoveredCell({ row: cell.row, col: cell.col });
                       handleMouseEnter(cell.row, cell.col);

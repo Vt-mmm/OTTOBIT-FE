@@ -4,16 +4,13 @@ import {
   DialogTitle,
   DialogContent,
   TextField,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
   Pagination,
   Box,
   CircularProgress,
   Typography,
   InputAdornment,
   IconButton,
+  Stack,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
@@ -138,77 +135,173 @@ export default function PaginatedSelectDialog({
         )}
 
         {/* List */}
-        <Box sx={{ height: "400px", overflow: "auto" }}>
+        <Box
+          sx={{
+            maxHeight: 400,
+            overflowY: "auto",
+            border: "1px solid #e0e0e0",
+            borderRadius: 1,
+            p: 1,
+          }}
+        >
           {loading ? (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "200px",
-              }}
-            >
+            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
               <CircularProgress />
             </Box>
+          ) : items.length === 0 ? (
+            <Box sx={{ textAlign: "center", py: 4 }}>
+              <Typography variant="body2" color="text.secondary">
+                {noDataMessage}
+              </Typography>
+            </Box>
           ) : (
-            <List>
+            <Stack spacing={1}>
               {/* All option - always show */}
-              <ListItem disablePadding>
-                <ListItemButton
-                  onClick={() => handleItemClick({ id: "", title: "Tất cả" })}
-                  selected={selectedValue === ""}
-                  sx={{
-                    "&.Mui-selected": {
-                      backgroundColor: "primary.main",
-                      color: "primary.contrastText",
+              <Box
+                onClick={() => handleItemClick({ id: "", title: "Tất cả" })}
+                sx={{
+                  p: 2,
+                  border:
+                    selectedValue === ""
+                      ? "2px solid #1976d2"
+                      : "2px solid transparent",
+                  borderRadius: 1,
+                  bgcolor: selectedValue === "" ? "#f3f8ff" : "white",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease-in-out",
+                  "&:hover": {
+                    bgcolor: selectedValue === "" ? "#f3f8ff" : "#f5f5f5",
+                    borderColor: selectedValue === "" ? "#1976d2" : "#e0e0e0",
+                  },
+                }}
+              >
+                <Stack direction="row" alignItems="center" spacing={2}>
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 1,
+                      bgcolor: "#e8f5e8",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Typography variant="h6" color="success.main">
+                      A
+                    </Typography>
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography variant="subtitle1" fontWeight={600} noWrap>
+                      Tất cả
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" noWrap>
+                      Hiển thị tất cả
+                    </Typography>
+                  </Box>
+                  {selectedValue === "" && (
+                    <Box
+                      sx={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: "50%",
+                        bgcolor: "#1976d2",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        color="white"
+                        sx={{ fontSize: "14px" }}
+                      >
+                        ✓
+                      </Typography>
+                    </Box>
+                  )}
+                </Stack>
+              </Box>
+
+              {items.map((item) => {
+                const isSelected = selectedValue === getItemValue(item);
+                return (
+                  <Box
+                    key={getItemValue(item)}
+                    onClick={() => handleItemClick(item)}
+                    sx={{
+                      p: 2,
+                      border: isSelected
+                        ? "2px solid #1976d2"
+                        : "2px solid transparent",
+                      borderRadius: 1,
+                      bgcolor: isSelected ? "#f3f8ff" : "white",
+                      cursor: "pointer",
+                      transition: "all 0.2s ease-in-out",
                       "&:hover": {
-                        backgroundColor: "primary.dark",
+                        bgcolor: isSelected ? "#f3f8ff" : "#f5f5f5",
+                        borderColor: isSelected ? "#1976d2" : "#e0e0e0",
                       },
-                    },
-                  }}
-                >
-                  <ListItemText primary="Tất cả" />
-                </ListItemButton>
-              </ListItem>
-              {items.length === 0 ? (
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    height: "100px",
-                    px: 2,
-                  }}
-                >
-                  <Typography color="text.secondary">
-                    {noDataMessage}
-                  </Typography>
-                </Box>
-              ) : (
-                items.map((item) => {
-                  const isSelected = selectedValue === getItemValue(item);
-                  return (
-                    <ListItem key={getItemValue(item)} disablePadding>
-                      <ListItemButton
-                        onClick={() => handleItemClick(item)}
-                        selected={isSelected}
+                    }}
+                  >
+                    <Stack direction="row" alignItems="center" spacing={2}>
+                      <Box
                         sx={{
-                          "&.Mui-selected": {
-                            backgroundColor: "primary.main",
-                            color: "primary.contrastText",
-                            "&:hover": {
-                              backgroundColor: "primary.dark",
-                            },
-                          },
+                          width: 48,
+                          height: 48,
+                          borderRadius: 1,
+                          bgcolor: "#e3f2fd",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
                         }}
                       >
-                        <ListItemText primary={getItemLabel(item)} />
-                      </ListItemButton>
-                    </ListItem>
-                  );
-                })
-              )}
-            </List>
+                        <Typography variant="h6" color="primary.main">
+                          {getItemLabel(item).charAt(0).toUpperCase()}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography variant="subtitle1" fontWeight={600} noWrap>
+                          {getItemLabel(item)}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          noWrap
+                        >
+                          ID: {getItemValue(item)}
+                        </Typography>
+                      </Box>
+                      {isSelected && (
+                        <Box
+                          sx={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: "50%",
+                            bgcolor: "#1976d2",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            color="white"
+                            sx={{ fontSize: "14px" }}
+                          >
+                            ✓
+                          </Typography>
+                        </Box>
+                      )}
+                    </Stack>
+                  </Box>
+                );
+              })}
+            </Stack>
           )}
         </Box>
 
@@ -229,6 +322,8 @@ export default function PaginatedSelectDialog({
               onChange={handlePageChange}
               size="small"
               color="primary"
+              showFirstButton
+              showLastButton
             />
           </Box>
         )}

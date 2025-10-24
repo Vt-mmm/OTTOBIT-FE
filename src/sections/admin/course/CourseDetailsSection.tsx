@@ -28,6 +28,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import MapIcon from "@mui/icons-material/Map";
 import GroupIcon from "@mui/icons-material/Group";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -58,6 +59,18 @@ export default function CourseDetailsSection({
 
   // Sử dụng dữ liệu từ API lessons
   const lessons = lessonsData?.items || [];
+  const lessonsPagination = lessonsData
+    ? {
+        page: lessonsData.page || 1,
+        totalPages: lessonsData.totalPages || 1,
+        totalItems: lessonsData.total || 0,
+      }
+    : {
+        page: 1,
+        totalPages: 1,
+        totalItems: 0,
+      };
+
   const activeLessons = lessons.filter((lesson) => !lesson.isDeleted);
   const lessonsCount = activeLessons.length;
   const enrollmentsCount = course?.enrollmentsCount || 0;
@@ -74,18 +87,34 @@ export default function CourseDetailsSection({
     return lesson.challengesCount || 0;
   };
 
-  useEffect(() => {
+  // State for lessons pagination
+  const [lessonsPage, setLessonsPage] = useState(1);
+  const [lessonsPageSize] = useState(12);
+
+  const fetchLessons = (page: number) => {
     if (course?.id) {
       dispatch(
         getLessons({
           courseId: course.id,
           includeDeleted: true,
-          pageNumber: 1,
-          pageSize: 10, // Lấy tất cả lessons của course
+          pageNumber: page,
+          pageSize: lessonsPageSize,
         })
       );
     }
+  };
+
+  useEffect(() => {
+    fetchLessons(1);
+    setLessonsPage(1);
   }, [dispatch, course?.id]);
+
+  // Update lessonsPage when pagination changes
+  useEffect(() => {
+    if (lessonsPagination.page !== lessonsPage) {
+      setLessonsPage(lessonsPagination.page);
+    }
+  }, [lessonsPagination.page, lessonsPage]);
 
   // Fetch course detail by id (admin)
   const [detail, setDetail] = useState<CourseResult | null>(null);
@@ -470,6 +499,9 @@ export default function CourseDetailsSection({
                 </Box>
               ) : courseMaps.length === 0 ? (
                 <Box sx={{ textAlign: "center", py: 4 }}>
+                  <MapIcon
+                    sx={{ fontSize: 64, color: "text.disabled", mb: 2 }}
+                  />
                   <Typography variant="h6" color="text.secondary">
                     Chưa gắn map nào cho khóa học này
                   </Typography>
@@ -586,35 +618,15 @@ export default function CourseDetailsSection({
               {/* Pagination */}
               {courseMapsPagination.totalPages > 1 && (
                 <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      disabled={courseMapsPagination.page <= 1}
-                      onClick={() =>
-                        fetchCourseMaps(courseMapsPagination.page - 1)
-                      }
-                    >
-                      Trước
-                    </Button>
-                    <Typography variant="body2">
-                      Trang {courseMapsPagination.page} /{" "}
-                      {courseMapsPagination.totalPages}
-                    </Typography>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      disabled={
-                        courseMapsPagination.page >=
-                        courseMapsPagination.totalPages
-                      }
-                      onClick={() =>
-                        fetchCourseMaps(courseMapsPagination.page + 1)
-                      }
-                    >
-                      Sau
-                    </Button>
-                  </Stack>
+                  <Pagination
+                    count={courseMapsPagination.totalPages}
+                    page={courseMapsPagination.page}
+                    onChange={(_, page) => fetchCourseMaps(page)}
+                    color="primary"
+                    size="small"
+                    showFirstButton
+                    showLastButton
+                  />
                 </Box>
               )}
             </CardContent>
@@ -700,7 +712,7 @@ export default function CourseDetailsSection({
                             fontWeight={600}
                             noWrap
                           >
-                            {m.title || m.name || "Untitled Map"}
+                            {m.title || m.name || "Bản đồ không có tên"}
                           </Typography>
                           <Typography
                             variant="body2"
@@ -751,6 +763,8 @@ export default function CourseDetailsSection({
                   onChange={(_, page) => fetchAvailableMaps(page)}
                   color="primary"
                   size="small"
+                  showFirstButton
+                  showLastButton
                 />
               </Box>
             )}
@@ -876,21 +890,9 @@ export default function CourseDetailsSection({
         <Grid item xs={12}>
           <Card>
             <CardContent>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-                sx={{ mb: 3 }}
-              >
-                <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                  Danh sách bài học
-                </Typography>
-                <Chip
-                  label={`${lessonsCount} bài học`}
-                  color="primary"
-                  variant="outlined"
-                />
-              </Stack>
+              <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
+                Danh sách bài học
+              </Typography>
 
               {lessonsLoading ? (
                 <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
@@ -909,14 +911,7 @@ export default function CourseDetailsSection({
                   </Typography>
                 </Box>
               ) : (
-                <TableContainer
-                  component={Paper}
-                  variant="outlined"
-                  sx={{
-                    maxHeight: 400,
-                    overflowY: "auto",
-                  }}
-                >
+                <TableContainer component={Paper} variant="outlined">
                   <Table stickyHeader>
                     <TableHead>
                       <TableRow>
@@ -1023,6 +1018,24 @@ export default function CourseDetailsSection({
                     </TableBody>
                   </Table>
                 </TableContainer>
+              )}
+
+              {/* Lessons Pagination */}
+              {lessonsPagination.totalPages > 1 && (
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                  <Pagination
+                    count={lessonsPagination.totalPages}
+                    page={lessonsPagination.page}
+                    onChange={(_, page) => {
+                      setLessonsPage(page);
+                      fetchLessons(page);
+                    }}
+                    color="primary"
+                    size="small"
+                    showFirstButton
+                    showLastButton
+                  />
+                </Box>
               )}
             </CardContent>
           </Card>
