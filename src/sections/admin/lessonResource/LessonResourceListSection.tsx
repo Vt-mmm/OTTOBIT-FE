@@ -17,12 +17,11 @@ import {
   MenuItem,
   Pagination,
   Select,
-  Snackbar,
-  Alert,
   TextField,
   Typography,
   Chip,
   Tooltip,
+  Alert,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import RestoreIcon from "@mui/icons-material/Restore";
@@ -103,11 +102,6 @@ export default function LessonResourceListSection({
   const [formLessonLoading, setFormLessonLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<any | null>(null);
   const [confirmRestore, setConfirmRestore] = useState<any | null>(null);
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity: "success" | "error";
-  }>({ open: false, message: "", severity: "success" });
 
   // Create / Edit / Detail states
   const [createOpen, setCreateOpen] = useState(false);
@@ -352,19 +346,9 @@ export default function LessonResourceListSection({
       await axiosClient.delete(
         ROUTES_API_LESSON_RESOURCE.DELETE(confirmDelete.id)
       );
-      setSnackbar({
-        open: true,
-        message: "Xóa tài nguyên thành công",
-        severity: "success",
-      });
       if (onNotify) onNotify("Xóa tài nguyên thành công");
       refresh();
     } catch (e: any) {
-      setSnackbar({
-        open: true,
-        message: extractApiErrorMessage(e, "Không thể xóa"),
-        severity: "error",
-      });
     } finally {
       setConfirmDelete(null);
     }
@@ -376,19 +360,9 @@ export default function LessonResourceListSection({
       await axiosClient.post(
         ROUTES_API_LESSON_RESOURCE.RESTORE(confirmRestore.id)
       );
-      setSnackbar({
-        open: true,
-        message: "Khôi phục tài nguyên thành công",
-        severity: "success",
-      });
       if (onNotify) onNotify("Khôi phục tài nguyên thành công");
       refresh();
     } catch (e: any) {
-      setSnackbar({
-        open: true,
-        message: extractApiErrorMessage(e, "Không thể khôi phục"),
-        severity: "error",
-      });
     } finally {
       setConfirmRestore(null);
     }
@@ -702,40 +676,43 @@ export default function LessonResourceListSection({
         </Grid>
       )}
 
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          p: 2,
-        }}
-      >
-        <FormControl size="small">
-          <InputLabel>Page size</InputLabel>
-          <Select
-            label="Page size"
-            value={pageSize}
-            onChange={(e) => {
-              setPageSize(Number(e.target.value));
-              setPage(1);
-            }}
-            sx={{ minWidth: 120 }}
-          >
-            {[6, 12, 24, 48].map((n) => (
-              <MenuItem key={n} value={n}>
-                {n}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <Pagination
-          count={totalPages}
-          page={page}
-          onChange={(_, v) => setPage(v)}
-          shape="rounded"
-          color="primary"
-        />
-      </Box>
+      {/* Pagination */}
+      {totalPages > 1 && items.length > 0 && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            p: 2,
+          }}
+        >
+          <FormControl size="small">
+            <InputLabel>Số mục mỗi trang</InputLabel>
+            <Select
+              label="Số mục mỗi trang"
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setPage(1);
+              }}
+              sx={{ minWidth: 120 }}
+            >
+              {[6, 12, 24, 48].map((n) => (
+                <MenuItem key={n} value={n}>
+                  {n}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(_, v) => setPage(v)}
+            shape="rounded"
+            color="primary"
+          />
+        </Box>
+      )}
 
       <Dialog open={!!confirmDelete} onClose={() => setConfirmDelete(null)}>
         <DialogTitle>Xác nhận xóa</DialogTitle>
@@ -902,11 +879,6 @@ export default function LessonResourceListSection({
                     type: Number(form.type),
                     fileUrl: form.fileUrl.trim(),
                   });
-                  setSnackbar({
-                    open: true,
-                    message: "Cập nhật tài nguyên thành công",
-                    severity: "success",
-                  });
                 } else {
                   await axiosClient.post(LR.CREATE, {
                     lessonId: form.lessonId,
@@ -915,41 +887,17 @@ export default function LessonResourceListSection({
                     type: Number(form.type),
                     fileUrl: form.fileUrl.trim(),
                   });
-                  setSnackbar({
-                    open: true,
-                    message: "Tạo tài nguyên thành công",
-                    severity: "success",
-                  });
                 }
                 setCreateOpen(false);
                 setEditItem(null);
                 refresh();
-              } catch (e: any) {
-                setSnackbar({
-                  open: true,
-                  message: extractApiErrorMessage(
-                    e,
-                    editItem ? "Không thể cập nhật" : "Không thể tạo"
-                  ),
-                  severity: "error",
-                });
-              }
+              } catch (e: any) {}
             }}
           >
             {editItem ? "Lưu thay đổi" : "Tạo mới"}
           </Button>
         </DialogActions>
       </Dialog>
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
-      >
-        <Alert severity={snackbar.severity} sx={{ width: "100%" }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }

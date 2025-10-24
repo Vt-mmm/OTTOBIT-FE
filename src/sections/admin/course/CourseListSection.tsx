@@ -262,22 +262,26 @@ export default function CourseListSection({
               </Select>
             </FormControl>
             <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>Sắp xếp theo</InputLabel>
+              <InputLabel>{translate("admin.sortBy")}</InputLabel>
               <Select
-                label="Sắp xếp theo"
+                label={translate("admin.sortBy")}
                 value={sortBy}
                 onChange={(e) =>
                   setSortBy(Number(e.target.value) as CourseSortBy)
                 }
               >
-                <MenuItem value={CourseSortBy.Title}>Tên khóa học</MenuItem>
-                <MenuItem value={CourseSortBy.CreatedAt}>Ngày tạo</MenuItem>
+                <MenuItem value={CourseSortBy.Title}>
+                  {translate("admin.courseName")}
+                </MenuItem>
+                <MenuItem value={CourseSortBy.CreatedAt}>
+                  {translate("admin.createdDate")}
+                </MenuItem>
               </Select>
             </FormControl>
             <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>Thứ tự</InputLabel>
+              <InputLabel>{translate("admin.order")}</InputLabel>
               <Select
-                label="Thứ tự"
+                label={translate("admin.order")}
                 value={sortDirection}
                 onChange={(e) => setSortDirection(Number(e.target.value))}
               >
@@ -313,8 +317,8 @@ export default function CourseListSection({
                 onChange={(e) => setType(e.target.value as any)}
               >
                 <MenuItem value="">{translate("common.All")}</MenuItem>
-                <MenuItem value={1}>Miễn phí</MenuItem>
-                <MenuItem value={2}>Trả phí</MenuItem>
+                <MenuItem value={1}>{translate("admin.free")}</MenuItem>
+                <MenuItem value={2}>{translate("admin.paid")}</MenuItem>
               </Select>
             </FormControl>
             <Button
@@ -425,8 +429,8 @@ export default function CourseListSection({
                         size="small"
                         label={
                           ((course as any)?.type ?? 1) === 2
-                            ? "Trả phí"
-                            : "Miễn phí"
+                            ? translate("admin.paid")
+                            : translate("admin.free")
                         }
                         color={
                           ((course as any)?.type ?? 1) === 2
@@ -541,38 +545,40 @@ export default function CourseListSection({
         </Grid>
       )}
 
-      {/* Pagination */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          p: 2,
-        }}
-      >
-        <FormControl size="small">
-          <InputLabel>{translate("common.PageSize")}</InputLabel>
-          <Select
-            label={translate("common.PageSize")}
-            value={pageSize}
-            onChange={(e) => setPageSize(Number(e.target.value))}
-            sx={{ minWidth: 120 }}
-          >
-            {[6, 12, 24, 48].map((n) => (
-              <MenuItem key={n} value={n}>
-                {n}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <Pagination
-          count={totalPages}
-          page={page}
-          onChange={(_, v) => setPage(v)}
-          shape="rounded"
-          color="primary"
-        />
-      </Box>
+      {/* Pagination - Only show if more than 1 page */}
+      {totalPages > 1 && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            p: 2,
+          }}
+        >
+          <FormControl size="small">
+            <InputLabel>{translate("common.PageSize")}</InputLabel>
+            <Select
+              label={translate("common.PageSize")}
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              sx={{ minWidth: 120 }}
+            >
+              {[6, 12, 24, 48].map((n) => (
+                <MenuItem key={n} value={n}>
+                  {n}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(_, v) => setPage(v)}
+            shape="rounded"
+            color="primary"
+          />
+        </Box>
+      )}
 
       <Dialog open={!!confirmDelete} onClose={() => setConfirmDelete(null)}>
         <DialogTitle>{translate("admin.confirmDeleteTitle")}</DialogTitle>

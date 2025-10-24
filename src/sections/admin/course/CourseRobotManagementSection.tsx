@@ -20,11 +20,13 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Pagination,
 } from "@mui/material";
 import {
   Add as AddIcon,
   Delete as DeleteIcon,
   Restore as RestoreIcon,
+  SmartToy as RobotIcon,
 } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "store/config";
 import {
@@ -51,6 +53,7 @@ export default function CourseRobotManagementSection({
 
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [showDeleted, setShowDeleted] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     courseRobotId: string | null;
@@ -72,59 +75,60 @@ export default function CourseRobotManagementSection({
 
   // Use courseRobots.data (from GET_ALL endpoint)
   const items = courseRobots.data?.items || [];
+  const robotsPagination = courseRobots.data
+    ? {
+        page: courseRobots.data.page || 1,
+        totalPages: courseRobots.data.totalPages || 1,
+        totalItems: courseRobots.data.total || 0,
+      }
+    : { page: 1, totalPages: 1, totalItems: 0 };
   const isLoading = courseRobots.isLoading || false;
   const error = courseRobots.error || null;
 
-  useEffect(() => {
-    console.log("🔄 Fetching course robots for courseId:", courseId);
+  // Debug pagination
+  console.log("🔍 [Robots] courseRobots.data:", courseRobots.data);
+  console.log("🔍 [Robots] robotsPagination:", robotsPagination);
+  console.log("🔍 [Robots] items.length:", items.length);
+
+  const fetchCourseRobots = (page: number) => {
+    console.log("🔄 Fetching course robots - page:", page, "size: 12");
     dispatch(
       getCourseRobotsForAdminThunk({
         courseId,
-        pageSize: 10,
+        size: 12,
+        page: page,
         includeDelete: showDeleted, // Matches BE field name: IncludeDelete
-      })
+      } as any)
     );
+  };
+
+  useEffect(() => {
+    console.log("🔄 Fetching course robots for courseId:", courseId);
+    fetchCourseRobots(1);
+    setCurrentPage(1);
   }, [dispatch, courseId, showDeleted]);
 
   useEffect(() => {
     if (operations.deleteSuccess) {
       setDeleteDialog({ open: false, courseRobotId: null, robotName: "" });
       dispatch(clearSuccessFlags());
-      dispatch(
-        getCourseRobotsForAdminThunk({
-          courseId,
-          pageSize: 10,
-          includeDelete: showDeleted,
-        })
-      );
+      fetchCourseRobots(currentPage);
     }
-  }, [operations.deleteSuccess, dispatch, courseId, showDeleted]);
+  }, [operations.deleteSuccess, dispatch, currentPage]);
 
   useEffect(() => {
     if (operations.restoreSuccess) {
       setRestoreDialog({ open: false, courseRobotId: null, robotName: "" });
       dispatch(clearSuccessFlags());
-      dispatch(
-        getCourseRobotsForAdminThunk({
-          courseId,
-          pageSize: 10,
-          includeDelete: showDeleted,
-        })
-      );
+      fetchCourseRobots(currentPage);
     }
-  }, [operations.restoreSuccess, dispatch, courseId, showDeleted]);
+  }, [operations.restoreSuccess, dispatch, currentPage]);
 
   const handleAddSuccess = () => {
     console.log(
       "✅ CourseRobotManagementSection: handleAddSuccess called, reloading..."
     );
-    dispatch(
-      getCourseRobotsForAdminThunk({
-        courseId,
-        pageSize: 10,
-        includeDelete: showDeleted,
-      })
-    );
+    fetchCourseRobots(currentPage);
   };
 
   const handleDeleteClick = (courseRobotId: string, robotName: string) => {
@@ -241,13 +245,15 @@ export default function CourseRobotManagementSection({
       {items.length === 0 ? (
         <Card>
           <CardContent>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              textAlign="center"
-            >
-              Chưa có robot nào được thêm vào khóa học này.
-            </Typography>
+            <Box sx={{ textAlign: "center", py: 4 }}>
+              <RobotIcon sx={{ fontSize: 64, color: "text.disabled", mb: 2 }} />
+              <Typography variant="h6" color="text.secondary">
+                Chưa có robot nào được thêm vào khóa học này
+              </Typography>
+              <Typography variant="body2" color="text.disabled">
+                Thêm robot để yêu cầu học viên sử dụng
+              </Typography>
+            </Box>
           </CardContent>
         </Card>
       ) : (
@@ -369,6 +375,24 @@ export default function CourseRobotManagementSection({
         </TableContainer>
       )}
 
+      {/* Pagination */}
+      {robotsPagination.totalPages > 1 && (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+          <Pagination
+            count={robotsPagination.totalPages}
+            page={robotsPagination.page}
+            onChange={(_, page) => {
+              setCurrentPage(page);
+              fetchCourseRobots(page);
+            }}
+            color="primary"
+            size="small"
+            showFirstButton
+            showLastButton
+          />
+        </Box>
+      )}
+
       {/* Add Robot Dialog */}
       <AddRobotToCourseDialog
         open={addDialogOpen}
@@ -430,6 +454,15 @@ export default function CourseRobotManagementSection({
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Add Robot Dialog */}
+      <AddRobotToCourseDialog
+        open={addDialogOpen}
+        onClose={() => setAddDialogOpen(false)}
+        courseId={courseId}
+        courseName={courseName}
+        onSuccess={handleAddSuccess}
+      />
     </Box>
   );
 }

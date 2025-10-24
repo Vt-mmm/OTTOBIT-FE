@@ -23,6 +23,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import SchoolIcon from "@mui/icons-material/School";
+import FolderIcon from "@mui/icons-material/Folder";
 import { LessonResult } from "../../../common/@types/lesson";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getChallenges } from "../../../redux/challenge/challengeSlice";
@@ -411,21 +412,9 @@ export default function LessonDetailsSection({
         <Grid item xs={12}>
           <Card>
             <CardContent>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-                sx={{ mb: 3 }}
-              >
-                <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                  Danh sách thử thách
-                </Typography>
-                <Chip
-                  label={`${challengesData?.items?.length || 0} thử thách`}
-                  color="primary"
-                  variant="outlined"
-                />
-              </Stack>
+              <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
+                Danh sách thử thách
+              </Typography>
 
               {challengesLoading ? (
                 <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
@@ -454,8 +443,6 @@ export default function LessonDetailsSection({
                     component={Paper}
                     variant="outlined"
                     sx={{
-                      maxHeight: 400,
-                      overflowY: "auto",
                       maxWidth: "100%",
                     }}
                   >
@@ -573,6 +560,8 @@ export default function LessonDetailsSection({
                         onChange={(_, page) => setChallengePage(page)}
                         color="primary"
                         size="small"
+                        showFirstButton
+                        showLastButton
                       />
                     </Box>
                   )}
@@ -586,21 +575,9 @@ export default function LessonDetailsSection({
         <Grid item xs={12}>
           <Card>
             <CardContent>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-                sx={{ mb: 3 }}
-              >
-                <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                  Tài nguyên học tập
-                </Typography>
-                <Chip
-                  label={`${resources?.length || 0} tài nguyên`}
-                  color="primary"
-                  variant="outlined"
-                />
-              </Stack>
+              <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
+                Tài nguyên học tập
+              </Typography>
 
               {resourcesLoading ? (
                 <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
@@ -612,6 +589,9 @@ export default function LessonDetailsSection({
                 </Alert>
               ) : !resources || resources.length === 0 ? (
                 <Box sx={{ textAlign: "center", py: 4 }}>
+                  <FolderIcon
+                    sx={{ fontSize: 64, color: "text.disabled", mb: 2 }}
+                  />
                   <Typography variant="h6" color="text.secondary">
                     Chưa có tài nguyên nào
                   </Typography>
@@ -752,6 +732,8 @@ export default function LessonDetailsSection({
                         onChange={(_, page) => setResourcesPage(page)}
                         color="primary"
                         size="small"
+                        showFirstButton
+                        showLastButton
                       />
                     </Box>
                   )}

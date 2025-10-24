@@ -30,7 +30,10 @@ export default function LessonResourceEditPage() {
           {translate("admin.backButton")}
         </Button>
       </Box>
-      <LessonResourceFormSection />
+      <LessonResourceFormSection
+        id={id}
+        onSuccess={() => navigate("/admin/lesson-resource-management")}
+      />
     </AdminLayout>
   );
 }

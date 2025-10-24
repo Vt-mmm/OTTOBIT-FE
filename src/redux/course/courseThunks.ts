@@ -10,10 +10,7 @@ import {
   GetCoursesRequest,
 } from "common/@types/course";
 import { extractApiErrorMessage } from "utils/errorHandler";
-import {
-  setMessageSuccess,
-  setMessageError,
-} from "store/course/courseSlice";
+import { setMessageSuccess, setMessageError } from "store/course/courseSlice";
 
 // API Response wrapper interface
 interface ApiResponse<T> {
@@ -211,7 +208,7 @@ export const createCourseThunk = createAsyncThunk<
     if (response.data.errors || response.data.errorCode) {
       const errorMessage = extractApiErrorMessage(
         { response: { data: response.data } },
-        "Failed to create course"
+        "Không thể tạo khóa học"
       );
       throw new Error(errorMessage);
     }
@@ -220,12 +217,12 @@ export const createCourseThunk = createAsyncThunk<
       throw new Error("No course data received");
     }
 
-    dispatch(setMessageSuccess("Course created successfully"));
+    dispatch(setMessageSuccess("Tạo khóa học thành công"));
     return response.data.data;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
-      "Failed to create course"
+      "Không thể tạo khóa học"
     );
     dispatch(setMessageError(errorMessage));
     return rejectWithValue(errorMessage);
@@ -249,7 +246,7 @@ export const updateCourseThunk = createAsyncThunk<
     if (response.data.errors || response.data.errorCode) {
       const errorMessage = extractApiErrorMessage(
         { response: { data: response.data } },
-        "Failed to update course"
+        "Không thể cập nhật khóa học"
       );
       throw new Error(errorMessage);
     }
@@ -258,12 +255,12 @@ export const updateCourseThunk = createAsyncThunk<
       throw new Error("No course data received");
     }
 
-    dispatch(setMessageSuccess("Course updated successfully"));
+    dispatch(setMessageSuccess("Cập nhật khóa học thành công"));
     return response.data.data;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
-      "Failed to update course"
+      "Không thể cập nhật khóa học"
     );
     dispatch(setMessageError(errorMessage));
     return rejectWithValue(errorMessage);
@@ -284,17 +281,17 @@ export const deleteCourseThunk = createAsyncThunk<
     if (response.data.errors || response.data.errorCode) {
       const errorMessage = extractApiErrorMessage(
         { response: { data: response.data } },
-        "Failed to delete course"
+        "Không thể xóa khóa học"
       );
       throw new Error(errorMessage);
     }
 
-    dispatch(setMessageSuccess("Course deleted successfully"));
+    dispatch(setMessageSuccess("Xóa khóa học thành công"));
     return id;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
-      "Failed to delete course"
+      "Không thể xóa khóa học"
     );
     dispatch(setMessageError(errorMessage));
     return rejectWithValue(errorMessage);
@@ -312,13 +309,13 @@ export const restoreCourseThunk = createAsyncThunk<
       axiosClient.post<CourseResult>(ROUTES_API_COURSE.RESTORE(id))
     );
 
-    dispatch(setMessageSuccess("Course restored successfully"));
+    dispatch(setMessageSuccess("Khôi phục khóa học thành công"));
     // API restore trả về trực tiếp CourseResult, không wrap trong ApiResponse
     return response.data;
   } catch (error: any) {
     const errorMessage = extractApiErrorMessage(
       error,
-      "Failed to restore course"
+      "Không thể khôi phục khóa học"
     );
     dispatch(setMessageError(errorMessage));
     return rejectWithValue(errorMessage);

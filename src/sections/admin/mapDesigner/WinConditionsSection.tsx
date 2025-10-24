@@ -1731,7 +1731,7 @@ export default function WinConditionsSection({
                 }
                 if (invalidTargetCounts) {
                   const msg =
-                    "Each target in Victory must have Count of at least 1";
+                    "Mỗi mục tiêu trong Chiến thắng phải có Số lượng ít nhất là 1";
                   try {
                     if ((window as any).Snackbar?.enqueueSnackbar) {
                       (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1747,7 +1747,7 @@ export default function WinConditionsSection({
                   return;
                 }
                 if (missingDescription) {
-                  const msg = "Victory description cannot be empty";
+                  const msg = "Mô tả chiến thắng không được để trống";
                   try {
                     if ((window as any).Snackbar?.enqueueSnackbar) {
                       (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1774,7 +1774,7 @@ export default function WinConditionsSection({
                   Number(victoryGreen) < 1;
                 if (invalidBattery) {
                   const msg =
-                    "Batteries on Map: Count and Spread must be 1 or higher";
+                    "Pin trên bản đồ: Số lượng và Phân cách phải từ 1 trở lên";
                   try {
                     if ((window as any).Snackbar?.enqueueSnackbar) {
                       (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1790,7 +1790,7 @@ export default function WinConditionsSection({
                   return;
                 }
                 if (missingBatteryDescription) {
-                  const msg = "Victory description cannot be empty";
+                  const msg = "Mô tả chiến thắng không được để trống";
                   try {
                     if ((window as any).Snackbar?.enqueueSnackbar) {
                       (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1807,7 +1807,7 @@ export default function WinConditionsSection({
                 }
                 if (allVictoryCountsZero) {
                   const msg =
-                    "Victory: at least one of the three battery types (Yellow/Red/Green) must have quantity of 1 or higher";
+                    "Chiến thắng: ít nhất một trong ba loại pin (Vàng/Đỏ/Xanh) phải có số lượng từ 1 trở lên";
                   try {
                     if ((window as any).Snackbar?.enqueueSnackbar) {
                       (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1825,7 +1825,7 @@ export default function WinConditionsSection({
               }
               // Validate min/max cards coherence
               if (Number(minCards) < 1) {
-                const msg = "Min cards must be 1 or higher";
+                const msg = "Số thẻ tối thiểu phải từ 1 trở lên";
                 try {
                   if ((window as any).Snackbar?.enqueueSnackbar) {
                     (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1841,7 +1841,7 @@ export default function WinConditionsSection({
                 return;
               }
               if (Number(maxCards) < 1) {
-                const msg = "Max cards must be 1 or higher";
+                const msg = "Số thẻ tối đa phải từ 1 trở lên";
                 try {
                   if ((window as any).Snackbar?.enqueueSnackbar) {
                     (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1858,7 +1858,7 @@ export default function WinConditionsSection({
               }
               if (Number(maxCards) < Number(minCards)) {
                 const msg =
-                  "Max cards must be greater than or equal to Min cards";
+                  "Số thẻ tối đa phải lớn hơn hoặc bằng số thẻ tối thiểu";
                 try {
                   if ((window as any).Snackbar?.enqueueSnackbar) {
                     (window as any).Snackbar.enqueueSnackbar(msg, {
@@ -1903,7 +1903,7 @@ export default function WinConditionsSection({
                     0
                   );
                   if (victoryTotal > boxesOnMap) {
-                    const msg = `Box victory total (${victoryTotal}) exceeds boxes configured (${boxesOnMap}).`;
+                    const msg = `Tổng chiến thắng hộp (${victoryTotal}) vượt quá số hộp đã cấu hình (${boxesOnMap}).`;
                     if ((window as any).Snackbar?.enqueueSnackbar) {
                       (window as any).Snackbar.enqueueSnackbar(msg, {
                         variant: "error",
@@ -1945,7 +1945,7 @@ export default function WinConditionsSection({
                       ? "green"
                       : null;
                   if (exceededColor) {
-                    const msg = `Battery victory for ${exceededColor} requires ${need[exceededColor]} but only ${have[exceededColor]} configured.`;
+                    const msg = `Chiến thắng pin ${exceededColor} cần ${need[exceededColor]} nhưng chỉ có ${have[exceededColor]} được cấu hình.`;
                     if ((window as any).Snackbar?.enqueueSnackbar) {
                       (window as any).Snackbar.enqueueSnackbar(msg, {
                         variant: "error",
@@ -2463,6 +2463,8 @@ export default function WinConditionsSection({
                     page={orderPage}
                     onChange={(_, page: number) => setOrderPage(page)}
                     size="small"
+                    showFirstButton
+                    showLastButton
                   />
                 </Box>
               )}

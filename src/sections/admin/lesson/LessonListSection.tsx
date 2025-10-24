@@ -147,9 +147,12 @@ export default function LessonListSection({
 
   useEffect(() => {
     const meta = data;
-    if (meta?.totalPages) setTotalPages(meta.totalPages);
-    else if (meta?.total && meta?.size)
-      setTotalPages(Math.max(1, Math.ceil(meta.total / meta.size)));
+    if (meta?.totalPages) {
+      setTotalPages(meta.totalPages);
+    } else if (meta?.total && meta?.size) {
+      const calculatedPages = Math.ceil(meta.total / meta.size);
+      setTotalPages(calculatedPages > 0 ? calculatedPages : 1);
+    }
   }, [data]);
 
   const items = data?.items || [];
@@ -545,7 +548,7 @@ export default function LessonListSection({
       )}
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {totalPages > 1 && items.length > 0 && (
         <Box
           sx={{
             display: "flex",
@@ -555,9 +558,9 @@ export default function LessonListSection({
           }}
         >
           <FormControl size="small">
-            <InputLabel>Page size</InputLabel>
+            <InputLabel>Số mục mỗi trang</InputLabel>
             <Select
-              label="Page size"
+              label="Số mục mỗi trang"
               value={pageSize}
               onChange={(e) => {
                 setPageSize(Number(e.target.value));

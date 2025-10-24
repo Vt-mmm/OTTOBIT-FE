@@ -32,7 +32,7 @@ export default function CourseManagementPage() {
     } catch (error: any) {
       const errorMessage = extractApiErrorMessage(
         error,
-        "Failed to load course details"
+        "Không thể tải chi tiết khóa học"
       );
       console.error("Load course error:", errorMessage);
     }
