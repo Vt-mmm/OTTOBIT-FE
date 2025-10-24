@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   Box,
   Typography,
@@ -21,6 +22,7 @@ import { CourseType } from "common/@types/course";
 import { useLocales } from "../../../../hooks";
 import { PATH_USER } from "../../../../routes/paths";
 import AddToCartButton from "../../../../components/cart/AddToCartButton";
+import { showErrorToast } from "../../../../utils/toast";
 
 interface CourseHeroSectionProps {
   course: {
@@ -38,6 +40,8 @@ interface CourseHeroSectionProps {
   isEnrolling?: boolean;
   onEnrollCourse?: () => void;
   onGoToCourse?: () => void;
+  enrollmentError?: string;
+  onClearEnrollmentError?: () => void;
 }
 
 export default function CourseHeroSection({
@@ -47,11 +51,25 @@ export default function CourseHeroSection({
   isEnrolling = false,
   onEnrollCourse,
   onGoToCourse,
+  enrollmentError,
+  onClearEnrollmentError,
 }: CourseHeroSectionProps) {
   const { translate } = useLocales();
   
   const isFree = course.type === CourseType.Free || (course.price ?? 0) === 0;
   const isPremium = !isFree;
+
+  // Show enrollment error as toast when it appears, then clear it
+  useEffect(() => {
+    if (enrollmentError) {
+      showErrorToast(enrollmentError);
+      // Clear immediately so effect doesn't trigger again
+      setTimeout(() => {
+        onClearEnrollmentError?.();
+      }, 0);
+    }
+  }, [enrollmentError]);
+  // Note: Remove onClearEnrollmentError from deps to avoid infinite loop
 
   return (
     <Box>

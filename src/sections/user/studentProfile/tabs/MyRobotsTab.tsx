@@ -19,6 +19,7 @@ import { useAppDispatch, useAppSelector } from "store/config";
 import { getMyActivationCodesThunk } from "store/activationCode/activationCodeThunks";
 import { getRobotsThunk } from "store/robot/robotThunks";
 import ActivateRobotDialog from "components/robot/ActivateRobotDialog";
+import RobotCoursesDialog from "components/robot/RobotCoursesDialog";
 import { useLocales } from "hooks";
 import { CodeStatus } from "common/@types/activationCode";
 
@@ -34,6 +35,11 @@ export default function MyRobotsTab({
   const { myCodes } = useAppSelector((state) => state.activationCode);
   const { robots } = useAppSelector((state) => state.robot);
   const [activateDialogOpen, setActivateDialogOpen] = useState(false);
+  const [coursesDialogOpen, setCoursesDialogOpen] = useState(false);
+  const [selectedRobot, setSelectedRobot] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   useEffect(() => {
     // Lấy danh sách activation codes đã sử dụng (status = Used)
@@ -57,6 +63,14 @@ export default function MyRobotsTab({
         pageSize: 10,
       })
     );
+  };
+
+  const handleRobotSettings = (robot: any) => {
+    setSelectedRobot({
+      id: robot.id,
+      name: robot.name,
+    });
+    setCoursesDialogOpen(true);
   };
 
   // Lấy danh sách robots đã kích hoạt từ activation codes
@@ -293,7 +307,11 @@ export default function MyRobotsTab({
                 </Typography>
               </CardContent>
               <CardActions sx={{ justifyContent: "flex-end", px: 2, pb: 2 }}>
-                <IconButton size="small" color="primary">
+                <IconButton
+                  size="small"
+                  color="primary"
+                  onClick={() => handleRobotSettings(robot)}
+                >
                   <SettingsIcon />
                 </IconButton>
               </CardActions>
@@ -301,6 +319,13 @@ export default function MyRobotsTab({
           ))}
         </Box>
       )}
+
+      <RobotCoursesDialog
+        open={coursesDialogOpen}
+        robotId={selectedRobot?.id || ""}
+        robotName={selectedRobot?.name || ""}
+        onClose={() => setCoursesDialogOpen(false)}
+      />
 
       <ActivateRobotDialog
         open={activateDialogOpen}

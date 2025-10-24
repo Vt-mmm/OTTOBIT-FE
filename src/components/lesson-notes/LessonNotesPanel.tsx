@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Box, Button, Stack, Typography, Pagination } from "@mui/material";
 import { Add as AddIcon } from "@mui/icons-material";
 import { useLocales } from "hooks";
 import { useAppDispatch, useAppSelector } from "store/config";
@@ -44,8 +44,9 @@ export default function LessonNotesPanel({
   const [noteTimestamp, setNoteTimestamp] = useState<number | undefined>(
     undefined
   );
+  const [pageNumber, setPageNumber] = useState(1);
 
-  // Load notes when component mounts or lessonId/courseId changes
+  // Load notes when component mounts or lessonId/courseId/pageNumber changes
   useEffect(() => {
     // Clear old notes immediately to prevent flash of wrong data
     dispatch(clearMyNotes());
@@ -55,10 +56,16 @@ export default function LessonNotesPanel({
       fetchMyLessonNotes({
         lessonId,
         courseId, // Add courseId to ensure proper scoping
+        pageNumber,
         pageSize: 10,
       })
     );
-  }, [dispatch, lessonId, courseId]); // Add courseId to dependency array
+  }, [dispatch, lessonId, courseId, pageNumber]); // Add pageNumber to dependency array
+
+  // Reset page when lesson/course changes
+  useEffect(() => {
+    setPageNumber(1);
+  }, [lessonId, courseId]);
 
   const handleOpenDialog = (note?: LessonNote) => {
     if (note) {
@@ -119,7 +126,12 @@ export default function LessonNotesPanel({
     }
   };
 
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+    setPageNumber(value);
+  };
+
   const notes = myNotes?.items || [];
+  const totalPages = myNotes?.totalPages || 0;
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -148,6 +160,21 @@ export default function LessonNotesPanel({
         isUpdating={isUpdating}
         isDeleting={isDeleting}
       />
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+          <Pagination
+            count={totalPages}
+            page={pageNumber}
+            onChange={handlePageChange}
+            color="primary"
+            size="medium"
+            showFirstButton
+            showLastButton
+          />
+        </Box>
+      )}
 
       <NoteEditor
         open={isDialogOpen}

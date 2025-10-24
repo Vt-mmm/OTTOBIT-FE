@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
+} from "@mui/icons-material";
+import {
   Box,
   AppBar,
   Toolbar,
@@ -136,6 +140,13 @@ function TopBarContent({
 
   // Lesson context for map navigation
   const [lessonId, setLessonId] = useState<string | null>(null);
+  const [currentChallengesPage, setCurrentChallengesPage] = useState(1);
+  const [totalChallengesPages, setTotalChallengesPages] = useState(1);
+  const [allChallengesCache, setAllChallengesCache] = useState<any[]>([]); // Cache ALL challenges for unlock logic
+  const [isChallengesLoading, setIsChallengesLoading] = useState(false); // Track loading state for pagination
+  const [hasInitialFetchAllChallenges, setHasInitialFetchAllChallenges] = useState(false); // Track if we've fetched all challenges
+  const [isRestoringPage, setIsRestoringPage] = useState(false); // Flag to skip auto-save during restore
+  const challengesPageSize = 8; // Show 8 challenges per page
 
   // Field input manager for cleanup
   const { forceCleanupFields } = useFieldInputManager();
@@ -189,18 +200,134 @@ function TopBarContent({
     }
   }, [searchParams, currentChallengeId]);
 
-  // Fetch lesson challenges (up to 8) when lessonId is available
-  useEffect(() => {
-    if (!lessonId) return;
-    const items = (lessonChallenges as any)?.items || [];
-    if (items.length === 0) {
-      // Fetch a larger page size to include all challenges for the lesson
-      fetchChallengesByLesson(lessonId, 1, 10);
+  // ✅ All challenges cache for unlock logic and pagination
+  const allChallengesForUnlockCheck = useMemo(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📦 [TopBar] allChallengesForUnlockCheck updated:', {
+        totalChallengesInCache: allChallengesCache.length,
+        challengeIds: allChallengesCache.map((c: any) => ({ id: c.id, title: c.title, order: c.order })),
+      });
     }
-  }, [lessonId, fetchChallengesByLesson, lessonChallenges]);
+    return allChallengesCache;
+  }, [allChallengesCache]);
+  
+  // ✅ Paginated challenges for display (only current page from cache)
+  const lessonChallengeItems = useMemo(() => {
+    // Page from cache (not from API response)
+    // This ensures we display correct page even for challenges on page 2+
+    const startIdx = (currentChallengesPage - 1) * challengesPageSize;
+    const endIdx = startIdx + challengesPageSize;
+    const paginated = allChallengesForUnlockCheck.slice(startIdx, endIdx);
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📄 [TopBar] lessonChallengeItems paginated for display:', {
+        totalInCache: allChallengesForUnlockCheck.length,
+        currentPage: currentChallengesPage,
+        pageSize: challengesPageSize,
+        startIdx,
+        endIdx,
+        itemsInPage: paginated.length,
+        pageItems: paginated.map((c: any) => ({ id: c.id, title: c.title, order: c.order })),
+        allCacheIds: allChallengesForUnlockCheck.map((c: any) => c.id),
+        totalPages: totalChallengesPages
+      });
+    }
+    return paginated;
+  }, [allChallengesForUnlockCheck, currentChallengesPage, challengesPageSize, totalChallengesPages]);
 
-  // Challenge list for lesson
-  const lessonChallengeItems = (lessonChallenges as any)?.items || [];
+  // ✅ CRITICAL: Fetch ALL challenges ONCE on initial lessonId load
+  // Use larger pageSize to ensure we get all challenges (not just completed ones)
+  // The lesson/challenges API returns ALL challenges, unlike submissions which only returns completed ones
+  useEffect(() => {
+    if (!lessonId || hasInitialFetchAllChallenges) return;
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 [TopBar] Initial fetch - loading ALL challenges for lesson:', lessonId);
+    }
+    
+    // ✅ Fetch with large pageSize (100) to get all challenges in ONE request
+    // This populates allChallengesCache which is used for:
+    // 1. Unlock status checking (uses all challenges + best submissions)
+    // 2. Next page button gating logic
+    // 3. Challenge position calculation across pages (1-8, 9-16, etc)
+    // Note: Submissions API only returns COMPLETED challenges
+    //       Challenges API returns ALL challenges regardless of completion
+    fetchChallengesByLesson(lessonId, 1, 100);
+    setHasInitialFetchAllChallenges(true);
+  }, [lessonId]);
+  // ⚠️ DO NOT add fetchChallengesByLesson to dependencies
+  
+  // Clear loading state once challenges are received
+  useEffect(() => {
+    if (lessonChallengeItems.length > 0) {
+      setIsChallengesLoading(false);
+    }
+  }, [lessonChallengeItems]);
+  
+  // ✅ Update total pages and cache challenges
+  // Works for both initial fetch (all challenges) and paginated fetches
+  useEffect(() => {
+    const meta = (lessonChallenges as any);
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 [TopBar] lessonChallenges API response received:', {
+        hasData: !!meta,
+        itemsLength: meta?.items?.length,
+        totalPages: meta?.totalPages,
+        total: meta?.total,
+        size: meta?.size,
+        page: meta?.page,
+        allMeta: meta
+      });
+    }
+    
+    // Calculate total pages based on UI pageSize (8), NOT backend pageSize
+    // Backend returns totalPages based on its own pageSize (100)
+    // But we display 8 challenges per page, so we need to recalculate
+    if (meta?.total !== undefined) {
+      // Always use UI's pageSize (8) for calculation, regardless of backend pageSize
+      const uiBasedPages = Math.max(1, Math.ceil(meta.total / challengesPageSize));
+      setTotalChallengesPages(uiBasedPages);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📊 [TopBar] Total pages calculated (UI-based):', {
+          total: meta.total,
+          bePageSize: meta.size,
+          uiPageSize: challengesPageSize,
+          calculatedPages: uiBasedPages,
+          beReturnedPages: meta.totalPages
+        });
+      }
+    }
+    
+    // ✅ Cache challenges for unlock logic
+    // On initial fetch with pageSize:100, this gets ALL challenges
+    // On paginated fetches, this appends page challenges to existing cache
+    if (meta?.items && Array.isArray(meta.items) && meta.items.length > 0) {
+      setAllChallengesCache((prev) => {
+        // Create map to avoid duplicates by ID
+        const map = new Map();
+        prev.forEach((c: any) => map.set(c.id, c));
+        meta.items.forEach((c: any) => map.set(c.id, c));
+        
+        const accumulated = Array.from(map.values());
+        if (process.env.NODE_ENV === 'development') {
+          console.log('📊 [TopBar] Challenge cache updated:', {
+            previousCacheSize: prev.length,
+            newItemsFromApi: meta.items.length,
+            totalCached: accumulated.length,
+            currentPage: currentChallengesPage,
+            totalPages: meta.totalPages,
+            apiPage: meta.page,
+            apiSize: meta.size,
+            allChallengeIds: accumulated.map((c: any) => ({ id: c.id, title: c.title, order: c.order }))
+          });
+        }
+        return accumulated;
+      });
+    } else if (process.env.NODE_ENV === 'development') {
+      console.log('⚠️ [TopBar] No items in API response:', { items: meta?.items });
+    }
+  }, [lessonChallenges]);
 
 
   // Submissions from Redux (progress info)
@@ -257,19 +384,23 @@ function TopBarContent({
     setSubmissionsReady(false);
   }, [lessonId]);
 
-  // ✅ OPTIMIZED: Pre-compute unlock status for all challenges to avoid repeated checks
+  // ✅ OPTIMIZED: Pre-compute unlock status using ALL challenges (not just current page)
+  // This ensures sequential unlock checking works across pagination
   const challengeUnlockMap = useMemo(() => {
     const map = new Map<string, boolean>();
+    
+    // Only check challenges on current page, but use ALL challenges for unlock logic
     lessonChallengeItems.forEach((challenge: any) => {
       const isUnlocked = isChallengeAccessible(
         challenge,
-        lessonChallengeItems,
+        allChallengesForUnlockCheck, // Use ALL challenges for proper sequential checking
         submissionsItems
       );
       map.set(challenge.id, isUnlocked);
     });
+    
     return map;
-  }, [lessonChallengeItems, submissionsItems]);
+  }, [lessonChallengeItems, allChallengesForUnlockCheck, submissionsItems]);
 
   // Check accessibility using pre-computed map (no repeated calculations)
   const isChallengeUnlocked = useCallback(
@@ -278,6 +409,38 @@ function TopBarContent({
     },
     [challengeUnlockMap]
   );
+  
+  // ✅ OPTIMIZED: Pre-compute if next page is accessible (moved to top level to avoid hook order issues)
+  const isNextPageAccessible = useMemo(() => {
+    if (currentChallengesPage >= totalChallengesPages) {
+      return false; // Already at last page
+    }
+    
+    // Calculate first challenge index on next page
+    const nextPageFirstIdx = currentChallengesPage * challengesPageSize;
+    const nextPageFirstChallenge = allChallengesForUnlockCheck[nextPageFirstIdx];
+    
+    // Check if first challenge on next page is accessible
+    if (!nextPageFirstChallenge) {
+      return false; // No challenge on next page
+    }
+    
+    const canAccess = isChallengeAccessible(
+      nextPageFirstChallenge,
+      allChallengesForUnlockCheck,
+      submissionsItems
+    );
+    
+    if (process.env.NODE_ENV === 'development' && !canAccess) {
+      console.log('🔐 [TopBar] Next page LOCKED - first challenge not unlocked:', {
+        nextPageNum: currentChallengesPage + 1,
+        firstChallengeId: nextPageFirstChallenge.id,
+        firstChallengeTitle: nextPageFirstChallenge.title
+      });
+    }
+    
+    return canAccess;
+  }, [currentChallengesPage, totalChallengesPages, challengesPageSize, allChallengesForUnlockCheck, submissionsItems]);
 
   // Function to submit solution after completing challenge - memoized to prevent recreations
   const submitSolution = useCallback(
@@ -392,7 +555,60 @@ function TopBarContent({
     
     // Reset submission refresh flag when challenge changes
     submissionRefreshInProgress.current = false;
-  }, [currentChallengeId]);
+    
+    // ✅ NEW: Restore page state when challenge changes (re-entering from lesson detail)
+    // This handles navigation flow: Studio (page 2) → Lesson Detail → Click challenge again
+    if (lessonId) {
+      const storageKey = `lesson-page-${lessonId}`;
+      const savedPage = sessionStorage.getItem(storageKey);
+      if (savedPage) {
+        const restorePage = parseInt(savedPage, 10);
+        setCurrentChallengesPage(restorePage);
+        console.log('📍 [TopBar] Restored page on challenge change:', {
+          challengeId: currentChallengeId,
+          restorePage,
+          storageKey
+        });
+      }
+    }
+  }, [currentChallengeId, lessonId]);
+
+  // Reset pagination and cache when lessonId changes
+  useEffect(() => {
+    if (!lessonId) return;
+    
+    // ✅ Try to restore page state from sessionStorage
+    // Use sessionStorage (clears when tab closes) instead of localStorage (persists longer)
+    const storageKey = `lesson-page-${lessonId}`;
+    const savedPage = sessionStorage.getItem(storageKey);
+    const restorePage = savedPage ? parseInt(savedPage, 10) : 1;
+    
+    console.log('📍 [TopBar] Attempting to restore page state:', {
+      lessonId,
+      storageKey,
+      savedPageRaw: savedPage,
+      restorePage,
+      allSessionStorage: Object.keys(sessionStorage).filter(k => k.includes('lesson-page')),
+      shouldRestore: !!savedPage
+    });
+    
+    // ✅ Set flag to prevent auto-save while restoring
+    setIsRestoringPage(true);
+    
+    setCurrentChallengesPage(restorePage);
+    setTotalChallengesPages(1);
+    setAllChallengesCache([]); // Clear accumulated challenges
+    setIsChallengesLoading(false); // Reset loading state
+    setHasInitialFetchAllChallenges(false); // Reset initial fetch flag
+    
+    console.log('✅ [TopBar] Page state restored:', { restorePage });
+    
+    // Reset restore flag after a short delay to allow auto-save to resume
+    setTimeout(() => {
+      setIsRestoringPage(false);
+      console.log('🆗 [TopBar] Restore flag cleared, auto-save resumed');
+    }, 100);
+  }, [lessonId]);
 
   // Listen for victory events from Phaser - optimized effect with minimal dependencies
   useEffect(() => {
@@ -440,6 +656,59 @@ function TopBarContent({
       window.removeEventListener('phaser-replay-triggered', handleReplayTriggered);
     };
   }, []);
+
+  // ✅ NEW: Listen for page switch events from VictoryModal
+  // When user clicks "Next Challenge" in victory modal, switch TopBar to correct page
+  useEffect(() => {
+    const handleSwitchPage = (event: any) => {
+      const challengeId = event.detail?.challengeId;
+      if (!challengeId) return;
+
+      // Find which page this challenge is on
+      const targetIndex = allChallengesForUnlockCheck.findIndex(
+        (c: any) => c.id === challengeId
+      );
+      if (targetIndex !== -1) {
+        const targetPage = Math.floor(targetIndex / challengesPageSize) + 1;
+        setCurrentChallengesPage(targetPage);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('📑 [TopBar] Page switched from VictoryModal:', {
+            challengeId,
+            targetIndex,
+            targetPage,
+            pageSize: challengesPageSize,
+          });
+        }
+      }
+    };
+
+    window.addEventListener('studio-switch-page', handleSwitchPage);
+    return () => {
+      window.removeEventListener('studio-switch-page', handleSwitchPage);
+    };
+  }, [allChallengesForUnlockCheck, challengesPageSize]);
+
+  // ✅ NEW: Save page state to sessionStorage whenever page changes
+  // This allows restoration when user goes back from lesson detail
+  useEffect(() => {
+    if (!lessonId || isRestoringPage) {
+      console.log('🔐 [TopBar] Skipping auto-save:', { lessonId, isRestoringPage });
+      return;
+    }
+    
+    const storageKey = `lesson-page-${lessonId}`;
+    const valueToSave = currentChallengesPage.toString();
+    sessionStorage.setItem(storageKey, valueToSave);
+    
+    console.log('💾 [TopBar] Auto-saving page state on change:', {
+      lessonId,
+      currentPage: currentChallengesPage,
+      storageKey,
+      savedValue: valueToSave,
+      verifyRead: sessionStorage.getItem(storageKey),
+      isRestoringPage
+    });
+  }, [lessonId, currentChallengesPage, isRestoringPage]);
 
   const handleRun = async () => {
     // Prevent execution for physical maps
@@ -526,6 +795,26 @@ function TopBarContent({
 
   // Navigate back to lesson or previous page
   const handleBackToLesson = () => {
+    console.log('🔙 [TopBar] handleBackToLesson called:', {
+      lessonId,
+      currentChallengesPage,
+      shouldSave: lessonId && currentChallengesPage > 1
+    });
+    
+    // ✅ Save current page state before navigating away
+    if (lessonId && currentChallengesPage > 1) {
+      const storageKey = `lesson-page-${lessonId}`;
+      sessionStorage.setItem(storageKey, currentChallengesPage.toString());
+      console.log('💾 [TopBar] Saved page state to sessionStorage:', {
+        lessonId,
+        currentPage: currentChallengesPage,
+        storageKey,
+        allSessionStorage: Object.keys(sessionStorage).filter(k => k.includes('lesson-page'))
+      });
+    } else {
+      console.log('⏭️ [TopBar] Skipped save - page 1 or no lessonId');
+    }
+    
     if (lessonId) {
       navigate(PATH_USER.lessonDetail.replace(":id", lessonId));
       } else {
@@ -554,6 +843,25 @@ function TopBarContent({
     setHasExecuted(false);
         setIsRunning(false);
     submissionRefreshInProgress.current = false; // Reset refresh flag
+
+    // ✅ FIX: Auto-switch TopBar page to show target challenge
+    // Find which page the target challenge is on
+    const targetIndex = allChallengesForUnlockCheck.findIndex((c: any) => c.id === targetChallengeId);
+    if (targetIndex !== -1) {
+      const targetPage = Math.floor(targetIndex / challengesPageSize) + 1;
+      if (targetPage !== currentChallengesPage) {
+        setCurrentChallengesPage(targetPage);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('📑 [TopBar] Auto-switching page for target challenge:', {
+            targetChallengeId,
+            targetIndex,
+            targetPage,
+            currentPage: currentChallengesPage,
+            pageSize: challengesPageSize
+          });
+        }
+      }
+    }
 
     // Update navigation data BEFORE navigating to keep sessionStorage in sync
     if (lessonId) {
@@ -991,7 +1299,7 @@ function TopBarContent({
           </Box>
         </Box>
 
-        {/* Center Section: Map selector */}
+        {/* Center Section: Map selector with Pagination */}
         {/* ✅ FIX: Only render when both challenges AND submissions are ready */}
         {lessonChallengeItems && 
          lessonChallengeItems.length > 0 && 
@@ -1017,13 +1325,44 @@ function TopBarContent({
                 bgcolor: "#ffffff",
                 borderRadius: "9999px",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                overflowX: "auto",
                 maxWidth: "100%",
               }}
             >
+              {/* Previous Page Button - Show when page > 1 or total pages > 1 */}
+              {totalChallengesPages > 1 && (
+                <Tooltip title={isChallengesLoading ? "Đang tải..." : "Trang trước"}>
+                  <span>
+                    <IconButton
+                      onClick={() => setCurrentChallengesPage((p) => Math.max(1, p - 1))}
+                      disabled={currentChallengesPage === 1 || isChallengesLoading}
+                      sx={{
+                        minWidth: { xs: 28, sm: 32 },
+                        width: { xs: 28, sm: 36 },
+                        height: { xs: 28, sm: 36 },
+                        p: 0,
+                        color: currentChallengesPage === 1 || isChallengesLoading ? "#d1d5db" : "#10b981",
+                        opacity: isChallengesLoading ? 0.6 : 1,
+                        transition: "opacity 0.2s ease-in-out",
+                        "&:hover": {
+                          bgcolor: currentChallengesPage === 1 || isChallengesLoading ? "transparent" : "#f0fdf4",
+                        },
+                        "&:disabled": {
+                          color: "#d1d5db",
+                        },
+                      }}
+                    >
+                      <ChevronLeftIcon sx={{ fontSize: 20 }} />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              )}
+
+              {/* Challenge Buttons - Disabled during loading */}
               {lessonChallengeItems.map((c: any, idx: number) => {
                 const selected = c.id === currentChallengeId;
-                const unlocked = isChallengeUnlocked(c.id);
+                const unlocked = !isChallengesLoading && isChallengeUnlocked(c.id); // Disable during loading
+                // Calculate actual position in lesson (considering pagination)
+                const actualPosition = (currentChallengesPage - 1) * challengesPageSize + idx + 1;
 
                 const Btn = (
                   <Button
@@ -1031,7 +1370,7 @@ function TopBarContent({
                     onClick={() => handleSelectChallenge(c.id)}
                     variant={selected ? "contained" : "outlined"}
                     size="small"
-                    disabled={!unlocked}
+                    disabled={!unlocked || isChallengesLoading} // Disable all during loading
                     sx={{
                       minWidth: { xs: 28, sm: 32 },
                       width: { xs: 28, sm: 36 },
@@ -1040,20 +1379,22 @@ function TopBarContent({
                       p: 0,
                       fontWeight: 700,
                       fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                      color: selected
+                      color: selected && !isChallengesLoading
                         ? "#ffffff"
                         : unlocked
                         ? "#10b981"
                         : "#9ca3af",
-                      bgcolor: selected ? "#10b981" : "transparent",
+                      bgcolor: selected && !isChallengesLoading ? "#10b981" : "transparent",
                       borderColor: unlocked ? "#10b981" : "#d1d5db",
+                      opacity: isChallengesLoading ? 0.6 : 1, // Visual feedback for loading
+                      transition: "opacity 0.2s ease-in-out",
                       "&:hover": {
-                        bgcolor: selected
+                        bgcolor: selected && !isChallengesLoading
                           ? "#059669"
-                          : unlocked
+                          : unlocked && !isChallengesLoading
                           ? "#f0fdf4"
                           : "transparent",
-                        borderColor: unlocked ? "#059669" : "#d1d5db",
+                        borderColor: unlocked && !isChallengesLoading ? "#059669" : "#d1d5db",
                       },
                       "&:disabled": {
                         color: "#9ca3af",
@@ -1061,18 +1402,63 @@ function TopBarContent({
                       },
                     }}
                   >
-                    {unlocked ? idx + 1 : <LockIcon fontSize="inherit" />}
+                    {isChallengesLoading ? (
+                      <CircularProgress size={16} sx={{ color: "#9ca3af" }} />
+                    ) : unlocked ? (
+                      actualPosition
+                    ) : (
+                      <LockIcon fontSize="inherit" />
+                    )}
                   </Button>
                 );
 
-                return unlocked ? (
+                return unlocked && !isChallengesLoading ? (
                   Btn
                 ) : (
-                  <Tooltip key={c.id} title="Hoàn thành map trước để mở khóa">
+                  <Tooltip 
+                    key={c.id} 
+                    title={isChallengesLoading ? "Đang tải..." : "Hoàn thành map trước để mở khóa"}
+                  >
                     <span>{Btn}</span>
                   </Tooltip>
                 );
               })}
+
+              {/* Next Page Button - Show when page < total pages or total pages > 1 */}
+              {/* ✅ FIX: Disable if first challenge on next page is NOT unlocked (sequential gating) */}
+              {totalChallengesPages > 1 && (
+                <Tooltip 
+                  title={isChallengesLoading ? "Đang tải..." : 
+                         currentChallengesPage === totalChallengesPages ? "Đã đến trang cuối" :
+                         !isNextPageAccessible ? "Hoàn thành màn chương này để mở màn tiếp theo" :
+                         "Trang tiếp"
+                  }
+                >
+                  <span>
+                    <IconButton
+                      onClick={() => setCurrentChallengesPage((p) => Math.min(totalChallengesPages, p + 1))}
+                      disabled={currentChallengesPage === totalChallengesPages || isChallengesLoading || !isNextPageAccessible}
+                      sx={{
+                        minWidth: { xs: 28, sm: 32 },
+                        width: { xs: 28, sm: 36 },
+                        height: { xs: 28, sm: 36 },
+                        p: 0,
+                        color: currentChallengesPage === totalChallengesPages || isChallengesLoading || !isNextPageAccessible ? "#d1d5db" : "#10b981",
+                        opacity: isChallengesLoading ? 0.6 : 1,
+                        transition: "opacity 0.2s ease-in-out",
+                        "&:hover": {
+                          bgcolor: currentChallengesPage === totalChallengesPages || isChallengesLoading || !isNextPageAccessible ? "transparent" : "#f0fdf4",
+                        },
+                        "&:disabled": {
+                          color: "#d1d5db",
+                        },
+                      }}
+                    >
+                      <ChevronRightIcon sx={{ fontSize: 20 }} />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              )}
             </Box>
           </Box>
         )}
