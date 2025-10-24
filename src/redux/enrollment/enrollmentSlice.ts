@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { toast } from "react-toastify";
 import { EnrollmentResult, EnrollmentsResponse } from "common/@types/enrollment";
 import {
   getMyEnrollmentsThunk,
@@ -36,6 +35,10 @@ interface EnrollmentState {
     isCompleting: boolean;
     enrollError: string | null;
     completeError: string | null;
+    // Yup-compatible error field for form validation
+    enrollmentFieldErrors: {
+      enrollmentError?: string;
+    };
   };
 }
 
@@ -62,6 +65,7 @@ const initialState: EnrollmentState = {
     isCompleting: false,
     enrollError: null,
     completeError: null,
+    enrollmentFieldErrors: {},
   },
 };
 
@@ -69,13 +73,6 @@ const enrollmentSlice = createSlice({
   name: "enrollment",
   initialState,
   reducers: {
-    // Toast actions
-    setMessageSuccess: (_state, action: PayloadAction<string>) => {
-      toast.success(action.payload);
-    },
-    setMessageError: (_state, action: PayloadAction<string>) => {
-      toast.error(action.payload);
-    },
     
     // Clear my enrollments
     clearMyEnrollments: (state) => {
@@ -110,6 +107,20 @@ const enrollmentSlice = createSlice({
       state.currentEnrollment.error = null;
       state.operations.enrollError = null;
       state.operations.completeError = null;
+      state.operations.enrollmentFieldErrors = {};
+    },
+
+    // Set enrollment field error (Yup-compatible)
+    setEnrollmentFieldError: (
+      state,
+      action: PayloadAction<{ field: string; message: string }>
+    ) => {
+      state.operations.enrollmentFieldErrors[action.payload.field as keyof typeof state.operations.enrollmentFieldErrors] = action.payload.message;
+    },
+
+    // Clear enrollment field error
+    clearEnrollmentFieldError: (state, action: PayloadAction<string>) => {
+      delete state.operations.enrollmentFieldErrors[action.payload as keyof typeof state.operations.enrollmentFieldErrors];
     },
 
     // Update enrollment progress (optimistic update)
@@ -256,13 +267,13 @@ const enrollmentSlice = createSlice({
 });
 
 export const {
-  setMessageSuccess,
-  setMessageError,
   clearMyEnrollments,
   clearEnrollments,
   clearCurrentEnrollment,
   setCurrentEnrollment,
   clearEnrollmentErrors,
+  setEnrollmentFieldError,
+  clearEnrollmentFieldError,
   updateEnrollmentProgress,
   resetEnrollmentState,
 } = enrollmentSlice.actions;

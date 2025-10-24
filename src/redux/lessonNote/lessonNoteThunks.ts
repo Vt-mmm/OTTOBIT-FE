@@ -27,25 +27,33 @@ export const fetchMyLessonNotes = createAsyncThunk<
   { rejectValue: string }
 >("lessonNote/fetchMyLessonNotes", async (params = {}, { rejectWithValue }) => {
   try {
+    const requestParams = {
+      PageNumber: params.pageNumber || 1,
+      PageSize: params.pageSize || 10,
+      LessonId: params.lessonId,
+      CourseId: params.courseId,
+      LessonResourceId: params.lessonResourceId,
+      SearchTerm: params.searchTerm,
+    };
+    
+    console.log("🌐 API Request params:", requestParams); // Debug log
+    
     const response = await axiosClient.get(ROUTES_API_LESSON_NOTE.MY_NOTES, {
-      params: {
-        PageNumber: params.pageNumber || 1,
-        PageSize: params.pageSize || 10,
-        LessonId: params.lessonId,
-        CourseId: params.courseId,
-        LessonResourceId: params.lessonResourceId,
-        SearchTerm: params.searchTerm,
-      },
+      params: requestParams,
     });
 
     // Extract pagination data from response
-    return {
+    const result = {
       items: response.data.data.items,
       page: response.data.data.page,
       size: response.data.data.size,
       total: response.data.data.total,
       totalPages: response.data.data.totalPages,
     };
+    
+    console.log("✅ API Response:", `Page ${result.page}/${result.totalPages}, ${result.items.length} items`); // Debug log
+    
+    return result;
   } catch (error: any) {
     return rejectWithValue(
       error.response?.data?.message || "Failed to fetch lesson notes"

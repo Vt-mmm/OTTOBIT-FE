@@ -11,6 +11,7 @@ import {
   IconButton,
   Skeleton,
   Tooltip,
+  Pagination,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { PATH_USER } from "routes/paths";
@@ -78,6 +79,8 @@ export default function EnrolledCoursesTab({
     Record<string, { total: number; completed: number; percent: number }>
   >({});
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [lessonsMap, setLessonsMap] = useState<
     Record<
       string,
@@ -109,17 +112,23 @@ export default function EnrolledCoursesTab({
         const [rIn, rDone] = await Promise.all([
           axiosClient.get<ApiResponse<any>>(
             ROUTES_API_ENROLLMENT.MY_ENROLLMENTS,
-            { params: { pageNumber: 1, pageSize: 10, isCompleted: false } }
+            { params: { pageNumber: page, pageSize: 6, isCompleted: false } }
           ),
           axiosClient.get<ApiResponse<any>>(
             ROUTES_API_ENROLLMENT.MY_ENROLLMENTS,
-            { params: { pageNumber: 1, pageSize: 10, isCompleted: true } }
+            { params: { pageNumber: page, pageSize: 6, isCompleted: true } }
           ),
         ]);
         const list: EnrollmentItem[] = [
           ...(rIn.data?.data?.items ?? []),
           ...(rDone.data?.data?.items ?? []),
         ];
+        
+        // Calculate total pages (use max from both responses)
+        const inProgressPages = rIn.data?.data?.totalPages ?? 1;
+        const completedPages = rDone.data?.data?.totalPages ?? 1;
+        setTotalPages(Math.max(inProgressPages, completedPages));
+        
         if (!mounted) return;
         setEnrollments(list);
         // Fetch stats for each distinct course
@@ -167,7 +176,7 @@ export default function EnrolledCoursesTab({
     return () => {
       mounted = false;
     };
-  }, [propEnrollments]);
+  }, [propEnrollments, page]);
 
   const items = enrollments;
 
@@ -617,6 +626,34 @@ export default function EnrolledCoursesTab({
             </Paper>
           );
         })}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            mt: 4,
+            mb: 2,
+            pt: 3,
+            borderTop: "1px solid",
+            borderColor: "divider",
+          }}
+        >
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(_event, value) => {
+              setPage(value);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            color="primary"
+            size="large"
+            showFirstButton
+            showLastButton
+          />
+        </Box>
+      )}
     </Stack>
   );
 }

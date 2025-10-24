@@ -18,16 +18,12 @@ import {
   Stack,
   Alert,
   CircularProgress,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
+  Pagination,
 } from "@mui/material";
 import {
   Search as SearchIcon,
   ExpandMore as ExpandMoreIcon,
   Delete as DeleteIcon,
-  FilterList as FilterIcon,
   NoteAlt as NoteIcon,
   School as SchoolIcon,
 } from "@mui/icons-material";
@@ -52,59 +48,34 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
   );
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCourse, setSelectedCourse] = useState<string>("all");
+  const [pageNumber, setPageNumber] = useState(1);
+  const pageSize = 8; // 8 notes mỗi trang
 
-  // Load all notes on mount
+  // Reset to page 1 when search changes (MUST be before fetch effect)
   useEffect(() => {
-    dispatch(fetchMyLessonNotes({ pageSize: 10 }));
-  }, [dispatch]);
+    setPageNumber(1);
+  }, [searchTerm]);
 
-  // Get unique courses from notes
-  const coursesMap = useMemo(() => {
-    const map = new Map<string, number>();
+  // Load all notes on mount, page change, or search change
+  useEffect(() => {
+    console.log("📄 Fetching notes - Page:", pageNumber, "Search:", searchTerm); // Debug log
+    dispatch(
+      fetchMyLessonNotes({
+        pageNumber,
+        pageSize,
+        searchTerm: searchTerm || undefined,
+      })
+    );
+  }, [dispatch, pageNumber, searchTerm, pageSize]);
 
-    if (myNotes?.items) {
-      myNotes.items.forEach((note) => {
-        const courseTitle =
-          note.courseTitle || translate("student.UndefinedCourse");
-        map.set(courseTitle, (map.get(courseTitle) || 0) + 1);
-      });
-    }
+  // Get notes directly from API response (already filtered by server)
+  const notes = myNotes?.items || [];
 
-    return map;
-  }, [myNotes]);
+  // Group notes by course title
+  const groupedNotes = useMemo(() => {
+    const groups = new Map<string, typeof notes>();
 
-  // Filter notes
-  const filteredNotes = useMemo(() => {
-    let filtered = myNotes?.items || [];
-
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (note) =>
-          note.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          note.lessonTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          note.courseTitle?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Filter by course
-    if (selectedCourse !== "all") {
-      filtered = filtered.filter(
-        (note) =>
-          (note.courseTitle || translate("student.UndefinedCourse")) ===
-          selectedCourse
-      );
-    }
-
-    return filtered;
-  }, [myNotes, searchTerm, selectedCourse]);
-
-  // Group filtered notes by course title
-  const filteredGroupedNotes = useMemo(() => {
-    const groups = new Map<string, typeof filteredNotes>();
-
-    filteredNotes.forEach((note) => {
+    notes.forEach((note) => {
       const courseTitle =
         note.courseTitle || translate("student.UndefinedCourse");
       if (!groups.has(courseTitle)) {
@@ -114,15 +85,30 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
     });
 
     return groups;
-  }, [filteredNotes]);
+  }, [notes]);
 
   const handleDelete = async (noteId: string) => {
     if (window.confirm(translate("student.ConfirmDeleteNote"))) {
       await dispatch(deleteLessonNote(noteId));
-      // Reload notes after delete
-      dispatch(fetchMyLessonNotes({ pageSize: 10 }));
+      // Reload notes after delete with current search
+      dispatch(
+        fetchMyLessonNotes({
+          pageNumber,
+          pageSize,
+          searchTerm: searchTerm || undefined,
+        })
+      );
     }
   };
+
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+    console.log("🔄 Page changed to:", value); // Debug log
+    setPageNumber(value);
+    // Scroll to top when changing page
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const totalPages = myNotes?.totalPages || 0;
 
   // Loading state
   if (loading || isLoading) {
@@ -133,8 +119,8 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
     );
   }
 
-  // Empty state
-  if (!myNotes?.items || myNotes.items.length === 0) {
+  // Empty state - check total, not items (items might be empty due to pagination)
+  if (myNotes?.total === 0) {
     return (
       <Box sx={{ textAlign: "center", py: 8 }}>
         <NoteIcon sx={{ fontSize: 80, color: "text.disabled", mb: 2 }} />
@@ -168,41 +154,21 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
             }}
           />
 
-          {/* Course Filter */}
-          <FormControl sx={{ minWidth: 200 }}>
-            <InputLabel>{translate("student.Course")}</InputLabel>
-            <Select
-              value={selectedCourse}
-              label={translate("student.Course")}
-              onChange={(e) => setSelectedCourse(e.target.value)}
-              startAdornment={
-                <InputAdornment position="start">
-                  <FilterIcon />
-                </InputAdornment>
-              }
-            >
-              <MenuItem value="all">Tất cả</MenuItem>
-              {Array.from(coursesMap.entries()).map(([courseTitle, count]) => (
-                <MenuItem key={courseTitle} value={courseTitle}>
-                  {courseTitle} ({count})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          {/* Note: Course filter removed - need to fetch all courses from API first */}
         </Stack>
 
         {/* Stats */}
         <Stack direction="row" spacing={1} alignItems="center">
           <Chip
             icon={<NoteIcon />}
-            label={`${filteredNotes.length} ${translate("student.Notes")}`}
+            label={`${myNotes?.total || 0} ${translate("student.Notes")}`}
             size="small"
             color="primary"
             variant="outlined"
           />
           <Chip
             icon={<SchoolIcon />}
-            label={`${filteredGroupedNotes.size} khóa học`}
+            label={`${groupedNotes.size} khóa học (trang này)`}
             size="small"
             color="secondary"
             variant="outlined"
@@ -211,7 +177,7 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
       </Stack>
 
       {/* No results */}
-      {filteredNotes.length === 0 && (
+      {notes.length === 0 && (
         <Alert severity="info" sx={{ mb: 2 }}>
           {translate("student.NoNotesFound")}
         </Alert>
@@ -219,7 +185,7 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
 
       {/* Notes grouped by course */}
       <Stack spacing={2}>
-        {Array.from(filteredGroupedNotes.entries()).map(
+        {Array.from(groupedNotes.entries()).map(
           ([courseTitle, notes]) => {
             return (
               <Accordion key={courseTitle} defaultExpanded>
@@ -323,6 +289,31 @@ export default function MyNotesTab({ loading }: MyNotesTabProps) {
           }
         )}
       </Stack>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Box 
+          sx={{ 
+            display: "flex", 
+            justifyContent: "center", 
+            mt: 4, 
+            mb: 2,
+            pt: 3,
+            borderTop: "1px solid",
+            borderColor: "divider"
+          }}
+        >
+          <Pagination
+            count={totalPages}
+            page={pageNumber}
+            onChange={handlePageChange}
+            color="primary"
+            size="large"
+            showFirstButton
+            showLastButton
+          />
+        </Box>
+      )}
     </Box>
   );
 }
