@@ -1,17 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { axiosClient } from "axiosClient/axiosClient";
-
-// Local action creators to avoid circular dependency
-const setMessageSuccess = (message: string) => ({
-  type: "enrollment/setMessageSuccess",
-  payload: message,
-});
-
-const setMessageError = (message: string) => ({
-  type: "enrollment/setMessageError",
-  payload: message,
-});
 import { ROUTES_API_ENROLLMENT } from "constants/routesApiKeys";
 import {
   EnrollmentResult,
@@ -33,6 +22,7 @@ interface ApiResponse<T> {
 interface ErrorResponse {
   message: string;
   errors?: string[];
+  errorCode?: string;
 }
 
 // Helper function for API calls with retry logic
@@ -47,15 +37,15 @@ async function callApiWithRetry<T>(
         await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
       }
       return await apiCall();
-    } catch (error) {
+    } catch (error: any) {
       lastError = error;
-      const axiosError = error as AxiosError;
-      // Don't retry on 401 (unauthorized) or 404 (not found)
-      // 404 means user doesn't have student profile yet - this is expected
-      if (
-        axiosError.response?.status === 401 ||
-        axiosError.response?.status === 404
-      ) {
+      
+      // Axios error can have response property or flattened structure
+      const status = error?.response?.status || error?.status;
+      
+      // Don't retry on 4xx errors (client error - won't help to retry)
+      // Only retry on 5xx errors (server error - might be temporary)
+      if (status && status >= 400 && status < 500) {
         break;
       }
     }
@@ -201,26 +191,35 @@ export const createEnrollmentThunk = createAsyncThunk<
       )
     );
 
+    // Check for errors in response
     if (response.data.errors || response.data.errorCode) {
-      throw new Error(response.data.message || "Failed to create enrollment");
+      // Extract error details BEFORE throwing
+      const errorCode = response.data.errorCode;
+      const errorMessage = response.data.message || "Failed to create enrollment";
+      const fullError = errorCode ? `${errorCode}:${errorMessage}` : errorMessage;
+      
+      return thunkAPI.rejectWithValue(fullError);
     }
 
     if (!response.data.data) {
-      throw new Error("No enrollment data received");
+      const errorMessage = "No enrollment data received";
+      return thunkAPI.rejectWithValue(errorMessage);
     }
-
-    // Dispatch success toast
-    thunkAPI.dispatch(setMessageSuccess("Đăng ký khóa học thành công!"));
 
     return response.data.data;
   } catch (error: any) {
-    const err = error as AxiosError<ErrorResponse>;
-
     // Parse error message from different response formats
     let errorMessage = "Failed to enroll in course";
+    let errorCode: string | undefined;
 
-    if (err.response?.data) {
-      const responseData = err.response.data;
+    // Handle both nested (err.response.data) and flattened (err.data) error structures
+    const responseData = error?.response?.data || error?.data;
+
+    if (responseData) {
+      // Extract error code if present
+      if (responseData.errorCode) {
+        errorCode = responseData.errorCode;
+      }
 
       // Handle different error response formats
       if (typeof responseData === "string") {
@@ -230,14 +229,15 @@ export const createEnrollmentThunk = createAsyncThunk<
       } else if (responseData.errors && Array.isArray(responseData.errors)) {
         errorMessage = responseData.errors[0] || errorMessage;
       }
-    } else if (err.message) {
-      errorMessage = err.message;
+    } else if (error?.message) {
+      errorMessage = error.message;
     }
 
-    // Dispatch error toast
-    thunkAPI.dispatch(setMessageError(errorMessage));
+    // Build full error string with error code if available
+    // Format: "errorCode:message" for Yup resolver to parse
+    const fullError = errorCode ? `${errorCode}:${errorMessage}` : errorMessage;
 
-    return thunkAPI.rejectWithValue(errorMessage);
+    return thunkAPI.rejectWithValue(fullError);
   }
 });
 
@@ -262,16 +262,10 @@ export const completeEnrollmentThunk = createAsyncThunk<
       throw new Error("No enrollment data received");
     }
 
-    // Dispatch success toast
-    thunkAPI.dispatch(setMessageSuccess("Hoàn thành khóa học thành công! Chúc mừng bạn!"));
-
     return response.data.data;
   } catch (error: any) {
     const err = error as AxiosError<ErrorResponse>;
     const errorMessage = err.response?.data?.message || "Failed to complete enrollment";
-    
-    // Dispatch error toast
-    thunkAPI.dispatch(setMessageError(errorMessage));
     
     return thunkAPI.rejectWithValue(errorMessage);
   }

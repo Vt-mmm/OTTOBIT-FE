@@ -232,6 +232,14 @@ export default function PhaserSimulator({ className }: PhaserSimulatorProps) {
         // This ensures button logic doesn't see isVictoryModalOpen=true on new map
         hideVictoryModal();
 
+        // ✅ NEW: Notify TopBar to switch pagination page for next challenge
+        // This ensures TopBar shows correct page when navigating to challenge on different page
+        window.dispatchEvent(
+          new CustomEvent("studio-switch-page", {
+            detail: { challengeId: next.id },
+          })
+        );
+
         // IMMEDIATELY notify TopBar to reset button states for new map
         window.dispatchEvent(
           new CustomEvent("phaser-map-changed", {

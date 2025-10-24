@@ -119,7 +119,9 @@ const LessonMapSelectorSection: React.FC<LessonMapSelectorSectionProps> = ({
 
     if (isChallengesStale) {
       console.log('🔄 [LessonMapSelector] Fetching challenges for NEW lesson:', lessonId);
-      dispatch(getChallengesByLesson({ lessonId, pageSize: 10 }));
+      // ✅ FIX: Fetch ALL challenges (not paginated) so unlock logic works across all pages
+      // Use large pageSize to get all challenges in one request
+      dispatch(getChallengesByLesson({ lessonId, pageSize: 100 }));
     } else {
       console.log('✅ [LessonMapSelector] Using cached challenges for lesson:', lessonId);
     }
