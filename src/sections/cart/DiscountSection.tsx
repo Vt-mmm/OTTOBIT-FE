@@ -122,6 +122,15 @@ export default function DiscountSection() {
                 <strong>
                   {cartData?.discountAmount.toLocaleString("vi-VN")} ₫
                 </strong>
+                {cart.appliedVoucher && (
+                  <Typography
+                    variant="caption"
+                    display="block"
+                    sx={{ mt: 0.5 }}
+                  >
+                    Mã: <strong>{cart.appliedVoucher.code}</strong>
+                  </Typography>
+                )}
               </Typography>
             </Alert>
           </Box>
