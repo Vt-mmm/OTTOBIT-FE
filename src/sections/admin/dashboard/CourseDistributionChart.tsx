@@ -58,7 +58,7 @@ export default function CourseDistributionChart({
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                    label={(props: any) => `${(props.percent * 100).toFixed(1)}%`}
                     outerRadius={90}
                     innerRadius={55}
                     fill="#8884d8"
