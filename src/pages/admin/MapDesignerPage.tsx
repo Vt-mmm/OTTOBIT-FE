@@ -14,9 +14,13 @@ import {
   DialogActions,
 } from "@mui/material";
 import { axiosClient } from "axiosClient";
-import { useNotification } from "hooks/useNotification";
 import { extractApiErrorMessage } from "utils/errorHandler";
 import useLocales from "hooks/useLocales";
+import { useAppDispatch } from "../../redux/config";
+import {
+  setMessageSuccess,
+  setMessageError,
+} from "../../redux/course/courseSlice";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import AdminLayout from "layout/admin/AdminLayout";
@@ -30,6 +34,8 @@ import {
 } from "sections/admin/mapDesigner/theme.config";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import ThreeDRotationIcon from "@mui/icons-material/ThreeDRotation";
+import AddIcon from "@mui/icons-material/Add";
+import SaveIcon from "@mui/icons-material/Save";
 import { MAP_ASSETS } from "sections/admin/mapDesigner/mapAssets.config";
 
 export default function MapDesignerPage() {
@@ -43,11 +49,7 @@ export default function MapDesignerPage() {
   const [searchParams] = useSearchParams();
   const [editId, setEditId] = useState<string | null>(null);
   const [openUpdateConfirm, setOpenUpdateConfirm] = useState<boolean>(false);
-  const { showNotification: showToast, NotificationComponent: Toast } =
-    useNotification({
-      anchorOrigin: { vertical: "top", horizontal: "right" },
-      autoHideDurationMs: 3000,
-    });
+  const dispatch = useAppDispatch();
   const [mapGrid, setMapGrid] = useState<MapCell[][]>(
     Array(GRID_CONFIG.rows)
       .fill(null)
@@ -135,12 +137,12 @@ export default function MapDesignerPage() {
               setMapGrid(next);
             } catch (e) {
               console.error("[MapDesigner] Failed to parse mapJson:", e);
-              showToast(translate("admin.mapLoadFailed"), "error");
+              dispatch(setMessageError(translate("admin.mapLoadFailed")));
             }
           }
         } catch (e) {
           console.error("[MapDesigner] Fetch map failed:", e);
-          showToast(translate("admin.mapFetchFailed"), "error");
+          dispatch(setMessageError(translate("admin.mapFetchFailed")));
         }
       })();
     }
@@ -231,13 +233,14 @@ export default function MapDesignerPage() {
     const titleValid = mapTitle.trim().length >= 5;
     const descValid = mapDescription.trim().length >= 10;
     if (!titleValid || !descValid) {
-      showToast(
-        !titleValid && !descValid
-          ? translate("admin.invalidTitleAndDescription")
-          : !titleValid
-          ? translate("admin.invalidTitle")
-          : translate("admin.invalidDescription"),
-        "error"
+      dispatch(
+        setMessageError(
+          !titleValid && !descValid
+            ? translate("admin.invalidTitleAndDescription")
+            : !titleValid
+            ? translate("admin.invalidTitle")
+            : translate("admin.invalidDescription")
+        )
       );
       return;
     }
@@ -377,29 +380,30 @@ export default function MapDesignerPage() {
       setOpenUpdateConfirm(true);
       return;
     }
+
     try {
       const payload = {
         title: mapTitle.trim(),
         description: mapDescription.trim(),
         mapJson: JSON.stringify(tiledMap),
       };
+
       const res = await axiosClient.post("/api/v1/maps", payload);
-      console.log("[MapDesigner] Map saved:", res.data);
-      showToast(translate("admin.mapSavedSuccess"), "success");
+      console.log("[MapDesigner] Map created:", res.data);
+      dispatch(setMessageSuccess("Tạo bản đồ thành công"));
     } catch (err: any) {
       console.error("[MapDesigner] Save map failed:", err);
       const errorMessage = extractApiErrorMessage(
         err,
         translate("admin.mapSaveFailed")
       );
-      showToast(errorMessage, "error");
+      dispatch(setMessageError(errorMessage));
     }
   };
 
   return (
     <AdminLayout>
       <Container maxWidth="xl">
-        <Toast />
         <Box sx={{ mb: 2 }}>
           <Box
             sx={{
@@ -560,8 +564,12 @@ export default function MapDesignerPage() {
                 </Grid>
               </Grid>
               <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-                <Button variant="contained" onClick={handleSaveMap}>
-                  {translate("admin.saveMap")}
+                <Button
+                  variant="contained"
+                  onClick={handleSaveMap}
+                  startIcon={editId ? <SaveIcon /> : <AddIcon />}
+                >
+                  {editId ? "Cập nhật" : "Tạo mới"}
                 </Button>
               </Box>
             </Paper>
@@ -576,7 +584,9 @@ export default function MapDesignerPage() {
         <DialogTitle>{translate("admin.confirmUpdate")}</DialogTitle>
         <DialogContent>{translate("admin.confirmUpdateMap")}</DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenUpdateConfirm(false)}>{translate("admin.cancel")}</Button>
+          <Button onClick={() => setOpenUpdateConfirm(false)}>
+            {translate("admin.cancel")}
+          </Button>
           <Button
             variant="contained"
             onClick={async () => {
@@ -715,9 +725,11 @@ export default function MapDesignerPage() {
                   }),
                 };
                 await axiosClient.put(`/api/v1/maps/${editId}`, payload);
-                showToast(translate("admin.mapUpdatedSuccess"), "success");
+                dispatch(
+                  setMessageSuccess(translate("admin.mapUpdatedSuccess"))
+                );
               } catch (e) {
-                showToast(translate("admin.mapUpdateFailed"), "error");
+                dispatch(setMessageError(translate("admin.mapUpdateFailed")));
               }
             }}
           >

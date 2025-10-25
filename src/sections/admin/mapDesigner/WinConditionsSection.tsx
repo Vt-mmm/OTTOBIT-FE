@@ -643,10 +643,10 @@ export default function WinConditionsSection({
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       }}
     >
-      <Typography
-        variant="h6"
-        sx={{
-          mb: 2,
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          mb: 2, 
           fontWeight: 600,
           color: THEME_COLORS.text.primary,
         }}
@@ -663,7 +663,7 @@ export default function WinConditionsSection({
         value={mapName}
         onChange={(e) => onMapNameChange(e.target.value)}
         size="small"
-        sx={{
+            sx={{ 
           mb: 1.5,
           "& .MuiOutlinedInput-root": {
             "&.Mui-focused fieldset": {
@@ -719,8 +719,8 @@ export default function WinConditionsSection({
                 </Typography>
                 <Typography variant="body2">
                   • Phải sử dụng thứ tự khác (2, 3, 4...)
-                </Typography>
-              </Box>
+            </Typography>
+          </Box>
             }
             arrow
             placement="top-start"
@@ -811,7 +811,7 @@ export default function WinConditionsSection({
         />
 
         <Box
-          sx={{
+                  sx={{
             display: "grid",
             gridTemplateColumns: { xs: "1fr", sm: "1fr auto" },
             gap: 1,
@@ -819,7 +819,7 @@ export default function WinConditionsSection({
         >
           <TextField
             fullWidth
-            size="small"
+                          size="small"
             type="number"
             label="Thứ tự"
             value={order}
@@ -838,7 +838,7 @@ export default function WinConditionsSection({
           >
             Xem thứ tự hiện có
           </Button>
-        </Box>
+                    </Box>
 
         <FormControl fullWidth size="small">
           <InputLabel>Độ khó (1-5)</InputLabel>
@@ -900,8 +900,8 @@ export default function WinConditionsSection({
           }}
         >
           Trình chỉnh sửa thử thách
-          <IconButton
-            size="small"
+                    <IconButton
+                      size="small"
             aria-label="spread-help"
             sx={{ color: THEME_COLORS.text.secondary }}
             onMouseEnter={(e) =>
@@ -918,7 +918,7 @@ export default function WinConditionsSection({
         <DialogContent dividers>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <Box
-              sx={{
+                      sx={{ 
                 p: 2,
                 border: `1px solid ${THEME_COLORS.border}`,
                 borderRadius: 1.5,
@@ -939,7 +939,7 @@ export default function WinConditionsSection({
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     {robotX}
                   </Typography>
-                </Box>
+                  </Box>
                 <Box>
                   <Typography
                     variant="caption"
@@ -963,7 +963,7 @@ export default function WinConditionsSection({
                     label={robotDir}
                     sx={{ fontWeight: 600 }}
                   />
-                </Box>
+          </Box>
                 {robotImagePath && (
                   <Box
                     component="img"
@@ -973,16 +973,16 @@ export default function WinConditionsSection({
                   />
                 )}
               </Box>
-            </Box>
+      </Box>
 
             {/* Map target (Box or Battery) */}
             <Box>
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
                 Bản đồ
-              </Typography>
+        </Typography>
               <FormControl size="small" sx={{ minWidth: 240 }}>
                 <InputLabel>Bản đồ</InputLabel>
-                <Select
+          <Select
                   label="Bản đồ"
                   value={selectedTargetKey}
                   onChange={(e) => {
@@ -1039,10 +1039,10 @@ export default function WinConditionsSection({
                   {targetOptions.map((opt) => (
                     <MenuItem key={opt.key} value={opt.key}>
                       {opt.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
             </Box>
 
             {/* Battery list and victory settings (only when Map = battery) */}
@@ -1237,10 +1237,10 @@ export default function WinConditionsSection({
                               }}
                             />
                           )}
-                          <TextField
+            <TextField
                             label="Vàng"
                             type="number"
-                            size="small"
+              size="small"
                             value={victoryYellow}
                             onChange={(e) =>
                               setVictoryYellow(
@@ -1262,10 +1262,10 @@ export default function WinConditionsSection({
                               }}
                             />
                           )}
-                          <TextField
+              <TextField
                             label="Đỏ"
-                            type="number"
-                            size="small"
+                type="number"
+                size="small"
                             value={victoryRed}
                             onChange={(e) =>
                               setVictoryRed(Math.max(0, Number(e.target.value)))
@@ -1282,9 +1282,9 @@ export default function WinConditionsSection({
                                 width: 20,
                                 height: 20,
                                 objectFit: "contain",
-                              }}
-                            />
-                          )}
+                }}
+              />
+            )}
                           <TextField
                             label="Xanh lá"
                             type="number"
@@ -1523,7 +1523,7 @@ export default function WinConditionsSection({
                           inputProps={{ min: 0 }}
                           sx={{ width: 120 }}
                         />
-                        <Button
+        <Button
                           onClick={() =>
                             setBoxVictoryTargets((arr) =>
                               arr.filter((_, i) => i !== idx)
@@ -1541,7 +1541,7 @@ export default function WinConditionsSection({
                       + Thêm mục tiêu
                     </Button>
                     <TextField
-                      fullWidth
+          fullWidth
                       label="Gợi ý"
                       placeholder="Mô tả điều kiện chiến thắng. Ví dụ: Lấy 2 từ kho và đặt 2 tại vị trí mục tiêu."
                       size="small"
@@ -1585,7 +1585,7 @@ export default function WinConditionsSection({
                 </Typography>
                 <FormGroup>
                   <Box
-                    sx={{
+          sx={{
                       display: "grid",
                       gridTemplateColumns: "repeat(2, 1fr)",
                       gap: 1,
@@ -2041,7 +2041,7 @@ export default function WinConditionsSection({
             }}
           >
             Lưu
-          </Button>
+        </Button>
           <Button onClick={() => setOpenChallenge(false)}>Đóng</Button>
         </DialogActions>
       </Dialog>
@@ -2341,7 +2341,7 @@ export default function WinConditionsSection({
                                   );
                                 })()}
                             </svg>
-                          </Box>
+      </Box>
                         );
                       })}
                     </Box>
@@ -2421,7 +2421,7 @@ export default function WinConditionsSection({
             orderItems[0].lessonTitle && (
               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                 {orderItems[0].courseTitle} &gt; {orderItems[0].lessonTitle}
-              </Typography>
+        </Typography>
             )}
         </DialogTitle>
         <DialogContent dividers>
@@ -2430,7 +2430,7 @@ export default function WinConditionsSection({
           ) : ordersError ? (
             <Typography variant="body2" color="error">
               {ordersError}
-            </Typography>
+        </Typography>
           ) : orderItems.length === 0 ? (
             <Typography variant="body2">Chưa có thử thách nào</Typography>
           ) : (
@@ -2466,7 +2466,7 @@ export default function WinConditionsSection({
                     showFirstButton
                     showLastButton
                   />
-                </Box>
+      </Box>
               )}
             </>
           )}

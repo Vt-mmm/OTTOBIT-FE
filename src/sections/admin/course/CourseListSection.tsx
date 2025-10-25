@@ -321,15 +321,13 @@ export default function CourseListSection({
                 <MenuItem value={2}>{translate("admin.paid")}</MenuItem>
               </Select>
             </FormControl>
+          </Box>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={onCreateNew}
-              sx={{
-                flexShrink: 0,
-                whiteSpace: "nowrap",
-                minWidth: "auto",
-              }}
+              sx={{ minWidth: 140 }}
             >
               {translate("admin.createCourse")}
             </Button>

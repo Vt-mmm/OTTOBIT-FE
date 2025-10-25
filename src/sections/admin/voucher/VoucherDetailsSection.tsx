@@ -10,20 +10,14 @@ import {
   Divider,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import EditIcon from "@mui/icons-material/Edit";
 import { Voucher } from "../../../types/voucher";
 
 interface Props {
   voucher: Voucher | null;
   onBack: () => void;
-  onEdit: (voucher: Voucher) => void;
 }
 
-export default function VoucherDetailsSection({
-  voucher,
-  onBack,
-  onEdit,
-}: Props) {
+export default function VoucherDetailsSection({ voucher, onBack }: Props) {
   if (!voucher) {
     return (
       <Box>
@@ -71,18 +65,6 @@ export default function VoucherDetailsSection({
         <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
           Quay lại
         </Button>
-        <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          Chi tiết Voucher
-        </Typography>
-        <Box sx={{ flexGrow: 1 }} />
-        <Button
-          variant="contained"
-          startIcon={<EditIcon />}
-          onClick={() => onEdit(voucher)}
-          disabled={voucher.isDeleted}
-        >
-          Chỉnh sửa
-        </Button>
       </Stack>
 
       <Grid container spacing={3}>
@@ -97,7 +79,7 @@ export default function VoucherDetailsSection({
               <Stack spacing={2}>
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    Mã Voucher
+                    Mã phiếu giảm giá
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: "bold" }}>
                     {voucher.code}
@@ -106,7 +88,7 @@ export default function VoucherDetailsSection({
 
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    Tên Voucher
+                    Tên phiếu giảm giá
                   </Typography>
                   <Typography variant="body1">{voucher.name}</Typography>
                 </Box>

@@ -100,7 +100,7 @@ export default function BlogFormDialog({ open, onClose, onSuccess }: Props) {
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Tạo blog</DialogTitle>
+      <DialogTitle>Tạo bài viết</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           <TextField

@@ -34,6 +34,10 @@ import {
 } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getMaps, deleteMap } from "../../../redux/map/mapSlice";
+import {
+  setMessageSuccess,
+  setMessageError,
+} from "../../../redux/course/courseSlice";
 import { axiosClient } from "axiosClient";
 import { extractApiErrorMessage } from "utils/errorHandler";
 import {
@@ -42,7 +46,6 @@ import {
   SortDirection,
 } from "common/@types/map";
 import { useNavigate } from "react-router-dom";
-import { useNotification } from "hooks/useNotification";
 import { MAP_ASSETS } from "sections/admin/mapDesigner/mapAssets.config";
 
 export default function MapListSection() {
@@ -50,11 +53,6 @@ export default function MapListSection() {
   const navigate = useNavigate();
   const { translate } = useLocales();
   const { maps, operations } = useAppSelector((state) => state.map);
-  const { showNotification: showToast, NotificationComponent: Toast } =
-    useNotification({
-      anchorOrigin: { vertical: "top", horizontal: "right" },
-      autoHideDurationMs: 3000,
-    });
 
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [viewMap, setViewMap] = useState<BackendMapResult | null>(null);
@@ -159,9 +157,9 @@ export default function MapListSection() {
     } catch (e: any) {
       const errorMessage = extractApiErrorMessage(
         e,
-        "Failed to load map for preview."
+        "Không thể tải bản đồ để xem trước."
       );
-      showToast(errorMessage, "error");
+      dispatch(setMessageError(errorMessage));
     }
   };
 
@@ -176,14 +174,14 @@ export default function MapListSection() {
         const action: any = await dispatch(deleteMap(mapToDelete.id));
         const ok = action?.meta?.requestStatus === "fulfilled";
         if (ok) {
-          showToast("Map deleted successfully.", "success");
+          dispatch(setMessageSuccess("Xóa bản đồ thành công."));
           refreshList();
         } else {
-          showToast(action?.payload || "Failed to delete map.", "error");
+          dispatch(setMessageError(action?.payload || "Không thể xóa bản đồ."));
         }
       } catch (e: any) {
-        const errorMessage = extractApiErrorMessage(e, "Failed to delete map.");
-        showToast(errorMessage, "error");
+        const errorMessage = extractApiErrorMessage(e, "Không thể xóa bản đồ.");
+        dispatch(setMessageError(errorMessage));
       } finally {
         setDeleteDialogOpen(false);
         setMapToDelete(null);
@@ -194,12 +192,12 @@ export default function MapListSection() {
   const handleRestore = async (mapId: string) => {
     try {
       await axiosClient.post(`/api/v1/maps/${mapId}/restore`);
-      showToast("Map restored successfully.", "success");
+      dispatch(setMessageSuccess("Khôi phục bản đồ thành công."));
       refreshList();
     } catch (e) {
       // Swallow; Map slice may handle global errors/toasts elsewhere
       console.error("Restore map failed", e);
-      showToast("Failed to restore map.", "error");
+      dispatch(setMessageError("Không thể khôi phục bản đồ."));
     }
   };
 
@@ -218,7 +216,6 @@ export default function MapListSection() {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Toast />
       {/* Header */}
 
       {/* Search and Filters */}
@@ -246,7 +243,7 @@ export default function MapListSection() {
                 if (e.key === "Enter") triggerSearch();
               }}
               sx={{
-                gridColumn: { xs: "1 / -1", md: "auto" },
+                gridColumn: "1 / -1",
                 "& .MuiInputBase-root": { pr: 4 },
               }}
               InputProps={{
@@ -265,27 +262,33 @@ export default function MapListSection() {
               }}
             />
             <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>Sắp xếp theo</InputLabel>
+              <InputLabel>{translate("admin.map.sortBy")}</InputLabel>
               <Select
-                label="Sắp xếp theo"
+                label={translate("admin.map.sortBy")}
                 value={sortBy}
                 onChange={(e) => setSortBy(Number(e.target.value) as MapSortBy)}
               >
-                <MenuItem value={MapSortBy.Title}>Tên map</MenuItem>
-                <MenuItem value={MapSortBy.CreatedAt}>Ngày tạo</MenuItem>
-                <MenuItem value={MapSortBy.UpdatedAt}>Ngày cập nhật</MenuItem>
+                <MenuItem value={MapSortBy.Title}>
+                  {translate("admin.map.title")}
+                </MenuItem>
+                <MenuItem value={MapSortBy.CreatedAt}>
+                  {translate("admin.map.createdAt")}
+                </MenuItem>
+                <MenuItem value={MapSortBy.UpdatedAt}>
+                  {translate("admin.map.updatedAt")}
+                </MenuItem>
                 <MenuItem value={MapSortBy.ChallengesCount}>
-                  Số lượng challenges
+                  {translate("admin.map.challengesCount")}
                 </MenuItem>
                 <MenuItem value={MapSortBy.CoursesCount}>
-                  Số lượng courses
+                  {translate("admin.map.coursesCount")}
                 </MenuItem>
               </Select>
             </FormControl>
             <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>Thứ tự</InputLabel>
+              <InputLabel>{translate("admin.map.order")}</InputLabel>
               <Select
-                label="Thứ tự"
+                label={translate("admin.map.order")}
                 value={sortDirection}
                 onChange={(e: any) => {
                   const value = e.target.value;
@@ -314,15 +317,13 @@ export default function MapListSection() {
                 <MenuItem value="active">{translate("admin.active")}</MenuItem>
               </Select>
             </FormControl>
+          </Box>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={handleCreateMap}
-              sx={{
-                flexShrink: 0,
-                whiteSpace: "nowrap",
-                minWidth: "auto",
-              }}
+              sx={{ minWidth: 140 }}
             >
               {translate("admin.map.createMap")}
             </Button>
@@ -408,9 +409,7 @@ export default function MapListSection() {
                 <Box sx={{ display: "flex", gap: 1, mb: 2, flexWrap: "wrap" }}>
                   {map.challengesCount !== undefined && (
                     <Chip
-                      label={translate("admin.map.challengesCount", {
-                        count: map.challengesCount,
-                      })}
+                      label={`${map.challengesCount} thử thách`}
                       size="small"
                       color="primary"
                       variant="outlined"
@@ -418,9 +417,7 @@ export default function MapListSection() {
                   )}
                   {map.coursesCount !== undefined && (
                     <Chip
-                      label={translate("admin.map.coursesCount", {
-                        count: map.coursesCount,
-                      })}
+                      label={`${map.coursesCount} khóa học`}
                       size="small"
                       color="secondary"
                       variant="outlined"
@@ -453,13 +450,15 @@ export default function MapListSection() {
                 >
                   <ViewIcon />
                 </IconButton>
-                <IconButton
-                  size="small"
-                  onClick={() => handleEditMap(map)}
-                  title={translate("admin.map.editMap")}
-                >
-                  <EditIcon />
-                </IconButton>
+                {!map.isDeleted && (
+                  <IconButton
+                    size="small"
+                    onClick={() => handleEditMap(map)}
+                    title={translate("admin.map.editMap")}
+                  >
+                    <EditIcon />
+                  </IconButton>
+                )}
                 {map.isDeleted ? (
                   <IconButton
                     size="small"
@@ -486,7 +485,9 @@ export default function MapListSection() {
       </Grid>
 
       {/* Pagination (MUI Pagination like Challenges) */}
-      {maps.data?.totalPages ? (
+      {maps.data?.totalPages &&
+      maps.data.totalPages > 1 &&
+      maps.data?.items?.length > 0 ? (
         <Box
           sx={{
             display: "flex",
@@ -775,12 +776,10 @@ export default function MapListSection() {
         open={restoreDialogOpen}
         onClose={() => setRestoreDialogOpen(false)}
       >
-        <DialogTitle>Confirm Restore</DialogTitle>
-        <DialogContent>
-          Are you sure you want to restore this map?
-        </DialogContent>
+        <DialogTitle>Xác nhận khôi phục</DialogTitle>
+        <DialogContent>Bạn có chắc muốn khôi phục bản đồ này?</DialogContent>
         <DialogActions>
-          <Button onClick={() => setRestoreDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setRestoreDialogOpen(false)}>Hủy</Button>
           <Button
             variant="contained"
             color="success"
@@ -792,7 +791,7 @@ export default function MapListSection() {
               }
             }}
           >
-            Restore
+            Khôi phục
           </Button>
         </DialogActions>
       </Dialog>

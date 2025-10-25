@@ -10,7 +10,6 @@ import {
   Chip,
   IconButton,
   CircularProgress,
-  Alert,
   Table,
   TableHead,
   TableRow,
@@ -32,7 +31,6 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Map as MapIcon,
-  PlayArrow as PlayIcon,
   Restore as RestoreIcon,
   Visibility as ViewIcon,
 } from "@mui/icons-material";
@@ -40,6 +38,10 @@ import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getChallenges } from "../../../redux/challenge/challengeSlice";
 import { getCoursesForAdmin } from "../../../redux/course/courseSlice";
 import { getLessons } from "../../../redux/lesson/lessonSlice";
+import {
+  setMessageSuccess,
+  setMessageError,
+} from "../../../redux/course/courseSlice";
 import PopupSelect from "components/common/PopupSelect";
 import { ChallengeMode } from "common/@types/challenge";
 import dayjs from "dayjs";
@@ -48,7 +50,6 @@ import Pagination from "@mui/material/Pagination";
 import { axiosClient } from "axiosClient";
 import { extractApiErrorMessage } from "utils/errorHandler";
 import { useLocales } from "hooks";
-import { useNotification } from "hooks/useNotification";
 
 interface ChallengeListSectionProps {
   onCreateNew?: () => void;
@@ -108,7 +109,6 @@ export default function ChallengeListSection({
   const [lessonPage, setLessonPage] = useState(1);
   const [courseLoading, setCourseLoading] = useState(false);
   const [lessonLoading, setLessonLoading] = useState(false);
-  const { showNotification, NotificationComponent } = useNotification();
 
   useEffect(() => {
     dispatch(
@@ -237,14 +237,14 @@ export default function ChallengeListSection({
     try {
       await (axiosClient as any).delete(`/api/v1/challenges/admin/${id}`);
       refresh();
-      showNotification(`Xóa thử thách "${title ?? ""}" thành công`, "success");
+      dispatch(setMessageSuccess(`Xóa thử thách "${title ?? ""}" thành công`));
     } catch (error: any) {
       const errorMessage = extractApiErrorMessage(
         error,
-        "Failed to delete challenge"
+        "Không thể xóa thử thách"
       );
       console.error("Delete challenge error:", errorMessage);
-      showNotification(`Không thể xóa thử thách "${title ?? ""}"`, "error");
+      dispatch(setMessageError(`Không thể xóa thử thách "${title ?? ""}"`));
     }
   };
 
@@ -252,19 +252,17 @@ export default function ChallengeListSection({
     try {
       await (axiosClient as any).post(`/api/v1/challenges/admin/${id}/restore`);
       refresh();
-      showNotification(
-        `Khôi phục thử thách "${title ?? ""}" thành công`,
-        "success"
+      dispatch(
+        setMessageSuccess(`Khôi phục thử thách "${title ?? ""}" thành công`)
       );
     } catch (error: any) {
       const errorMessage = extractApiErrorMessage(
         error,
-        "Failed to restore challenge"
+        "Không thể khôi phục thử thách"
       );
       console.error("Restore challenge error:", errorMessage);
-      showNotification(
-        `Không thể khôi phục thử thách "${title ?? ""}"`,
-        "error"
+      dispatch(
+        setMessageError(`Không thể khôi phục thử thách "${title ?? ""}"`)
       );
     }
   };
@@ -285,7 +283,7 @@ export default function ChallengeListSection({
     } catch (error: any) {
       const errorMessage = extractApiErrorMessage(
         error,
-        "Failed to load challenge details"
+        "Không thể tải chi tiết thử thách"
       );
       console.error("Load challenge error:", errorMessage);
       // Fallback to original challenge data
@@ -342,7 +340,7 @@ export default function ChallengeListSection({
                 if (e.key === "Enter") triggerSearch();
               }}
               sx={{
-                gridColumn: { xs: "1 / -1", md: "auto" },
+                gridColumn: "1 / -1",
                 "& .MuiInputBase-root": { pr: 4 },
               }}
               InputProps={{
@@ -442,6 +440,8 @@ export default function ChallengeListSection({
                 inputProps={{ min: 1, max: 5 }}
               />
             </Box>
+          </Box>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -450,24 +450,13 @@ export default function ChallengeListSection({
                   ? onCreateNew()
                   : navigate("/admin/challenge-designer?mode=create")
               }
-              sx={{
-                flexShrink: 0,
-                whiteSpace: "nowrap",
-                minWidth: "auto",
-              }}
+              sx={{ minWidth: 140 }}
             >
               {translate("admin.addChallenge")}
             </Button>
           </Box>
         </CardContent>
       </Card>
-
-      {/* Error Display */}
-      {challenges.error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {challenges.error}
-        </Alert>
-      )}
 
       {/* Challenges Table */}
       <Paper>
@@ -547,7 +536,7 @@ export default function ChallengeListSection({
                       WebkitBoxOrient: "vertical",
                     }}
                   >
-                    {challenge.description || "No description"}
+                    {challenge.description || "Không có mô tả"}
                   </Typography>
                 </TableCell>
                 <TableCell align="center">
@@ -594,6 +583,42 @@ export default function ChallengeListSection({
                   >
                     <ViewIcon />
                   </IconButton>
+                  {!challenge.isDeleted && (
+                    <IconButton
+                      size="small"
+                      title="Chỉnh sửa"
+                      onClick={() => onEditChallenge?.(challenge)}
+                      sx={{ ml: 1 }}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  )}
+                  <IconButton
+                    size="small"
+                    title={challenge.isDeleted ? "Khôi phục" : "Xóa"}
+                    onClick={() => {
+                      if (challenge.isDeleted) {
+                        handleRestoreConfirm({
+                          id: challenge.id,
+                          title: challenge.title,
+                        });
+                      } else {
+                        setPendingDeleteItem({
+                          id: challenge.id,
+                          title: challenge.title,
+                        });
+                        setConfirmOpen(true);
+                      }
+                    }}
+                    sx={{
+                      ml: 1,
+                      color: challenge.isDeleted
+                        ? "success.main"
+                        : "error.main",
+                    }}
+                  >
+                    {challenge.isDeleted ? <RestoreIcon /> : <DeleteIcon />}
+                  </IconButton>
                 </TableCell>
               </TableRow>
             ))}
@@ -605,12 +630,12 @@ export default function ChallengeListSection({
           <Box sx={{ textAlign: "center", py: 8 }}>
             <MapIcon sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              No Challenges Found
+              Không tìm thấy thử thách
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               {searchTerm
-                ? "Try adjusting your search or filter criteria"
-                : "No challenges have been created yet"}
+                ? "Thử điều chỉnh tiêu chí tìm kiếm hoặc lọc"
+                : "Chưa có thử thách nào được tạo"}
             </Typography>
             {onCreateNew && (
               <Button
@@ -618,7 +643,7 @@ export default function ChallengeListSection({
                 startIcon={<AddIcon />}
                 onClick={onCreateNew}
               >
-                Create First Challenge
+                Tạo thử thách đầu tiên
               </Button>
             )}
           </Box>
@@ -646,13 +671,17 @@ export default function ChallengeListSection({
               ))}
             </Select>
           </FormControl>
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={(_, v) => setPage(v)}
-            shape="rounded"
-            color="primary"
-          />
+          {totalPages > 1 &&
+            challenges.data?.items &&
+            challenges.data.items.length > 0 && (
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={(_, v) => setPage(v)}
+                shape="rounded"
+                color="primary"
+              />
+            )}
         </Box>
       </Paper>
 
@@ -712,7 +741,7 @@ export default function ChallengeListSection({
               }
             }}
           >
-            Restore
+            Khôi phục
           </Button>
         </DialogActions>
       </Dialog>
@@ -724,7 +753,7 @@ export default function ChallengeListSection({
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>Challenge Details</DialogTitle>
+        <DialogTitle>Chi tiết thử thách</DialogTitle>
         <DialogContent dividers>
           {selectedChallenge && (
             <Box sx={{ p: 2 }}>
@@ -751,30 +780,30 @@ export default function ChallengeListSection({
               >
                 <Box>
                   <Typography variant="subtitle2" color="primary" gutterBottom>
-                    Basic Information
+                    Thông tin cơ bản
                   </Typography>
                   <Typography variant="body2">
-                    <strong>Order:</strong> {selectedChallenge.order}
+                    <strong>Thứ tự:</strong> {selectedChallenge.order}
                   </Typography>
                   <Typography variant="body2">
-                    <strong>Difficulty:</strong> {selectedChallenge.difficulty}
+                    <strong>Độ khó:</strong> {selectedChallenge.difficulty}
                   </Typography>
                   <Typography variant="body2">
-                    <strong>Mode:</strong>{" "}
+                    <strong>Chế độ:</strong>{" "}
                     {selectedChallenge.challengeMode === 0
-                      ? "Simulation"
+                      ? "Mô phỏng"
                       : selectedChallenge.challengeMode === 1
-                      ? "Physical First"
-                      : "Simulation Physical"}
+                      ? "Vật lý trước"
+                      : "Mô phỏng vật lý"}
                   </Typography>
                   <Typography variant="body2">
-                    <strong>Created:</strong>{" "}
+                    <strong>Tạo lúc:</strong>{" "}
                     {dayjs(selectedChallenge.createdAt).format(
                       "DD/MM/YYYY HH:mm"
                     )}
                   </Typography>
                   <Typography variant="body2">
-                    <strong>Updated:</strong>{" "}
+                    <strong>Cập nhật:</strong>{" "}
                     {dayjs(selectedChallenge.updatedAt).format(
                       "DD/MM/YYYY HH:mm"
                     )}
@@ -783,23 +812,23 @@ export default function ChallengeListSection({
 
                 <Box>
                   <Typography variant="subtitle2" color="primary" gutterBottom>
-                    Statistics
+                    Thống kê
                   </Typography>
                   <Typography variant="body2">
-                    <strong>Submissions:</strong>{" "}
+                    <strong>Lần nộp:</strong>{" "}
                     {selectedChallenge.submissionsCount || 0}
                   </Typography>
                   <Typography variant="body2">
-                    <strong>Lesson:</strong>{" "}
+                    <strong>Bài học:</strong>{" "}
                     {selectedChallenge.lessonTitle || "N/A"}
                   </Typography>
                   <Typography variant="body2">
-                    <strong>Course:</strong>{" "}
+                    <strong>Khóa học:</strong>{" "}
                     {selectedChallenge.courseTitle || "N/A"}
                   </Typography>
                   <Typography variant="body2">
-                    <strong>Status:</strong>{" "}
-                    {selectedChallenge.isDeleted ? "Deleted" : "Active"}
+                    <strong>Trạng thái:</strong>{" "}
+                    {selectedChallenge.isDeleted ? "Đã xóa" : "Hoạt động"}
                   </Typography>
                 </Box>
               </Box>
@@ -807,7 +836,7 @@ export default function ChallengeListSection({
               {selectedChallenge.challengeJson && (
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="subtitle2" color="primary" gutterBottom>
-                    Challenge Configuration
+                    Cấu hình thử thách
                   </Typography>
                   <Box
                     sx={{
@@ -832,7 +861,7 @@ export default function ChallengeListSection({
               {selectedChallenge.solutionJson && (
                 <Box>
                   <Typography variant="subtitle2" color="primary" gutterBottom>
-                    Solution Configuration
+                    Cấu hình giải pháp
                   </Typography>
                   <Box
                     sx={{
@@ -856,59 +885,12 @@ export default function ChallengeListSection({
             </Box>
           )}
         </DialogContent>
-        <DialogActions sx={{ justifyContent: "space-between", p: 2 }}>
-          <Box>
-            <Button
-              variant="outlined"
-              startIcon={<EditIcon />}
-              onClick={() => {
-                setViewDialogOpen(false);
-                onEditChallenge?.(selectedChallenge);
-              }}
-            >
-              Edit
-            </Button>
-            <Button variant="outlined" startIcon={<PlayIcon />} sx={{ ml: 1 }}>
-              Test
-            </Button>
-          </Box>
-          <Box>
-            {selectedChallenge?.isDeleted ? (
-              <Button
-                variant="contained"
-                color="success"
-                startIcon={<RestoreIcon />}
-                onClick={() => {
-                  handleRestoreConfirm({
-                    id: selectedChallenge.id,
-                    title: selectedChallenge.title,
-                  });
-                  setViewDialogOpen(false);
-                }}
-              >
-                Restore
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                color="error"
-                startIcon={<DeleteIcon />}
-                onClick={() => {
-                  setPendingDeleteItem({
-                    id: selectedChallenge.id,
-                    title: selectedChallenge.title,
-                  });
-                  setConfirmOpen(true);
-                  setViewDialogOpen(false);
-                }}
-              >
-                Delete
-              </Button>
-            )}
-          </Box>
+        <DialogActions sx={{ justifyContent: "flex-end", p: 2 }}>
+          <Button variant="text" onClick={() => setViewDialogOpen(false)}>
+            Đóng
+          </Button>
         </DialogActions>
       </Dialog>
-      <NotificationComponent />
     </Box>
   );
 }

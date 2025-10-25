@@ -231,9 +231,6 @@ export default function LessonFormSection({
         <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
           Quay lại
         </Button>
-        <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          {mode === "create" ? "Tạo bài học mới" : "Chỉnh sửa bài học"}
-        </Typography>
       </Stack>
 
       <Card>
@@ -452,7 +449,7 @@ export default function LessonFormSection({
                 }
                 disabled={isLoading}
               >
-                {mode === "create" ? "Tạo bài học" : "Cập nhật"}
+                {mode === "create" ? "Tạo mới" : "Cập nhật"}
               </Button>
             </Box>
           </Box>

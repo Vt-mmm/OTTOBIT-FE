@@ -6,14 +6,18 @@ import BlogFormSection from "sections/admin/blog/BlogFormSection";
 import { BlogItem, BlogUpdateRequest } from "types/blog";
 import { axiosClient } from "axiosClient/axiosClient";
 import { ROUTES_API_BLOG } from "constants/routesApiKeys";
-import { useNotification } from "hooks/useNotification";
+import { useAppDispatch } from "../../redux/config";
+import {
+  setMessageSuccess,
+  setMessageError,
+} from "../../redux/course/courseSlice";
 
 type ViewMode = "list" | "create" | "edit" | "details";
 
 export default function BlogManagementPage() {
+  const dispatch = useAppDispatch();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [editingBlog, setEditingBlog] = useState<BlogItem | null>(null);
-  const { showNotification, NotificationComponent } = useNotification();
 
   const handleBackToList = () => {
     setViewMode("list");
@@ -30,10 +34,10 @@ export default function BlogManagementPage() {
 
     try {
       await axiosClient.put(ROUTES_API_BLOG.UPDATE(editingBlog.id), updateData);
-      showNotification("Cập nhật blog thành công", "success");
+      dispatch(setMessageSuccess("Cập nhật blog thành công"));
       handleBackToList();
     } catch (error) {
-      showNotification("Không thể cập nhật blog", "error");
+      dispatch(setMessageError("Không thể cập nhật blog"));
       throw error; // Re-throw để BlogFormSection có thể handle
     }
   };
@@ -47,7 +51,6 @@ export default function BlogManagementPage() {
             onBack={handleBackToList}
             onSuccess={() => {
               handleBackToList();
-              showNotification("Tạo blog thành công", "success");
             }}
           />
         );
@@ -58,7 +61,6 @@ export default function BlogManagementPage() {
             onBack={handleBackToList}
             onSuccess={() => {
               handleBackToList();
-              showNotification("Cập nhật blog thành công", "success");
             }}
             initialData={editingBlog || undefined}
             onUpdate={handleUpdateBlog}
@@ -74,13 +76,13 @@ export default function BlogManagementPage() {
     }
   };
 
-  const title = "Quản lý Blog";
+  const title = "Quản lý Bài viết";
   const subtitle =
     viewMode === "create"
-      ? "Nhập nội dung cho bài blog mới"
+      ? "Nhập nội dung cho bài viết mới"
       : viewMode === "edit"
-      ? "Chỉnh sửa bài blog"
-      : "Danh sách bài viết blog";
+      ? `Chỉnh sửa bài viết: ${editingBlog?.title || ""}`
+      : "Danh sách bài viết";
 
   return (
     <AdminLayout>
@@ -109,7 +111,6 @@ export default function BlogManagementPage() {
           </Typography>
         </Box>
         {renderContent()}
-        <NotificationComponent />
       </Container>
     </AdminLayout>
   );

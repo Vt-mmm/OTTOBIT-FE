@@ -25,13 +25,18 @@ import { GRID_CONFIG } from "sections/admin/mapDesigner/theme.config";
 import { MAP_ASSETS } from "sections/admin/mapDesigner/mapAssets.config";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import ThreeDRotationIcon from "@mui/icons-material/ThreeDRotation";
+import AddIcon from "@mui/icons-material/Add";
+import SaveIcon from "@mui/icons-material/Save";
 import { axiosClient } from "axiosClient";
 import { ROUTES_API_CHALLENGE } from "constants/routesApiKeys";
 import { extractApiErrorMessage } from "utils/errorHandler";
-import { useNotification } from "../../hooks/useNotification";
 import { useAppDispatch, useAppSelector } from "../../redux/config";
 import { useLocales } from "hooks";
-import { getCoursesForAdmin } from "../../redux/course/courseSlice";
+import {
+  getCoursesForAdmin,
+  setMessageSuccess,
+  setMessageError,
+} from "../../redux/course/courseSlice";
 import {
   getLessons,
   getLessonsByCourse,
@@ -82,11 +87,6 @@ const MapDesignerPage = () => {
     "isometric"
   );
 
-  // Use common notification hook
-  const { showNotification, NotificationComponent } = useNotification({
-    anchorOrigin: { vertical: "top", horizontal: "right" },
-    autoHideDurationMs: 6000,
-  });
   const [mapGrid, setMapGrid] = useState<MapCell[][]>(
     Array(GRID_CONFIG.rows)
       .fill(null)
@@ -558,14 +558,6 @@ const MapDesignerPage = () => {
     }
   ); */
 
-  // Helper function to show notifications using common hook
-  const showToast = (
-    message: string,
-    variant: "success" | "error" | "info" | "warning" = "info"
-  ) => {
-    showNotification(message, variant);
-  };
-
   const handleCellClick = (row: number, col: number) => {
     const newGrid = [...mapGrid];
     const asset = MAP_ASSETS.find((a) => a.id === selectedAsset);
@@ -670,35 +662,13 @@ const MapDesignerPage = () => {
     // Validate required fields
     if (!courseId || courseId.trim().length === 0) {
       const msg = "Vui lòng chọn Khóa học trước khi lưu";
-      try {
-        if ((window as any).Snackbar?.enqueueSnackbar) {
-          (window as any).Snackbar.enqueueSnackbar(msg, {
-            variant: "error",
-            anchorOrigin: { vertical: "top", horizontal: "right" },
-          });
-        } else {
-          showToast(msg, "error");
-        }
-      } catch {
-        showToast(msg, "error");
-      }
+      dispatch(setMessageError(msg));
       return;
     }
 
     if (!lessonId || lessonId.trim().length === 0) {
       const msg = "Vui lòng chọn Bài học trước khi lưu";
-      try {
-        if ((window as any).Snackbar?.enqueueSnackbar) {
-          (window as any).Snackbar.enqueueSnackbar(msg, {
-            variant: "error",
-            anchorOrigin: { vertical: "top", horizontal: "right" },
-          });
-        } else {
-          showToast(msg, "error");
-        }
-      } catch {
-        showToast(msg, "error");
-      }
+      dispatch(setMessageError(msg));
       return;
     }
     const nameTrim = (mapName || "").trim();
@@ -720,17 +690,10 @@ const MapDesignerPage = () => {
       }
       const variant: "error" | "warning" =
         missingName || missingDescription ? "error" : "warning";
-      try {
-        if ((window as any).Snackbar?.enqueueSnackbar) {
-          (window as any).Snackbar.enqueueSnackbar(msg, {
-            variant,
-            anchorOrigin: { vertical: "top", horizontal: "right" },
-          });
-        } else {
-          showToast(msg, variant);
-        }
-      } catch {
-        showToast(msg, variant);
+      if (variant === "error") {
+        dispatch(setMessageError(msg));
+      } else {
+        dispatch(setMessageSuccess(msg));
       }
       return;
     }
@@ -751,18 +714,7 @@ const MapDesignerPage = () => {
     // Continue to build payload first; for editing, we'll open confirm right before API call
     if (!hasRobot) {
       const msg = "Vui lòng đặt robot trên bản đồ trước khi lưu";
-      try {
-        if ((window as any).Snackbar?.enqueueSnackbar) {
-          (window as any).Snackbar.enqueueSnackbar(msg, {
-            variant: "error",
-            anchorOrigin: { vertical: "top", horizontal: "right" },
-          });
-        } else {
-          showToast(msg, "error");
-        }
-      } catch {
-        showToast(msg, "error");
-      }
+      dispatch(setMessageError(msg));
       return;
     }
 
@@ -777,18 +729,7 @@ const MapDesignerPage = () => {
           : missingSolution
           ? "Vui lòng cấu hình Giải pháp trước khi lưu"
           : "Vui lòng cấu hình Thử thách trước khi lưu";
-      try {
-        if ((window as any).Snackbar?.enqueueSnackbar) {
-          (window as any).Snackbar.enqueueSnackbar(msg, {
-            variant: "error",
-            anchorOrigin: { vertical: "top", horizontal: "right" },
-          });
-        } else {
-          showToast(msg, "error");
-        }
-      } catch {
-        showToast(msg, "error");
-      }
+      dispatch(setMessageError(msg));
       return;
     }
 
@@ -828,14 +769,7 @@ const MapDesignerPage = () => {
               ? "red"
               : "green";
           const msg = `Battery victory for ${color} requires ${need[color]} but only ${have[color]} on map.`;
-          if ((window as any).Snackbar?.enqueueSnackbar) {
-            (window as any).Snackbar.enqueueSnackbar(msg, {
-              variant: "error",
-              anchorOrigin: { vertical: "top", horizontal: "right" },
-            });
-          } else {
-            showToast(msg, "error");
-          }
+          dispatch(setMessageError(msg));
           return;
         }
       }
@@ -873,19 +807,21 @@ const MapDesignerPage = () => {
         res = await axiosClient.post(ROUTES_API_CHALLENGE.CREATE, lessonData);
       }
       const ok = res && (res.status === 200 || res.status === 201);
-      const msg = ok ? "Lưu thử thách thành công" : "Lưu thử thách thất bại";
-      const variant = ok ? "success" : "error";
-      if ((window as any).Snackbar?.enqueueSnackbar) {
-        (window as any).Snackbar.enqueueSnackbar(msg, {
-          variant,
-          anchorOrigin: { vertical: "top", horizontal: "right" },
-        });
+      const msg = ok
+        ? editingId
+          ? "Cập nhật thử thách thành công"
+          : "Tạo thử thách thành công"
+        : editingId
+        ? "Cập nhật thử thách thất bại"
+        : "Tạo thử thách thất bại";
+      if (ok) {
+        dispatch(setMessageSuccess(msg));
       } else {
-        showToast(msg, variant as any);
+        dispatch(setMessageError(msg));
       }
     } catch (e: any) {
       const errorMessage = extractApiErrorMessage(e, "Lưu thử thách thất bại");
-      showToast(errorMessage, "error");
+      dispatch(setMessageError(errorMessage));
     }
   };
 
@@ -1316,8 +1252,12 @@ const MapDesignerPage = () => {
                     : translate("admin.configureChallenge")}
                 </Button>
                 <Box sx={{ flexGrow: 1 }} />
-                <Button variant="contained" onClick={handleSaveMap}>
-                  {translate("admin.saveChallenge")}
+                <Button
+                  variant="contained"
+                  onClick={handleSaveMap}
+                  startIcon={editingId ? <SaveIcon /> : <AddIcon />}
+                >
+                  {editingId ? "Cập nhật" : "Tạo mới"}
                 </Button>
               </Box>
               {/* Auto-use buffered solution on Challenge Save; no separate Save Solution button */}
@@ -1436,18 +1376,7 @@ const MapDesignerPage = () => {
                   solutionJsonToSave.trim().length === 0
                 ) {
                   const msg = "Vui lòng cấu hình Giải pháp trước khi lưu";
-                  try {
-                    if ((window as any).Snackbar?.enqueueSnackbar) {
-                      (window as any).Snackbar.enqueueSnackbar(msg, {
-                        variant: "error",
-                        anchorOrigin: { vertical: "top", horizontal: "right" },
-                      });
-                    } else {
-                      showToast(msg, "error");
-                    }
-                  } catch {
-                    showToast(msg, "error");
-                  }
+                  dispatch(setMessageError(msg));
                   return;
                 }
                 // Use challengeJson as-is from WinConditionsSection for update
@@ -1470,23 +1399,19 @@ const MapDesignerPage = () => {
                 );
                 const ok = res && (res.status === 200 || res.status === 201);
                 const msg = ok
-                  ? "Lưu thử thách thành công"
-                  : "Lưu thử thách thất bại";
-                const variant = ok ? "success" : "error";
-                if ((window as any).Snackbar?.enqueueSnackbar) {
-                  (window as any).Snackbar.enqueueSnackbar(msg, {
-                    variant,
-                    anchorOrigin: { vertical: "top", horizontal: "right" },
-                  });
+                  ? "Cập nhật thử thách thành công"
+                  : "Cập nhật thử thách thất bại";
+                if (ok) {
+                  dispatch(setMessageSuccess(msg));
                 } else {
-                  showToast(msg, variant as any);
+                  dispatch(setMessageError(msg));
                 }
               } catch (e: any) {
                 const errorMessage = extractApiErrorMessage(
                   e,
                   "Lưu thử thách thất bại"
                 );
-                showToast(errorMessage, "error");
+                dispatch(setMessageError(errorMessage));
               }
             }}
           >
@@ -1494,9 +1419,6 @@ const MapDesignerPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Common Notification Component */}
-      <NotificationComponent />
     </AdminLayout>
   );
 };

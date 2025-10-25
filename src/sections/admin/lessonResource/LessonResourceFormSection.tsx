@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import {
   Box,
   Button,
-  Card,
-  CardContent,
   FormControl,
   InputLabel,
   MenuItem,
@@ -12,7 +10,9 @@ import {
   Typography,
   Snackbar,
   Alert,
+  CircularProgress,
 } from "@mui/material";
+import SaveIcon from "@mui/icons-material/Save";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { getCoursesForAdmin } from "../../../redux/course/courseSlice";
@@ -220,175 +220,191 @@ export default function LessonResourceFormSection({
   };
 
   return (
-    <Card sx={{ boxShadow: 2 }}>
-      <CardContent>
-        <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
-          {id ? "Chỉnh sửa tài nguyên học tập" : "Thêm tài nguyên học tập"}
-        </Typography>
+    <Box>
+      <Typography variant="h6" sx={{ mb: 3 }}>
+        Thông tin cơ bản
+      </Typography>
 
-        <Box sx={{ display: "grid", gap: 2.5, maxWidth: 720 }}>
-          {id ? (
-            <Box
-              sx={{
-                p: 2,
-                border: "1px solid",
-                borderColor: "divider",
-                borderRadius: 1,
-                bgcolor: "grey.50",
-              }}
-            >
-              <Typography variant="overline" color="text.secondary">
-                Thông tin liên kết
-              </Typography>
-              <Box sx={{ display: "grid", gap: 0.5 }}>
-                <Typography variant="body2">
-                  <strong>Khóa học:</strong>{" "}
-                  {displayCourseTitle || "(Không có)"}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Bài học:</strong> {displayLessonTitle || "(Không có)"}
-                </Typography>
-              </Box>
-            </Box>
-          ) : (
-            <>
-              <PopupSelect
-                label="Khóa học"
-                value={courseId}
-                onChange={(value) => {
-                  setCourseId(value);
-                  setForm((f) => ({ ...f, lessonId: "" }));
-                }}
-                items={adminCourses?.items || []}
-                loading={courseLoading}
-                pageSize={12}
-                getItemLabel={(course) => course.title}
-                getItemValue={(course) => course.id}
-                noDataMessage="Không có khóa học nào"
-                currentPage={coursePage}
-                onPageChange={setCoursePage}
-                totalPages={adminCourses?.totalPages || 1}
-                title="Chọn khóa học"
-              />
-
-              <PopupSelect
-                label="Bài học"
-                value={form.lessonId}
-                onChange={(value) =>
-                  setForm((f) => ({
-                    ...f,
-                    lessonId: value,
-                  }))
-                }
-                items={lessonsState?.items || []}
-                loading={lessonLoading}
-                error={!!formErrors.lessonId}
-                helperText={formErrors.lessonId}
-                disabled={!courseId}
-                pageSize={12}
-                getItemLabel={(lesson) => lesson.title}
-                getItemValue={(lesson) => lesson.id}
-                noDataMessage={
-                  !courseId
-                    ? "Vui lòng chọn khóa học trước"
-                    : "Không có bài học nào cho khóa học này"
-                }
-                currentPage={lessonPage}
-                onPageChange={setLessonPage}
-                totalPages={lessonsState?.totalPages || 1}
-                title="Chọn bài học"
-              />
-            </>
-          )}
-
-          <TextField
-            size="small"
-            label="Tiêu đề"
-            value={form.title}
-            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-            error={!!formErrors.title}
-            helperText={formErrors.title}
-            fullWidth
-            placeholder="Nhập tiêu đề tài nguyên"
-          />
-
-          <TextField
-            size="small"
-            label="Mô tả"
-            value={form.description}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, description: e.target.value }))
-            }
-            error={!!formErrors.description}
-            helperText={formErrors.description}
-            fullWidth
-            multiline
-            minRows={3}
-            placeholder="Mô tả ngắn gọn về tài nguyên"
-          />
-
-          <FormControl size="small" fullWidth error={!!formErrors.type}>
-            <InputLabel>Loại tài nguyên</InputLabel>
-            <Select
-              label="Loại tài nguyên"
-              value={form.type}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, type: e.target.value as string }))
-              }
-            >
-              <MenuItem value="1">Video</MenuItem>
-              <MenuItem value="2">Document</MenuItem>
-              <MenuItem value="3">Image</MenuItem>
-              <MenuItem value="4">Audio</MenuItem>
-              <MenuItem value="5">External Link</MenuItem>
-              <MenuItem value="6">Interactive</MenuItem>
-              <MenuItem value="7">Slides</MenuItem>
-            </Select>
-            {formErrors.type && (
-              <Typography variant="caption" color="error">
-                {formErrors.type}
-              </Typography>
-            )}
-          </FormControl>
-
-          <TextField
-            size="small"
-            label="File URL"
-            value={form.fileUrl}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, fileUrl: e.target.value }))
-            }
-            error={!!formErrors.fileUrl}
-            helperText={formErrors.fileUrl}
-            fullWidth
-            placeholder="https://..."
-          />
-
+      <Box sx={{ display: "grid", gap: 3 }}>
+        {id ? (
           <Box
             sx={{
-              display: "flex",
-              gap: 1,
-              justifyContent: "flex-end",
-              mt: 2,
-              pt: 1.5,
-              borderTop: "1px solid",
+              p: 2,
+              border: "1px solid",
               borderColor: "divider",
+              borderRadius: 1,
               bgcolor: "grey.50",
             }}
           >
-            <Button onClick={() => (onCancel ? onCancel() : navigate(-1))}>
-              Hủy
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleSubmit}
-              disabled={loading}
-            >
-              {id ? "Lưu thay đổi" : "Tạo mới"}
-            </Button>
+            <Typography variant="overline" color="text.secondary">
+              Thông tin liên kết
+            </Typography>
+            <Box sx={{ display: "grid", gap: 0.5 }}>
+              <Typography variant="body2">
+                <strong>Khóa học:</strong> {displayCourseTitle || "(Không có)"}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Bài học:</strong> {displayLessonTitle || "(Không có)"}
+              </Typography>
+            </Box>
           </Box>
+        ) : (
+          <>
+            <PopupSelect
+              label="Khóa học"
+              value={courseId}
+              onChange={(value) => {
+                setCourseId(value);
+                setForm((f) => ({ ...f, lessonId: "" }));
+              }}
+              items={adminCourses?.items || []}
+              loading={courseLoading}
+              pageSize={12}
+              getItemLabel={(course) => course.title}
+              getItemValue={(course) => course.id}
+              noDataMessage="Không có khóa học nào"
+              currentPage={coursePage}
+              onPageChange={setCoursePage}
+              totalPages={adminCourses?.totalPages || 1}
+              title="Chọn khóa học"
+            />
+
+            <PopupSelect
+              label="Bài học"
+              value={form.lessonId}
+              onChange={(value) =>
+                setForm((f) => ({
+                  ...f,
+                  lessonId: value,
+                }))
+              }
+              items={lessonsState?.items || []}
+              loading={lessonLoading}
+              error={!!formErrors.lessonId}
+              helperText={formErrors.lessonId}
+              disabled={!courseId}
+              pageSize={12}
+              getItemLabel={(lesson) => lesson.title}
+              getItemValue={(lesson) => lesson.id}
+              noDataMessage={
+                !courseId
+                  ? "Vui lòng chọn khóa học trước"
+                  : "Không có bài học nào cho khóa học này"
+              }
+              currentPage={lessonPage}
+              onPageChange={setLessonPage}
+              totalPages={lessonsState?.totalPages || 1}
+              title="Chọn bài học"
+            />
+          </>
+        )}
+
+        <TextField
+          size="medium"
+          label="Tiêu đề"
+          value={form.title}
+          onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+          error={!!formErrors.title}
+          helperText={formErrors.title}
+          fullWidth
+          placeholder="Nhập tiêu đề tài nguyên"
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 2,
+            },
+          }}
+        />
+
+        <TextField
+          size="medium"
+          label="Mô tả"
+          value={form.description}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, description: e.target.value }))
+          }
+          error={!!formErrors.description}
+          helperText={formErrors.description}
+          fullWidth
+          multiline
+          minRows={4}
+          placeholder="Mô tả ngắn gọn về tài nguyên"
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 2,
+            },
+          }}
+        />
+
+        <FormControl size="medium" fullWidth error={!!formErrors.type}>
+          <InputLabel>Loại tài nguyên</InputLabel>
+          <Select
+            label="Loại tài nguyên"
+            value={form.type}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, type: e.target.value as string }))
+            }
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 2,
+              },
+            }}
+          >
+            <MenuItem value="1">Video</MenuItem>
+            <MenuItem value="2">Document</MenuItem>
+            <MenuItem value="3">Image</MenuItem>
+            <MenuItem value="4">Audio</MenuItem>
+            <MenuItem value="5">External Link</MenuItem>
+            <MenuItem value="6">Interactive</MenuItem>
+            <MenuItem value="7">Slides</MenuItem>
+          </Select>
+          {formErrors.type && (
+            <Typography variant="caption" color="error">
+              {formErrors.type}
+            </Typography>
+          )}
+        </FormControl>
+
+        <TextField
+          size="medium"
+          label="File URL"
+          value={form.fileUrl}
+          onChange={(e) => setForm((f) => ({ ...f, fileUrl: e.target.value }))}
+          error={!!formErrors.fileUrl}
+          helperText={formErrors.fileUrl}
+          fullWidth
+          placeholder="https://..."
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 2,
+            },
+          }}
+        />
+
+        <Box
+          sx={{
+            mt: 4,
+            display: "flex",
+            gap: 2,
+            justifyContent: "flex-end",
+          }}
+        >
+          <Button
+            variant="outlined"
+            onClick={() => (onCancel ? onCancel() : navigate(-1))}
+            disabled={loading}
+          >
+            Hủy
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={loading}
+            startIcon={loading ? <CircularProgress size={16} /> : <SaveIcon />}
+          >
+            {id ? "Cập nhật" : "Tạo mới"}
+          </Button>
         </Box>
-      </CardContent>
+      </Box>
 
       <Snackbar
         open={snackbar.open}
@@ -399,6 +415,6 @@ export default function LessonResourceFormSection({
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Card>
+    </Box>
   );
 }

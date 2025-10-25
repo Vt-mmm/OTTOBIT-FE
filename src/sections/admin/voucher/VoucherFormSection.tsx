@@ -21,7 +21,11 @@ import {
   VoucherCreateRequest,
   VoucherUpdateRequest,
 } from "../../../types/voucher";
-import { useNotification } from "../../../hooks/useNotification";
+import { useAppDispatch } from "../../../redux/config";
+import {
+  setMessageSuccess,
+  setMessageError,
+} from "../../../redux/course/courseSlice";
 import { axiosClient } from "../../../axiosClient";
 import { ROUTES_API_VOUCHER } from "../../../constants/routesApiKeys";
 
@@ -51,15 +55,15 @@ export default function VoucherFormSection({
   onBack,
   onSuccess,
 }: Props) {
-  const { showNotification, NotificationComponent } = useNotification();
+  const dispatch = useAppDispatch();
 
   const [formData, setFormData] = useState<FormData>({
     code: "",
     name: "",
     description: "",
     type: 1, // FixedAmount
-    discountValue: 0,
-    minOrderAmount: 0,
+    discountValue: 50000, // BR-47: Minimum 50,000 VND
+    minOrderAmount: 60000, // BR-48: discountValue + 10,000 VND
     usageLimit: 0,
     startDate: "",
     endDate: "",
@@ -87,6 +91,17 @@ export default function VoucherFormSection({
       });
     }
   }, [mode, voucher]);
+
+  // Auto-update minOrderAmount when discountValue changes (only in create mode)
+  useEffect(() => {
+    if (mode === "create" && formData.discountValue > 0) {
+      const newMinOrderAmount = formData.discountValue + 10000;
+      setFormData((prev) => ({
+        ...prev,
+        minOrderAmount: newMinOrderAmount,
+      }));
+    }
+  }, [formData.discountValue, mode]);
 
   const handleInputChange = (field: keyof FormData) => (e: any) => {
     setFormData((prev) => ({ ...prev, [field]: e.target.value }));
@@ -148,23 +163,26 @@ export default function VoucherFormSection({
       isValid = false;
     }
 
-    // 4. DiscountValue validation
-    if (formData.discountValue <= 0 || formData.discountValue > 10000000) {
+    // 4. DiscountValue validation - BR-47: 50,000 - 1,000,000 VND
+    if (formData.discountValue < 50000 || formData.discountValue > 1000000) {
       errors.discountValue =
-        "Giá trị giảm giá phải lớn hơn 0 và không quá 10,000,000 VNĐ";
+        "Giá trị giảm giá phải từ 50,000 VNĐ đến 1,000,000 VNĐ";
       isValid = false;
     }
 
-    // 9. MinOrderAmount (Optional) - ≥ 0 và ≥ discountValue
+    // 9. MinOrderAmount (Optional) - ≥ 0
     if (formData.minOrderAmount < 0) {
       errors.minOrderAmount = "Đơn hàng tối thiểu không được âm";
       isValid = false;
-    } else if (
+    }
+
+    // BR-48: MinOrderAmount must be ≥ (discountValue + 10,000 VND)
+    if (
       formData.minOrderAmount >= 0 &&
-      formData.minOrderAmount < formData.discountValue
+      formData.minOrderAmount < formData.discountValue + 10000
     ) {
       errors.minOrderAmount =
-        "Đơn hàng tối thiểu phải lớn hơn hoặc bằng giá trị giảm giá";
+        "Đơn hàng tối thiểu phải lớn hơn hoặc bằng (giá trị giảm giá + 10,000 VNĐ)";
       isValid = false;
     }
 
@@ -233,18 +251,19 @@ export default function VoucherFormSection({
 
       if (mode === "create") {
         await axiosClient.post(ROUTES_API_VOUCHER.CREATE, payload);
-        showNotification("Tạo voucher thành công", "success");
+        dispatch(setMessageSuccess("Tạo voucher thành công"));
       } else if (mode === "edit" && voucher) {
         await axiosClient.put(ROUTES_API_VOUCHER.UPDATE(voucher.id), payload);
-        showNotification("Cập nhật voucher thành công", "success");
+        dispatch(setMessageSuccess("Cập nhật voucher thành công"));
       }
 
       onSuccess();
     } catch (error: any) {
-      showNotification(
-        error?.response?.data?.message ||
-          `Không thể ${mode === "create" ? "tạo" : "cập nhật"} voucher`,
-        "error"
+      dispatch(
+        setMessageError(
+          error?.response?.data?.message ||
+            `Không thể ${mode === "create" ? "tạo" : "cập nhật"} voucher`
+        )
       );
     } finally {
       setIsLoading(false);
@@ -257,9 +276,6 @@ export default function VoucherFormSection({
         <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
           Quay lại
         </Button>
-        <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          {mode === "create" ? "Tạo Voucher" : "Chỉnh Sửa Voucher"}
-        </Typography>
       </Stack>
 
       <Card>
@@ -275,7 +291,7 @@ export default function VoucherFormSection({
                 <Stack spacing={3}>
                   <TextField
                     fullWidth
-                    label="Mã Voucher *"
+                    label="Mã phiếu giảm giá *"
                     value={formData.code}
                     onChange={handleInputChange("code")}
                     placeholder="VD: WELCOME50"
@@ -286,10 +302,10 @@ export default function VoucherFormSection({
 
                   <TextField
                     fullWidth
-                    label="Tên Voucher *"
+                    label="Tên phiếu giảm giá *"
                     value={formData.name}
                     onChange={handleInputChange("name")}
-                    placeholder="VD: Voucher Chào Mừng"
+                    placeholder="VD: Phiếu giảm giá chào mừng"
                     error={!!validationErrors.name}
                     helperText={validationErrors.name}
                   />
@@ -328,9 +344,15 @@ export default function VoucherFormSection({
                         onChange={handleInputChange("discountValue")}
                         inputProps={{
                           step: 1000,
+                          min: 50000,
+                          max: 1000000,
                         }}
+                        placeholder="50,000 - 1,000,000 VNĐ"
                         error={!!validationErrors.discountValue}
-                        helperText={validationErrors.discountValue}
+                        helperText={
+                          validationErrors.discountValue ||
+                          "Từ 50,000 VNĐ đến 1,000,000 VNĐ"
+                        }
                       />
                     </Grid>
                   </Grid>
@@ -341,9 +363,16 @@ export default function VoucherFormSection({
                     type="number"
                     value={formData.minOrderAmount}
                     onChange={handleInputChange("minOrderAmount")}
-                    inputProps={{ step: 1000 }}
+                    inputProps={{
+                      step: 1000,
+                      min: 0,
+                    }}
+                    placeholder="0 VNĐ (tùy chọn)"
                     error={!!validationErrors.minOrderAmount}
-                    helperText={validationErrors.minOrderAmount}
+                    helperText={
+                      validationErrors.minOrderAmount ||
+                      "Đơn hàng tối thiểu phải ≥ (giá trị giảm giá + 10,000 VNĐ)"
+                    }
                   />
 
                   <TextField
@@ -415,15 +444,13 @@ export default function VoucherFormSection({
                     ? "Đang tạo..."
                     : "Đang cập nhật..."
                   : mode === "create"
-                  ? "Tạo Voucher"
+                  ? "Tạo mới"
                   : "Cập Nhật"}
               </Button>
             </Box>
           </Box>
         </CardContent>
       </Card>
-
-      <NotificationComponent />
     </Box>
   );
 }

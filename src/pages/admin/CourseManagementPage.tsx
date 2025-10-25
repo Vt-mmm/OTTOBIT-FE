@@ -69,7 +69,6 @@ export default function CourseManagementPage() {
           <CourseDetailsSection
             course={selectedCourse}
             onBack={handleBackToList}
-            onEdit={(course) => handleViewModeChange("edit", course)}
           />
         );
 

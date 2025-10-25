@@ -11,7 +11,8 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { VoucherUsageDetail } from "../../../types/voucher";
-import { useNotification } from "../../../hooks/useNotification";
+import { useAppDispatch } from "../../../redux/config";
+import { setMessageError } from "../../../redux/course/courseSlice";
 import { axiosClient } from "../../../axiosClient";
 import { ROUTES_API_VOUCHER_USAGE } from "../../../constants/routesApiKeys";
 
@@ -21,7 +22,7 @@ interface Props {
 }
 
 export default function VoucherUsageDetailSection({ usageId, onBack }: Props) {
-  const { showNotification, NotificationComponent } = useNotification();
+  const dispatch = useAppDispatch();
 
   const [usage, setUsage] = useState<VoucherUsageDetail | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,10 +38,11 @@ export default function VoucherUsageDetailSection({ usageId, onBack }: Props) {
         setUsage(response.data.data);
       }
     } catch (error: any) {
-      showNotification(
-        error?.response?.data?.message ||
-          "Lỗi khi tải chi tiết sử dụng voucher",
-        "error"
+      dispatch(
+        setMessageError(
+          error?.response?.data?.message ||
+            "Lỗi khi tải chi tiết sử dụng voucher"
+        )
       );
     } finally {
       setIsLoading(false);
@@ -85,15 +87,13 @@ export default function VoucherUsageDetailSection({ usageId, onBack }: Props) {
 
   return (
     <Box>
-      <NotificationComponent />
-
       {/* Header */}
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
         <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
           Quay lại
         </Button>
         <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          Chi tiết sử dụng Voucher
+          Chi tiết sử dụng phiếu giảm giá
         </Typography>
       </Stack>
 
@@ -103,13 +103,13 @@ export default function VoucherUsageDetailSection({ usageId, onBack }: Props) {
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2 }}>
-                Thông tin Voucher
+                Thông tin phiếu giảm giá
               </Typography>
 
               <Stack spacing={2}>
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    Mã Voucher
+                    Mã phiếu giảm giá
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: "bold" }}>
                     {usage.voucherCode}
@@ -118,14 +118,14 @@ export default function VoucherUsageDetailSection({ usageId, onBack }: Props) {
 
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    Tên Voucher
+                    Tên phiếu giảm giá
                   </Typography>
                   <Typography variant="body1">{usage.voucherName}</Typography>
                 </Box>
 
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    ID Voucher
+                    ID phiếu giảm giá
                   </Typography>
                   <Typography variant="body2" sx={{ fontFamily: "monospace" }}>
                     {usage.voucherId}
