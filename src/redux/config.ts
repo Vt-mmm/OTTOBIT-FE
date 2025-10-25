@@ -26,6 +26,7 @@ import paymentReducer from "./payment/paymentSlice";
 import lessonNoteReducer from "./lessonNote/lessonNoteSlice";
 import aiReducer from "./ai/aiSlice";
 import courseRatingReducer from "./courseRating/courseRatingSlice";
+import dashboardReducer from "./dashboard/dashboardSlice";
 
 export const ottobit = configureStore({
   reducer: {
@@ -55,6 +56,7 @@ export const ottobit = configureStore({
     lessonNote: lessonNoteReducer, // ⭐️ NEW: LessonNote management
     ai: aiReducer, // ⭐️ NEW: AI Assistant (Course recommendations & solution hints)
     courseRating: courseRatingReducer, // ⭐️ NEW: Course Rating management
+    dashboard: dashboardReducer, // ⭐️ NEW: Dashboard statistics and analytics
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -66,6 +66,20 @@
   "AdminPanel": "Admin Panel",
   "Login": "Login",
   "Blog": "Blog",
+  "months": {
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
+  },
   "footer": {
     "companyName": "Ottobit Frontend",
     "companyDescription": "Modern application platform built with React 18.3.1, TypeScript 5.4.x and Material UI v6.",
