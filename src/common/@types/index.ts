@@ -11,6 +11,7 @@ export * from "./lessonResource";
 export * from "./challenge";
 export * from "./enrollment";
 export * from "./submission";
+export * from "./dashboard";
 export * from "./image";
 export * from "./component";
 export * from "./robot";
