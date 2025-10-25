@@ -36,6 +36,7 @@ const ROOTS_TAG = "/api/v1/tags";
 const ROOTS_BLOG_COMMENT = "/api/v1/blog-comments";
 const ROOTS_COURSE_RATING = "/api/v1/courses";
 const ROOTS_CHATBOT = "/api/v1/chatbot";
+const ROOTS_DASHBOARD = "/api/v1/dashboard";
 
 export const ROUTES_API_AUTH = {
   // Authentication endpoints
@@ -428,4 +429,13 @@ export const ROUTES_API_COURSE_RATING = {
 // ChatBot endpoints
 export const ROUTES_API_CHATBOT = {
   CHAT: path(ROOTS_CHATBOT, `/chat`), // POST /api/v1/chatbot/chat (User)
+};
+
+// Dashboard endpoints
+export const ROUTES_API_DASHBOARD = {
+  STATISTICS: path(ROOTS_DASHBOARD, `/statistics`), // GET /api/v1/dashboard/statistics
+  REVENUE_BY_DAYS: path(ROOTS_DASHBOARD, `/revenue-by-days`), // GET /api/v1/dashboard/revenue-by-days?days=7
+  ORDER_STATISTICS: path(ROOTS_DASHBOARD, `/order-statistics`), // GET /api/v1/dashboard/order-statistics?year&month
+  COURSE_DISTRIBUTION: path(ROOTS_DASHBOARD, `/course-distribution`), // GET /api/v1/dashboard/course-distribution
+  LEARNING_CONTENT_STATISTICS: path(ROOTS_DASHBOARD, `/learning-content-statistics`), // GET /api/v1/dashboard/learning-content-statistics
 };
