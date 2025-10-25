@@ -268,7 +268,7 @@ export default function LessonListSection({
                 if (e.key === "Enter") triggerSearch();
               }}
               sx={{
-                gridColumn: { xs: "1 / -1", md: "auto" },
+                gridColumn: "1 / -1",
                 "& .MuiInputBase-root": { pr: 4 },
               }}
               InputProps={{
@@ -365,16 +365,13 @@ export default function LessonListSection({
                 inputProps={{ min: 0 }}
               />
             </Box>
+          </Box>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => onCreateNew(courseId)}
-              sx={{
-                flexShrink: 0,
-                whiteSpace: "nowrap",
-                minWidth: "auto",
-                justifySelf: { xs: "stretch", sm: "start" },
-              }}
+              sx={{ minWidth: 140 }}
             >
               Tạo bài học
             </Button>

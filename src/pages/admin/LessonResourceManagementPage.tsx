@@ -39,6 +39,9 @@ export default function LessonResourceManagementPage() {
     "list"
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedResourceTitle, setSelectedResourceTitle] = useState<
+    string | null
+  >(null);
   const [headerSubtitle, setHeaderSubtitle] = useState(
     translate("admin.resourceListSubtitle")
   );
@@ -46,14 +49,22 @@ export default function LessonResourceManagementPage() {
 
   // Update header subtitle based on mode
   useEffect(() => {
-    if (selectedId) {
+    if (selectedId && mode === "edit") {
       setHeaderSubtitle(
-        `${translate("admin.resourceDetailTitle")} #${selectedId}`
+        `Chỉnh sửa tài nguyên${
+          selectedResourceTitle ? `: ${selectedResourceTitle}` : ""
+        }`
+      );
+    } else if (selectedId && mode === "detail") {
+      setHeaderSubtitle(
+        `Chi tiết tài nguyên${
+          selectedResourceTitle ? `: ${selectedResourceTitle}` : ""
+        }`
       );
     } else {
       setHeaderSubtitle(translate("admin.resourceListSubtitle"));
     }
-  }, [selectedId, translate]);
+  }, [selectedId, mode, selectedResourceTitle, translate]);
   return (
     <AdminLayout>
       <Container
@@ -94,15 +105,16 @@ export default function LessonResourceManagementPage() {
               </Typography>
             </Box>
           </Box>
-          {selectedId && (
+          {(selectedId || mode === "create") && (
             <Button
               startIcon={<ArrowBackIcon />}
               onClick={() => {
                 setSelectedId(null);
                 setMode("list");
+                setHeaderSubtitle(translate("admin.resourceListSubtitle"));
               }}
               sx={{
-                mt: { xs: 1.5, sm: 1 },
+                mt: { xs: 3, sm: 2.5 },
                 alignSelf: "flex-start",
                 minHeight: { xs: 44, sm: 36 },
               }}
@@ -126,16 +138,15 @@ export default function LessonResourceManagementPage() {
                         setHeaderSubtitle(translate("admin.addResource"));
                       }}
                       // @ts-ignore
-                      onEditItem={(id: string) => {
+                      onEditItem={(id: string, title?: string) => {
                         setSelectedId(id);
+                        setSelectedResourceTitle(title || null);
                         setMode("edit");
-                        setHeaderSubtitle(
-                          `${translate("admin.editResourceTitle")} #${id}`
-                        );
                       }}
                       // @ts-ignore
-                      onViewDetail={(id: string) => {
+                      onViewDetail={(id: string, title?: string) => {
                         setSelectedId(id);
+                        setSelectedResourceTitle(title || null);
                         setMode("detail");
                       }}
                       // @ts-ignore

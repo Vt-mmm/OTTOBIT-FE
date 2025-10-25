@@ -220,7 +220,7 @@ export default function TagPickerDialog({
       <DialogActions>
         <Button onClick={onClose}>Hủy</Button>
         <Button variant="contained" onClick={handleSave}>
-          Xong
+          Thêm
         </Button>
       </DialogActions>
     </Dialog>

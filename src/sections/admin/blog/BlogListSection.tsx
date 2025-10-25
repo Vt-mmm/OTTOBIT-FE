@@ -4,6 +4,10 @@ import {
   Button,
   Card,
   CardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   Chip,
   Grid,
@@ -25,18 +29,21 @@ import {
   Typography,
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import RestoreIcon from "@mui/icons-material/Restore";
 import AddIcon from "@mui/icons-material/Add";
 import BlogDetailDialog from "./BlogDetailDialog";
-import ConfirmDialog from "./ConfirmDialog";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { axiosClient } from "axiosClient/axiosClient";
 import { ROUTES_API_BLOG } from "constants/routesApiKeys";
 import { BlogItem, BlogListResponse, BlogTag } from "types/blog";
-import { useNotification } from "hooks/useNotification";
+import { useAppDispatch } from "../../../redux/config";
+import {
+  setMessageSuccess,
+  setMessageError,
+} from "../../../redux/course/courseSlice";
 import AdminBlogFilterDialog, {
   AdminBlogFilters,
 } from "./AdminBlogFilterDialog";
@@ -47,6 +54,7 @@ interface Props {
 }
 
 export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
+  const dispatch = useAppDispatch();
   const [items, setItems] = useState<BlogItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -82,7 +90,6 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
     type: "delete" | "restore";
     blog: BlogItem;
   } | null>(null);
-  const { showNotification, NotificationComponent } = useNotification();
 
   const fetchList = async () => {
     setIsLoading(true);
@@ -168,7 +175,7 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
       const data = res?.data?.data || null;
       setDetailItem(data);
     } catch (error) {
-      showNotification("Không thể tải chi tiết blog", "error");
+      dispatch(setMessageError("Không thể tải chi tiết bài viết"));
     }
   };
 
@@ -200,18 +207,21 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
     try {
       if (type === "delete") {
         await axiosClient.delete(ROUTES_API_BLOG.DELETE(blog.id));
-        showNotification("Xóa blog thành công", "success");
+        dispatch(setMessageSuccess("Xóa bài viết thành công"));
       } else {
         await axiosClient.put(ROUTES_API_BLOG.RESTORE(blog.id));
-        showNotification("Khôi phục blog thành công", "success");
+        dispatch(setMessageSuccess("Khôi phục bài viết thành công"));
       }
     } catch (error) {
       // Rollback on failure
       setItems(previousItems);
       setDetailItem(previousDetail);
-      showNotification(
-        type === "delete" ? "Không thể xóa blog" : "Không thể khôi phục blog",
-        "error"
+      dispatch(
+        setMessageError(
+          type === "delete"
+            ? "Không thể xóa bài viết"
+            : "Không thể khôi phục bài viết"
+        )
       );
     }
   };
@@ -282,7 +292,7 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
                   variant="contained"
                   onClick={() => onCreateNew?.()}
                 >
-                  Tạo blog
+                  Tạo bài viết
                 </Button>
               </Stack>
             </Grid>
@@ -328,7 +338,7 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
                 <TableCell align="right">Thời gian đọc (phút)</TableCell>
                 <TableCell>Ngày tạo</TableCell>
                 <TableCell>Tags</TableCell>
-                <TableCell align="center">Thao tác</TableCell>
+                <TableCell align="center">Hành động</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -434,11 +444,10 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
                       {!it.isDeleted && (
                         <IconButton
                           size="small"
-                          color="primary"
                           onClick={() => handleEdit(it)}
                           aria-label="edit"
                         >
-                          <EditIcon />
+                          <EditIcon fontSize="small" />
                         </IconButton>
                       )}
                       {it.isDeleted ? (
@@ -448,7 +457,7 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
                           onClick={() => handleRestore(it)}
                           aria-label="restore"
                         >
-                          <RestoreIcon />
+                          <RestoreIcon fontSize="small" />
                         </IconButton>
                       ) : (
                         <IconButton
@@ -457,7 +466,7 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
                           onClick={() => handleDelete(it)}
                           aria-label="delete"
                         >
-                          <DeleteOutlineIcon />
+                          <DeleteIcon fontSize="small" />
                         </IconButton>
                       )}
                     </Stack>
@@ -483,33 +492,37 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
           justifyContent="space-between"
           sx={{ p: 2 }}
         >
-          <Stack direction="row" spacing={2} alignItems="center">
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel id="page-size-bottom-label">Hiển thị</InputLabel>
-              <Select
-                labelId="page-size-bottom-label"
-                label="Hiển thị"
-                value={pageSize}
-                onChange={(e) => {
-                  setPageNumber(1);
-                  setPageSize(Number(e.target.value));
-                }}
-              >
-                <MenuItem value={10}>10</MenuItem>
-                <MenuItem value={12}>12</MenuItem>
-                <MenuItem value={20}>20</MenuItem>
-                <MenuItem value={50}>50</MenuItem>
-              </Select>
-            </FormControl>
-          </Stack>
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Pagination
-              page={pageNumber}
-              count={totalPages}
-              color="primary"
-              onChange={handleChangePage}
-            />
-          </Stack>
+          {totalPages > 1 && items.length > 0 && (
+            <Stack direction="row" spacing={2} alignItems="center">
+              <FormControl size="small" sx={{ minWidth: 120 }}>
+                <InputLabel id="page-size-bottom-label">Hiển thị</InputLabel>
+                <Select
+                  labelId="page-size-bottom-label"
+                  label="Hiển thị"
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageNumber(1);
+                    setPageSize(Number(e.target.value));
+                  }}
+                >
+                  <MenuItem value={10}>10</MenuItem>
+                  <MenuItem value={12}>12</MenuItem>
+                  <MenuItem value={20}>20</MenuItem>
+                  <MenuItem value={50}>50</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
+          )}
+          {totalPages > 1 && items.length > 0 && (
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Pagination
+                page={pageNumber}
+                count={totalPages}
+                color="primary"
+                onChange={handleChangePage}
+              />
+            </Stack>
+          )}
         </Stack>
       </Paper>
 
@@ -522,23 +535,28 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
         onRestore={handleRestore}
       />
 
-      <ConfirmDialog
-        open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
-        onConfirm={handleConfirmAction}
-        title={
-          confirmAction?.type === "delete"
-            ? "Xác nhận xóa blog"
-            : "Xác nhận khôi phục blog"
-        }
-        message={
-          confirmAction?.type === "delete"
-            ? `Bạn có chắc chắn muốn xóa blog "${confirmAction?.blog.title}"?`
-            : `Bạn có chắc chắn muốn khôi phục blog "${confirmAction?.blog.title}"?`
-        }
-        confirmText={confirmAction?.type === "delete" ? "Xóa" : "Khôi phục"}
-        type={confirmAction?.type || "delete"}
-      />
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>
+          {confirmAction?.type === "delete"
+            ? "Xác nhận xóa"
+            : "Xác nhận khôi phục"}
+        </DialogTitle>
+        <DialogContent>
+          {confirmAction?.type === "delete"
+            ? `Bạn có chắc muốn xóa bài viết: "${confirmAction?.blog.title}"?`
+            : `Bạn có chắc muốn khôi phục bài viết: "${confirmAction?.blog.title}"?`}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)}>Hủy</Button>
+          <Button
+            onClick={handleConfirmAction}
+            color={confirmAction?.type === "delete" ? "error" : "success"}
+            variant="contained"
+          >
+            {confirmAction?.type === "delete" ? "Xóa" : "Khôi phục"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <AdminBlogFilterDialog
         open={advancedFilterOpen}
@@ -554,7 +572,6 @@ export default function BlogListSection({ onCreateNew, onEditBlog }: Props) {
           setPageNumber(1);
         }}
       />
-      <NotificationComponent />
     </Box>
   );
 }

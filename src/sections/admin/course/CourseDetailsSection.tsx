@@ -23,9 +23,9 @@ import {
   DialogContent,
   DialogActions,
   Pagination,
+  IconButton,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import EditIcon from "@mui/icons-material/Edit";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import MapIcon from "@mui/icons-material/Map";
@@ -44,14 +44,9 @@ import { useNotification } from "../../../hooks/useNotification";
 interface Props {
   course: CourseResult | null;
   onBack: () => void;
-  onEdit: (course: CourseResult) => void;
 }
 
-export default function CourseDetailsSection({
-  course,
-  onBack,
-  onEdit,
-}: Props) {
+export default function CourseDetailsSection({ course, onBack }: Props) {
   const dispatch = useAppDispatch();
   const { data: lessonsData, isLoading: lessonsLoading } = useAppSelector(
     (s) => s.lesson.lessons
@@ -270,14 +265,9 @@ export default function CourseDetailsSection({
 
   return (
     <Box>
-      <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-        <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
-          Quay lại
-        </Button>
-        <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          Chi tiết khóa học
-        </Typography>
-      </Stack>
+      <Button startIcon={<ArrowBackIcon />} onClick={onBack} sx={{ mb: 3 }}>
+        Quay lại
+      </Button>
 
       <Grid container spacing={3}>
         {/* Course Info */}
@@ -336,15 +326,6 @@ export default function CourseDetailsSection({
                     </Stack>
                   </Stack>
                 </Box>
-
-                <Button
-                  variant="contained"
-                  startIcon={<EditIcon />}
-                  onClick={() => onEdit(renderCourse)}
-                  sx={{ ml: 2 }}
-                >
-                  Chỉnh sửa
-                </Button>
               </Stack>
 
               {renderCourse.imageUrl && (
@@ -520,7 +501,7 @@ export default function CourseDetailsSection({
                         <TableCell>Mô tả</TableCell>
                         <TableCell>Trạng thái</TableCell>
                         <TableCell>Ngày tạo</TableCell>
-                        <TableCell align="right">Thao tác</TableCell>
+                        <TableCell align="right">Hành động</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -589,11 +570,9 @@ export default function CourseDetailsSection({
                                     Khôi phục
                                   </Button>
                                 ) : (
-                                  <Button
+                                  <IconButton
                                     size="small"
                                     color="error"
-                                    variant="outlined"
-                                    startIcon={<DeleteIcon />}
                                     onClick={() =>
                                       setDeleteDialog({
                                         open: true,
@@ -603,8 +582,8 @@ export default function CourseDetailsSection({
                                       })
                                     }
                                   >
-                                    Xóa
-                                  </Button>
+                                    <DeleteIcon />
+                                  </IconButton>
                                 )}
                               </Stack>
                             </TableCell>

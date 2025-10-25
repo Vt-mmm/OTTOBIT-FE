@@ -77,7 +77,6 @@ export default function LessonManagementPage() {
           <LessonDetailsSection
             lesson={selectedLesson}
             onBack={handleBackToList}
-            onEdit={(lesson) => handleViewModeChange("edit", lesson)}
           />
         );
 

@@ -15,7 +15,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Button,
   IconButton,
   Tooltip,
   FormControl,
@@ -23,20 +22,19 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { VoucherUsage } from "../../../types/voucher";
-import { useNotification } from "../../../hooks/useNotification";
 import { axiosClient } from "../../../axiosClient";
 import { ROUTES_API_VOUCHER_USAGE } from "../../../constants/routesApiKeys";
+import { useAppDispatch } from "../../../redux/config";
+import { setMessageError } from "../../../redux/course/courseSlice";
 
 interface Props {
   onViewDetails?: (usageId: string) => void;
 }
 
 export default function VoucherUsageSection({ onViewDetails }: Props) {
-  const { showNotification, NotificationComponent } = useNotification();
-
+  const dispatch = useAppDispatch();
   const [usages, setUsages] = useState<VoucherUsage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [usedAtFrom, setUsedAtFrom] = useState("");
@@ -44,7 +42,6 @@ export default function VoucherUsageSection({ onViewDetails }: Props) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
   const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
 
   const fetchUsages = async () => {
     setIsLoading(true);
@@ -69,14 +66,14 @@ export default function VoucherUsageSection({ onViewDetails }: Props) {
 
       if (response.data?.data) {
         setUsages(response.data.data.items || []);
-        setTotal(response.data.data.total || 0);
         setTotalPages(response.data.data.totalPages || 1);
       }
     } catch (error: any) {
-      showNotification(
-        error?.response?.data?.message ||
-          "Lỗi khi tải danh sách sử dụng voucher",
-        "error"
+      dispatch(
+        setMessageError(
+          error?.response?.data?.message ||
+            "Lỗi khi tải danh sách sử dụng voucher"
+        )
       );
     } finally {
       setIsLoading(false);
@@ -97,10 +94,6 @@ export default function VoucherUsageSection({ onViewDetails }: Props) {
       setPage(1); // Reset to first page when filter changes
     };
 
-  const handleRefresh = () => {
-    fetchUsages();
-  };
-
   const handlePageSizeChange = (event: any) => {
     setPageSize(Number(event.target.value));
     setPage(1); // Reset to first page when changing page size
@@ -112,29 +105,7 @@ export default function VoucherUsageSection({ onViewDetails }: Props) {
 
   return (
     <Box>
-      <NotificationComponent />
-
       {/* Header */}
-      <Box
-        sx={{
-          mb: 3,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="h6" component="h2">
-          Lịch sử sử dụng Voucher ({total})
-        </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<RefreshIcon />}
-          onClick={handleRefresh}
-          disabled={isLoading}
-        >
-          Làm mới
-        </Button>
-      </Box>
 
       {/* Filters */}
       <Card sx={{ mb: 3 }}>
@@ -181,8 +152,12 @@ export default function VoucherUsageSection({ onViewDetails }: Props) {
               <Table>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                    <TableCell sx={{ fontWeight: 600 }}>Mã Voucher</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Tên Voucher</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>
+                      Mã phiếu giảm giá
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>
+                      Tên phiếu giảm giá
+                    </TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Người dùng</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Mã đơn hàng</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>
@@ -267,7 +242,7 @@ export default function VoucherUsageSection({ onViewDetails }: Props) {
       </Card>
 
       {/* Pagination */}
-      {totalPages > 0 && (
+      {totalPages > 1 && usages.length > 0 && (
         <Box
           sx={{
             display: "flex",

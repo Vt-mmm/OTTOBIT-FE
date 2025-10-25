@@ -152,11 +152,6 @@ export default function CourseFormSection({
         <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
           {translate("admin.back")}
         </Button>
-        <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          {mode === "create"
-            ? translate("admin.createNewCourse")
-            : translate("admin.editCourseTitle")}
-        </Typography>
       </Stack>
 
       <Card>
@@ -295,7 +290,7 @@ export default function CourseFormSection({
                 }
                 disabled={isLoading}
               >
-                {mode === "create" ? "Tạo khóa học" : "Cập nhật"}
+                {mode === "create" ? "Tạo mới" : "Cập nhật"}
               </Button>
             </Box>
           </Box>

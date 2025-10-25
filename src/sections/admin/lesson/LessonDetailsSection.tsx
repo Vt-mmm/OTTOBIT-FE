@@ -20,7 +20,6 @@ import {
   Pagination,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import EditIcon from "@mui/icons-material/Edit";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import SchoolIcon from "@mui/icons-material/School";
 import FolderIcon from "@mui/icons-material/Folder";
@@ -33,14 +32,9 @@ import { axiosClient } from "axiosClient";
 interface Props {
   lesson: LessonResult | null;
   onBack: () => void;
-  onEdit: (lesson: LessonResult) => void;
 }
 
-export default function LessonDetailsSection({
-  lesson,
-  onBack,
-  onEdit,
-}: Props) {
+export default function LessonDetailsSection({ lesson, onBack }: Props) {
   const dispatch = useAppDispatch();
   const [detail, setDetail] = useState<LessonResult | null>(null);
   const [detailLoading, setDetailLoading] = useState<boolean>(false);
@@ -173,14 +167,9 @@ export default function LessonDetailsSection({
 
   return (
     <Box>
-      <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-        <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
-          Quay lại
-        </Button>
-        <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          Chi tiết bài học
-        </Typography>
-      </Stack>
+      <Button startIcon={<ArrowBackIcon />} onClick={onBack} sx={{ mb: 3 }}>
+        Quay lại
+      </Button>
 
       <Grid container spacing={3}>
         {/* Lesson Content */}
@@ -236,15 +225,6 @@ export default function LessonDetailsSection({
                     </Stack>
                   </Stack>
                 </Box>
-
-                <Button
-                  variant="contained"
-                  startIcon={<EditIcon />}
-                  onClick={() => onEdit(renderLesson)}
-                  sx={{ ml: 2 }}
-                >
-                  Chỉnh sửa
-                </Button>
               </Stack>
 
               <Divider sx={{ mb: 3 }} />

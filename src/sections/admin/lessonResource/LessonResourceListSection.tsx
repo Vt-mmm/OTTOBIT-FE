@@ -35,6 +35,8 @@ import LinkIcon from "@mui/icons-material/Link";
 import ExtensionIcon from "@mui/icons-material/Extension";
 import SlideshowIcon from "@mui/icons-material/Slideshow";
 import EditIcon from "@mui/icons-material/Edit";
+import AddIcon from "@mui/icons-material/Add";
+import SaveIcon from "@mui/icons-material/Save";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 import { ROUTES_API_LESSON_RESOURCE } from "constants/routesApiKeys";
 import { axiosClient } from "axiosClient";
@@ -53,10 +55,10 @@ export default function LessonResourceListSection({
   onViewDetail,
 }: {
   onCreateNew?: () => void;
-  onEditItem?: (id: string) => void;
+  onEditItem?: (id: string, title?: string) => void;
   onNotify?: (message: string) => void;
   selectedId?: string | null;
-  onViewDetail?: (id: string) => void;
+  onViewDetail?: (id: string, title?: string) => void;
 }) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -409,7 +411,7 @@ export default function LessonResourceListSection({
                   triggerSearch();
                 }
               }}
-              sx={{ gridColumn: { xs: "1 / -1", md: "auto" } }}
+              sx={{ gridColumn: "1 / -1" }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -493,6 +495,7 @@ export default function LessonResourceListSection({
           <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
             <Button
               variant="contained"
+              startIcon={<AddIcon />}
               onClick={() =>
                 onCreateNew
                   ? onCreateNew()
@@ -630,7 +633,7 @@ export default function LessonResourceListSection({
                     title="Xem chi tiết"
                     onClick={() => {
                       console.log("Click view detail for ID:", it.id);
-                      onViewDetail?.(it.id);
+                      onViewDetail?.(it.id, it.title);
                     }}
                   >
                     <VisibilityIcon />
@@ -641,7 +644,7 @@ export default function LessonResourceListSection({
                       title="Chỉnh sửa"
                       onClick={() =>
                         onEditItem
-                          ? onEditItem(it.id)
+                          ? onEditItem(it.id, it.title)
                           : navigate(
                               `/admin/lesson-resource-management/${it.id}/edit`
                             )
@@ -869,6 +872,7 @@ export default function LessonResourceListSection({
           </Button>
           <Button
             variant="contained"
+            startIcon={editItem ? <SaveIcon /> : <AddIcon />}
             onClick={async () => {
               if (!validateForm()) return;
               try {
@@ -894,7 +898,7 @@ export default function LessonResourceListSection({
               } catch (e: any) {}
             }}
           >
-            {editItem ? "Lưu thay đổi" : "Tạo mới"}
+            {editItem ? "Cập nhật" : "Tạo mới"}
           </Button>
         </DialogActions>
       </Dialog>

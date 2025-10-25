@@ -12,6 +12,7 @@ import {
   Divider,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import SaveIcon from "@mui/icons-material/Save";
 import { axiosClient } from "axiosClient/axiosClient";
 import { ROUTES_API_BLOG, ROUTES_API_TAG } from "constants/routesApiKeys";
 import { ImageUploader } from "components/common/ImageUploader";
@@ -140,7 +141,7 @@ export default function BlogFormSection({
           thumbnailUrl: thumbnailUrl.trim(),
           tagIds,
         });
-        showNotification("Tạo blog thành công", "success");
+        showNotification("Tạo bài viết thành công", "success");
       } else if (mode === "edit" && onUpdate) {
         // Update blog content including tags
         await onUpdate({
@@ -150,12 +151,14 @@ export default function BlogFormSection({
           tagIds,
         });
 
-        showNotification("Cập nhật blog thành công", "success");
+        showNotification("Cập nhật bài viết thành công", "success");
       }
       onSuccess();
     } catch {
       showNotification(
-        mode === "create" ? "Không thể tạo blog" : "Không thể cập nhật blog",
+        mode === "create"
+          ? "Không thể tạo bài viết"
+          : "Không thể cập nhật bài viết",
         "error"
       );
     } finally {
@@ -166,33 +169,14 @@ export default function BlogFormSection({
   return (
     <Container maxWidth="xl" sx={{ px: { xs: 0, sm: 2 } }}>
       {/* Header actions */}
-      <Box
-        sx={{
-          mb: 2,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Button
-            startIcon={<ArrowBackIcon />}
-            variant="text"
-            onClick={onBack}
-            disabled={isSubmitting}
-          >
-            Quay lại
-          </Button>
-          <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            {mode === "create" ? "Tạo blog" : "Chỉnh sửa blog"}
-          </Typography>
-        </Box>
+      <Box sx={{ mb: 2 }}>
         <Button
-          variant="contained"
-          onClick={handleSubmit}
+          startIcon={<ArrowBackIcon />}
+          variant="text"
+          onClick={onBack}
           disabled={isSubmitting}
         >
-          {mode === "create" ? "Tạo" : "Lưu"}
+          Quay lại
         </Button>
       </Box>
 
@@ -295,6 +279,29 @@ export default function BlogFormSection({
           </Card>
         </Grid>
       </Grid>
+
+      {/* Submit Button */}
+      <Box
+        sx={{
+          mt: 4,
+          display: "flex",
+          gap: 2,
+          justifyContent: "flex-end",
+        }}
+      >
+        <Button variant="outlined" onClick={onBack} disabled={isSubmitting}>
+          Hủy
+        </Button>
+        <Button
+          variant="contained"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          startIcon={<SaveIcon />}
+        >
+          {mode === "create" ? "Tạo mới" : "Cập nhật"}
+        </Button>
+      </Box>
+
       <TagPickerDialog
         open={openTagPicker}
         selectedIds={tagIds}

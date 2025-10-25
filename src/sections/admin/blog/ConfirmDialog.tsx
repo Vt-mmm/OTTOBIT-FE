@@ -116,7 +116,7 @@ export default function ConfirmDialog({
             >
               {type === "delete"
                 ? "Hành động này không thể hoàn tác."
-                : "Blog sẽ được khôi phục và có thể chỉnh sửa lại."}
+                : "Bài viết sẽ được khôi phục và có thể chỉnh sửa lại."}
             </Typography>
           </Box>
         </Stack>

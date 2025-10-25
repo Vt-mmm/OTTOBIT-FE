@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Box, Container, Typography, Tabs, Tab } from "@mui/material";
-import { useNotification } from "../../hooks/useNotification";
 import AdminLayout from "../../layout/admin/AdminLayout";
 import VoucherListSection from "../../sections/admin/voucher/VoucherListSection";
 import VoucherFormSection from "../../sections/admin/voucher/VoucherFormSection";
@@ -19,7 +18,6 @@ export default function VoucherManagementPage() {
   const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
   const [activeTab, setActiveTab] = useState<TabValue>("vouchers");
   const [selectedUsageId, setSelectedUsageId] = useState<string | null>(null);
-  const { showNotification, NotificationComponent } = useNotification();
 
   const handleViewModeChange = (mode: ViewMode, voucher?: Voucher) => {
     setViewMode(mode);
@@ -85,7 +83,6 @@ export default function VoucherManagementPage() {
             onBack={handleBackToList}
             onSuccess={() => {
               handleBackToList();
-              showNotification("Tạo voucher thành công", "success");
             }}
           />
         );
@@ -98,7 +95,6 @@ export default function VoucherManagementPage() {
             onBack={handleBackToList}
             onSuccess={() => {
               handleBackToList();
-              showNotification("Cập nhật voucher thành công", "success");
             }}
           />
         );
@@ -108,7 +104,6 @@ export default function VoucherManagementPage() {
           <VoucherDetailsSection
             voucher={selectedVoucher}
             onBack={handleBackToList}
-            onEdit={(voucher) => handleViewModeChange("edit", voucher)}
           />
         );
 
@@ -125,43 +120,34 @@ export default function VoucherManagementPage() {
 
   const getPageTitle = () => {
     if (viewMode === "usage-details") {
-      return "Chi tiết sử dụng Voucher";
+      return "Chi tiết sử dụng phiếu giảm giá";
     }
 
     if (activeTab === "usage") {
-      return "Lịch sử sử dụng Voucher";
+      return "Lịch sử sử dụng phiếu giảm giá";
     }
 
-    switch (viewMode) {
-      case "create":
-        return "Tạo Voucher Mới";
-      case "edit":
-        return "Chỉnh sửa Voucher";
-      case "details":
-        return "Chi tiết Voucher";
-      default:
-        return "Quản lý Voucher";
-    }
+    return "Quản lý phiếu giảm giá";
   };
 
   const getPageDescription = () => {
     if (viewMode === "usage-details") {
-      return "Xem chi tiết thông tin sử dụng voucher";
+      return "Xem chi tiết thông tin sử dụng phiếu giảm giá";
     }
 
     if (activeTab === "usage") {
-      return "Theo dõi và quản lý lịch sử sử dụng voucher của người dùng";
+      return "Theo dõi và quản lý lịch sử sử dụng phiếu giảm giá của người dùng";
     }
 
     switch (viewMode) {
       case "list":
-        return "Danh sách tất cả voucher trong hệ thống";
+        return "Danh sách tất cả phiếu giảm giá trong hệ thống";
       case "create":
-        return "Tạo voucher khuyến mãi mới";
+        return "Tạo phiếu giảm giá khuyến mãi mới";
       case "edit":
-        return `Chỉnh sửa voucher: ${selectedVoucher?.name}`;
+        return `Chỉnh sửa phiếu giảm giá: ${selectedVoucher?.name}`;
       case "details":
-        return `Chi tiết voucher: ${selectedVoucher?.name}`;
+        return `Chi tiết phiếu giảm giá: ${selectedVoucher?.name}`;
       default:
         return "";
     }
@@ -220,14 +206,13 @@ export default function VoucherManagementPage() {
                 },
               }}
             >
-              <Tab label="Quản lý Voucher" value="vouchers" />
+              <Tab label="Quản lý phiếu giảm giá" value="vouchers" />
               <Tab label="Lịch sử sử dụng" value="usage" />
             </Tabs>
           </Box>
         )}
 
         {renderContent()}
-        <NotificationComponent />
       </Container>
     </AdminLayout>
   );

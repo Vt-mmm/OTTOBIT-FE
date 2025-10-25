@@ -35,7 +35,11 @@ import RestoreIcon from "@mui/icons-material/Restore";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import SearchIcon from "@mui/icons-material/Search";
 import { Voucher } from "../../../types/voucher";
-import { useNotification } from "../../../hooks/useNotification";
+import { useAppDispatch } from "../../../redux/config";
+import {
+  setMessageSuccess,
+  setMessageError,
+} from "../../../redux/course/courseSlice";
 import { axiosClient } from "../../../axiosClient";
 import { ROUTES_API_VOUCHER } from "../../../constants/routesApiKeys";
 
@@ -50,7 +54,7 @@ export default function VoucherListSection({
   onEditVoucher,
   onViewDetails,
 }: Props) {
-  const { showNotification, NotificationComponent } = useNotification();
+  const dispatch = useAppDispatch();
 
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,9 +63,8 @@ export default function VoucherListSection({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(12);
+  const [pageSize, setPageSize] = useState(12);
   const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
   const [status, setStatus] = useState<"all" | "active">("all");
 
   // Committed filter states (only sent to API when search is triggered)
@@ -101,13 +104,13 @@ export default function VoucherListSection({
       if (response.data?.data) {
         const raw = response.data.data.items || [];
         setVouchers(raw);
-        setTotal(response.data.data.total || 0);
         setTotalPages(response.data.data.totalPages || 1);
       }
     } catch (error: any) {
-      showNotification(
-        error?.response?.data?.message || "Lỗi khi tải danh sách voucher",
-        "error"
+      dispatch(
+        setMessageError(
+          error?.response?.data?.message || "Lỗi khi tải danh sách voucher"
+        )
       );
     } finally {
       setIsLoading(false);
@@ -159,12 +162,13 @@ export default function VoucherListSection({
 
     try {
       await axiosClient.delete(ROUTES_API_VOUCHER.DELETE(confirmDelete.id));
-      showNotification("Xóa voucher thành công", "success");
+      dispatch(setMessageSuccess("Xóa voucher thành công"));
       fetchVouchers();
     } catch (error: any) {
-      showNotification(
-        error?.response?.data?.message || "Không thể xóa voucher",
-        "error"
+      dispatch(
+        setMessageError(
+          error?.response?.data?.message || "Không thể xóa voucher"
+        )
       );
     } finally {
       setConfirmDelete(null);
@@ -176,12 +180,13 @@ export default function VoucherListSection({
 
     try {
       await axiosClient.post(ROUTES_API_VOUCHER.RESTORE(confirmRestore.id));
-      showNotification("Khôi phục voucher thành công", "success");
+      dispatch(setMessageSuccess("Khôi phục voucher thành công"));
       fetchVouchers();
     } catch (error: any) {
-      showNotification(
-        error?.response?.data?.message || "Không thể khôi phục voucher",
-        "error"
+      dispatch(
+        setMessageError(
+          error?.response?.data?.message || "Không thể khôi phục voucher"
+        )
       );
     } finally {
       setConfirmRestore(null);
@@ -218,36 +223,14 @@ export default function VoucherListSection({
 
   return (
     <Box>
-      {/* Header */}
-      <Box
-        sx={{
-          mb: 3,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="h6" component="h2">
-          Danh sách Voucher ({total})
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={onCreateNew}
-          sx={{ minWidth: 140 }}
-        >
-          Tạo Voucher Mới
-        </Button>
-      </Box>
-
       {/* Search and Filters */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12}>
               <TextField
                 fullWidth
-                placeholder="Tìm kiếm theo tên, mã voucher..."
+                placeholder="Tìm kiếm theo tên, mã phiếu giảm giá..."
                 value={searchTerm}
                 onChange={handleSearch}
                 onKeyPress={handleKeyPress}
@@ -299,6 +282,16 @@ export default function VoucherListSection({
               </FormControl>
             </Grid>
           </Grid>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={onCreateNew}
+              sx={{ minWidth: 140 }}
+            >
+              Tạo phiếu giảm giá mới
+            </Button>
+          </Box>
         </CardContent>
       </Card>
 
@@ -322,7 +315,7 @@ export default function VoucherListSection({
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Mã Voucher</TableCell>
+                    <TableCell>Mã phiếu giảm giá</TableCell>
                     <TableCell>Tên</TableCell>
                     <TableCell>Loại</TableCell>
                     <TableCell>Giá trị</TableCell>
@@ -330,7 +323,7 @@ export default function VoucherListSection({
                     <TableCell>Giới hạn</TableCell>
                     <TableCell>Ngày hết hạn</TableCell>
                     <TableCell>Trạng thái</TableCell>
-                    <TableCell align="right">Thao tác</TableCell>
+                    <TableCell align="right">Hành động</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -385,13 +378,15 @@ export default function VoucherListSection({
                           >
                             <VisibilityIcon fontSize="small" />
                           </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => onEditVoucher(voucher)}
-                            title="Chỉnh sửa"
-                          >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
+                          {!voucher.isDeleted && (
+                            <IconButton
+                              size="small"
+                              onClick={() => onEditVoucher(voucher)}
+                              title="Chỉnh sửa"
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          )}
                           {voucher.isDeleted ? (
                             <IconButton
                               size="small"
@@ -423,15 +418,39 @@ export default function VoucherListSection({
       </Card>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+      {totalPages > 1 && vouchers.length > 0 && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            p: 2,
+          }}
+        >
+          <TextField
+            select
+            label="Số mục mỗi trang"
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setPage(1);
+            }}
+            size="small"
+            SelectProps={{ native: true }}
+            sx={{ minWidth: 140 }}
+          >
+            {[6, 12, 24, 48].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </TextField>
           <Pagination
             count={totalPages}
             page={page}
             onChange={(_, newPage) => setPage(newPage)}
+            shape="rounded"
             color="primary"
-            showFirstButton
-            showLastButton
           />
         </Box>
       )}
@@ -468,8 +487,6 @@ export default function VoucherListSection({
           </Button>
         </DialogActions>
       </Dialog>
-
-      <NotificationComponent />
     </Box>
   );
 }

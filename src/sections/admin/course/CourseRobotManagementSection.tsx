@@ -21,6 +21,7 @@ import {
   DialogContentText,
   DialogActions,
   Pagination,
+  IconButton,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -268,7 +269,7 @@ export default function CourseRobotManagementSection({
                 {showDeleted && (
                   <TableCell align="center">Trạng thái</TableCell>
                 )}
-                <TableCell align="right">Thao tác</TableCell>
+                <TableCell align="right">Hành động</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -335,11 +336,9 @@ export default function CourseRobotManagementSection({
                   )}
                   <TableCell align="right">
                     {courseRobot.isDeleted ? (
-                      <Button
+                      <IconButton
                         size="small"
-                        color="primary"
-                        variant="outlined"
-                        startIcon={<RestoreIcon />}
+                        color="success"
                         onClick={() =>
                           handleRestoreClick(
                             courseRobot.id,
@@ -348,14 +347,12 @@ export default function CourseRobotManagementSection({
                         }
                         disabled={operations.isRestoring}
                       >
-                        Khôi phục
-                      </Button>
+                        <RestoreIcon />
+                      </IconButton>
                     ) : (
-                      <Button
+                      <IconButton
                         size="small"
                         color="error"
-                        variant="outlined"
-                        startIcon={<DeleteIcon />}
                         onClick={() =>
                           handleDeleteClick(
                             courseRobot.id,
@@ -364,8 +361,8 @@ export default function CourseRobotManagementSection({
                         }
                         disabled={operations.isDeleting}
                       >
-                        Xóa
-                      </Button>
+                        <DeleteIcon />
+                      </IconButton>
                     )}
                   </TableCell>
                 </TableRow>
