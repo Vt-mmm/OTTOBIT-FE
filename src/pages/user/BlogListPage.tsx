@@ -60,13 +60,13 @@ type BlogListResponse = {
   };
 };
 
-const PAGE_SIZES = [6, 9, 12];
+const PAGE_SIZES = [6, 9, 12, 15, 18];
 
 const BlogListPage: React.FC = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(9);
+  const [pageSize, setPageSize] = useState(12);
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<BlogItem[]>([]);
   const [totalPages, setTotalPages] = useState(1);
@@ -297,9 +297,38 @@ const BlogListPage: React.FC = () => {
           </Stack>
         )}
 
-        <Grid container spacing={2}>
-          {cards}
-        </Grid>
+        {items.length === 0 && !loading ? (
+          <Box sx={{ textAlign: "center", py: 8 }}>
+            <Box sx={{ mb: 3 }}>
+              <ArticleIcon
+                sx={{
+                  fontSize: 80,
+                  color: "text.secondary",
+                  opacity: 0.6,
+                }}
+              />
+            </Box>
+            <Typography
+              variant="h5"
+              color="text.secondary"
+              sx={{ mb: 2, fontWeight: 500 }}
+            >
+              Chưa có bài viết nào
+            </Typography>
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              sx={{ maxWidth: 400, mx: "auto" }}
+            >
+              Hãy khám phá các bài viết, tin tức và cập nhật mới nhất từ
+              OttoBit!
+            </Typography>
+          </Box>
+        ) : (
+          <Grid container spacing={2}>
+            {cards}
+          </Grid>
+        )}
 
         <Stack
           direction={{ xs: "column", sm: "row" }}
@@ -309,28 +338,33 @@ const BlogListPage: React.FC = () => {
           mt={4}
         >
           {/* Page Size Selector */}
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Hiển thị</InputLabel>
-            <Select
-              value={pageSize}
-              label="Hiển thị"
-              onChange={(e) => setPageSize(Number(e.target.value))}
-            >
-              {PAGE_SIZES.map((s) => (
-                <MenuItem key={s} value={s}>
-                  {s}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          {totalPages > 1 && items.length > 0 && (
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel>Hiển thị</InputLabel>
+              <Select
+                value={pageSize}
+                label="Hiển thị"
+                onChange={(e) => setPageSize(Number(e.target.value))}
+              >
+                {PAGE_SIZES.map((s) => (
+                  <MenuItem key={s} value={s}>
+                    {s}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
 
           {/* Pagination */}
-          {totalPages > 1 && (
+          {totalPages > 1 && items.length > 0 && (
             <Pagination
-              color="primary"
-              page={page}
               count={totalPages}
+              page={page}
               onChange={(_, v) => setPage(v)}
+              color="primary"
+              size="large"
+              showFirstButton
+              showLastButton
             />
           )}
         </Stack>

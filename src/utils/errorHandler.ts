@@ -74,6 +74,50 @@ export function extractApiErrorMessage(
  * @param error - Error object
  * @returns Error details object
  */
+export function extractApiErrorDetails(
+  error: any,
+  defaultMessage: string = "Có lỗi xảy ra, vui lòng thử lại sau"
+): { message: string; errorCode?: string; errors?: string[] } {
+  // Check if it's an Axios error with response data
+  if (error?.response?.data) {
+    const apiError: ApiErrorResponse = error.response.data;
+
+    return {
+      message: apiError.message || defaultMessage,
+      errorCode: apiError.errorCode,
+      errors: apiError.errors || undefined,
+    };
+  }
+
+  // Check if it's an Axios error with direct data (for 409 conflicts)
+  if (error?.data) {
+    const apiError: ApiErrorResponse = error.data;
+
+    return {
+      message: apiError.message || defaultMessage,
+      errorCode: apiError.errorCode,
+      errors: apiError.errors || undefined,
+    };
+  }
+
+  // Priority 3: Check direct error message
+  if (error?.message) {
+    return {
+      message: error.message,
+    };
+  }
+
+  // Priority 4: Use default message
+  return {
+    message: defaultMessage,
+  };
+}
+
+/**
+ * Extract error details for debugging
+ * @param error - Error object
+ * @returns Error details object
+ */
 export function extractErrorDetails(error: any) {
   return {
     message: error?.message,

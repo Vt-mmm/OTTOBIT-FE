@@ -13,10 +13,14 @@ import {
   RadioGroup,
   FormControlLabel,
   FormControl,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "store/config";
-import { getCartThunk } from "store/cart/cartThunks";
+import { getCartThunk, removeDiscountThunk } from "store/cart/cartThunks";
 import { createOrderFromCartThunk } from "store/order/orderThunks";
 import { initiatePaymentThunk } from "store/payment/paymentThunks";
 import { clearLastCreatedOrder } from "store/order/orderSlice";
@@ -43,6 +47,8 @@ export default function CheckoutPage() {
     PaymentMethod.PayOS
   );
   const [error, setError] = useState<string | null>(null);
+  const [showVoucherErrorDialog, setShowVoucherErrorDialog] = useState(false);
+  const [voucherError, setVoucherError] = useState<string>("");
 
   useEffect(() => {
     // Fetch cart on mount
@@ -98,8 +104,39 @@ export default function CheckoutPage() {
       // PayLink will trigger redirect in useEffect
     } catch (err: any) {
       console.error("Checkout error:", err);
-      setError(err.message || translate("checkout.CheckoutProcessFailed"));
+
+      // Check if error is voucher-related (errorCode VOU_012)
+      if (
+        err.errorCode === "VOU_012" ||
+        err.message?.includes("Voucher usage limit reached")
+      ) {
+        setVoucherError(err.message || "Voucher usage limit reached");
+        setShowVoucherErrorDialog(true);
+      } else {
+        setError(err.message || translate("checkout.CheckoutProcessFailed"));
+      }
     }
+  };
+
+  const handleProceedWithoutVoucher = async () => {
+    try {
+      // Remove voucher from cart
+      await dispatch(removeDiscountThunk()).unwrap();
+
+      // Close dialog
+      setShowVoucherErrorDialog(false);
+
+      // Retry checkout without voucher
+      await handleCheckout();
+    } catch (error) {
+      console.error("Failed to remove voucher:", error);
+      setError("Không thể gỡ voucher. Vui lòng thử lại.");
+    }
+  };
+
+  const handleCancelVoucherDialog = () => {
+    setShowVoucherErrorDialog(false);
+    setVoucherError("");
   };
 
   const cartData = cart.data;
@@ -543,6 +580,40 @@ export default function CheckoutPage() {
       </Box>
 
       <Footer />
+
+      {/* Voucher Error Dialog */}
+      <Dialog
+        open={showVoucherErrorDialog}
+        onClose={handleCancelVoucherDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Typography variant="h6" color="error">
+            Lỗi Phiếu Giảm Giá
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            {voucherError}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Bạn có muốn bỏ qua phiếu giảm giá này để tiếp tục thanh toán không?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelVoucherDialog} color="inherit">
+            Hủy
+          </Button>
+          <Button
+            onClick={handleProceedWithoutVoucher}
+            variant="contained"
+            color="primary"
+          >
+            Tiếp tục thanh toán
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

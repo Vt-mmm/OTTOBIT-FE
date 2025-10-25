@@ -22,7 +22,10 @@ import {
   OrdersResponse,
 } from "common/@types/order";
 import { Paginate } from "common/@types";
-import { extractApiErrorMessage } from "utils/errorHandler";
+import {
+  extractApiErrorMessage,
+  extractApiErrorDetails,
+} from "utils/errorHandler";
 
 // API Response wrapper interface
 interface ApiResponse<T> {
@@ -48,15 +51,15 @@ export const createOrderFromCartThunk = createAsyncThunk(
 
       return response.data.data;
     } catch (error) {
-      const message = extractApiErrorMessage(
+      const errorDetails = extractApiErrorDetails(
         error as AxiosError,
         "Failed to create order"
       );
 
       // Error toast
-      thunkAPI.dispatch(setMessageError(message));
+      thunkAPI.dispatch(setMessageError(errorDetails.message));
 
-      return thunkAPI.rejectWithValue(message);
+      return thunkAPI.rejectWithValue(errorDetails);
     }
   }
 );

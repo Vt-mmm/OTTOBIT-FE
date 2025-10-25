@@ -13,6 +13,7 @@ import {
   MenuItem,
   Button,
   Stack,
+  Typography,
 } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../../../redux/config";
 // import { getCourses } from "../../../redux/course/courseSlice";
@@ -26,6 +27,7 @@ import { CourseFilters } from "./CourseFilterDialog";
 import { axiosClient } from "axiosClient";
 import { useLocales } from "../../../hooks";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import ArticleIcon from "@mui/icons-material/Article";
 
 interface CourseListingSectionProps {
   searchQuery: string;
@@ -277,7 +279,30 @@ export default function CourseListingSection({
       {/* Course Grid */}
       {courses.length === 0 ? (
         <Box sx={{ textAlign: "center", py: 8 }}>
-          <Alert severity="info">Không có khóa học nào</Alert>
+          <Box sx={{ mb: 3 }}>
+            <ArticleIcon
+              sx={{
+                fontSize: 80,
+                color: "text.secondary",
+                opacity: 0.6,
+              }}
+            />
+          </Box>
+          <Typography
+            variant="h5"
+            color="text.secondary"
+            sx={{ mb: 2, fontWeight: 500 }}
+          >
+            Chưa có khóa học nào
+          </Typography>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ maxWidth: 400, mx: "auto" }}
+          >
+            Hãy khám phá các khóa học STEM thú vị và bắt đầu hành trình học tập
+            của bạn!
+          </Typography>
         </Box>
       ) : (
         <>
@@ -327,23 +352,25 @@ export default function CourseListingSection({
             sx={{ mt: 4 }}
           >
             {/* Page Size Selector */}
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>Hiển thị</InputLabel>
-              <Select
-                value={pageSize}
-                label="Hiển thị"
-                onChange={(e) => setPageSize(Number(e.target.value))}
-              >
-                <MenuItem value={6}>6</MenuItem>
-                <MenuItem value={9}>9</MenuItem>
-                <MenuItem value={12}>12</MenuItem>
-                <MenuItem value={15}>15</MenuItem>
-                <MenuItem value={18}>18</MenuItem>
-              </Select>
-            </FormControl>
+            {totalPages > 1 && courses.length > 0 && (
+              <FormControl size="small" sx={{ minWidth: 120 }}>
+                <InputLabel>Hiển thị</InputLabel>
+                <Select
+                  value={pageSize}
+                  label="Hiển thị"
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                >
+                  <MenuItem value={6}>6</MenuItem>
+                  <MenuItem value={9}>9</MenuItem>
+                  <MenuItem value={12}>12</MenuItem>
+                  <MenuItem value={15}>15</MenuItem>
+                  <MenuItem value={18}>18</MenuItem>
+                </Select>
+              </FormControl>
+            )}
 
             {/* Pagination */}
-            {totalPages > 1 && (
+            {totalPages > 1 && courses.length > 0 && (
               <Pagination
                 count={totalPages}
                 page={currentPage}
